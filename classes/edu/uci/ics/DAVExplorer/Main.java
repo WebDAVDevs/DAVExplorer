@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 1998-2003 Regents of the University of California.
+ * Copyright (c) 1998-2004 Regents of the University of California.
  * All rights reserved.
  *
  * This software was developed at the University of California, Irvine.
@@ -23,7 +23,7 @@
  *              instantiates the Main JFrame.
  *              The Main class creates the user interface and adds the appropriate
  *              listeners.
- * Copyright:   Copyright (c) 1998-2003 Regents of the University of California. All rights reserved.
+ * Copyright:   Copyright (c) 1998-2004 Regents of the University of California. All rights reserved.
  * @author      Robert Emmery (dav-exp@ics.uci.edu)
  * @date        2 April 1998
  * @author      Yuzo Kanomata, Joachim Feise (dav-exp@ics.uci.edu)
@@ -71,6 +71,9 @@
  * @author      Joachim Feise (dav-exp@ics.uci.edu)
  * @date        23 September 2003
  * Changes:     Integrated the DeltaV code from the Spring 2003 ICS125 team.
+ * @author      John Barton (HP), Joachim Feise (dav-exp@ics.uci.edu)
+ * @date        06 February 2004
+ * Changes:     Integrated John Barton's refactoring changes and drop support.
  */
 
 
@@ -96,27 +99,24 @@ import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
 import java.util.Hashtable;
 import java.io.File;
+import java.awt.dnd.*;
+import java.awt.*;
+import java.awt.datatransfer.*;
+import java.util.*;
+import java.io.*;
 
 public class Main extends JFrame
 {
     public final static String VERSION = "0.91-dev";
     public final static String UserAgent = "UCI DAV Explorer/" + VERSION;
-    public final static String COPYRIGHT = "Copyright (c) 1998-2003 Regents of the University of California";
+    public final static String COPYRIGHT = "Copyright (c) 1998-2004 Regents of the University of California";
     public final static String EMAIL = "EMail: dav-exp@ics.uci.edu";
 
     public Main(String frameName)
     {
         super (frameName);
-        /* Uncomment the following 8 lines if you want system's L&F
-        try
-        {
-            UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());
-        }
-        catch (Exception except)
-        {
-            System.out.println("Error Loading L&F");
-        }
-        */
+
+        setLookAndFeel();
 
         GlobalData.getGlobalData().setMainFrame( this );
 
@@ -124,14 +124,11 @@ public class Main extends JFrame
 
         treeView = new WebDAVTreeView();
         treeView.setUserAgent( UserAgent );
-        fileView = new WebDAVFileView();
 
-        CommandMenu = new WebDAVMenu();
-        setJMenuBar(CommandMenu);
+        fileView = createFileView();
 
-        MenuListener_Gen menuListener = new MenuListener_Gen();
-
-        CommandMenu.addWebDAVMenuListener( menuListener );
+        treeView.addViewSelectionListener( fileView );
+        fileView.addViewSelectionListener( treeView );
 
         // Set the HTTPClient authentication handler
         DefaultAuthHandler.setAuthorizationPrompter(new AuthDialog());
@@ -139,27 +136,14 @@ public class Main extends JFrame
         // allow all cookies
         CookieModule.setCookiePolicyHandler( null );
 
-        WebDAVToolBar toolbar = new WebDAVToolBar();
-        toolbar.addActionListener( menuListener );
-        URIBox uribox = new URIBox();
-        GlobalData.getGlobalData().setURIBox(uribox);
-        uribox.addActionListener(new URIBoxListener_Gen());
 
-        treeView.addViewSelectionListener( fileView );
-        fileView.addViewSelectionListener( treeView );
 
         requestGenerator = new DeltaVRequestGenerator();
         requestGenerator.addRequestListener(new RequestListener());
 
-        // Get the rename Event
-        fileView.addRenameListener(new RenameListener());
-        fileView.addDisplayLockListener(new DisplayLockListener());
-        fileView.addDisplayVersionListener(new DisplayVersionListener());
-
         requestGenerator.setUserAgent( UserAgent );
 
 
-        //responseInterpreter = new WebDAVResponseInterpreter( requestGenerator );
         responseInterpreter = new DeltaVResponseInterpreter( requestGenerator );
         responseInterpreter.addInsertionListener(new TreeInsertionListener());
         responseInterpreter.addMoveUpdateListener(new MoveUpdateListener());
@@ -167,12 +151,11 @@ public class Main extends JFrame
         responseInterpreter.addActionListener(fileView); // Listens for a reset
                                                          // for an unsucessful
                                                          // Rename request
-        //5/18/03 Matt
-        // create listeners for our 4 functions
+        // create listeners for DeltaV
         responseInterpreter.addVersionControlListener(new VersionControlListener());
         responseInterpreter.addCheckoutListener(new CheckoutListener());
         responseInterpreter.addUnCheckoutListener(new UnCheckoutListener());
-        responseInterpreter.addCheckinListener(new CheckinListener());      
+        responseInterpreter.addCheckinListener(new CheckinListener());
 
         // Add the CopyEvent Listener
         responseInterpreter.addCopyResponseListener(treeView);
@@ -181,44 +164,17 @@ public class Main extends JFrame
         webdavManager = new WebDAVManager();
         webdavManager.addResponseListener(new ResponseListener());
 
-        JScrollPane fileScrPane = fileView.getScrollPane();
-        JScrollPane treeScrPane = treeView.getScrollPane();
-        JSplitPane splitPane = new JSplitPane(JSplitPane.HORIZONTAL_SPLIT,treeScrPane,fileScrPane);
-        splitPane.setContinuousLayout(true);
+        buildFrame(); // 08DEC03 John_Barton@hpl.hp.com factored to allow override
 
-        JPanel p = new JPanel();
-        p.setSize(800,600);
-        GridBagLayout gridbag = new GridBagLayout();
-        p.setLayout(gridbag);
-        GridBagConstraints c = new GridBagConstraints();
-        c.anchor = GridBagConstraints.CENTER;
-        c.fill = GridBagConstraints.HORIZONTAL;
-        c.gridx = 0;
-        c.gridy = 0;
-        c.gridwidth = GridBagConstraints.REMAINDER;
-        gridbag.setConstraints(toolbar,c);
-        p.add(toolbar);
-
-        c.gridy= GridBagConstraints.RELATIVE;
-        c.gridheight = GridBagConstraints.RELATIVE;
-        gridbag.setConstraints(uribox,c);
-        p.add(uribox);
-
-        c.fill = GridBagConstraints.BOTH;
-        c.weighty = 1.0;
-        c.weightx = 1.0;
-        c.gridheight = GridBagConstraints.REMAINDER;
-        gridbag.setConstraints(splitPane,c);
-        p.add(splitPane);
-
-        // 2003-March-26: Joachim Feise (dav-exp@ics.uci.edu) changed
-        // for progress reporting
-        getContentPane().setLayout( new BorderLayout() );
-        getContentPane().add( p,BorderLayout.CENTER );
-        getContentPane().add( new ProgressBar(),BorderLayout.SOUTH );
-
-        treeView.initTree();
-        pack();
+        try
+        {
+            // JDK 1.1.x doesn't have the drop classes, catching it here
+            dropEnabler = new DropEnabler(fileView.table);
+        }
+        catch( NoClassDefFoundError e )
+        {
+            dropEnabler = null;
+        }
 
         if (!GlobalData.getGlobalData().isAppletMode())
         {
@@ -238,11 +194,109 @@ public class Main extends JFrame
     }
 
 
-    public final static void main(String[] argv)
+    /* 04DEC03 John_Barton@hpl.hp.com Factored from ctor to aid reuse */
+    public void setLookAndFeel()
     {
-        String help = System.getProperty( "help", "no" );
-        if( help.equalsIgnoreCase("no") )
+        /* Uncomment the following 8 lines if you want system's L&F
+        try
         {
+            UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());
+        }
+        catch (Exception except)
+        {
+            System.out.println("Error Loading L&F");
+        }
+        */
+    }
+
+
+    /* 04DEC03 John_Barton@hpl.hp.com Factored from ctor to aid reuse */
+    public void buildFrame()
+    {
+      CommandMenu = new WebDAVMenu();
+      setJMenuBar(CommandMenu);
+
+      MenuListener_Gen menuListener = new MenuListener_Gen();
+
+      CommandMenu.addWebDAVMenuListener( menuListener );
+
+      WebDAVToolBar toolbar = new WebDAVToolBar();
+      toolbar.addActionListener( menuListener );
+
+      URIBox uribox = new URIBox();
+      GlobalData.getGlobalData().setURIBox(uribox);
+      uribox.addActionListener(new URIBoxListener_Gen());
+
+
+      JScrollPane fileScrPane = fileView.getScrollPane();
+      JScrollPane treeScrPane = treeView.getScrollPane();
+      JSplitPane splitPane = new JSplitPane(JSplitPane.HORIZONTAL_SPLIT,treeScrPane,fileScrPane);
+      splitPane.setContinuousLayout(true);
+
+      JPanel p = new JPanel();
+      p.setSize(800,600);
+      GridBagLayout gridbag = new GridBagLayout();
+      p.setLayout(gridbag);
+      GridBagConstraints c = new GridBagConstraints();
+      c.anchor = GridBagConstraints.CENTER;
+      c.fill = GridBagConstraints.HORIZONTAL;
+      c.gridx = 0;
+      c.gridy = 0;
+      c.gridwidth = GridBagConstraints.REMAINDER;
+      gridbag.setConstraints(toolbar,c);
+      p.add(toolbar);
+
+      c.gridy= GridBagConstraints.RELATIVE;
+      c.gridheight = GridBagConstraints.RELATIVE;
+      gridbag.setConstraints(uribox,c);
+      p.add(uribox);
+
+      c.fill = GridBagConstraints.BOTH;
+      c.weighty = 1.0;
+      c.weightx = 1.0;
+      c.gridheight = GridBagConstraints.REMAINDER;
+      gridbag.setConstraints(splitPane,c);
+      p.add(splitPane);
+
+      // 2003-March-26: Joachim Feise (dav-exp@ics.uci.edu) changed
+      // for progress reporting
+      getContentPane().setLayout( new BorderLayout() );
+      getContentPane().add( p,BorderLayout.CENTER );
+      getContentPane().add( new ProgressBar(),BorderLayout.SOUTH );
+
+      treeView.initTree();
+      pack();
+
+    }
+
+    protected WebDAVFileView createFileView() {
+
+    fileView = new WebDAVFileView();
+
+    // Get the rename Event
+    fileView.addRenameListener(new RenameListener());
+    fileView.addDisplayLockListener(new DisplayLockListener());
+    fileView.addDisplayVersionListener(new DisplayVersionListener());
+
+    return fileView;
+    }
+
+
+    /* 04DEC03 John_Barton@hpl.hp.com removed final to allow override */
+    public static void main(String[] argv)
+    {
+        String property = System.getProperty( "help", "no" );
+        if( property.equalsIgnoreCase("no") )
+        {
+            property = System.getProperty( "version", "no" );
+            if( !property.equalsIgnoreCase("no") )
+            {
+                System.out.println( "DAV Explorer Version "+ VERSION );
+                System.out.println( COPYRIGHT );
+                System.out.println( EMAIL );
+                return;
+            }
+
             new Main("DAV Explorer");
         }
         else
@@ -256,7 +310,7 @@ public class Main extends JFrame
             System.out.println( "Basic DeltaV support based on code from the DeltaV Team of the ICS125" );
             System.out.println( "class Spring 2003: Max Slabyak, Matt Story, Hyung Kim." );
             System.out.println( "Uses the HTTPClient library (http://www.innovation.ch/java/HTTPClient/)." );
-            System.out.println( "Uses Microsoft's published XML parser from June 1997.\n" );
+            System.out.println( "Uses Microsoft's XML parser published in June 1997.\n" );
             System.out.println( "For other contributors see the contributors.txt file.\n" );
             System.out.println( "Options:" );
             System.out.println( "-Dhelp=yes" );
@@ -285,12 +339,15 @@ public class Main extends JFrame
             System.out.println( "  number.\n" );
             System.out.println( "-Dlocal=no" );
             System.out.println( "  This option prevents showing the local directory structure in the main" );
-            System.out.println( "  DAV Explorer window." );
+            System.out.println( "  DAV Explorer window.\n" );
+            System.out.println( "-Dcompress=no" );
+            System.out.println( "  This option prevents the use of compression when transferring data." );
         }
     }
 
 
-    class URIBoxListener_Gen implements WebDAVURIBoxListener
+    /* 04DEC04 John_Barton@hpl.hp.com move to public to allow Main to be subclassed */
+    public class URIBoxListener_Gen implements WebDAVURIBoxListener
     {
         public void actionPerformed(ActionEvent e)
         {
@@ -345,7 +402,8 @@ public class Main extends JFrame
         }
     }
 
-    class TreeInsertionListener implements InsertionListener
+    /* 04DEC03 John_Barton@hpl.hp.com move to public to allow Main to be subclassed */
+    public class TreeInsertionListener implements InsertionListener
     {
         public void actionPerformed(ActionEvent e)
         {
@@ -366,7 +424,8 @@ public class Main extends JFrame
         }
     }
 
-    class MoveUpdateListener implements ActionListener
+    /* 04DEC03 John_Barton@hpl.hp.com move to public to allow Main to be subclassed */
+    public class MoveUpdateListener implements ActionListener
     {
         public void actionPerformed(ActionEvent e)
         {
@@ -380,7 +439,8 @@ public class Main extends JFrame
         }
     }
 
-    class TableSelectListener_Gen implements ViewSelectionListener
+    /* 04DEC03 John_Barton@hpl.hp.com move to public to allow Main to be subclassed */
+    public class TableSelectListener_Gen implements ViewSelectionListener
     {
         public void selectionChanged(ViewSelectionEvent e)
         {
@@ -388,7 +448,8 @@ public class Main extends JFrame
         }
     }
 
-    class TableSelectListener_Tree implements ViewSelectionListener
+    /* 04DEC03 John_Barton@hpl.hp.com move to public to allow Main to be subclassed */
+    public class TableSelectListener_Tree implements ViewSelectionListener
     {
         public void selectionChanged(ViewSelectionEvent e)
         {
@@ -396,7 +457,8 @@ public class Main extends JFrame
         }
     }
 
-    class TreeSelectListener_Gen implements ViewSelectionListener
+    /* 04DEC03 John_Barton@hpl.hp.com move to public to allow Main to be subclassed */
+    public class TreeSelectListener_Gen implements ViewSelectionListener
     {
         public void selectionChanged(ViewSelectionEvent e)
         {
@@ -404,7 +466,8 @@ public class Main extends JFrame
         }
     }
 
-    class LockListener implements ActionListener
+    /* 04DEC03 John_Barton@hpl.hp.com move to public to allow Main to be subclassed */
+    public class LockListener implements ActionListener
     {
         public void actionPerformed(ActionEvent e)
         {
@@ -423,7 +486,8 @@ public class Main extends JFrame
     }
 
 
-    class VersionControlListener implements ActionListener
+    /* 04DEC03 John_Barton@hpl.hp.com move to public to allow Main to be subclassed */
+    public class VersionControlListener implements ActionListener
     {
         public void actionPerformed(ActionEvent e)
         {
@@ -440,7 +504,8 @@ public class Main extends JFrame
     }
 
 
-    class CheckoutListener implements ActionListener
+    /* 04DEC03 John_Barton@hpl.hp.com move to public to allow Main to be subclassed */
+    public class CheckoutListener implements ActionListener
     {
         public void actionPerformed(ActionEvent e)
         {
@@ -450,14 +515,15 @@ public class Main extends JFrame
             if( code >=200 && code < 300 )
                 str = "Checkout for " + res + " successful.";
             else
-                str = "Checkout failed. Error: " + res; 
+                str = "Checkout failed. Error: " + res;
 
             JOptionPane.showMessageDialog( GlobalData.getGlobalData().getMainFrame(), str );
         }
-    }  
-    
+    }
 
-    class UnCheckoutListener implements ActionListener
+
+    /* 04DEC03 John_Barton@hpl.hp.com move to public to allow Main to be subclassed */
+    public class UnCheckoutListener implements ActionListener
     {
         public void actionPerformed(ActionEvent e)
         {
@@ -467,14 +533,15 @@ public class Main extends JFrame
             if( code >=200 && code < 300 )
             str = "Uncheckout for " + res + " successful.";
             else
-                str = "Uncheckout failed. Error: " + res; 
+                str = "Uncheckout failed. Error: " + res;
 
             JOptionPane.showMessageDialog( GlobalData.getGlobalData().getMainFrame(), str );
         }
-    }   
-    
+    }
 
-    class CheckinListener implements ActionListener
+
+    /* 04DEC03 John_Barton@hpl.hp.com move to public to allow Main to be subclassed */
+    public class CheckinListener implements ActionListener
     {
         public void actionPerformed(ActionEvent e)
         {
@@ -484,14 +551,15 @@ public class Main extends JFrame
             if( code >=200 && code < 300 )
             str = "Checkin for " + res + " successful.";
             else
-                str = "Checkin failed. Error: " + res; 
+                str = "Checkin failed. Error: " + res;
 
             JOptionPane.showMessageDialog( GlobalData.getGlobalData().getMainFrame(), str );
         }
-    }     
+    }
 
 
-    class DisplayLockListener implements ActionListener
+    /* 04DEC03 John_Barton@hpl.hp.com move to public to allow Main to be subclassed */
+    public class DisplayLockListener implements ActionListener
     {
         public void actionPerformed(ActionEvent e)
         {
@@ -502,7 +570,8 @@ public class Main extends JFrame
     }
 
 
-    class DisplayVersionListener implements ActionListener
+    /* 04DEC03 John_Barton@hpl.hp.com move to public to allow Main to be subclassed */
+    public class DisplayVersionListener implements ActionListener
     {
         public void actionPerformed(ActionEvent e)
         {
@@ -514,7 +583,8 @@ public class Main extends JFrame
     }
 
 
-    class RenameListener implements ActionListener
+    /* 04DEC03 John_Barton@hpl.hp.com move to public to allow Main to be subclassed */
+    public class RenameListener implements ActionListener
     {
         public void actionPerformed(ActionEvent e)
         {
@@ -543,7 +613,8 @@ public class Main extends JFrame
     }
 
 
-    class RequestListener implements WebDAVRequestListener
+    /* 04DEC03 John_Barton@hpl.hp.com move to public to allow Main to be subclassed */
+    public class RequestListener implements WebDAVRequestListener
     {
         public void requestFormed(WebDAVRequestEvent e)
         {
@@ -552,7 +623,8 @@ public class Main extends JFrame
     }
 
 
-    class ResponseListener implements WebDAVResponseListener
+    /* 04DEC03 John_Barton@hpl.hp.com move to public to allow Main to be subclassed */
+    public class ResponseListener implements WebDAVResponseListener
     {
         public void responseFormed(WebDAVResponseEvent e)
         {
@@ -577,15 +649,15 @@ public class Main extends JFrame
 
             if ( method.equals("COPY") )
             {
-                // Skip
+                // skip
             }
             else if (method.equals("PUT"))
             {
-                // Skip
+                // skip
             }
             else if (extra == null)
             {
-                // Skip
+                // skip
             }
             else if( extra.equals("expand") || extra.equals("index") )
             {
@@ -610,18 +682,21 @@ public class Main extends JFrame
             }
             else if ( extra.equals("copy") )
             {
+                // skip
             }
             else if (extra.equals("delete"))
             {
+                // skip
             }
             else if (extra.equals("mkcol"))
             {
+                // skip
             }
         }
     }
 
-
-    class MenuListener_Gen implements ActionListener
+    /* 04DEC03 John_Barton@hpl.hp.com move to public to allow Main to be subclassed */
+    public class MenuListener_Gen implements ActionListener
     {
         public void actionPerformed(ActionEvent e)
         {
@@ -649,40 +724,8 @@ public class Main extends JFrame
                 String dirName =fd.getDirectory();
 
                 String fName = fd.getFile();
+                doWriteFile(dirName, fName);  // 08DEC03 John_Barton@hpl.hp.com factored into doWriteFile()
 
-                if( (dirName!=null) && !dirName.equals("") && (fName != null ) && !fName.equals("") )
-                {
-                    writeToDir = dirName;
-                    String fullPath = dirName + fName;
-                    String token = treeView.getLockToken( fName );
-
-                    // Get the current Node so that we can update it later
-                    String s = "";
-
-                    WebDAVTreeNode n2 = fileView.getSelectedCollection();
-
-                    s = fileView.getSelected();
-                    if (s == null)
-                    {
-                        s = "";
-                    }
-                    WebDAVTreeNode parent = fileView.getParentNode();
-
-                    boolean retval = false;
-                    if (n2 == null)
-                    {
-                        requestGenerator.setResource(s, parent);
-                        retval = requestGenerator.GeneratePut(fullPath, s, token , null);
-                    }
-                    else
-                    {
-                        requestGenerator.setResource(s, n2);
-                        retval = requestGenerator.GeneratePut( fullPath, s, token , parent);
-                    }
-                    if( retval ){
-                        requestGenerator.execute();
-            }
-                }
             }
             else if (command.equals("Exclusive Lock"))
             {
@@ -1030,7 +1073,7 @@ public class Main extends JFrame
                 "Basic DeltaV support based on code from the DeltaV Team of the ICS125\n" +
                 "class Spring 2003: Max Slabyak, Matt Story, Hyung Kim.\n" +
                 "Uses the HTTPClient library (http://www.innovation.ch/java/HTTPClient/).\n" +
-                "Uses Microsoft's published XML parser from June 1997.\n" +
+                "Uses Microsoft's XML parser published in June 1997.\n" +
                 "For other contributors see the contributors.txt file.");
                 Object [] options = { "OK" };
 				JOptionPane.showOptionDialog(GlobalData.getGlobalData().getMainFrame(), message, "About DAV Explorer", JOptionPane.DEFAULT_OPTION, JOptionPane.INFORMATION_MESSAGE, null, options, options[0]);
@@ -1181,6 +1224,184 @@ public class Main extends JFrame
         }
     }
 
+    // 08DEC03 John_Barton@hpl.hp.com extracted from Write File branch of event handler.
+    protected void doWriteFile(String dirName, String fName)
+    {
+        if( (dirName != null) && !dirName.equals("") && (fName != null) &&
+                !fName.equals("") )
+        {
+            writeToDir = dirName;
+            String fullPath = dirName + fName;
+            String token = treeView.getLockToken(fName);
+            
+            // Get the current Node so that we can update it later
+            String s = "";
+            
+            WebDAVTreeNode n2 = fileView.getSelectedCollection();
+            
+            s = fileView.getSelected();
+            if( s == null )
+            {
+                s = "";
+            }
+            WebDAVTreeNode parent = fileView.getParentNode();
+            
+            boolean retval = false;
+            if( n2 == null )
+            {
+                requestGenerator.setResource(s, parent);
+                retval = requestGenerator.GeneratePut(fullPath, s, token, null);
+            }
+            else
+            {
+                requestGenerator.setResource(s, n2);
+                retval = requestGenerator.GeneratePut(fullPath, s, token, parent);
+            }
+            if( retval ) 
+            {
+                requestGenerator.execute();
+            }
+        }
+    }
+
+
+    /* 08DEC03 John_Barton@hpl.hp.com Add support for drop (and a bit for drag) */
+    public class DropEnabler
+        implements DropTargetListener, DragSourceListener, DragGestureListener
+    {
+        Component drop_enabled;
+        DropTarget dropTarget = new DropTarget(drop_enabled, this);
+        DragSource dragSource = DragSource.getDefaultDragSource();
+        int drop_action_allowed = DnDConstants.ACTION_COPY;
+        String os_name;
+
+        public DropEnabler(Component enabled)
+        {
+            this.drop_enabled = enabled;
+            int drop_action_allowed = DnDConstants.ACTION_COPY;
+            dropTarget = new DropTarget(drop_enabled, drop_action_allowed, this, true);
+            dragSource.createDefaultDragGestureRecognizer( drop_enabled, DnDConstants.ACTION_COPY, this );
+            os_name = System.getProperty("os.name");
+        }
+
+        // DragSourceListener
+        public void dragDropEnd(DragSourceDropEvent DragSourceDropEvent)
+        {
+            /* ignored */
+        }
+
+
+        public void dragEnter(DragSourceDragEvent DragSourceDragEvent)
+        {
+            /* ignored */
+        }
+
+
+        public void dragExit(DragSourceEvent DragSourceEvent)
+        {
+            /* ignored */
+        }
+
+
+        public void dragOver(DragSourceDragEvent DragSourceDragEvent)
+        {
+            /* ignored */
+        }
+
+
+        public void dropActionChanged(DragSourceDragEvent DragSourceDragEvent) {/* ignored */}
+
+        // DropTargetListener
+        public void dragEnter(DropTargetDragEvent dropTargetDragEvent) {
+            dropTargetDragEvent.acceptDrag(drop_action_allowed);
+        }
+        
+        public void dragExit(DropTargetEvent dropTargetEvent)
+        {
+            /* ignored */
+        }
+
+        public void dragOver(DropTargetDragEvent dropTargetDragEvent)
+        {
+            /* ignored */
+        }
+
+        public void dropActionChanged(DropTargetDragEvent dropTargetDragEvent)
+        {
+            /* ignored */
+        }
+
+        public synchronized void drop(DropTargetDropEvent dropTargetDropEvent)
+        {
+            try 
+            {
+                Transferable tr = dropTargetDropEvent.getTransferable();
+                if (tr.isDataFlavorSupported(DataFlavor.javaFileListFlavor))
+                {
+                    dropTargetDropEvent.acceptDrop( DnDConstants.ACTION_COPY_OR_MOVE );
+                    java.util.List fileList = (java.util.List)tr.getTransferData(DataFlavor.javaFileListFlavor);
+                    Iterator iterator = fileList.iterator();
+                    while (iterator.hasNext())
+                    {
+                        File file = (File) iterator.next();
+                        doWriteFile(file.getParent()+file.separator,file.getName());
+                    }
+                    dropTargetDropEvent.getDropTargetContext().dropComplete(true);
+                }
+                else
+                {
+                    DataFlavor incoming_flavors[] = tr.getTransferDataFlavors();
+                    String say_flavors = new String("Dropped object has no acceptable type; they are ");
+                    for (int i = 0; i < incoming_flavors.length; i++)
+                    {
+                        say_flavors = say_flavors + "\n"+ incoming_flavors[i].getHumanPresentableName();
+                    }
+                    GlobalData.getGlobalData().errorMsg(say_flavors);
+                    dropTargetDropEvent.rejectDrop();
+                }
+            }
+            catch (IOException io)
+            {
+                io.printStackTrace();
+                dropTargetDropEvent.rejectDrop();
+            }
+            catch (UnsupportedFlavorException ufe)
+            {
+                ufe.printStackTrace();
+                dropTargetDropEvent.rejectDrop();
+            }
+        }
+
+        public void dragGestureRecognized(DragGestureEvent dragGestureEvent)
+        {
+            String obj = fileView.getSelected();
+            if (obj == null)
+            {
+                // Nothing selected, nothing to drag
+                getToolkit().beep();
+            }
+            else
+            {
+                if (os_name.substring(0,3).compareToIgnoreCase("win") == 0)
+                {
+                    // drag only for Windows
+                    try
+                    {
+                        Runtime.getRuntime().exec("cmd /c start " + obj);
+                    }
+                    catch (Exception e)
+                    {
+                        GlobalData.getGlobalData().errorMsg("Cannot start "+obj);
+                        System.out.println(e);
+                    }
+                }
+                else
+                {
+                    // ignore for any other OS
+                }
+            }
+        }
+    }
 
     private String selectName( String title, String prompt )
     {
@@ -1216,6 +1437,7 @@ public class Main extends JFrame
         return false;
     }
 
+    protected DropEnabler dropEnabler;
     protected WebDAVFileView fileView;
     protected WebDAVTreeView treeView;
     protected DeltaVRequestGenerator requestGenerator;

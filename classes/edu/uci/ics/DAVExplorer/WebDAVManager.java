@@ -52,6 +52,9 @@
  * @author      Joachim Feise (dav-exp@ics.uci.edu)
  * @date        10 November 2003
  * Changes:     Clearing the proxy setting when proxy info is removed
+ * @author      Joachim Feise (dav-exp@ics.uci.edu)
+ * @date        17 November 2003
+ * Changes:     Setting the cursor to an hourglass when connecting.
  */
 
 package edu.uci.ics.DAVExplorer;
@@ -63,6 +66,7 @@ import HTTPClient.NVPair;
 import HTTPClient.ModuleException;
 import java.util.Vector;
 import java.util.StringTokenizer;
+import java.awt.Cursor;
 //import com.sun.net.ssl.KeyManager;
 import com.sun.net.ssl.TrustManager;
 import com.sun.net.ssl.SSLContext;
@@ -142,6 +146,8 @@ public class WebDAVManager
         String TempHost = e.getHost();
         int TempPort = e.getPort();
 
+        // prevent selecting the same server twice when first request is not yet
+        // finished
         if( ((TempHost!=null) && (TempHost.length()>0) && !TempHost.equals(Hostname)) ||
             (TempPort!=Port) ||
             ((ProxyTempHost!=null) && (ProxyTempHost.length()>0) && !ProxyTempHost.equals(ProxyHostname)) ||
@@ -160,6 +166,7 @@ public class WebDAVManager
                     HTTPConnection.setProxyServer( null, 0 );
                 
                 Hostname = TempHost;
+                GlobalData.getGlobalData().getMainFrame().setCursor( Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR) );
                 if (TempPort != 0)
                 {
                     Port = TempPort;
@@ -185,9 +192,11 @@ public class WebDAVManager
                     }
                 }
                 Con.setLogging( logging, logFilename );
+                GlobalData.getGlobalData().getMainFrame().setCursor( Cursor.getDefaultCursor() );
             }
             catch( HTTPClient.ProtocolNotSuppException httpException )
             {
+                GlobalData.getGlobalData().getMainFrame().setCursor( Cursor.getDefaultCursor() );
                 GlobalData.getGlobalData().errorMsg( "Error: Protocol not supported.\n" + httpException.toString() );
             }
         }

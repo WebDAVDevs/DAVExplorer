@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 1998-2002 Regents of the University of California.
+ * Copyright (c) 1998-2004 Regents of the University of California.
  * All rights reserved.
  *
  * This software was developed at the University of California, Irvine.
@@ -22,7 +22,7 @@
  * Description: WebDAV Method class library.
  *              We simply use the HTTPClient's extension method for
  *              sending all the requests.
- * Copyright:   Copyright (c) 1998-2002 Regents of the University of California. All rights reserved.
+ * Copyright:   Copyright (c) 1998-2004 Regents of the University of California. All rights reserved.
  * @author      Robert Emmery (dav-exp@ics.uci.edu)
  * @date        2 April 1998
  * @author      Yuzo Kanomata, Joachim Feise (dav-exp@ics.uci.edu)
@@ -36,6 +36,9 @@
  * @author      Joachim Feise (dav-exp@ics.uci.edu)
  * @date        25 June 2002
  * Changes:     Added a Put method to support files > 2GB
+ * @author      Joachim Feise (dav-exp@ics.uci.edu)
+ * @date        06 February 2004
+ * Changes:     Refactoring, adding option to disable compression
  */
 
 package edu.uci.ics.DAVExplorer;
@@ -56,14 +59,9 @@ public class WebDAVConnection extends HTTPConnection
     public WebDAVConnection(String HostName)
     {
         super(HostName, DEFAULT_PORT);
-        try
-        {
-            removeModule( Class.forName("HTTPClient.RedirectionModule") );
-        }
-        catch (ClassNotFoundException cnfe)
-        {
-            // just ignore it
-        }
+        removeModules();
+        addModules();
+        changeModules();
     }
 
 
@@ -71,28 +69,18 @@ public class WebDAVConnection extends HTTPConnection
         throws HTTPClient.ProtocolNotSuppException
     {
         super( Protocol, HostName, DEFAULT_PORT);
-        try
-        {
-            removeModule( Class.forName("HTTPClient.RedirectionModule") );
-        }
-        catch (ClassNotFoundException cnfe)
-        {
-            // just ignore it
-        }
+        removeModules();
+        addModules();
+        changeModules();
     }
 
 
     public WebDAVConnection(String HostName, int Port)
     {
         super(HostName, Port);
-        try
-        {
-            removeModule( Class.forName("HTTPClient.RedirectionModule") );
-        }
-        catch (ClassNotFoundException cnfe)
-        {
-            // just ignore it
-        }
+        removeModules();
+        addModules();
+        changeModules();
     }
 
 
@@ -100,14 +88,9 @@ public class WebDAVConnection extends HTTPConnection
         throws HTTPClient.ProtocolNotSuppException
     {
         super( Protocol, HostName, Port );
-        try
-        {
-            removeModule( Class.forName("HTTPClient.RedirectionModule") );
-        }
-        catch( ClassNotFoundException cnfe )
-        {
-            // just ignore it
-        }
+        removeModules();
+        addModules();
+        changeModules();
     }
 
 
@@ -118,7 +101,6 @@ public class WebDAVConnection extends HTTPConnection
         long fileSize = file.length();
 
         HttpOutputStream out = new HttpOutputStream( fileSize );
-        //HTTPResponse response = Put( filename, out, headers );
         HTTPResponse response = ExtensionMethod( "PUT", filename, out, headers );
 
         FileInputStream file_in = new FileInputStream( file );
@@ -215,5 +197,43 @@ public class WebDAVConnection extends HTTPConnection
         throws IOException, ModuleException
     {
         return ExtensionMethod(Method, file, body, headers);
+    }
+    
+    protected void removeModules()
+    {
+        try
+        {
+            removeModule( Class.forName("HTTPClient.RedirectionModule") );
+        }
+        catch (ClassNotFoundException cnfe)
+        {
+            // just ignore it
+        }
+    }
+    
+    
+    protected void addModules()
+    {
+    }
+    
+    
+    protected void changeModules()
+    {
+        try
+        {
+            if( !GlobalData.getGlobalData().getCompression() )
+            {
+                // remove the original transfer and content encoding modules
+                // and replace them with the ones that don't allow compressed data
+                removeModule( Class.forName("HTTPClient.TransferEncodingModule") );
+                removeModule( Class.forName("HTTPClient.ContentEncodingModule") );
+                addModule( Class.forName("edu.uci.ics.DAVExplorer.TransferEncodingModule"), -1 );
+                addModule( Class.forName("edu.uci.ics.DAVExplorer.ContentEncodingModule"), -1 );
+            }
+        }
+        catch (ClassNotFoundException cnfe)
+        {
+            // just ignore it
+        }
     }
 }

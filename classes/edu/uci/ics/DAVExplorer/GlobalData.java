@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 1999-2003 Regents of the University of California.
+ * Copyright (c) 1999-2004 Regents of the University of California.
  * All rights reserved.
  *
  * This software was developed at the University of California, Irvine.
@@ -21,7 +21,7 @@
  * Title:       GlobalData
  * Description: This singleton class defines various global data structures
  *              and functions useful everywhere
- * Copyright:   Copyright (c) 1999-2003 Regents of the University of California. All rights reserved.
+ * Copyright:   Copyright (c) 1999-2004 Regents of the University of California. All rights reserved.
  * @author      Joachim Feise (dav-exp@ics.uci.edu)
  * @date        1999
  * @author      Joachim Feise (dav-exp@ics.uci.edu)
@@ -47,8 +47,11 @@
  * Changes:     added support for default config entries.
  * @author      Joachim Feise (dav-exp@ics.uci.edu)
  * @date        3 November 2003
- * Changes:     Added support for proxy server in applet settings (it always worked through
- *              the "Edit Proxy Info" menu entry.)
+ * Changes:     Added support for proxy server in applet settings (it always
+ *              worked through the "Edit Proxy Info" menu entry.)
+ * @author      Joachim Feise (dav-exp@ics.uci.edu)
+ * @date        06 February 2004
+ * Changes:     Added support disabling compression encoding
  */
 
 package edu.uci.ics.DAVExplorer;
@@ -85,6 +88,9 @@ class GlobalData
     /** SSL variable */
     boolean ssl = false;
 
+    /** Allow compression for transfer */
+    boolean compression = true;
+    
     JFrame mainFrame = null;
     Cursor origCursor = null;
     private static final String fileName = "DAVExplorer.dat";
@@ -403,6 +409,18 @@ class GlobalData
     }
 
 
+    public void setCompressions( boolean compression )
+    {
+        this.compression = compression;
+    }
+    
+    
+    public boolean getCompression()
+    {
+        return compression;
+    }
+    
+    
     public String ReadConfigEntry( String token, String defaultString )
     {
         Vector info = ReadConfigEntry( token, false );
@@ -582,6 +600,9 @@ class GlobalData
                 if( doSSL.equalsIgnoreCase( "yes" ) || doSSL.equalsIgnoreCase( "true" ) )
                     ssl = true;
             }
+            String noCompression = System.getProperty( "compress", "yes" );
+            if( noCompression.equalsIgnoreCase( "no" ) || noCompression.equalsIgnoreCase( "false" ) )
+                compression = false;
         }
 
         debugRequest |= debugAll;

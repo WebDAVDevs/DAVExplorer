@@ -37,6 +37,7 @@ DAV Explorer also works as applet. Usage:
         <PARAM NAME=uri VALUE="http://dav.somewhere.com/webdav/">
         <PARAM NAME=username VALUE="username">
         <PARAM NAME=password VALUE="password">
+        <PARAM NAME=proxy VALUE="proxy.com">
 </APPLET>
 Alternative Usage:
 <EMBED TYPE     = "application/x-java-applet"
@@ -46,13 +47,16 @@ Alternative Usage:
 	   archive  = "DAVExplorer.jar"
 	   uri      = "http://dav.somewhere.com/webdav/"
 	   username = "username"
-	   password = "password">
+	   password = "password"
+       proxy    = "proxy.com">
 </EMBED>
 The username and password parameters are optional for security reasons.
 In fact, we consider it BAD PRACTICE to provide them in clear text on a
 webpage, unless the webpage is accessible only through secure means, e.g.,
 using SSL.
 If they are not specified on the webpage, they are requested interactively.
+The proxy parameter is optional and allows the automatic use of a proxy
+server if specified.
 The applet code also supports the use of SSL. It has been tested with JRE 1.4.
 Since DAV Explorer accesses restricted properties, the jar file is signed by
 the DAV Explorer Team to allow the use as applet.
@@ -125,6 +129,14 @@ Thanks to everybody.
 
 
 6. CHANGELOG
+
+Changes for version 0.91-dev:
+- Added support for proxy entry in applet settings (thanks to Luís Ferreira
+  for the suggestion.)
+- Fixed usage of webpage-provided username/password for applet usage.
+- Added workaround for Documentum Modified-Date bug (their date strings
+  are localized, which violates RFC2616) (thanks to Holger Spalt for
+  alerting us to the problem.)
 
 Changes for version 0.90:
 - Bug fix in HTTPClient for PUT with Stream and Digest authentication.

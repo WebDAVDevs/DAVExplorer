@@ -50,6 +50,9 @@
  * @date        17 March 2003
  * Changes:     Integrated Brian Johnson's applet changes.
  *              Added better error reporting.
+ * @author      Joachim Feise (dav-exp@ics.uci.edu)
+ * @date        17 November 2003
+ * Changes:     Explicitly resetting the cursor.
  */
 
 package edu.uci.ics.DAVExplorer;
@@ -62,6 +65,7 @@ import javax.swing.JPasswordField;
 import javax.swing.JButton;
 import java.util.Vector;
 import java.awt.Color;
+import java.awt.Cursor;
 import java.awt.Rectangle;
 import java.awt.GridBagLayout;
 import java.awt.GridBagConstraints;
@@ -138,6 +142,7 @@ Public methods and attributes section
         center();
         setResizable( false );
         setVisible( true );
+        GlobalData.getGlobalData().getMainFrame().setCursor( Cursor.getDefaultCursor() );
     }
 
 

@@ -31,3 +31,4 @@ fixes and improvements:
 - Karen Schuchardt
 - Brian Johnson
 - Thoralf Rickert
+- John Barton
