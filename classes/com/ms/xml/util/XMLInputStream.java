@@ -100,10 +100,12 @@ public class XMLInputStream extends InputStream
         // Joachim Feise (dav-exp@ics.uci.edu), 25 March 1999:
         // assume that JDK1.2 and later also support JDK 1.1 features
         // Updated 26 February 2001: check for all JDKs > 1.1
+        // Updated 11 January 2002: check for JDK 1.2.x and higher
         if( jdk11==false )
         {
             float v = Float.valueOf( version.substring(0, 3) ).floatValue();
             jdk11 = (v >= 1.1) ? true : false;
+            jdk12 = (v >= 1.2) ? true : false;
         }
         littleendian   = false;
         caseInsensitive = false;
@@ -168,6 +170,9 @@ public class XMLInputStream extends InputStream
                 // or any other encoding that ensures that ASCII has normal positions
                 // Joachim Feise (dav-exp@ics.uci.edu), 1 November 2001:
                 // Not assuming ASCII anymore, instead going with the default of UTF-8
+                // Note: since the InputStreamReader in JDK 1.1.8 (maybe in other 1.1.x
+                // versions as well) has bugs, using UTF-8 encoding requires bypassing
+                // the InputStreamReader below.
                 //readState = ASCII_POP;
                 //encoding  = "ASCII";
                 setDefault = true;
@@ -328,8 +333,46 @@ public class XMLInputStream extends InputStream
         switch( readState )
         {
             case INPUTSR:
-                pos++;
-                return insr.read();
+                {
+                    pos++;
+                    // Joachim Feise (dav-exp@ics.uci.edu), 11 January 2002:
+                    // Since the StreamReaders in JDK 1.1.8 (maybe in other 1.1.x
+                    // versions as well) have bugs, using UTF-8 encoding requires
+                    // bypassing the StreamReaders when running JDK 1.1 and below.
+                    if( jdk12 )
+                      return insr.read();
+
+                    int b1, b2, b3;
+                    b1 = in.read();
+                    if( b1 == -1 )
+                        return -1;
+
+                    if( (b1 & 0x80) != 0 )
+                    {
+                        // decode UTF-8
+                        b2 = in.read();
+                        if( b2 == -1 )
+                            return -1;
+                        b2 &= 0x3f;
+                        if( (b1 & 0x40) != 0 )
+                        {
+                            b3 = in.read();
+                            if( b3 == -1 )
+                                return -1;
+                            b3 &= 0x3f;
+                            // three byte char
+                            b1 &= 0x0f;
+                            b1 = (b1<<12) | (b2<<6) | b3;
+                        }
+                        else
+                        {
+                            // two byte char
+                            b1 &= 0x1f;
+                            b1 = (b1<<6) | b2;
+                        }
+                    }
+                    return b1;
+                }
             case ASCII:
                 return in.read();
             case UCS2:
@@ -558,6 +601,8 @@ public class XMLInputStream extends InputStream
     private boolean byteOrderMark;   // byteOrderMark at the beginning of file (UCS-2)
     private int     readState;
     private boolean jdk11;
+    private boolean jdk12;           // Joachim Feise (dav-exp@ics.uci.edu): need to
+                                     // distinguish JDK 1.2.x and above
 
     /**
      * Instance varibales for Windows platforms

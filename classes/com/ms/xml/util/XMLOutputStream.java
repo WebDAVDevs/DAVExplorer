@@ -41,10 +41,12 @@ public class XMLOutputStream extends OutputStream
         // Joachim Feise (jfeise@ics.uci.edu), 25 March 1999:
         // assume that JDK1.2 and later also support JDK 1.1 features
         // Updated 26 February 2001: check for all JDKs > 1.1
+        // Updated 11 January 2002: check for JDK 1.2.x and higher
         if( jdk11==false )
         {
             float v = Float.valueOf( version.substring(0, 3) ).floatValue();
             jdk11 = (v >= 1.1) ? true : false;
+            jdk12 = (v >= 1.2) ? true : false;
         }
         outputStyle = DEFAULT;
         littleendian  = false;
@@ -180,8 +182,40 @@ public class XMLOutputStream extends OutputStream
         switch( writeState )
         {
             case OUTPUTSW:
-                outsw.write( c );
-                break;
+                {
+                    // Joachim Feise (dav-exp@ics.uci.edu), 11 January 2002:
+                    // Since the StreamReaders in JDK 1.1.8 (maybe in other 1.1.x
+                    // versions as well) have bugs, using UTF-8 encoding requires
+                    // bypassing the StreamReaders when running JDK 1.1 and below.
+                    if( jdk12 )
+                    {
+                        outsw.write( c );
+                        break;
+                    }
+
+                    int byte1, byte2, byte3;
+                    if( c > 0x7ff )
+                    {
+                        // three byte encoding
+                        byte1 = 0xe0 | ((c>>12) & 0x0f);
+                        byte2 = 0x80 | ((c>>6) & 0x3f);
+                        byte3 = 0x80 | (c & 0x3f);
+                        out.write(byte1);
+                        out.write(byte2);
+                        out.write(byte3);
+                    }
+                    else if( c > 0x7f )
+                    {
+                        // two byte encoding
+                        byte1 = 0xc0 | ((c>>6) & 0x1f);
+                        byte2 = 0x80 | (c & 0x3f);
+                        out.write(byte1);
+                        out.write(byte2);
+                    }
+                    else
+                        out.write(c);
+                    break;
+                }
             case UCS2:
                 {
                     int byte1, byte2;
@@ -380,6 +414,8 @@ public class XMLOutputStream extends OutputStream
      */
     int outputStyle;
     boolean jdk11;
+    private boolean jdk12;           // Joachim Feise (dav-exp@ics.uci.edu): need to
+                                     // distinguish JDK 1.2.x and above
     public boolean mixed;
 
     private int     indent;

@@ -82,6 +82,9 @@ DAV Explorer accepts the following command line options:
 
 5. CHANGELOG
 
+Changes for version 0.82-dev:
+- Made sure that DAV Explorer runs with JDK 1.1.x, for MacOS 9 compatibility
+
 Changes for version 0.81:
 - Fixed handling of default namespace in the view/modify property dialog
 - Fixed menu selection of view/modify properties dialog
