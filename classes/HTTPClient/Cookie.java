@@ -26,7 +26,7 @@
  *
  *  The HTTPClient's home page is located at:
  *
- *  http://www.innovation.ch/java/HTTPClient/ 
+ *  http://www.innovation.ch/java/HTTPClient/
  *
  */
 
@@ -35,7 +35,8 @@ package HTTPClient;
 import java.io.Serializable;
 import java.net.ProtocolException;
 import java.util.Date;
-
+import java.text.DateFormat;
+import java.text.ParseException;
 
 /**
  * This class represents an http cookie as specified in <a
@@ -177,7 +178,7 @@ public class Cookie implements Serializable
 					    set_cookie + "\nNo '=' found " +
 					    "for token starting at " +
 					    "position " + beg);
-	    curr.name = set_cookie.substring(beg, end).trim(); 
+	    curr.name = set_cookie.substring(beg, end).trim();
 
 	    beg = Util.skipSpace(buf, end+1);
 	    int comma = set_cookie.indexOf(',', beg);
@@ -317,8 +318,8 @@ public class Cookie implements Serializable
 	    try
 		// This is too strict...
 		// { cookie.expires = Util.parseHttpDate(value); }
-		{ cookie.expires = new Date(value); }
-	    catch (IllegalArgumentException iae)
+		{ cookie.expires = DateFormat.getInstance().parse(value); }
+	    catch (ParseException pe)
 	    {
 		/* More broken servers to deal with... Ignore expires
 		 * if it's invalid

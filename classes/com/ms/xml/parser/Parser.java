@@ -614,10 +614,7 @@ public class Parser
         }
         else
         {
-            if (jdk11)
-                return Character.isWhitespace(c);
-
-            return Character.isSpace(c);
+            return Character.isWhitespace(c);
         }
     }
 
@@ -2992,8 +2989,7 @@ public class Parser
         for (int i = 0; i < 256; i++) {
             char c = (char)i;
             chartype[i] = 0;
-            if ((jdk11 && Character.isWhitespace(c)) ||
-                (Character.isSpace(c) || c == 13))
+            if (Character.isWhitespace(c) || c == 13)
                 chartype[i] = FWHITESPACE;
             if (Character.isLetter(c))
                 chartype[i] |= FLETTER;

@@ -36,23 +36,23 @@ public class XMLDSO extends Applet
      */
     public XMLDSO()
     {
-        document = new Document(); 
+        document = new Document();
         inlineXML = false;
         loaded = false;
     }
 
     /**
      * The init method looks for a URL PARAM and loads this
-     * url if specified.  Otherwise it looks for inline XML 
+     * url if specified.  Otherwise it looks for inline XML
      * from inside the APPLET tag that created this XMLDSO
-     * object.  It does this using the ID parameter of the 
-     * APPLET tag to lookup the actual applet object in 
-     * the page, using JSObject, an then getting the altHtml 
+     * object.  It does this using the ID parameter of the
+     * APPLET tag to lookup the actual applet object in
+     * the page, using JSObject, an then getting the altHtml
      * member of this object.   Note: it is ok to not have
      * a URL or any inline XML.
      */
     public void init()
-    {   
+    {
         super.init();
         String arg = getParameter("URL");
         if (arg != null && arg.length() > 0) {
@@ -64,7 +64,7 @@ public class XMLDSO extends Applet
             // Or we can get the XML data inline from inside the
             // <APPLET> tag using the JavaScript object model.
 			arg = getParameter("ID");
-			if (arg != null && arg.length() > 0) 
+			if (arg != null && arg.length() > 0)
             {
 //                JSObject appl = null;
                 Object appl = null;
@@ -101,7 +101,7 @@ public class XMLDSO extends Applet
     /**
      * This method is called whenever the document is changed,
      * that is, from the load and setroot methods.  You can
-     * also call this method if you have manually changed the 
+     * also call this method if you have manually changed the
      * document or the SCHEMA <PARAM>.
      */
     public void updateSchema()
@@ -124,12 +124,12 @@ public class XMLDSO extends Applet
                 SchemaNode n = new SchemaNode(schema, schema, root.getTagName());
 				generateSchema(root, n);
 				// remember only first entry below root
-				ElementEnumeration iter = new ElementEnumeration(schema.getRoot(), 
-                    XMLRowsetProvider.nameROWSET,Element.ELEMENT);	
+				ElementEnumeration iter = new ElementEnumeration(schema.getRoot(),
+                    XMLRowsetProvider.nameROWSET,Element.ELEMENT);
 				schemaRoot = (Element)iter.nextElement();
 			}
         }
-        notifyListeners();        
+        notifyListeners();
     }
 
     public Document parseXML(String xml)
@@ -140,10 +140,10 @@ public class XMLDSO extends Applet
 
         try {
             document.load(new StringInputStream(xml));
-        } 
+        }
         catch (Exception e)
         {
-            setError("Caught exception parsing given XML.  " + 
+            setError("Caught exception parsing given XML.  " +
                 e.toString());
         }
         return document; // but return what we have anyway.
@@ -195,11 +195,11 @@ public class XMLDSO extends Applet
                 return true;
             else
                 return false;
-        } 
+        }
 
         String action = (String)node2.getAttribute("UPDATE-ACTION");
-        if (action != null && (action.equalsIgnoreCase("APPEND") || 
-                action.equalsIgnoreCase("INSERT"))) 
+        if (action != null && (action.equalsIgnoreCase("APPEND") ||
+                action.equalsIgnoreCase("INSERT")))
         {
             {
                 node2.removeAttribute("UPDATE-ACTION");
@@ -210,8 +210,8 @@ public class XMLDSO extends Applet
                     node1.addChild(node2,0,0);
                 }
                 notifyNewRow(node1, append);
-                return true;                
-            } 
+                return true;
+            }
         }
         int num = node2.numElements();
         if (num > 0 )
@@ -223,7 +223,7 @@ public class XMLDSO extends Applet
                 row++;
                 Element element = (Element)en.nextElement();
 
-                // make sure we match all the child patterns.                    
+                // make sure we match all the child patterns.
                 Vector actions = new Vector();
                 boolean match = false;
                 for (ElementEnumeration en2 = new ElementEnumeration(node2);
@@ -263,13 +263,13 @@ public class XMLDSO extends Applet
                         ElementEnumeration ee = new ElementEnumeration(element,
                                 actElement.getTagName(),Element.ELEMENT);
                         Element oldChild = (Element)ee.nextElement();
-                                
+
                         element.addChild(actElement,oldChild);
                         if (oldChild != null)
                             element.removeChild(oldChild);
                         element.setParent(node1);
-                        notifyCellChanged(row, element, actElement);                        
-                    } 
+                        notifyCellChanged(row, element, actElement);
+                    }
                 }
                 return true;
             }
@@ -280,8 +280,8 @@ public class XMLDSO extends Applet
     int getColumn(Element schema, Element element)
     {
         int col = 0;
-        String tagname = element.getTagName().toString();            
-        for (Enumeration en = schema.getElements(); en.hasMoreElements(); ) 
+        String tagname = element.getTagName().toString();
+        for (Enumeration en = schema.getElements(); en.hasMoreElements(); )
         {
             col++;
             Element e = (Element)en.nextElement();
@@ -290,7 +290,7 @@ public class XMLDSO extends Applet
                 return col;
         }
         setError(tagname + " not found in schema.");
-                    
+
         return 0;
     }
 
@@ -302,7 +302,7 @@ public class XMLDSO extends Applet
 //    public OLEDBSimpleProvider msDataSourceObject(String qualifier)
 //    {
 //        removeProvider(myProvider);
-//        if (document != null && document.getRoot() != null && schemaRoot != null) {          
+//        if (document != null && document.getRoot() != null && schemaRoot != null) {
 //            // This is a smarter provider that supports a hierarchy
 //            // of XMLRowsetProviders based on the given schema information.
 //            myProvider = new XMLRowsetProvider (document.getRoot(), schemaRoot, (ElementFactory)document, null);
@@ -352,7 +352,7 @@ public class XMLDSO extends Applet
     }
 
     /**
-     * Notify all DSO's that are bound to this row that the given cell has 
+     * Notify all DSO's that are bound to this row that the given cell has
      * been modified.
      */
     void notifyCellChanged(int row, Element rowElement, Element modifiedElement)
@@ -380,7 +380,7 @@ public class XMLDSO extends Applet
                 }
                 node = node.getParent();
             }
-        }                            
+        }
     }
 
     void notifyNewRow(Element node, boolean append)
@@ -435,7 +435,7 @@ public class XMLDSO extends Applet
         if (myDSL != null) {
             try {
 //                myDSL.dataMemberChanged("");
-            } 
+            }
             catch (Exception e)
             {
                 setError("Error notifying data members changed: " + e.toString());
@@ -490,7 +490,7 @@ public class XMLDSO extends Applet
             document.load(url.toString());
             loaded = true;
         } catch (Exception e) {
-            setError("Error loading XML document '" + arg + "'.  " + e.toString());            
+            setError("Error loading XML document '" + arg + "'.  " + e.toString());
         }
         if (loaded && schema != null) {
             updateSchema();
@@ -519,7 +519,7 @@ public class XMLDSO extends Applet
     public Object getXML(int style)
 	{
 		// return XML as long string
-        if (document != null) 
+        if (document != null)
         {
             ByteArrayOutputStream out = new ByteArrayOutputStream();
             try {
@@ -567,7 +567,7 @@ public class XMLDSO extends Applet
     public Object getSchema(int style)
 	{
 		// return Schema as long string
-        if (schema != null) 
+        if (schema != null)
         {
             ByteArrayOutputStream out = new ByteArrayOutputStream();
             try {
@@ -642,7 +642,7 @@ public class XMLDSO extends Applet
      */
     public void paint(Graphics g)
     {
-        Dimension d =  size();
+        Dimension d =  getSize();
         if (d.width > 0 && d.height > 0)
         {
             if (error == null) {
@@ -671,7 +671,7 @@ public class XMLDSO extends Applet
     /**
      * Draw a text string within the given bounds.
      */
-    private int drawText(Graphics g, String text, int x, int y, int max, 
+    private int drawText(Graphics g, String text, int x, int y, int max,
                         boolean skipWhiteSpace, int length)
     {
         if( text == null || text.length() == 0 )
@@ -686,11 +686,11 @@ public class XMLDSO extends Applet
             len = text.length();
         else
             len = length;
-        
+
         // skip leading white space.
         while (i < len && skipWhiteSpace && isWhiteSpace(text.charAt(i)))
             i++;
-        
+
         FontMetrics fm = g.getFontMetrics();
         int j = i;
         int k = i;
@@ -728,7 +728,7 @@ public class XMLDSO extends Applet
 
     private boolean isWhiteSpace(char ch)
     {
-        return Character.isSpace(ch) || ch == 13;
+        return Character.isWhitespace(ch) || ch == 13;
     }
 
     private XMLRowsetProvider  myProvider;
@@ -779,8 +779,8 @@ class SchemaNode
         if (e == null)
         {
             createElement(true);
-        } 
-        else if (e.getTagName() != XMLRowsetProvider.nameROWSET) 
+        }
+        else if (e.getTagName() != XMLRowsetProvider.nameROWSET)
         {
             // We have now discovered that node is supposed to
             // be a ROWSET not a COLUMN.
@@ -800,7 +800,7 @@ class SchemaNode
 
     void addRow(Name name, SchemaNode n)
     {
-        if (rows == null) 
+        if (rows == null)
             rows = new Hashtable(13);
         rows.put(name, n);
     }
@@ -814,9 +814,9 @@ class SchemaNode
 }
 
 //------------------------------------------------------------------
-//class XMLRowsetProvider  implements OLEDBSimpleProvider  
+//class XMLRowsetProvider  implements OLEDBSimpleProvider
 class XMLRowsetProvider
-{    
+{
     public XMLRowsetProvider (Element e, Element schema, ElementFactory f, XMLRowsetProvider parent)
     {
         root = e;
@@ -841,7 +841,7 @@ class XMLRowsetProvider
         rowindex = 0;
     }
 
-    public int getRowCount() 
+    public int getRowCount()
     {
         // Return number of children in root that match the
         // ROWSET name.
@@ -855,19 +855,19 @@ class XMLRowsetProvider
         return result;
     }
 
-    public int getEstimatedRows() 
+    public int getEstimatedRows()
     {
         return getRowCount();
     }
 
-    public int getColumnCount() 
+    public int getColumnCount()
     {
         // Simply return the number of elements in the schema.
         int columns = schema.getChildren().getLength();
         return columns;
     }
 
-    public int getRWStatus(int iRow,int iColumn) 
+    public int getRWStatus(int iRow,int iColumn)
     {
         return 1;
     }
@@ -909,7 +909,7 @@ class XMLRowsetProvider
                 removeChildProvider(row);
             }
         }
-        resetIterator();        
+        resetIterator();
 //        if (listener != null) listener.deletedRows(iRow,cRows);
         return result;
     }
@@ -918,21 +918,21 @@ class XMLRowsetProvider
     {
 //        try {
 //            if (listener != null) listener.aboutToInsertRows(iRow,cRows);
-//        } catch (com.ms.com.ComSuccessException e) 
+//        } catch (com.ms.com.ComSuccessException e)
 //        { }
 
         Name name = Name.create(schema.getAttribute("NAME").toString());
         for (int i = iRow; i < iRow+cRows; i++) {
             Element newRow = factory.createElement(null, Element.ELEMENT,name, null);
             Element previousRow = root.getChildren().getChild(i);
-            root.addChild(newRow,previousRow);            
+            root.addChild(newRow,previousRow);
         }
         resetIterator();
 //        if (listener != null) listener.insertedRows(iRow,cRows);
         return cRows;
     }
 
-    public Object getVariant(int iRow, int iColumn,int formatType )  
+    public Object getVariant(int iRow, int iColumn,int formatType )
     {
         Object retVal = null;
         if (iRow == 0)
@@ -985,7 +985,7 @@ class XMLRowsetProvider
     public Object getColumn(Element row, int col)
     {
         Element se = schema.getChildren().getChild(col);
-        Name name = Name.create((String)se.getAttribute(nameNAME));  
+        Name name = Name.create((String)se.getAttribute(nameNAME));
         if (se.getTagName() == nameCOLUMN) {
             Element child = findChild(row,name);
             if (child != null) {
@@ -1024,7 +1024,7 @@ class XMLRowsetProvider
 
     void addChildProvider(XMLRowsetProvider child)
     {
-        if (childProviders == null) 
+        if (childProviders == null)
             childProviders = new Vector();
         childProviders.addElement(child);
     }
@@ -1032,14 +1032,14 @@ class XMLRowsetProvider
     void removeChildProvider(Element row)
     {
         XMLRowsetProvider value = findChildProvider(row);
-        if (value != null) 
+        if (value != null)
         {
             childProviders.removeElement(value);
         }
     }
 
     /**
-     * Recurrsively search given row for first child or grand-child 
+     * Recurrsively search given row for first child or grand-child
      * node with matching tag name.
      */
     public Element findChild(Element row, Name tag)
@@ -1059,7 +1059,7 @@ class XMLRowsetProvider
         return null;
     }
 
-    public void setVariant(int iRow,int iColumn, int formatType, Object var) 
+    public void setVariant(int iRow,int iColumn, int formatType, Object var)
     {
         getRow(iRow); // update current row.
         if (row == null)
@@ -1067,7 +1067,7 @@ class XMLRowsetProvider
         Element se = schema.getChildren().getChild(iColumn-1);
         if (se.getTagName() == nameCOLUMN) {
             String attr = (String)se.getAttribute(nameNAME);
-            if (attr != null) 
+            if (attr != null)
             {
                 Name name = Name.create(attr);
                 Element child = findChild(row,name);
@@ -1076,7 +1076,7 @@ class XMLRowsetProvider
                     row.addChild(child,null); // order doesn't actually matter.
                 }
                 if (child != null) {
-                    if (child.numElements() == 0) 
+                    if (child.numElements() == 0)
                     {
                         child.addChild(factory.createElement(null, Element.PCDATA,null, null),null);
                     }
@@ -1115,7 +1115,7 @@ class XMLRowsetProvider
     public void stopTransfer()
     {
     }
-    
+
     Element root;
     Element schema;
     Element row;
@@ -1126,7 +1126,7 @@ class XMLRowsetProvider
 //    OLEDBSimpleProviderListener listener;
     Object listener=null;
     ElementFactory factory;
-    Vector  childProviders; 
+    Vector  childProviders;
 
     static Name nameCOLUMN = Name.create("COLUMN");
     static Name nameROWSET = Name.create("ROWSET");
