@@ -121,7 +121,8 @@ public class WebDAVConnection extends HTTPConnection
         HTTPResponse response = Put( filename, out, headers );
 
         FileInputStream file_in = new FileInputStream( file );
-        byte[] b = new byte[1048576];
+        byte[] b = new byte[65536];     // in my MacOS9 tests, this value seemed to work best
+                                        // The 1MB value I had here before resulted in timeouts
         long off = 0;
         int rcvd = 0;
         do
