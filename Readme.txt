@@ -79,6 +79,10 @@ DAV Explorer accepts the following command line options:
   a 500 error in response to a PROPPATCH if the Host: header contains a
   port number.
 
+-Dlocal=no
+  This option prevents showing the local directory structure in the
+  main DAV Explorer window.
+
 
 5. CHANGELOG
 
@@ -86,6 +90,8 @@ Changes for version 0.82-dev:
 - Made sure that DAV Explorer runs with JDK 1.1.x, for MacOS 9 compatibility
 - Updated to run with JDK 1.4 on Windows
 - Incorporated Karen Schuchardt's changes to improve the loading of images
+- Added the -Dlocal option to disable reading and showing the local
+  directory structure.
 
 Changes for version 0.81:
 - Fixed handling of default namespace in the view/modify property dialog
