@@ -31,8 +31,7 @@ JFLAGS   =
 
 ### all source files
 
-classes = AppletAuthorizationPrompter.class \
-	  AppletMain.class \
+classes = AppletMain.class \
 	  AsGen.class \
 	  AuthDialog.class \
 	  CopyResponseEvent.class \
