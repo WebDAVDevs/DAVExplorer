@@ -8,6 +8,9 @@ Changes for version 0.73-dev:
 - Interoperability problem fixed for cases when properties for a collection
   and its contents are requested and the server doesn't send properties for the
   collection itself.
+- Modified the authentication code to make use of the HTTPClient functionality
+  for Digest authentication.
+- Copy and Move now allow entering the target, making them more flexible.
 
 Changes for version 0.72:
 - Support for operation through proxy servers
