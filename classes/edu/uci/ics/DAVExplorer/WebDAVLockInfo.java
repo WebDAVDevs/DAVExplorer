@@ -64,7 +64,7 @@ Public methods and attributes section
     static final String WebDAVClassName = "DAVExplorer";
     static final String fileName = "lockinfo.dat";
     String lockInfo;
-    String classPath;
+    String userPath;
     String filePath;
 
     //Construction
@@ -72,30 +72,32 @@ Public methods and attributes section
     {
         super(parent, strCaption, isModal);
 
-        classPath = getClassPath();
-        if (classPath == null)
-            return;
-        File theFile = new File(classPath + fileName);
-    if (theFile.exists())
-            filePath = classPath + fileName;
+        userPath = System.getProperty( "user.home" );
+        if (userPath == null)
+            userPath = "";
+        else
+            userPath += File.separatorChar;
+        File theFile = new File(userPath + fileName);
+        if (theFile.exists())
+            filePath = userPath + fileName;
         if (filePath != null)
         {
             try
             {
                 FileInputStream fin = new FileInputStream(filePath);
-            BufferedReader in = new BufferedReader(new InputStreamReader(fin));
-            lockInfo = in.readLine();
-            in.close();
-        }
+                BufferedReader in = new BufferedReader(new InputStreamReader(fin));
+                lockInfo = in.readLine();
+                in.close();
+            }
             catch (Exception fileEx)
             {
             }
         }
 
-    JPanel groupPanel = new JPanel(new GridLayout(4,1));
+        JPanel groupPanel = new JPanel(new GridLayout(4,1));
         groupPanel.add(new JLabel("Lock Info:"));
         groupPanel.add(txtUsername = new JTextField(80));
-    if (lockInfo != null)
+        if (lockInfo != null)
            txtUsername.setText(lockInfo);
         else
            txtUsername.setText("http://");
@@ -104,28 +106,6 @@ Public methods and attributes section
         getContentPane().add(groupPanel, BorderLayout.CENTER);
         pack();
         show();
-    }
-
-    //Handling the events that happen in the dialog
-    private static String getClassPath()
-    {
-        String classPath = System.getProperty("java.class.path");
-        if (classPath == null)
-            return null;
-
-        StringTokenizer paths = new StringTokenizer(classPath,":;");
-
-        while (paths.hasMoreTokens())
-        {
-            String nextPath = paths.nextToken();
-            if (!nextPath.endsWith(new Character(File.separatorChar).toString()))
-                nextPath += File.separatorChar;
-            nextPath += WebDAVClassName + File.separatorChar;
-            File theFile = new File(nextPath + "icons");
-            if (theFile.exists())
-                return nextPath;
-        }
-        return null;
     }
 
     public synchronized void addListener(ActionListener l)
@@ -148,7 +128,7 @@ Public methods and attributes section
                 return;
             try
             {
-            FileOutputStream fout = new FileOutputStream(classPath + fileName);
+            FileOutputStream fout = new FileOutputStream(userPath + fileName);
             BufferedWriter out = new BufferedWriter(new OutputStreamWriter(fout));
                 out.write(user,0,user.length());
                 out.newLine();

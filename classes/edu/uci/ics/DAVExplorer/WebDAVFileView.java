@@ -19,6 +19,7 @@
 
 //
 //  This class is part of the client's GUI.
+//  It relies on JFC 1.1
 //
 //  Version: 0.3
 //  Author:  Robert Emmery
@@ -104,17 +105,13 @@ public class WebDAVFileView implements ViewSelectionListener
             System.exit(0);
         }
 
-        String folderIconPath = null;
-        String resPath = null;
-        String lckPath = null;
-        String unlckPath = null;
+        String folderIconPath =  iconPath + File.separatorChar + "TreeClosed.gif";
+        String resPath = iconPath + File.separatorChar + "resource.gif";
+        String lckPath = iconPath + File.separatorChar + "lck.gif";
+        String unlckPath = iconPath + File.separatorChar + "unlck.gif";
 
         if( jarPath == null )
         {
-            folderIconPath =  iconPath + File.separatorChar + "TreeClosed.gif";
-            resPath = iconPath + File.separatorChar + "resource.gif";
-            lckPath = iconPath + File.separatorChar + "lck.gif";
-            unlckPath = iconPath + File.separatorChar + "unlck.gif";
             FOLDER_ICON = new ImageIcon(folderIconPath);
             FILE_ICON = new ImageIcon(resPath);
             LOCK_ICON = new ImageIcon(lckPath);
@@ -133,41 +130,41 @@ public class WebDAVFileView implements ViewSelectionListener
                 InputStream is = file.getInputStream( entry );
                 int len = (int)entry.getSize();
                 if( len != -1 )
-		{
+        {
                     byte[] ba = new byte[len];
                     is.read( ba, 0, len );
                     FOLDER_ICON = new ImageIcon( ba );
-		}
+        }
 
                 entry = file.getEntry( resPath );
                 is = file.getInputStream( entry );
                 len = (int)entry.getSize();
                 if( len != -1 )
-		{
+        {
                     byte[] ba = new byte[len];
                     is.read( ba, 0, len );
                     FILE_ICON = new ImageIcon( ba );
-		}
+        }
 
                 entry = file.getEntry( lckPath );
                 is = file.getInputStream( entry );
                 len = (int)entry.getSize();
                 if( len != -1 )
-		{
+        {
                     byte[] ba = new byte[len];
                     is.read( ba, 0, len );
                     LOCK_ICON = new ImageIcon( ba );
-		}
+        }
 
                 entry = file.getEntry( unlckPath );
                 is = file.getInputStream( entry );
                 len = (int)entry.getSize();
                 if( len != -1 )
-		{
+        {
                     byte[] ba = new byte[len];
                     is.read( ba, 0, len );
                     UNLOCK_ICON = new ImageIcon( ba );
-		}
+        }
             }
             catch( IOException e )
             {
@@ -220,13 +217,22 @@ public class WebDAVFileView implements ViewSelectionListener
                     String val = null;
                     try
                     {
-                        val = (String) table.getValueAt(row,2);
+                        val = (String) table.getValueAt(row-1,2);
                     }
                     catch (Exception e)
                     {
                     }
                     if ( val != null)
                     {
+                    Object obj[] = parentNode.getUserObjectPath();
+                        if (parentPath == null || parentPath.equals("") ){
+                        for (int i = 0; i < obj.length; i++){
+                        if (i > 0){
+                            parentPath = parentPath + obj[i];
+                         }
+                        }
+                        }
+
                         if (!parentPath.startsWith(WebDAVPrefix))
                             return;
 
@@ -380,34 +386,45 @@ public class WebDAVFileView implements ViewSelectionListener
         }
     }
 
-    public WebDAVTreeNode getParentNode()
-    {
-        return parentNode;
+   public WebDAVTreeNode getParentNode(){
+    return parentNode;
+   }
+
+   protected String getParentPathString(){
+    String s = "";
+    TreePath tp = new TreePath(parentNode.getPath());
+
+    if (tp.getPathCount() > 1) {
+        for ( int i = 1; i < tp.getPathCount(); i++ ) {
+            s = s + tp.getPathComponent(i) + "/";
+        }
+
+    }
+    return s;
+
+   }
+
+
+   /* Yuzo Added: purpose, to get Selected Resource which is the
+      old full name of a renamed item. */
+
+    public String getOldSelectedResource(){
+    return getParentPathString() + selectedResource;
     }
 
-    public String getSelected()
-    {
-        String s = new String();
+
+    public String getSelected(){
+        String s = "";
 
         if ( selectedRow >= 0 )
         {
             TreePath tp = new TreePath(parentNode.getPath());
 
-            if (tp.getPathCount() > 1)
-            {
-                for ( int i = 1; i < tp.getPathCount(); i++ )
-                {
-                    s = s + tp.getPathComponent(i) + "/";
-                }
-            }
-
-            s = s + (String)table.getValueAt( selectedRow , 2);
-            return s;
-        }
-        else
-        {
-            return null;
-        }
+        s =  getParentPathString() + (String)table.getValueAt( selectedRow , 2);
+        return s;
+    } else{
+        return null;
+    }
     }
 
     public void resetName()
@@ -459,7 +476,7 @@ public class WebDAVFileView implements ViewSelectionListener
         String classPath = System.getProperty("java.class.path");
         if (classPath == null)
         {
-            errorMsg("No Classpath set." );
+            errorMsg("Toolbar:\nNo Classpath set." );
             return null;
         }
 
@@ -500,7 +517,7 @@ public class WebDAVFileView implements ViewSelectionListener
                 }
             }
         }
-        errorMsg("Path to icons not found." );
+        errorMsg("Toolbar:\nPath to icons not found." );
         return null;
     }
 
@@ -759,7 +776,6 @@ public class WebDAVFileView implements ViewSelectionListener
 
         if ( (col == 1) && (row != -1) )
         {
-            System.out.println("handleDoubleClick: col = 1, row = " + row);
             Boolean locked = null;
             try
             {
@@ -772,11 +788,9 @@ public class WebDAVFileView implements ViewSelectionListener
             }
             if ( (locked != null) && (locked.booleanValue()) )
             {
-                System.out.println("calling displayLock");
                 displayLock();
                 return;
             }
-            System.out.println("handleDoubleClick: End ");
         }
 
         Vector ls;
@@ -811,7 +825,7 @@ public class WebDAVFileView implements ViewSelectionListener
                 l.selectionChanged(selEvent);
             }
 
-            selectionChanged( selEvent );
+        selectionChanged( selEvent );
         }
     }
 

@@ -81,7 +81,7 @@ public class WebDAVTreeNode extends DefaultMutableTreeNode
     {
         return dataNode;
     }
-    
+
     public void setDataNode(DataNode newNode)
     {
         dataNode = newNode;
@@ -96,15 +96,15 @@ public class WebDAVTreeNode extends DefaultMutableTreeNode
 // Yuzo
     public boolean hasLoadedChildren()
     {
-    	return childrenLoaded;
+        return childrenLoaded;
     }
 
     public void setHasLoadedChildren( boolean b)
     {
-	    childrenLoaded = b;
+        childrenLoaded = b;
     }
 
-// Yuzo Note They did this function wrong 
+// Yuzo Note They did this function wrong
     public void removeChildren()
     {
         int count = super.getChildCount();
@@ -122,7 +122,7 @@ public class WebDAVTreeNode extends DefaultMutableTreeNode
     protected void loadRemote(byte[] byte_xml)
     {
         Vector nodesChildren = new Vector();
-        Document xml_doc = null; 
+        Document xml_doc = null;
         Element multiElem = null;
         Element respElem = null;
         boolean found = false;
@@ -218,8 +218,9 @@ public class WebDAVTreeNode extends DefaultMutableTreeNode
                             // update node values as necessary
                             if( curnode.getDisplay()!="" )
                                 node.setDisplay( curnode.getDisplay() );    // overwrite any old value
-                            if( curnode.isLocked() && !node.isLocked() )
+                            if( curnode.isLocked() && !node.isLocked() ){
                                 node.lock( curnode.getLockToken() );        // never change back to unlocked here
+                }
                             if( curnode.isCollection() )
                                 node.makeCollection();                      // never change back to normal node
                             if( curnode.getType()!="" )
@@ -239,7 +240,7 @@ public class WebDAVTreeNode extends DefaultMutableTreeNode
         {
             String ResourceNameStrp = "";
             if (ResourceName.endsWith("/"))
-                ResourceNameStrp = ResourceName.substring(0,ResourceName.length() - 1);            
+                ResourceNameStrp = ResourceName.substring(0,ResourceName.length() - 1);
             if ( (fullName.equals(ResourceName)) || (fullName.equals(ResourceNameStrp)) )
             {
                 // this is the container
@@ -253,7 +254,7 @@ public class WebDAVTreeNode extends DefaultMutableTreeNode
                                          node.getDate(), null );
             }
             else
-            {        
+            {
                 if( node.isCollection() )
                 {
                     WebDAVTreeNode childNode = new WebDAVTreeNode(resName);
@@ -378,7 +379,7 @@ public class WebDAVTreeNode extends DefaultMutableTreeNode
                     else
                     {
                         nodesChildren.addElement(newNode);
-                    } 
+                    }
                 }
             }
             catch( Exception e)
@@ -398,13 +399,13 @@ public class WebDAVTreeNode extends DefaultMutableTreeNode
     }
 
 
-    // This finishes the Load Children when a call is made to a 
+    // This finishes the Load Children when a call is made to a
     // DAV server
     public void finishLoadChildren()
     {
         byte[] byte_xml = interpreter.getXML();
         loadRemote(byte_xml);
-    	interpreter.ResetRefresh();
+        interpreter.ResetRefresh();
     }
 
     public void loadChildren()
@@ -412,7 +413,7 @@ public class WebDAVTreeNode extends DefaultMutableTreeNode
         Object[] full_path = getPath();
         if( full_path == null || full_path.length <= 1 )
             return;
-        
+
         String name = full_path[1].toString();
         if (name.startsWith(WebDAVPrefix))
         {
@@ -427,7 +428,7 @@ public class WebDAVTreeNode extends DefaultMutableTreeNode
                 String pathToResource = name;
                 for (int i=2; i < full_path.length; i++)
                 {
-                    pathToResource = pathToResource + "/" + full_path[i].toString(); 
+                    pathToResource = pathToResource + "/" + full_path[i].toString();
                 }
                 pathToResource = pathToResource + "/";
 
@@ -441,7 +442,7 @@ public class WebDAVTreeNode extends DefaultMutableTreeNode
             {
                 // This is that case of the Select/Expand being called to a new DAV Server.
                 // The buffer should have data in it via the response.
-                // This should change in the future, as processing here is 
+                // This should change in the future, as processing here is
                 // unsafe -- the thread that gets the buffer may not be finished yet.
 
                 interpreter.clearStream();  // Added to finish after lock/unlock
@@ -454,7 +455,7 @@ public class WebDAVTreeNode extends DefaultMutableTreeNode
                 String pathToResource = name;
                 for (int i=2; i < full_path.length; i++)
                 {
-                    pathToResource = pathToResource + "/" + full_path[i].toString(); 
+                    pathToResource = pathToResource + "/" + full_path[i].toString();
                 }
                 pathToResource = pathToResource + "/";
 
@@ -462,7 +463,7 @@ public class WebDAVTreeNode extends DefaultMutableTreeNode
                 //generator.execute();
                 generator.run();
             }
-        }    
+        }
         else
         {
             loadLocal(name,full_path);
@@ -475,7 +476,8 @@ public class WebDAVTreeNode extends DefaultMutableTreeNode
         if (pos >= 0)
             res = res.substring(HTTPPrefix.length());
         pos = res.indexOf("/");
-        res = res.substring(pos);
+        if( pos >= 0 )
+            res = res.substring(pos);
 
         if (res.endsWith("/"))
             res = res.substring(0, res.length() - 1);
@@ -488,13 +490,14 @@ public class WebDAVTreeNode extends DefaultMutableTreeNode
             res = "/";
         return res;
     }
-  
+
     public String getFullResource(String res) {
         int pos = res.indexOf(HTTPPrefix);
         if (pos >= 0)
             res = res.substring(HTTPPrefix.length());
         pos = res.indexOf("/");
-        res = res.substring(pos);
+        if( pos >= 0 )
+            res = res.substring(pos);
         if (res.endsWith("/"))
             res = res.substring(0,res.length() - 1);
         if (res.length() == 0)
@@ -522,13 +525,13 @@ public class WebDAVTreeNode extends DefaultMutableTreeNode
         return null;
     }
 
-    
+
     private Element skipElements( Document xml_doc, String[] token )
     {
         Element rootElem = (Element)xml_doc.getRoot();
         return skipElements( rootElem, token );
     }
-    
+
     private Element skipElements( Element rootElem, String[] token )
     {
         int index = 0;
@@ -603,7 +606,7 @@ public class WebDAVTreeNode extends DefaultMutableTreeNode
                 }
             }
         }
-        return "";
+        return null;
     }
 
     private boolean getResourceType( Element resourcetype )
