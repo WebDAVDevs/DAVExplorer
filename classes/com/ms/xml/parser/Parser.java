@@ -107,6 +107,10 @@ public class Parser
     {
         String version = System.getProperty("java.version");
         jdk11 = version.equals("1.1") ? true : false;
+        // Joachim Feise (jfeise@ics.uci.edu), 25 March 1999:
+        // assume that JDK1.2 also supports JDK 1.1 features
+        if( jdk11==false )
+            jdk11 = version.equals("1.2") ? true : false;
         caseInsensitive = false;
     }
         
@@ -2121,9 +2125,16 @@ public class Parser
                             // needed after scanName, for example if an error occurs, and
                             // in the call to the factory->parsed method.
                             Context c = current;
-                            current = (Context)contexts.elementAt(contextAt-1);                            scanName("element close tag");
+                            current = (Context)contexts.elementAt(contextAt-1);
+                            scanName("element close tag");
                             current = c;
-                            if (name != current.tagName)
+                            // Joachim Feise (jfeise@ics.uci.edu), 25 March 1999:
+                            // changed from name != ...
+                            // to !name.equals( ... )
+                            // in order to allow proper parsing under JDK 1.2
+                            // Not sure if this is the right thing to do, though...
+                            //if (name != current.tagName)
+                            if (!name.equals(current.tagName) )
                             {
                                 error("Close tag " + name + " does not match start tag " + current.e.getTagName());
                             }

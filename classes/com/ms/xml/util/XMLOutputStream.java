@@ -38,6 +38,10 @@ public class XMLOutputStream extends OutputStream
     {
         String version = System.getProperty("java.version");
         jdk11 = version.equals("1.1") ? true : false;
+        // Joachim Feise (jfeise@ics.uci.edu), 25 March 1999:
+        // assume that JDK1.2 also supports JDK 1.1 features
+        if( jdk11==false )
+            jdk11 = version.equals("1.2") ? true : false;
         outputStyle = DEFAULT;
         littleendian  = false;
         savingDTD = false;

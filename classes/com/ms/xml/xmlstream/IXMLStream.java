@@ -8,16 +8,20 @@
 // version 1.02.3920 or later. Previous versions will not issue an error
 // but will not generate COM-enabled class files.
 //
+// Joachim Feise (jfeise@ics.uci.edu), 25 March 1999:
+// Commented out all COM-related stuff to be able to compile the code
+// with JDK 1.2
 
 package com.ms.xml.xmlstream;
 
-import com.ms.com.*;
-import com.ms.com.IUnknown;
-import com.ms.com.Variant;
+//import com.ms.com.*;
+//import com.ms.com.IUnknown;
+//import com.ms.com.Variant;
 
 // Dual interface IXMLStream
 /** @com.interface(iid=C8AB904D-4132-11D1-A2CC-00C04FD73533, thread=AUTO, type=DUAL) */
-public interface IXMLStream extends IUnknown
+//public interface IXMLStream extends IUnknown
+public interface IXMLStream
 {
   /** @com.method(vtoffset=4, dispid=1, type=METHOD, name="Open")
       @com.parameters([in,type=STRING] url, [type=I4] return) */
@@ -35,5 +39,5 @@ public interface IXMLStream extends IUnknown
       @com.parameters() */
   public void Close();
 
-  public static final com.ms.com._Guid iid = new com.ms.com._Guid((int)0xc8ab904d, (short)0x4132, (short)0x11d1, (byte)0xa2, (byte)0xcc, (byte)0x0, (byte)0xc0, (byte)0x4f, (byte)0xd7, (byte)0x35, (byte)0x33);
+//  public static final com.ms.com._Guid iid = new com.ms.com._Guid((int)0xc8ab904d, (short)0x4132, (short)0x11d1, (byte)0xa2, (byte)0xcc, (byte)0x0, (byte)0xc0, (byte)0x4f, (byte)0xd7, (byte)0x35, (byte)0x33);
 }

@@ -6,8 +6,8 @@ import java.awt.*;
 import java.net.*;
 import java.io.*;
 
-import netscape.javascript.JSObject;
-import com.ms.osp.*;
+//import netscape.javascript.JSObject;
+//import com.ms.osp.*;
 import com.ms.xml.parser.*;
 import com.ms.xml.om.*;
 import com.ms.xml.util.Name;
@@ -23,6 +23,11 @@ import com.ms.xml.util.StringInputStream;
  * @version 1.0, 8/14/97
  * @see Document
  * @see Element
+ *
+ * Joachim Feise (jfeise@ics.uci.edu), 25 March 1999:
+ * Commented out all COM- and JavaScript-related stuff to be able to compile the code
+ * with JDK 1.2
+ * Also fixed parameter count mismatch in calls to ElementFactory.createElement()
  */
 public class XMLDSO extends Applet
 {
@@ -61,21 +66,22 @@ public class XMLDSO extends Applet
 			arg = getParameter("ID");
 			if (arg != null && arg.length() > 0) 
             {
-                JSObject appl = null;
-                try {
-    			    appl = (JSObject)((JSObject)JSObject.getWindow(this).getMember("document")).getMember(arg);
-                } catch (Exception e) {
-                    setError("Error finding <APPLET> with ID=" + arg + ": " + e.toString());
-                    return;
-                }
+//                JSObject appl = null;
+                Object appl = null;
+//                try {
+//    			    appl = (JSObject)((JSObject)JSObject.getWindow(this).getMember("document")).getMember(arg);
+//                } catch (Exception e) {
+//                    setError("Error finding <APPLET> with ID=" + arg + ": " + e.toString());
+//                    return;
+//                }
 				if (appl != null)
 				{
-					String data = (String)appl.getMember("altHtml");
-					if (data != null && data.length() > 0)
-					{
-                        document = parseXML(data);
-                        inlineXML = true;
-					}
+//					String data = (String)appl.getMember("altHtml");
+//					if (data != null && data.length() > 0)
+//					{
+//                        document = parseXML(data);
+//                        inlineXML = true;
+//					}
 				}
 				else
 				{
@@ -293,44 +299,44 @@ public class XMLDSO extends Applet
      * The qualifier parameter is ignored at this point, but is available
      * to allow the applet to serve up more than one data set
      */
-    public OLEDBSimpleProvider msDataSourceObject(String qualifier)
-    {
-        removeProvider(myProvider);
-        if (document != null && document.getRoot() != null && schemaRoot != null) {          
-            // This is a smarter provider that supports a hierarchy
-            // of XMLRowsetProviders based on the given schema information.
-            myProvider = new XMLRowsetProvider (document.getRoot(), schemaRoot, (ElementFactory)document, null);
-        } else {
-            myProvider = null;
-        }
-        addProvider(myProvider);
-        return myProvider;
-    }
+//    public OLEDBSimpleProvider msDataSourceObject(String qualifier)
+//    {
+//        removeProvider(myProvider);
+//        if (document != null && document.getRoot() != null && schemaRoot != null) {          
+//            // This is a smarter provider that supports a hierarchy
+//            // of XMLRowsetProviders based on the given schema information.
+//            myProvider = new XMLRowsetProvider (document.getRoot(), schemaRoot, (ElementFactory)document, null);
+//        } else {
+//            myProvider = null;
+//        }
+//        addProvider(myProvider);
+//        return myProvider;
+//    }
 
     /**
      * This is a standard method for DSO's.
      */
-    public void addDataSourceListener(DataSourceListener  listener)
-        throws java.util.TooManyListenersException
-    {
-        if (myDSL != null) {
-            com.ms.com.ComLib.release(myDSL);
-        }
-        myDSL = listener;
-    }
+//    public void addDataSourceListener(DataSourceListener  listener)
+//        throws java.util.TooManyListenersException
+//    {
+//        if (myDSL != null) {
+//            com.ms.com.ComLib.release(myDSL);
+//        }
+//        myDSL = listener;
+//    }
 
     /**
      * This is a standard method for DSO's.
      */
-    public void removeDataSourceListener( DataSourceListener   listener)
-    {
-        // BUGBUG: Shouldn't have to call release here. This is a
-        //         bug in the VM implementation.
-        if (myDSL != null) {
-            com.ms.com.ComLib.release(myDSL);
-        }
-        myDSL = null;
-    }
+//    public void removeDataSourceListener( DataSourceListener   listener)
+//    {
+//        // BUGBUG: Shouldn't have to call release here. This is a
+//        //         bug in the VM implementation.
+//        if (myDSL != null) {
+//            com.ms.com.ComLib.release(myDSL);
+//        }
+//        myDSL = null;
+//    }
 
     void removeProvider(XMLRowsetProvider p)
     {
@@ -361,16 +367,16 @@ public class XMLDSO extends Applet
                 if (child != null)
                 {
                     count++;
-                    OLEDBSimpleProviderListener listener = child.getListener();
-                    if (listener != null)
-                    {
-                        int col = getColumn(child.getSchema(), modifiedElement);
-                        if (col != 0) {
-                            listener.aboutToChangeCell(row,col);
-                            listener.cellChanged(row,col);
-                            return;
-                        }
-                    }
+//                    OLEDBSimpleProviderListener listener = child.getListener();
+//                    if (listener != null)
+//                    {
+//                        int col = getColumn(child.getSchema(), modifiedElement);
+//                        if (col != 0) {
+//                            listener.aboutToChangeCell(row,col);
+//                            listener.cellChanged(row,col);
+//                            return;
+//                        }
+//                    }
                 }
                 node = node.getParent();
             }
@@ -385,16 +391,16 @@ public class XMLDSO extends Applet
             XMLRowsetProvider child = provider.findChildProvider(node);
             if (child != null)
             {
-                OLEDBSimpleProviderListener listener = child.getListener();
-                if (listener != null)
-                {
-                    int row = (append) ? provider.getRowCount() : 1;
-                    try {
-                        listener.aboutToInsertRows(row,1);
-                    } catch (com.ms.com.ComSuccessException e)
-                    { }
-                    listener.insertedRows(row,1);
-                }
+//                OLEDBSimpleProviderListener listener = child.getListener();
+//                if (listener != null)
+//                {
+//                    int row = (append) ? provider.getRowCount() : 1;
+//                    try {
+//                        listener.aboutToInsertRows(row,1);
+//                    } catch (com.ms.com.ComSuccessException e)
+//                    { }
+//                    listener.insertedRows(row,1);
+//                }
             }
         }
     }
@@ -407,15 +413,15 @@ public class XMLDSO extends Applet
             XMLRowsetProvider child = provider.findChildProvider(node);
             if (child != null)
             {
-                OLEDBSimpleProviderListener listener = child.getListener();
-                if (listener != null)
-                {
-                    try {
-                        listener.aboutToDeleteRows(row,1);
-                    } catch (com.ms.com.ComSuccessException e)
-                    { }
-                    listener.deletedRows(row,1);
-                }
+//               OLEDBSimpleProviderListener listener = child.getListener();
+//               if (listener != null)
+//               {
+//                    try {
+//                        listener.aboutToDeleteRows(row,1);
+//                    } catch (com.ms.com.ComSuccessException e)
+//                    { }
+//                    listener.deletedRows(row,1);
+//                }
             }
         }
     }
@@ -428,7 +434,7 @@ public class XMLDSO extends Applet
     {
         if (myDSL != null) {
             try {
-                myDSL.dataMemberChanged("");
+//                myDSL.dataMemberChanged("");
             } 
             catch (Exception e)
             {
@@ -497,7 +503,8 @@ public class XMLDSO extends Applet
         try {
             URL url = new URL(getDocumentBase(),arg);
             document = new Document();
-			JSObject win = (JSObject)JSObject.getWindow(this);
+//			JSObject win = (JSObject)JSObject.getWindow(this);
+			Object win = null;
 			XMLParserThread t = new XMLParserThread(url, win, callback);
 			t.start();
         } catch (Exception e) {
@@ -725,7 +732,8 @@ public class XMLDSO extends Applet
     }
 
     private XMLRowsetProvider  myProvider;
-    private DataSourceListener myDSL;
+//    private DataSourceListener myDSL;
+    private Object myDSL;
     private Document           document;
     private Document           schema;
 	private Element				schemaRoot;
@@ -756,11 +764,11 @@ class SchemaNode
     {
         if (rowset)
         {
-            e = factory.createElement(Element.ELEMENT, XMLRowsetProvider.nameROWSET);
+            e = factory.createElement(null, Element.ELEMENT, XMLRowsetProvider.nameROWSET, null);
         }
         else
         {
-            e = factory.createElement(Element.ELEMENT, XMLRowsetProvider.nameCOLUMN);
+            e = factory.createElement(null, Element.ELEMENT, XMLRowsetProvider.nameCOLUMN, null);
         }
         parent.addChild(e, null);
         e.setAttribute(XMLRowsetProvider.nameNAME, name.toString());
@@ -806,7 +814,8 @@ class SchemaNode
 }
 
 //------------------------------------------------------------------
-class XMLRowsetProvider  implements OLEDBSimpleProvider  
+//class XMLRowsetProvider  implements OLEDBSimpleProvider  
+class XMLRowsetProvider
 {    
     public XMLRowsetProvider (Element e, Element schema, ElementFactory f, XMLRowsetProvider parent)
     {
@@ -863,21 +872,21 @@ class XMLRowsetProvider  implements OLEDBSimpleProvider
         return 1;
     }
 
-    public void addOLEDBSimpleProviderListener(OLEDBSimpleProviderListener l)
-    {
-        if (listener != null) {
-            com.ms.com.ComLib.release(listener);
-        }
-        listener = l;
-    }
+//    public void addOLEDBSimpleProviderListener(OLEDBSimpleProviderListener l)
+//    {
+//        if (listener != null) {
+//            com.ms.com.ComLib.release(listener);
+//        }
+//        listener = l;
+//    }
 
-    public void removeOLEDBSimpleProviderListener(OLEDBSimpleProviderListener l)
-    {
-        if (listener != null) {
-            com.ms.com.ComLib.release(listener);
-        }
-        listener = null;
-    }
+//    public void removeOLEDBSimpleProviderListener(OLEDBSimpleProviderListener l)
+//    {
+//        if (listener != null) {
+//            com.ms.com.ComLib.release(listener);
+//        }
+//        listener = null;
+//    }
 
     public int find(int iStartRow, int iColumn, Object varSearchVal,
                     int findFlags, int compType)
@@ -887,10 +896,10 @@ class XMLRowsetProvider  implements OLEDBSimpleProvider
 
     public int deleteRows(int iRow,int cRows)
     {
-        try {
-            if (listener != null) listener.aboutToDeleteRows(iRow,cRows);
-        } catch (com.ms.com.ComSuccessException e)
-        { }
+//        try {
+//            if (listener != null) listener.aboutToDeleteRows(iRow,cRows);
+//        } catch (com.ms.com.ComSuccessException e)
+//        { }
         int result = 0;
         for (int i = iRow; i < iRow+cRows; i++) {
             Element row = getRow(iRow);
@@ -901,25 +910,25 @@ class XMLRowsetProvider  implements OLEDBSimpleProvider
             }
         }
         resetIterator();        
-        if (listener != null) listener.deletedRows(iRow,cRows);
+//        if (listener != null) listener.deletedRows(iRow,cRows);
         return result;
     }
 
     public int insertRows(int iRow,int cRows)
     {
-        try {
-            if (listener != null) listener.aboutToInsertRows(iRow,cRows);
-        } catch (com.ms.com.ComSuccessException e) 
-        { }
+//        try {
+//            if (listener != null) listener.aboutToInsertRows(iRow,cRows);
+//        } catch (com.ms.com.ComSuccessException e) 
+//        { }
 
         Name name = Name.create(schema.getAttribute("NAME").toString());
         for (int i = iRow; i < iRow+cRows; i++) {
-            Element newRow = factory.createElement(Element.ELEMENT,name);
+            Element newRow = factory.createElement(null, Element.ELEMENT,name, null);
             Element previousRow = root.getChildren().getChild(i);
             root.addChild(newRow,previousRow);            
         }
         resetIterator();
-        if (listener != null) listener.insertedRows(iRow,cRows);
+//        if (listener != null) listener.insertedRows(iRow,cRows);
         return cRows;
     }
 
@@ -1063,23 +1072,23 @@ class XMLRowsetProvider  implements OLEDBSimpleProvider
                 Name name = Name.create(attr);
                 Element child = findChild(row,name);
                 if (child == null) {
-                    child = factory.createElement(Element.ELEMENT,name);
+                    child = factory.createElement(null, Element.ELEMENT,name, null);
                     row.addChild(child,null); // order doesn't actually matter.
                 }
                 if (child != null) {
                     if (child.numElements() == 0) 
                     {
-                        child.addChild(factory.createElement(Element.PCDATA,null),null);
+                        child.addChild(factory.createElement(null, Element.PCDATA,null, null),null);
                     }
 
                     if (child.numElements() == 1 &&
                         child.getChild(0).getType() == Element.PCDATA)
                     {
-                        if (listener != null) listener.aboutToChangeCell(iRow,iColumn);
+//                        if (listener != null) listener.aboutToChangeCell(iRow,iColumn);
                         Element pcdata = child.getChild(0);
                         String text = (String)var;
                         pcdata.setText(text);
-                        if (listener != null) listener.cellChanged(iRow,iColumn);
+//                        if (listener != null) listener.cellChanged(iRow,iColumn);
                     }
                     // otherwise ignore the setVariant !
                 }
@@ -1087,10 +1096,10 @@ class XMLRowsetProvider  implements OLEDBSimpleProvider
         }
     }
 
-    public OLEDBSimpleProviderListener getListener()
-    {
-        return listener;
-    }
+//    public OLEDBSimpleProviderListener getListener()
+//    {
+//        return listener;
+//    }
 
     public String getLocale()
     {
@@ -1114,7 +1123,8 @@ class XMLRowsetProvider  implements OLEDBSimpleProvider
     int     rowindex;
     Name    rowset;
     XMLRowsetProvider parent;
-    OLEDBSimpleProviderListener listener;
+//    OLEDBSimpleProviderListener listener;
+    Object listener=null;
     ElementFactory factory;
     Vector  childProviders; 
 
@@ -1130,10 +1140,12 @@ class XMLRowsetProvider  implements OLEDBSimpleProvider
 class XMLParserThread extends Thread
 {
 	URL url;
-	JSObject win;
+    //	JSObject win;
+    	Object win;
 	String callback;
 
-	XMLParserThread(URL url, JSObject win, String callback)
+    //	XMLParserThread(URL url, JSObject win, String callback)
+	XMLParserThread(URL url, Object win, String callback)
 	{
 		this.url = url;
 		this.win = win;
@@ -1149,13 +1161,13 @@ class XMLParserThread extends Thread
 			document.load(url);
             args[0] = "ok";
             args[1] = document;
-			win.call(callback, args);
+//			win.call(callback, args);
 		}
 		catch (ParseException e)
 		{
             args[0] = e.toString();
             args[1] = null;
-            win.call(callback, args);
+//            win.call(callback, args);
 		}
 	}
 }
