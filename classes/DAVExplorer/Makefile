@@ -21,7 +21,7 @@ classes = AsGen.class \
 	  DataNode.class \
 	  EscapeInputStream.class \
 	  EscapeReader.class \
-	  Main.class \
+	  WebDAVFileView.class \
 	  PropDialog.class \
 	  PropDialogEvent.class \
           PropDialogListener.class \
@@ -33,7 +33,6 @@ classes = AsGen.class \
 	  ViewSelectionEvent.class \
 	  ViewSelectionListener.class \
 	  WebDAVConnection.class \
-	  WebDAVFileView.class \
 	  WebDAVLockInfo.class \
 	  WebDAVLoginDialog.class \
 	  WebDAVManager.class \
@@ -51,6 +50,7 @@ classes = AsGen.class \
 	  WebDAVTreeView.class \
 	  WebDAVURIBoxListener.class \
 	  WebDAVXML.class \
+	  Main.class
 
 
 ### targets 
