@@ -1026,14 +1026,18 @@ public class WebDAVRequestGenerator implements Runnable
     
     private void printXML( Document miniDoc )
     {
-        System.out.println("generated xml: " );
-        XMLOutputStream out = new XMLOutputStream(System.out);
-        try
+        String debugOutput = System.getProperty( "debug", "false" );
+        if( debugOutput.equals( "true" ) )
         {
-            miniDoc.save(out);
-        }
-        catch (Exception e)
-        {
+            System.out.println("generated xml: " );
+            XMLOutputStream out = new XMLOutputStream(System.out);
+            try
+            {
+                miniDoc.save(out);
+            }
+            catch (Exception e)
+            {
+            }
         }
     }
 }

@@ -38,8 +38,8 @@
 // Date: 3/17/99
 //
 // Change List:
-
-
+//  1. Fixed parseGet to save the retrieved file properly
+//  2. parseMkCol now has functionality to refresh the display
 
 package WebDAV;
 
@@ -157,7 +157,7 @@ public class WebDAVResponseInterpreter
             parseUnlock();
         else
         {
-            //System.out.println("unsupported method.. cannot parse");
+            System.out.println("unsupported method.. cannot parse");
             return;
         }
     }
@@ -223,23 +223,14 @@ public class WebDAVResponseInterpreter
             Document xml_doc = new Document();
             xml_doc.load(byte_in);
 
-            //System.out.println("Received xml:");
-            XMLOutputStream out = new XMLOutputStream(System.out);
-            ByteArrayInputStream tmpIn = new ByteArrayInputStream(body);
-            Document tmpDoc = new Document();
-            tmpDoc.load(tmpIn);
-            tmpDoc.save(out);
-
             if (Extra.equals("uribox"))
             {
                 if( Port > 0 )
                 {
-                    //System.out.println("HostName + Port + Resource: " + HostName + Port + Resource);
                     fireInsertionEvent(HostName + ":" + Port + Resource);
                 }
                 else
                 {
-                    //System.out.println("HostName + Resource: " + HostName + Resource);
                     fireInsertionEvent(HostName + Resource);
                 }
             }
@@ -253,7 +244,6 @@ public class WebDAVResponseInterpreter
                 String lockTimeout = "";
                 String lockDepth = "";
 
-                //System.out.println("In parsePropFind");
                 Element rootElem = (Element) xml_doc.getRoot();
                 Enumeration enumRoot = rootElem.getElements();
                 while (enumRoot.hasMoreElements())
@@ -643,7 +633,6 @@ public class WebDAVResponseInterpreter
                 FileDialog fd = new FileDialog(mainFrame, "Save As" , FileDialog.SAVE); 
                 fd.setVisible(true); 
                 fileName = fd.getDirectory() + File.separatorChar + fd.getFile();
-                //System.out.println("dialog select: " + fileName);
             }
             else
             {     
@@ -688,7 +677,7 @@ public class WebDAVResponseInterpreter
                 fout.close();
             }
             
-            if (Extra.equals("view"))
+            if( Extra.equals("view") || Extra.equals("edit") )
             {
                 String app = selectApplication();
                 if( (app != null) && (app != "") )
