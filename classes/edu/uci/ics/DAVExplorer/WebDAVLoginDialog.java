@@ -61,9 +61,10 @@ import java.awt.GridBagLayout;
 import java.awt.GridBagConstraints;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import javax.swing.event.DocumentEvent;
+import javax.swing.event.DocumentListener;
 
-
-public class WebDAVLoginDialog extends JDialog implements ActionListener
+public class WebDAVLoginDialog extends JDialog implements ActionListener, DocumentListener
 {
 /*-----------------------------------------------------------------------
 Public methods and attributes section
@@ -98,6 +99,7 @@ Public methods and attributes section
         constraints.weightx = 3.0;
         constraints.gridwidth = GridBagConstraints.REMAINDER;
         txtUsername = new JTextField(30);
+        txtUsername.getDocument().addDocumentListener( this );
         txtUsername.addActionListener( this );
         gridbag.setConstraints( txtUsername, constraints );
         groupPanel.add( txtUsername );
@@ -110,17 +112,19 @@ Public methods and attributes section
         constraints.weightx = 3.0;
         constraints.gridwidth = GridBagConstraints.REMAINDER;
         txtPassword = new JPasswordField( "", 30 );
+        txtPassword.getDocument().addDocumentListener( this );
         txtPassword.addActionListener( this );
         gridbag.setConstraints( txtPassword, constraints );
         groupPanel.add( txtPassword );
         JPanel p = new JPanel();
-        p.add( OkButton = new JButton( "OK" ) );
-        OkButton.addActionListener( this );
-        p.add( CancelButton = new JButton( "Cancel" ) );
-        CancelButton.addActionListener( this );
+        p.add( okButton = new JButton( "OK" ) );
+        okButton.addActionListener( this );
+        p.add( cancelButton = new JButton( "Cancel" ) );
+        cancelButton.addActionListener( this );
         gridbag.setConstraints( p, constraints );
         groupPanel.add( p );
-        getRootPane().setDefaultButton( OkButton );
+        getRootPane().setDefaultButton( okButton );
+        okButton.setEnabled( false );
         txtUsername.requestFocus();
 
         getContentPane().add( groupPanel );
@@ -143,6 +147,7 @@ Public methods and attributes section
     }
 
 
+    // ActionListener interface
     public void actionPerformed( ActionEvent e )
     {
         if( e.getActionCommand().equals("OK") )
@@ -177,11 +182,26 @@ Public methods and attributes section
              * However, this changes the keymap for *all* JTextFields, and we
              * need the original mapping for the URI box
              */
-            m_strUsername = txtUsername.getText();
-            m_strUserPassword = String.valueOf( txtPassword.getPassword() );
-            if ( (m_strUsername.length()>0) && (m_strUserPassword.length()>0) )
-                OkButton.doClick();
+            if ( okButton.isEnabled() )
+                okButton.doClick();
         }
+    }
+
+
+    // DocumentListener interface
+    public void insertUpdate( DocumentEvent e )
+    {
+        checkEnableOk();
+    }
+
+    public void removeUpdate( DocumentEvent e )
+    {
+        checkEnableOk();
+    }
+
+    public void changedUpdate( DocumentEvent e )
+    {
+        checkEnableOk();
     }
 
 
@@ -208,6 +228,17 @@ Public methods and attributes section
 /*-----------------------------------------------------------------------
 Protected methods and attributes section
 -----------------------------------------------------------------------*/
+    protected void checkEnableOk()
+    {
+        if( (txtUsername.getText().length()>0) && (String.valueOf(txtPassword.getPassword()).length()>0) )
+        {
+            okButton.setEnabled( true );
+            getRootPane().setDefaultButton( okButton );
+        }
+        else
+            okButton.setEnabled( false );
+    }
+
     protected void center()
     {
         Rectangle recthDimensions = getParent().getBounds();
@@ -221,7 +252,7 @@ Protected methods and attributes section
     protected String m_strUserPassword;
     protected JTextField txtUsername;
     protected JPasswordField txtPassword;
-    protected JButton OkButton;
-    protected JButton CancelButton;
+    protected JButton okButton;
+    protected JButton cancelButton;
 }
 

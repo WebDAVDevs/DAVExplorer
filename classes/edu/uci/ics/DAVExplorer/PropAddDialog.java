@@ -39,8 +39,8 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
-import java.awt.event.FocusEvent;
-import java.awt.event.FocusListener;
+import javax.swing.event.DocumentEvent;
+import javax.swing.event.DocumentListener;
 import javax.swing.JDialog;
 import javax.swing.JButton;
 import javax.swing.JRadioButton;
@@ -49,7 +49,7 @@ import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JTextField;
 
-public class PropAddDialog extends JDialog implements ActionListener, FocusListener
+public class PropAddDialog extends JDialog implements ActionListener, DocumentListener
 {
 
     public PropAddDialog( String resource, boolean selected )
@@ -74,7 +74,8 @@ public class PropAddDialog extends JDialog implements ActionListener, FocusListe
         constraints.weightx = 3.0;
         constraints.gridwidth = GridBagConstraints.REMAINDER;
         tagField = new JTextField(30);
-        tagField.addFocusListener( this );
+        tagField.getDocument().addDocumentListener( this );
+        tagField.addActionListener( this );
         gridbag.setConstraints( tagField, constraints );
         groupPanel.add( tagField );
         constraints.gridwidth = 1;
@@ -86,7 +87,8 @@ public class PropAddDialog extends JDialog implements ActionListener, FocusListe
         constraints.weightx = 3.0;
         constraints.gridwidth = GridBagConstraints.REMAINDER;
         NSField = new JTextField( 30 );
-        NSField.addFocusListener( this );
+        NSField.getDocument().addDocumentListener( this );
+        NSField.addActionListener( this );
         gridbag.setConstraints( NSField, constraints );
         groupPanel.add( NSField );
         constraints.gridwidth = 1;
@@ -98,6 +100,7 @@ public class PropAddDialog extends JDialog implements ActionListener, FocusListe
         constraints.weightx = 3.0;
         constraints.gridwidth = GridBagConstraints.REMAINDER;
         valueField = new JTextField( 30 );
+        valueField.addActionListener( this );
         gridbag.setConstraints( valueField, constraints );
         groupPanel.add( valueField );
         constraints.gridwidth = 1;
@@ -135,8 +138,7 @@ public class PropAddDialog extends JDialog implements ActionListener, FocusListe
         JPanel buttonPanel = new JPanel();
         buttonPanel.add( okButton );
         buttonPanel.add( cancelButton );
-        //getRootPane().setDefaultButton( cancelButton );
-        //cancelButton.grabFocus();
+        getRootPane().setDefaultButton( okButton );
         okButton.setEnabled( false );
         getContentPane().add( "South", buttonPanel );
 
@@ -156,6 +158,7 @@ public class PropAddDialog extends JDialog implements ActionListener, FocusListe
         show();
     }
 
+    // ActionListener interface
     public void actionPerformed(ActionEvent e)
     {
         if( e.getActionCommand().equals("OK") )
@@ -166,14 +169,38 @@ public class PropAddDialog extends JDialog implements ActionListener, FocusListe
         {
             cancel();
         }
+        else
+        {
+            /*
+             * Simulate click on default button
+             * JTextFields intercept the return button
+             * Ideally, this would be modified by code like this:
+             * static {
+             *   JTextField f = new JTextField();
+             *   KeyStroke enter = KeyStroke.getKeyStroke(KeyEvent.VK_ENTER, 0);
+             *   Keymap map = f.getKeymap();
+             *   map.removeKeyStrokeBinding(enter);
+             * }
+             * However, this changes the keymap for *all* JTextFields, and we
+             * need the original mapping for the URI box
+             */
+            if ( okButton.isEnabled() )
+                okButton.doClick();
+        }
     }
 
-    public void focusGained( FocusEvent e )
+    // DocumentListener interface
+    public void insertUpdate( DocumentEvent e )
     {
         checkEnableOk();
     }
 
-    public void focusLost( FocusEvent e )
+    public void removeUpdate( DocumentEvent e )
+    {
+        checkEnableOk();
+    }
+
+    public void changedUpdate( DocumentEvent e )
     {
         checkEnableOk();
     }
@@ -217,7 +244,10 @@ public class PropAddDialog extends JDialog implements ActionListener, FocusListe
     protected void checkEnableOk()
     {
         if( (tagField.getText().length()>0) && (NSField.getText().length()>0) )
+        {
             okButton.setEnabled( true );
+            getRootPane().setDefaultButton( okButton );
+        }
         else
             okButton.setEnabled( false );
     }
