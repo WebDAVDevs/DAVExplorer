@@ -1,32 +1,121 @@
+1. OVERVIEW
+
+DAV Explorer is a WebDAV client application that uses the WebDAV protocol
+to provide:
+     A tree view of a WebDAV server 
+     Upload and download of Web resources 
+     Locking and unlocking of resources for collaboration support 
+     Display all resource properties, or just lock properties 
+     Copying collections and individual resources 
+     Renaming of individual resources 
+     Creating new collections 
+     Delete collections or individual resources 
+     Logging of protocol activity 
+
+The user interface for DAV Explorer is similar in look and functionality
+to the Explorer program which is provided by the Windows operating system.
+DAV Explorer is a useful tool for interoperability testing a WebDAV server,
+since it is capable of exercising the majority of the functionality
+specified in RFC 2518, the WebDAV Distributed Authoring Protocol
+specification, while logging the protocol stream. However, DAV Explorer can
+also be used for remote namespace management, and has collaboration support
+for groups which employ a lock-download-work-upload-unlock authoring
+process.
+
+DAV Explorer is a Java application which uses Java 2 (tested with both
+JDK 1.2 and JDK 1.3). and has successfully been run on Windows
+95/98/ME/NT/2000 machines, Solaris and Linux. It has been reported to run on
+Macintosh computers, with MacOS 9 and MRJ 2.2.3, and with Mac OS X.
+DAV Explorer may run on other platforms, but this has not been verified.
+
+
+2. LICENSE
+
+DAV Explorer is released under an Apache-style license. See the file
+License.txt in the distribution for details.
+
+
+3. SOURCE CODE
+
+The DAV Explorer source files can be downloaded from
+http://www.ics.uci.edu/~webdav/download.html.
+
+The source files are also available via Remote CVS at
+:pserver:cvsguest@opera.ics.uci.edu:/webdav
+The password for the CVS archive is "cvs".
+To retrieve the complete source tree, check out the modules DAVExplorer,
+HTTPClient and parser. 
+This account is read-only, please submit code patches to <dav-exp@ics.uci.edu>. 
+
+
+4. COMMAND LINE OPTIONS
+
+DAV Explorer accepts the following command line options:
+
+-Ddebug=option
+  where option is one of:
+  all          all function traces are enabled
+  request      function traces related to HTTP requests are enabled
+  response     function traces related to HTTP responses are enabled
+  treeview     function traces related to the tree view on the left
+  		side of the DAVExplorer window are enabled
+  treenode     function traces related to each node in the tree view
+  		are enabled
+  fileview     function traces related to the file view on the right
+  		side of the DAVExplorer window are enabled
+
+-Dpropfind=allprop
+  This option results in using the <allprop> tag in PROPFIND. It is a useful
+  
+-Dssl=true 
+  This option enables the use of SSL.
+  
+-DSharePoint=true 
+  This option enables a workaround for a bug in Microsoft's SharePoint
+  server which allows tags to start with a digit.
+  
+-DApache=yes
+  This option enables a workaround for a bug in Apache 1.3.x, which returns
+  a 500 error in response to a PROPPATCH if the Host: header contains a
+  port number.
+
+
+5. CHANGELOG
+
 Changes for version 0.81-dev:
 - Fixed handling of default namespace in the view/modify property dialog
 - Fixed menu selection of view/modify properties dialog
 - Fixed problems with property addition to root
-- Apache 1.3.x workaround: PROPPATCH returns a 500 error if Host: header contains
-  the port number. The workaround is activated with the option -DApache=yes
-- Made the MS SharePoint workaround optional. It is activated with the following
-  command line: java -jar -DSharePoint=true DAVExplorer.jar
-- Fixed handling problems of non-ASCII UTF-8 characters
-- Improved the logging of chunked data
-- Now allowing untrusted certificates by presenting a choice to the user
+- Apache 1.3.x workaround: PROPPATCH returns a 500 error if the Host: header
+  contains the port number. The workaround is activated with the option
+  -DApache=yes
+- Made the MS SharePoint workaround optional. It is activated with the
+  following command line: java -jar -DSharePoint=true DAVExplorer.jar
+- Fixed handling problems of non-ASCII UTF-8 characters.
+- Improved the logging of chunked data.
+- Now allowing untrusted certificates by presenting a choice to the user.
+- Fixed problems with modifying nested properties.
 
 Changes for version 0.80:
-- Makefile for HTTPClient now works with JSSE installed as "bundled" extension.
+- Makefile for HTTPClient now works with JSSE installed as "bundled"
+  extension.
 - Fixed handling of EOF for whitespace after the final tag (interoperability
   bug with Adobe InScope).
 - Changed the parser code to allow tag names starting with a digit
   (interoperability problem with Microsoft SharePoint (a bug in SharePoint)).
-- Removed whitespace in the created XML for lockowner and keepalive properties.
+- Removed whitespace in the created XML for lockowner and keepalive
+  properties.
 - Interoperability problem fixed for cases when properties for a collection
-  and its contents are requested and the server doesn't send properties for the
-  collection itself.
-- Modified the authentication code to make use of the HTTPClient functionality
-  for Digest authentication.
+  and its contents are requested and the server doesn't send properties for
+  the collection itself.
+- Modified the authentication code to make use of the HTTPClient
+  functionality   for Digest authentication.
 - Copy and Move now allow entering the target, making them more flexible.
 - For initial contact with a server, we now send an OPTIONS request.
 - Rewrite of the View Property dialog.
 - PROPPATCH support implemented (finally).
-- The package name of the main DAVExplorer files was changed to edu.uci.ics.DAVExplorer.
+- The package name of the main DAVExplorer files was changed to
+  edu.uci.ics.DAVExplorer.
 
 Changes for version 0.72:
 - Support for operation through proxy servers
@@ -34,29 +123,30 @@ Changes for version 0.72:
 
 Changes for version 0.71:
 - Fixed bug in HTTPClient that prevented proper handling of authentication in
-  case the server allows multiple possible authentication headers (thanks to Thierry
-  Janaudy for alerting us to this problem).
-- Fixed broken handling of & in filenames in the MS parser (thanks to Dennis Craig for
-  alerting us to this problem).
+  case the server allows multiple possible authentication headers (thanks to
+  Thierry Janaudy for alerting us to this problem).
+- Fixed broken handling of & in filenames in the MS parser (thanks to Dennis
+  Craig for alerting us to this problem).
 - Now using the standard https port (443) for requests with SSL.
-- Closing the properties dialog with the close button does not exit the application
-  anymore.
+- Closing the properties dialog with the close button does not exit the
+  application anymore.
 
 Changes for version 0.70:
 - Support for SSL (https protocol)
-  The SSL package supported is Sun's Java Secure Socket Extensions 1.0.2 (JSSE),
-  available at http://java.sun.com/products/jsse/
+  The SSL package supported is Sun's Java Secure Socket Extensions 1.0.2
+  (JSSE), available at http://java.sun.com/products/jsse/
   SSL is activated with the following command line:
   java -jar -Dssl=true DAVExplorer.jar
-  If a self-certified certificate is used, the certificate has to be added to the
-  JSSE keystore with the keytool program from the Java JDK.
-  JSSE ignores the default keystore, instead, the certificate has to be stored in
-  a particular JSSE keystore located in the JRE directory tree, usually at
-  JAVA_HOME/jre/lib/security/jssecacerts
+  If a self-certified certificate is used, the certificate has to be added
+  to the JSSE keystore with the keytool program from the Java JDK.
+  On MS Windows, JSSE ignores the default keystore, instead, the certificate
+  has to be stored in a particular JSSE keystore located in the JRE directory
+  tree, usually at JAVA_HOME/jre/lib/security/jssecacerts
 - Compatibility with JDK 1.3 was confirmed. The DAVExplorer.jar file is now
   created with JDK 1.3.0
-- Interoperability problem (another SiblingEnumeration bug in the parser) with IIS 5.0
-  fixed (thanks to Ron Gutfinger for alerting us to this problem).
+- Interoperability problem (another SiblingEnumeration bug in the parser)
+  with IIS 5.0 fixed (thanks to Ron Gutfinger for alerting us to this
+  problem).
 
 Changes for version 0.62:
 - Improved recovery after server timeout
@@ -72,8 +162,8 @@ Changes for version 0.61:
 
 Changes for version 0.60:
 - Fixed logging of incoming data.
-- The DAV4J workaround (see below in the changes for version 0.57) is also required
-  for locking support with mod_dav up to version 0.9.16.
+- The DAV4J workaround (see below in the changes for version 0.57) is also
+  required for locking support with mod_dav up to version 0.9.16.
 
 Changes for version 0.59:
 - Interoperability problem with www.sharemation.com fixed.
@@ -99,10 +189,10 @@ Changes for version 0.56:
   all                   all function traces are enabled
   request               function traces related to HTTP requests are enabled
   response              function traces related to HTTP responses are enabled
-  treeview              function traces related to the tree view on the left side
-                        of the DAVExplorer window are enabled
-  treenode              function traces related to each node in the tree view are
-                        enabled
-  fileview              function traces related to the file view on the right side
-                        of the DAVExplorer window are enabled
+  treeview              function traces related to the tree view on the left
+  			side of the DAVExplorer window are enabled
+  treenode              function traces related to each node in the tree view
+  			are enabled
+  fileview              function traces related to the file view on the right
+  			side of the DAVExplorer window are enabled
   The trace output is written to stderr.
