@@ -1,7 +1,7 @@
 1. OVERVIEW
 
-DAV Explorer is a WebDAV client application that uses the WebDAV protocol
-to provide:
+DAV Explorer is a WebDAV and DeltaV client application that uses the WebDAV
+and DeltaV protocols to provide:
      A tree view of a WebDAV server 
      Upload and download of Web resources 
      Locking and unlocking of resources for collaboration support 
@@ -11,6 +11,9 @@ to provide:
      Creating new collections 
      Delete collections or individual resources 
      Logging of protocol activity 
+     Creating new versions of resources
+     Checking out and checking in of resources
+     Listing of resource versions
 
 The user interface for DAV Explorer is similar in look and functionality
 to the Explorer program which is provided by the Windows operating system.
@@ -21,6 +24,10 @@ specification, while logging the protocol stream. However, DAV Explorer can
 also be used for remote namespace management, and has collaboration support
 for groups which employ a lock-download-work-upload-unlock authoring
 process.
+DAV Explorer also supports the linear versioning of resources through the
+use of RFC 3253, the DeltaV Versioning Extensions to WebDAV protocol specification.
+DAV Explorer supports the linear checkout, uncheckout, checkin, and reporting
+functionality specified in the DeltaV specification.
 
 DAV Explorer is a Java application which uses Java 2 and has successfully
 been run on Microsoft Windows from Windows 95 to Server 2003,
@@ -140,12 +147,17 @@ Changes for version 0.91-dev:
   for the suggestion.)
 - Fixed usage of webpage-provided username/password for applet usage.
 - Added workaround for Documentum Modified-Date bug (their date strings
-  are localized, which violates RFC2616) (thanks to Holger Spalt for
+  are localized, which violates RFC 2616) (thanks to Holger Spalt for
   alerting us to the problem.)
 - Integrated John Barton's refactoring changes and drop support.
 - Added the -Dcompress option to disable accepting compressed data.
   This is a workaround for a bug in MS Exchange that results in corrupt
-  compressed data (thanks to Frédéric for alerting us to the problem.)
+  compressed data (thanks to Frédéric Esnouf for alerting us to the problem.)
+- Added handling of ISO 8601 Date strings. This is a workaround for a bug
+  in MS Exchange, whose date strings in the <getlastmodified> uses the
+  ISO 8601 format instead of the RFC 2616 format required by the WebDAV
+  RFC (thanks to Frédéric Esnouf for alerting us to the problem.)
+- Fixed the charset handling and unencoding of data from the server.
 
 Changes for version 0.90:
 - Bug fix in HTTPClient for PUT with Stream and Digest authentication.
