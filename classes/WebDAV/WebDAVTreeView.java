@@ -46,7 +46,10 @@
 //    and caused a side effect tree selection event to be caused
 //    when the X,Y portion of the cursor was repositioned on a 
 //    repaint by the display.
-
+// 3. In class SelectionChangeListener, in method 
+//    valueChanged(TreeSelectionEvent e), the Cursor is changed 
+//    to the WAIT_CURSOR while the the Event of a Tree Selection
+//    are being processed by the various Listeners.
 
 package WebDAV;
 
