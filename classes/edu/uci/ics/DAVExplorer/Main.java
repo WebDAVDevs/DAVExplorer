@@ -120,6 +120,9 @@ public class Main extends JFrame
         responseInterpreter.addInsertionListener(new InsertionListener());
         responseInterpreter.addMoveUpdateListener(new MoveUpdateListener());
         responseInterpreter.addLockListener(new LockListener());
+        responseInterpreter.addActionListener(fileView); // Listens for a reset
+							// for a unsucessful
+							// Rename request
 
         // Yuzo Add the CopyEvent Listener
         responseInterpreter.addCopyResponseListener(treeView);
@@ -229,8 +232,9 @@ public class Main extends JFrame
             props[3] = "getcontentlength";
             props[4] = "getlastmodified";
             props[5] = "lockdiscovery";
-            if( requestGenerator.GeneratePropFind( str, "prop", "one", props, null, false) )
+            if( requestGenerator.GeneratePropFind( str, "prop", "one", props, null, false) ){
                 requestGenerator.execute();
+	    }
         }
     }
 
@@ -324,17 +328,17 @@ public class Main extends JFrame
                 WebDAVTreeNode n = fileView.getParentNode();
                 requestGenerator.setResource(s, n);
 
+                //requestGenerator.GenerateRename( str, treeView.getCurrentPath() );
+                //requestGenerator.GenerateRename( str, fileView.getParentPath() );
                 boolean retval = false;
-                if( fileView.isSelectedLocked() )
-                {
-                    retval = requestGenerator.GenerateMove(str, fileView.getParentPath(), false, true, fileView.getSelectedLockToken() );
-                }
-                else
-                {
-                    retval = requestGenerator.GenerateMove(str, fileView.getParentPath(), false, true, null );
-                }
-                if( retval )
+		if( fileView.isSelectedLocked() ){
+		    retval = requestGenerator.GenerateMove(str, fileView.getParentPath(), false, true, fileView.getSelectedLockToken(), "rename:" );
+		} else {
+		    retval = requestGenerator.GenerateMove(str, fileView.getParentPath(), false, true, null , "rename:" );
+		}
+                if( retval ){
                     requestGenerator.execute();
+		}
             }
         }
     }
@@ -478,8 +482,9 @@ public class Main extends JFrame
                         requestGenerator.setResource(s, n2);
                         retval = requestGenerator.GeneratePut( fullPath, s, token , parent);
                     }
-                    if( retval )
+                    if( retval ){
                         requestGenerator.execute();
+		    }
                 }
             }
             else if (command.equals("Lock"))
@@ -492,6 +497,7 @@ public class Main extends JFrame
                 else
                 {
                     WebDAVTreeNode n = fileView.getParentNode();
+                    //WebDAVTreeNode n2 = fileView.getSelectedCollection();
                     requestGenerator.setResource(s, n);
                     lockDocument();
                 }
@@ -533,8 +539,9 @@ public class Main extends JFrame
 
                     requestGenerator.setResource(s, n);
 
-                    if( requestGenerator.GenerateCopy( null, true, true ) )
+                    if( requestGenerator.GenerateCopy( null, true, true ) ){
                         requestGenerator.execute();
+		    }
                 }
             }
             else if (command.equals("Delete"))
@@ -584,8 +591,9 @@ public class Main extends JFrame
                             requestGenerator.setExtraInfo("mkcolbelow");
                             retval = requestGenerator.GenerateMkCol( fileView.getSelected(), dirname );
                         }
-                        if( retval )
+                        if( retval ){
                             requestGenerator.execute();
+			}
                     }
                     else
                     {
@@ -705,8 +713,9 @@ public class Main extends JFrame
 
     protected void viewDocument()
     {
-        if( requestGenerator.GenerateGet("view") )
+        if( requestGenerator.GenerateGet("view") ){
             requestGenerator.execute();
+	}
     }
 
     protected void saveAsDocument()
@@ -720,8 +729,9 @@ public class Main extends JFrame
         {
             WebDAVTreeNode n = fileView.getParentNode();
             requestGenerator.setResource(s, n);
-            if( requestGenerator.GenerateGet("saveas") )
+            if( requestGenerator.GenerateGet("saveas") ){
                 requestGenerator.execute();
+	    }
         }
     }
 
@@ -757,16 +767,14 @@ public class Main extends JFrame
                     //requestGenerator.DiscoverLock("delete");
                     requestGenerator.setExtraInfo("delete");
                     boolean retval = false;
-                    if( fileView.isSelectedLocked() )
-                    {
-                        retval = requestGenerator.GenerateDelete(fileView.getSelectedLockToken());
-                    }
-                    else
-                    {
+		    if( fileView.isSelectedLocked() ){
+			retval = requestGenerator.GenerateDelete(fileView.getSelectedLockToken());
+		    } else {
                         retval = requestGenerator.GenerateDelete(null);
                     }
-                    if( retval )
+                    if( retval ){
                         requestGenerator.execute();
+		    }
                 }
                 else
                 {
@@ -801,8 +809,9 @@ public class Main extends JFrame
         {
             requestGenerator.setResource(s, null);
             requestGenerator.setExtraInfo("properties");
-            if( requestGenerator.GeneratePropFind(null,"allprop","zero",null,null,false) )
+            if( requestGenerator.GeneratePropFind(null,"allprop","zero",null,null,false) ){
                 requestGenerator.execute();
+	    }
         }
     }
 

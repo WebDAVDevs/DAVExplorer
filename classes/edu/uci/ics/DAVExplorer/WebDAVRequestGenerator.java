@@ -80,6 +80,16 @@ public class WebDAVRequestGenerator implements Runnable
 
     private String userAgent = null;
 
+    // Need to save the following values for the second 
+    // go around for the Move and Delete when trying 
+    private WebDAVTreeNode Node2;
+    private String ResourceName2;
+    private String Dest2;
+    private String dir2;
+    private boolean Overwrite2;
+    private boolean KeepAlive2;
+    private boolean secondTime = false;
+
 
     public WebDAVRequestGenerator()
     { }
@@ -120,6 +130,11 @@ public class WebDAVRequestGenerator implements Runnable
             }
             ResourceName = Path + tableResource;
         }
+    }
+
+    public void setSecondTime(boolean b)
+    {
+	secondTime = b;
     }
 
     //Yuzo
@@ -285,8 +300,9 @@ public class WebDAVRequestGenerator implements Runnable
         prop[0] = new String("lockdiscovery");
         schema[0] = new String(WebDAVProp.DAV_SCHEMA);
         boolean retval = GeneratePropFind(null,"prop","zero",prop,schema, false);
-        if( retval )
+        if( retval ){
             execute();
+	}
         return retval;
     }
 
@@ -660,6 +676,18 @@ public class WebDAVRequestGenerator implements Runnable
         Headers = null;
         Body = null;
 
+	if ( secondTime )
+	{
+	    Node = Node2;
+	    ResourceName= ResourceName2;
+	}
+	else
+	{
+	    Node2 = Node;
+	    ResourceName2 = new String(ResourceName);
+	}
+	
+
         if (!parseResourceName())
         {
             errorMsg( "Error Generating DELETE Method" );
@@ -875,26 +903,49 @@ public class WebDAVRequestGenerator implements Runnable
 
     public synchronized boolean GenerateRename( String Dest, String dir )
     {
+	// Why have the below when the DIscoverLock puts something else
+	// the Extra field
         Extra = new String(tableResource);
 
         return DiscoverLock("rename:" + Dest + ":" + dir );
     }
 
-    public synchronized boolean GenerateMove(String Dest, String dir, boolean Overwrite, boolean KeepAlive, String lockToken)
+    public synchronized boolean GenerateMove(String Dest, String dir, boolean Overwrite, boolean KeepAlive, String lockToken, String extraPrefix)
     {
+	
         Headers = null;
         Body = null;
-        Extra = Dest;
+        Extra = extraPrefix +  Dest;
+
+	if( secondTime)
+	{
+	    Node = Node2;
+	    ResourceName = ResourceName2;
+	    Dest = Dest2;
+	    dir = dir2;
+	    Overwrite = Overwrite2;
+	    KeepAlive = KeepAlive2;
+	}
+	else
+	{
+	    Node2 = Node;
+	    ResourceName2 = new String(ResourceName);
+	    Dest2 = new String(Dest);
+	    dir2 = new String(dir);
+	    Overwrite2 = Overwrite;
+	    KeepAlive2 = KeepAlive;
+	}
+				   
 
         String srcFile = ResourceName;
         ResourceName = dir;
 
-        /*
+	/*
         if (!parseResourceName())
             dir = "/";
         else
             dir = StrippedResource;
-    */
+	*/
 
         ResourceName = srcFile;
         if (!parseResourceName())
@@ -989,6 +1040,7 @@ public class WebDAVRequestGenerator implements Runnable
         }
         return true;
     }
+
 
     public synchronized boolean GenerateLock(String OwnerInfo, String lockToken)
     {

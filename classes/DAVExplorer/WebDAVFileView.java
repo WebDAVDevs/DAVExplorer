@@ -57,7 +57,7 @@ import java.util.*;
 import java.util.zip.*;
 import java.io.*;
 
-public class WebDAVFileView implements ViewSelectionListener
+public class WebDAVFileView implements ViewSelectionListener, ActionListener
 {
     private static String jarPath = null;
     private final static String jarExtension =".jar";
@@ -311,6 +311,18 @@ public class WebDAVFileView implements ViewSelectionListener
     }
 
     ////////////
+    // Implements the Action Listener.
+    // Purpose: to listen for a reset to the old selected name 
+    // for the case of a failure of Rename.
+    // Need to do this because Response Interpreter can't access the
+    // resetName method because there teh FileView is not accessible
+    public void actionPerformed( ActionEvent e )
+    {
+	resetName();
+    }
+  
+
+    ////////////
     // This implements the View Selection Listener Interface
     // The purpose of this listners is to respond to the
     // Selection of a node on the TreeView.  This means
@@ -541,32 +553,31 @@ public class WebDAVFileView implements ViewSelectionListener
         //Get the TreeNode and return dataNode's lockTocken
     WebDAVTreeNode n = getSelectedCollection();
 
-    if (n != null) {
-        // return lockToken from the Node's dataNode
-        DataNode dn = n.getDataNode();
-        // Get the lockToken
-        return dn.getLockToken();
-
+	if (n != null) {
+	    // return lockToken from the Node's dataNode
+	    DataNode dn = n.getDataNode();
+	    // Get the lockToken
+	    return dn.getLockToken();
+	    
         }
-    // Must be resource
+	// Must be resource
 
-    // 1. Find the resource's data Node
-    DataNode dn = parentNode.getDataNode();
+	// 1. Find the resource's data Node
+	DataNode dn = parentNode.getDataNode();
 
-    // Do a search of the subNodes
-    String target = (String)table.getValueAt(selectedRow,2);
-    boolean found = false;
-    Vector sub = dn.getSubNodes();
-    String token = null;
-    DataNode node;
+	// Do a search of the subNodes
+	boolean found = false;
+	Vector sub = dn.getSubNodes();
+	String token = null;
+	DataNode node;
 
-    for( int i = 0; i < sub.size() && !found; i++){
-        node = (DataNode)sub.elementAt(i);
-        String s = node.getName();
-        if(selectedResource.equals( s )){
-        found = true;
-        token = node.getLockToken();
-        }
+	for( int i = 0; i < sub.size() && !found; i++){
+	    node = (DataNode)sub.elementAt(i);
+	    String s = node.getName(); 
+	    if(selectedResource.equals( s )){
+		found = true;
+		token = node.getLockToken();
+	    }
         }
 
 

@@ -74,13 +74,14 @@ public class WebDAVResponseInterpreter
     private final static String HTTPString = "HTTP/1.1";
     private static String WebDAVEditDir = null;
     private static boolean refresh = false;
-    private static boolean inProg = false;
+    //private static boolean inProg = false;
     private static JFrame mainFrame;
     private static String userPathDir;
 
     private WebDAVTreeNode Node;
     private static CopyResponseListener copyListener;
     private static PutListener putListener;
+    private static ActionListener actionListener;
 
     private boolean debugXML = false;
 
@@ -145,12 +146,55 @@ public class WebDAVResponseInterpreter
         {
             if (res.getStatusCode() >= 300)
             {
-                resetInProgress();
+                //resetInProgress();
                 if( (res.getStatusCode() == 302) || (res.getStatusCode() == 301) )
                 {
                     String location = res.getHeader( "Location" );
                     errorMsg("The resource requested moved to " + location + "\nPlease try connecting to the new location." );
                 }
+		else if( ( Method.equals("MOVE") || Method.equals("DELETE"))&&( (res.getStatusCode() == 412) || (res.getStatusCode() == 423)) )
+		{
+		    // Do the processing for the two kinds of Methods
+		    // That is discoverLock, but set the passed in String to
+		    // set the Extra field to be return processed
+		    if (Method.equals("MOVE"))
+		    {
+			// check if this is the second trip
+			if (Extra.startsWith("rename2:"))
+			{
+			    // Reset the name we attempted to change
+			    ActionEvent ae = new ActionEvent(this, ActionEvent.ACTION_FIRST, "reset");
+			    actionListener.actionPerformed(ae);
+			    
+			    // Alert User of error
+                            errorMsg("Rename Failed\nStatus " + res.getStatusCode() + " " + res.getReasonLine() );
+			}
+			else  // first attempt
+			{
+                	    int pos = Extra.indexOf(":");
+                            String tmp = Extra.substring(pos + 1);
+
+        		    clearStream();
+
+                            generator.DiscoverLock("rename2:" + tmp);
+			}
+		    }
+		    else
+		    {
+			// check if this is the second trip
+			if (Extra.startsWith("delete2:"))
+			{
+                	    errorMsg("Delete Failed\nStatus " + res.getStatusCode() + " " + res.getReasonLine() );
+			}
+			else  // first attempt
+			{
+        		    clearStream();
+                            generator.DiscoverLock("delete2:");
+			}
+		    }
+
+		
+		}
                 else
                     errorMsg("DAV Interpreter:\n\n" + res.getStatusCode() + " " + res.getReasonLine());
                 return;
@@ -158,7 +202,7 @@ public class WebDAVResponseInterpreter
             if (Method.equals("MOVE"))
             {
                 parseMove();
-                resetInProgress();
+                //resetInProgress();
                 return;
             }
         }
@@ -167,8 +211,9 @@ public class WebDAVResponseInterpreter
             System.out.println(ex);
         }
 
-        if (Method.equals("PROPFIND"))
+        if (Method.equals("PROPFIND")){
             parsePropFind();
+	}
         else if (Method.equals("PROPPATCH"))
             parsePropPatch();
         else if (Method.equals("MKCOL"))
@@ -178,7 +223,9 @@ public class WebDAVResponseInterpreter
         else if (Method.equals("PUT"))
             parsePut();
         else if (Method.equals("DELETE"))
+	{
             parseDelete();
+	}
         else if (Method.equals("COPY"))
         {
             //Original
@@ -288,8 +335,10 @@ public class WebDAVResponseInterpreter
                 fireInsertionEvent(HostName + Resource);
             }
         }
-        else if (Extra.equals("lock") || Extra.equals("unlock") || Extra.equals("delete") || Extra.startsWith("rename:") || Extra.equals("display")
-           || Extra.equals("commit") )
+        else if (Extra.equals("lock") || Extra.equals("unlock") 
+	   || Extra.equals("delete") || Extra.startsWith("rename:") 
+	   || Extra.equals("display") || Extra.equals("commit") 
+	   || Extra.startsWith("rename2:") || Extra.startsWith("delete2:") ) 
         {
             // get lock information out of XML tree
             String lockToken = null;
@@ -392,9 +441,9 @@ public class WebDAVResponseInterpreter
             }
             if (Extra.equals("lock"))
             {
-                String lockInfo = getLockInfo();
-                generator.GenerateLock(lockInfo,lockToken);
-                generator.execute();
+                    String lockInfo = getLockInfo();
+                    generator.GenerateLock(lockInfo,lockToken);
+                    generator.execute();
             }
             else if (Extra.equals("unlock"))
             {
@@ -428,9 +477,27 @@ public class WebDAVResponseInterpreter
         clearStream();
         //Old
         generator.setNode(Node);
-                generator.GenerateMove(dest, dir, false, true, lockToken);
+                generator.GenerateMove(dest, dir, false, true, lockToken, "rename");
                 generator.execute();
             }
+            else if(Extra.startsWith("rename2:"))
+	    {
+		// gets the response to the query DiscoverLock
+		generator.setSecondTime(true);
+                generator.GenerateMove(null, null, false, true, lockToken, "rename2:");
+		generator.setSecondTime(false);
+		clearStream();
+                generator.execute();
+	    }
+            else if(Extra.startsWith("delete2:"))
+	    {
+		// gets the response to the query DiscoverLock
+		generator.setSecondTime(true);
+                generator.GenerateDelete(lockToken);
+		generator.setSecondTime(false);
+		clearStream();
+                generator.execute();
+	    }
             else if (Extra.equals("display"))
             {
                 displayLock(lockType, lockScope, lockDepth, lockToken, lockTimeout, ownerInfo);
@@ -733,6 +800,12 @@ public class WebDAVResponseInterpreter
         putListener = l;
     }
 
+    public void addActionListener( ActionListener l)
+    {
+        // Add only one for now
+        actionListener = l;
+    }
+
 
     public void executeCopy()
     {
@@ -754,6 +827,10 @@ public class WebDAVResponseInterpreter
         {
             if (res.getStatusCode() >= 300)
             {
+		if( Extra.startsWith("rename")){
+		    ActionEvent ae = new ActionEvent(this, ActionEvent.ACTION_FIRST, "reset");
+		    actionListener.actionPerformed(ae);
+		}
                 errorMsg("DAV Interpreter:\n\n" + res.getStatusCode() + " " + res.getReasonLine());
             }
         }
@@ -763,6 +840,7 @@ public class WebDAVResponseInterpreter
         }
 
         clearStream();
+
         CopyResponseEvent e = new CopyResponseEvent( this, Node);
         copyListener.CopyEventResponse(e);
     }
@@ -917,6 +995,7 @@ public class WebDAVResponseInterpreter
         }
     }
 
+/*
     public boolean inProgress()
     {
         return inProg;
@@ -931,6 +1010,7 @@ public class WebDAVResponseInterpreter
     {
         inProg = false;
     }
+*/
 
     public String getResource()
     {
