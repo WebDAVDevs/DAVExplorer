@@ -1,16 +1,18 @@
 Changes for version 0.81-dev:
-- Fixed handling of default namespace
+- Fixed handling of default namespace in the view/modify property dialog
 - Fixed menu selection of view/modify properties dialog
 - Fixed problems with property addition to root
 - Apache 1.3.x workaround: PROPPATCH returns a 500 error if Host: header contains
   the port number. The workaround is activated with the option -DApache=yes
+- Made the MS SharePoint workaround optional. It is activated with the following
+  command line: java -jar -DSharePoint=true DAVExplorer.jar
 
 Changes for version 0.80:
 - Makefile for HTTPClient now works with JSSE installed as "bundled" extension.
 - Fixed handling of EOF for whitespace after the final tag (interoperability
   bug with Adobe InScope).
 - Changed the parser code to allow tag names starting with a digit
-  (interoperability problem with Microsoft SharePoint).
+  (interoperability problem with Microsoft SharePoint (a bug in SharePoint)).
 - Removed whitespace in the created XML for lockowner and keepalive properties.
 - Interoperability problem fixed for cases when properties for a collection
   and its contents are requested and the server doesn't send properties for the
