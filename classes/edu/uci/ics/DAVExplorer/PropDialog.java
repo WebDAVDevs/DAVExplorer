@@ -224,10 +224,8 @@ public class PropDialog extends JDialog
         Element remove = model.getModified(true);
         WebDAVRequestGenerator generator = WebDAVResponseInterpreter.getGenerator();
         generator.GeneratePropPatch( resource, add, remove, locktoken );
-        // TODO: some kind of visual indication
         waiting = true;
         generator.execute();
-        // TODO: check for error
     }
 
     public void cancel()

@@ -34,7 +34,7 @@ package HTTPClient;
 import java.io.InputStream;
 import java.io.SequenceInputStream;
 import java.io.ByteArrayInputStream;
-// 2001-May-23: jfeise@ics.uci.edu  added for logging
+// 2001-May-23: dav-exp@ics.uci.edu  added for logging
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InterruptedIOException;
@@ -141,7 +141,7 @@ public final class Response implements RoResponse, GlobalConstants, Cloneable
             boolean      retry = false;
 
     /**
-      * Joachim Feise (jfeise@ics.uci.edu)
+      * Joachim Feise (dav-exp@ics.uci.edu)
       * Logging extension
       */
     private static boolean logging = false;
@@ -609,7 +609,7 @@ public final class Response implements RoResponse, GlobalConstants, Cloneable
 	    inp_stream.close();
 	}
 
-    // 2001-May-23: jfeise@ics.uci.edu  added logging
+    // 2001-May-23: dav-exp@ics.uci.edu  added logging
     if( logging )
     {
         try
@@ -1138,7 +1138,7 @@ public final class Response implements RoResponse, GlobalConstants, Cloneable
 				"\"" + method + " " + resource + "\":  (" +
 				inp_stream.hashCode() + ")\n\n" + headers);
 
-    // 2001-May-23: jfeise@ics.uci.edu  added logging
+    // 2001-May-23: dav-exp@ics.uci.edu  added logging
     if(logging)
     {
         try
@@ -1418,7 +1418,7 @@ public final class Response implements RoResponse, GlobalConstants, Cloneable
 		{ }
 	}
 
-    // 2001-May-23: jfeise@ics.uci.edu  added logging
+    // 2001-May-23: dav-exp@ics.uci.edu  added logging
     if( logging )
     {
         try
@@ -1474,7 +1474,7 @@ public final class Response implements RoResponse, GlobalConstants, Cloneable
     }
 
 
-    // 2001-May-23: jfeise@ics.uci.edu  added logging
+    // 2001-May-23: dav-exp@ics.uci.edu  added logging
     public void setLogging( boolean logging, String filename )
     {
         Response.logging = logging;
@@ -1486,14 +1486,14 @@ public final class Response implements RoResponse, GlobalConstants, Cloneable
     }
 
 
-    // 2001-May-23: jfeise@ics.uci.edu  added logging
+    // 2001-May-23: dav-exp@ics.uci.edu  added logging
     public boolean getLogging()
     {
         return logging;
     }
 
 
-    // 2001-May-23: jfeise@ics.uci.edu  added logging
+    // 2001-May-23: dav-exp@ics.uci.edu  added logging
     public String getLogFilename()
     {
         return logFilename;

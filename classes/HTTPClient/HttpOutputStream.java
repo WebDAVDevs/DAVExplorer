@@ -126,7 +126,7 @@ public class HttpOutputStream extends OutputStream
     private boolean ignore = false;
 
     /**
-     * Joachim Feise (jfeise@ics.uci.edu)
+     * Joachim Feise (dav-exp@ics.uci.edu)
      *Logging extension
      */
     private static boolean logging = false;
@@ -349,10 +349,10 @@ public class HttpOutputStream extends OutputStream
 
 	rcvd += len;
 
-    // 2003-March-26: Joachim Feise (dav-dev@ics.uci.edu)  added progress reporting
+    // 2003-March-26: Joachim Feise (dav-exp@ics.uci.edu)  added progress reporting
     ProgressObserver.getInstance().fireProgressEvent( rcvd, length, req.getMethod());
 
-    // 2003-March-26: Joachim Feise (dav-dev@ics.uci.edu)  added logging
+    // 2003-March-26: Joachim Feise (dav-exp@ics.uci.edu)  added logging
     if(logging)
     {
         try
@@ -483,7 +483,7 @@ public class HttpOutputStream extends OutputStream
     }
 
 
-    // 2001-May-23: jfeise@ics.uci.edu  added logging
+    // 2001-May-23: dav-exp@ics.uci.edu  added logging
     public void setLogging( boolean logging, String filename )
     {
         HttpOutputStream.logging = logging;

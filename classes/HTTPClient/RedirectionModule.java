@@ -162,7 +162,7 @@ class RedirectionModule implements HTTPClientModule
 				    "exception '" + e + "'");
 		}
 
-        // 2001-May-23: jfeise@ics.uci.edu  commented out since implementing
+        // 2001-May-23: dav-exp@ics.uci.edu  commented out since implementing
         // HTTPConnection.setSSLSocketFactory() or HTTPConnection.getSSLSocketFactory()
         // would not allow compilation without JSSE
         // Workaround: we are only using SSLSocketFactory.getDefault() only
@@ -301,7 +301,7 @@ class RedirectionModule implements HTTPClientModule
 					     req.getConnection().getHost(),
 					     req.getConnection().getPort());
 		    mvd.setCurrentProxy(loc.getHost(), loc.getPort());
-            // 2001-May-23: jfeise@ics.uci.edu  commented out since implementing
+            // 2001-May-23: dav-exp@ics.uci.edu  commented out since implementing
             // HTTPConnection.setSSLSocketFactory() or HTTPConnection.getSSLSocketFactory()
             // would not allow compilation without JSSE
             // Workaround: we are only using SSLSocketFactory.getDefault() only
@@ -357,7 +357,7 @@ class RedirectionModule implements HTTPClientModule
 			    nres = loc.toExternalForm();
 			}
 
-            // 2001-May-23: jfeise@ics.uci.edu  commented out since implementing
+            // 2001-May-23: dav-exp@ics.uci.edu  commented out since implementing
             // HTTPConnection.setSSLSocketFactory() or HTTPConnection.getSSLSocketFactory()
             // would not allow compilation without JSSE
             // Workaround: we are only using SSLSocketFactory.getDefault() only

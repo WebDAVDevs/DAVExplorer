@@ -103,7 +103,7 @@ public class Parser
     {
         String version = System.getProperty("java.version");
         jdk11 = version.equals("1.1") ? true : false;
-        // Joachim Feise (jfeise@ics.uci.edu), 25 March 1999:
+        // Joachim Feise (dav-exp@ics.uci.edu), 25 March 1999:
         // assume that JDK1.2 and later also support JDK 1.1 features
         // Updated 26 February 2001: check for all JDKs > 1.1
         if( jdk11==false )
@@ -736,7 +736,7 @@ public class Parser
 
         if (lookahead < 256)
         {
-            // Joachim Feise (jfeise@ics.uci.edu) 2001 July 25:
+            // Joachim Feise (dav-exp@ics.uci.edu) 2001 July 25:
             // Allowing digits in tag names to fix an interoperability problem
             // with Microsoft's SharePoint DAV Server
             // Update 2001 October 7:
@@ -943,7 +943,7 @@ public class Parser
 
             if (! inTag)
             {
-                // Joachim Feise (jfeise@ics.uci.edu), 26 February 2001:
+                // Joachim Feise (dav-exp@ics.uci.edu), 26 February 2001:
                 // Got rid of the ENTITYREF node and store the value
                 // directly in the string
                 // Note: I'm not sure if this works in all cases
@@ -2145,7 +2145,7 @@ public class Parser
                             current = (Context)contexts.elementAt(contextAt-1);
                             scanName("element close tag");
                             current = c;
-                            // Joachim Feise (jfeise@ics.uci.edu), 25 March 1999:
+                            // Joachim Feise (dav-exp@ics.uci.edu), 25 March 1999:
                             // changed from name != ...
                             // to !name.equals( ... )
                             // in order to allow proper parsing under JDK 1.2

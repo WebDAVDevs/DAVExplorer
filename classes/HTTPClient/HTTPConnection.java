@@ -3037,19 +3037,13 @@ public class HTTPConnection implements GlobalConstants, HTTPClientModuleConstant
 		// Send headers
         // 2003-March-26: Joachim Feise (dav-exp@ics.uci.edu) changed
         // for progress reporting
-        OutputStream sock_out = new BufferedOutputStream(
-                                        sock.getOutputStream(),
-                                        sock.getSendBufferSize()
-                                    );
-		//OutputStream sock_out = sock.getOutputStream();
+        OutputStream sock_out = new BufferedOutputStream( sock.getOutputStream() );
 		if (haveMSLargeWritesBug)
 		    sock_out = new MSLargeWritesBugStream(sock_out);
 
 		hdr_buf.writeTo(sock_out);
 
-
 		// Wait for "100 Continue" status if necessary
-
 		try
 		{
 		    if (ServProtVersKnown  &&
@@ -3080,7 +3074,6 @@ public class HTTPConnection implements GlobalConstants, HTTPClientModuleConstant
 		    {
                 // wait for something on the network; check available()
                 // roughly every 100 ms
-
                 long num_units = req.delay_entity / 100;
                 long one_unit  = req.delay_entity / num_units;
 
@@ -3097,7 +3090,7 @@ public class HTTPConnection implements GlobalConstants, HTTPClientModuleConstant
                     // 2003-March-26: Joachim Feise (dav-exp@ics.uci.edu) changed
                     // for progress reporting
                     byte[] data = req.getData();
-                    int len = sock.getSendBufferSize();
+                    int len = 4096;             // use some reasonable size
                     int writtenBytes = 0;
                     if( writtenBytes+len > data.length )
                         len = data.length;
@@ -3110,7 +3103,6 @@ public class HTTPConnection implements GlobalConstants, HTTPClientModuleConstant
                             len = data.length - writtenBytes;
                     }
                     ProgressObserver.getInstance().fireProgressEvent(writtenBytes,writtenBytes,req.getMethod());
-                    // sock_out.write(req.getData()); // he's still waiting
                 }
                 else
                     keep_alive = false;		// Uh oh!
@@ -3120,7 +3112,7 @@ public class HTTPConnection implements GlobalConstants, HTTPClientModuleConstant
                 // 2003-March-26: Joachim Feise (dav-exp@ics.uci.edu) changed
                 // for progress reporting
                 byte[] data = req.getData();
-                int len = sock.getSendBufferSize();
+                int len = 4096;             // use some reasonable size
                 int writtenBytes = 0;
                 if( writtenBytes+len > data.length )
                     len = data.length;
@@ -3133,7 +3125,6 @@ public class HTTPConnection implements GlobalConstants, HTTPClientModuleConstant
                         len = data.length - writtenBytes;
                 }
                 ProgressObserver.getInstance().fireProgressEvent( writtenBytes, writtenBytes, req.getMethod());
-                // sock_out.write(req.getData());
             }
             // 2001-May-23: Joachim Feise (dav-dev@ics.uci.edu)  added logging
             if(logging)

@@ -116,7 +116,7 @@ public class HTTPResponse implements HTTPClientModuleConstants, GlobalConstants
     private String       method = null;
 
     /**
-     * Joachim Feise (jfeise@ics.uci.edu)
+     * Joachim Feise (dav-exp@ics.uci.edu)
      *Logging extension
      */
     private static boolean logging = false;
@@ -798,7 +798,7 @@ public class HTTPResponse implements HTTPClientModuleConstants, GlobalConstants
 	/* all done, so copy data */
 	if (!request.internal_subrequest)
 	    init(response);
-    // 2001-May-23: jfeise@ics.uci.edu  added logging
+    // 2001-May-23: dav-exp@ics.uci.edu  added logging
     else if( logging )
         doBodyLogging(response.cd_type);
 
@@ -829,7 +829,7 @@ public class HTTPResponse implements HTTPClientModuleConstants, GlobalConstants
 	this.retry         = resp.retry;
 	initialized        = true;
 
-    // 2001-May-23: jfeise@ics.uci.edu  added logging
+    // 2001-May-23: dav-exp@ics.uci.edu  added logging
     if( logging )
         doBodyLogging(resp.cd_type);
     }
@@ -983,7 +983,7 @@ public class HTTPResponse implements HTTPClientModuleConstants, GlobalConstants
     }
 
 
-    // 2001-May-23: jfeise@ics.uci.edu  added logging
+    // 2001-May-23: dav-exp@ics.uci.edu  added logging
     public void setLogging( boolean logging, String filename )
     {
         HTTPResponse.logging = logging;
@@ -991,7 +991,7 @@ public class HTTPResponse implements HTTPClientModuleConstants, GlobalConstants
     }
 
 
-    // 2001-May-23: jfeise@ics.uci.edu  added logging
+    // 2001-May-23: dav-exp@ics.uci.edu  added logging
     private void setLogging( Response resp )
     {
         logging = resp.getLogging();
@@ -999,7 +999,7 @@ public class HTTPResponse implements HTTPClientModuleConstants, GlobalConstants
     }
 
 
-    // 2001-May-23: jfeise@ics.uci.edu  added logging
+    // 2001-May-23: dav-exp@ics.uci.edu  added logging
     private void setLogging( Request req )
     {
         if( req.getConnection() != null )
@@ -1010,7 +1010,7 @@ public class HTTPResponse implements HTTPClientModuleConstants, GlobalConstants
     }
 
 
-    // 2001-May-23: jfeise@ics.uci.edu  added logging
+    // 2001-May-23: dav-exp@ics.uci.edu  added logging
     private void doBodyLogging(int cd_type)
     {
         if( Data == null )

@@ -23,7 +23,7 @@ import com.ms.xml.util.StringInputStream;
  * @see Document
  * @see Element
  *
- * Joachim Feise (jfeise@ics.uci.edu), 25 March 1999:
+ * Joachim Feise (dav-exp@ics.uci.edu), 25 March 1999:
  * Commented out all COM- and JavaScript-related stuff to be able to compile the code
  * with JDK 1.2
  * Also fixed parameter count mismatch in calls to ElementFactory.createElement()

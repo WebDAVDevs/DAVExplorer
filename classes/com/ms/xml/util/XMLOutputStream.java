@@ -38,7 +38,7 @@ public class XMLOutputStream extends OutputStream
     {
         String version = System.getProperty("java.version");
         jdk11 = version.equals("1.1") ? true : false;
-        // Joachim Feise (jfeise@ics.uci.edu), 25 March 1999:
+        // Joachim Feise (dav-exp@ics.uci.edu), 25 March 1999:
         // assume that JDK1.2 and later also support JDK 1.1 features
         // Updated 26 February 2001: check for all JDKs > 1.1
         // Updated 11 January 2002: check for JDK 1.2.x and higher

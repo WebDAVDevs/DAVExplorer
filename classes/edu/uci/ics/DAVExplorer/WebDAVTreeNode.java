@@ -597,7 +597,7 @@ public class WebDAVTreeNode extends DefaultMutableTreeNode
                 }
                 pathToResource = pathToResource + "/";
 
-                // 1999-June-08, Joachim Feise (jfeise@ics.uci.edu):
+                // 1999-June-08, Joachim Feise (dav-exp@ics.uci.edu):
                 // workaround for IBM's DAV4J, which does not handle propfind properly
                 // with the prop tag. To use the workaround, run DAV Explorer with
                 // 'java -jar -Dpropfind=allprop DAVExplorer.jar'
