@@ -63,58 +63,21 @@ public class WebDAVLockInfo extends Dialog implements ActionListener
 Public methods and attributes section
 -----------------------------------------------------------------------*/
     Vector listeners = new Vector();
-    static final String WebDAVClassName = "DAVExplorer";
-    static final String fileName = "lockinfo.dat";
-    String lockInfo;
-    String userPath;
-    String filePath;
 
     //Construction
     public WebDAVLockInfo(JFrame parent, String strCaption, boolean isModal)
     {
         super(parent, strCaption, isModal);
 
-        Rectangle recthDimensions = getParent().getBounds();
-        setBounds(recthDimensions.x,
-             recthDimensions.y + (recthDimensions.height - 70)/2, 400, 70 );
-        userPath = System.getProperty( "user.home" );
-        if (userPath == null)
-            userPath = "";
-        else
-            userPath += File.separatorChar;
-        File theFile = new File(userPath + fileName);
-        if (theFile.exists())
-            filePath = userPath + fileName;
-        if (filePath != null)
-        {
-            try
-            {
-                FileInputStream fin = new FileInputStream(filePath);
-                BufferedReader in = new BufferedReader(new InputStreamReader(fin));
-                lockInfo = in.readLine();
-                in.close();
-            }
-            catch (Exception fileEx)
-            {
-            }
-        }
-
         JPanel groupPanel = new JPanel(new GridLayout( 2, 1 ));
         groupPanel.add(new JLabel("Lock Info:"));
-        groupPanel.add(txtUsername = new JTextField(80));
-        if (lockInfo != null)
-            txtUsername.setText(lockInfo);
-        else
-        {
-            if( GlobalData.getGlobalData().doSSL() )
-                txtUsername.setText("https://");
-            else
-                txtUsername.setText("http://");
-        }
+        groupPanel.add(txtUsername = new JTextField(40));
+        txtUsername.setText( GlobalData.getGlobalData().ReadConfigEntry("lockinfo") );
         add(OKbutton = new JButton("OK"), BorderLayout.SOUTH);
         OKbutton.addActionListener(this);
         add(groupPanel, BorderLayout.CENTER);
         pack();
+        center();
         setVisible( true );
     }
 
@@ -136,28 +99,11 @@ Public methods and attributes section
 
             if ( user.length() == 0  )
                 return;
-            try
-            {
-            FileOutputStream fout = new FileOutputStream(userPath + fileName);
-            BufferedWriter out = new BufferedWriter(new OutputStreamWriter(fout));
-                out.write(user,0,user.length());
-                out.newLine();
-                out.close();
-            }
-            catch (Exception exc)
-            {
-            }
+            GlobalData.getGlobalData().WriteConfigEntry( "lockinfo", user );
         }
         setVisible( false );
         dispose();
     }
-
-    //Set the name of the user in the protected data member
-    public void setUsername(String strUsername)
-    {
-        m_strUsername = strUsername;
-    }
-
 /*-----------------------------------------------------------------------
 Private methods and attributes section
 -----------------------------------------------------------------------*/
@@ -165,9 +111,14 @@ Private methods and attributes section
 /*-----------------------------------------------------------------------
 Protected methods and attributes section
 -----------------------------------------------------------------------*/
-    protected String m_strUsername;
-    protected String m_strUserPassword;
+    protected void center()
+    {
+        Rectangle recthDimensions = getParent().getBounds();
+        Rectangle bounds = getBounds();
+        setBounds(recthDimensions.x + (recthDimensions.width-bounds.width)/2,
+             recthDimensions.y + (recthDimensions.height - bounds.height)/2, bounds.width, bounds.height );
+    }
+
     protected JTextField txtUsername;
-    protected JPasswordField txtPassword;
     protected JButton OKbutton;
 }

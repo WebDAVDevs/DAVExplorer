@@ -16,31 +16,6 @@
  * IMPLIED WARRANTIES, INCLUDING, WITHOUT LIMITATION, THE IMPLIED
  * WARRANTIES OF MERCHANTIBILITY AND FITNESS FOR A PARTICULAR PURPOSE.
  */
-// This code was originally written by an undergraduate project
-// team at UCI.
-//
-// This class creates an event object which carries the path
-// and node to the recieving listener.
-//
-////////////////////////////////////////////////////////////////
-// The code has been modified to include povisions for the final
-// WebDAV xml namespaces.  A small number of program errors have
-// been corrected.
-//
-// Please use the following contact:
-//
-// dav-exp@ics.uci.edu
-//
-// Version: 0.4
-// Changes by: Yuzo Kanomata and Joe Feise
-// Date: 3/17/99
-//
-// Change List:
-// Note: This code was not tested at this time (3/17/99) as
-// the current Apache server does not support locking.
-//
-// Date: 2001-Jan-12
-// Joe Feise: Added support for https (SSL)
 
 package DAVExplorer;
 
@@ -57,7 +32,7 @@ import java.awt.*;
 import java.awt.event.*;
 import java.io.*;
 
-public class WebDAVLockInfo extends Dialog implements ActionListener
+public class WebDAVProxyInfo extends Dialog implements ActionListener
 {
 /*-----------------------------------------------------------------------
 Public methods and attributes section
@@ -65,14 +40,14 @@ Public methods and attributes section
     Vector listeners = new Vector();
 
     //Construction
-    public WebDAVLockInfo(JFrame parent, String strCaption, boolean isModal)
+    public WebDAVProxyInfo(JFrame parent, String strCaption, boolean isModal)
     {
         super(parent, strCaption, isModal);
 
         JPanel groupPanel = new JPanel(new GridLayout( 2, 1 ));
-        groupPanel.add(new JLabel("Lock Info:"));
+        groupPanel.add(new JLabel("Proxy Info:"));
         groupPanel.add(txtUsername = new JTextField(40));
-        txtUsername.setText( GlobalData.getGlobalData().ReadConfigEntry("lockinfo") );
+        txtUsername.setText( GlobalData.getGlobalData().ReadConfigEntry("proxy") );
         add(OKbutton = new JButton("OK"), BorderLayout.SOUTH);
         OKbutton.addActionListener(this);
         add(groupPanel, BorderLayout.CENTER);
@@ -97,13 +72,12 @@ Public methods and attributes section
         {
             String user = txtUsername.getText();
 
-            if ( user.length() == 0  )
-                return;
-            GlobalData.getGlobalData().WriteConfigEntry( "lockinfo", user );
+            GlobalData.getGlobalData().WriteConfigEntry( "proxy", user );
         }
         setVisible( false );
         dispose();
     }
+
 /*-----------------------------------------------------------------------
 Private methods and attributes section
 -----------------------------------------------------------------------*/

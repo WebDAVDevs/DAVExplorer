@@ -28,6 +28,8 @@ package DAVExplorer;
 import java.awt.Cursor;
 import javax.swing.JOptionPane;
 import javax.swing.JFrame;
+import java.util.*;
+import java.io.*;
 
 /**
  * This singleton class defines various global data structures
@@ -53,8 +55,10 @@ class GlobalData
 
     JFrame mainFrame = null;
     Cursor origCursor = null;
+    private static final String fileName = "DAVExplorer.dat";
+    private static final String tmpFileName = "DAVExplorer.tmp";
 
-    private static GlobalData globalData;
+    private static GlobalData globalData = null;
 
     protected GlobalData()
     {
@@ -169,6 +173,100 @@ class GlobalData
     {
         return ssl;
     }
+
+
+    public String ReadConfigEntry( String token )
+    {
+        String info = "";
+        String userPath = System.getProperty( "user.home" );
+        if (userPath == null)
+            userPath = "";
+        else
+            userPath += File.separatorChar;
+        String filePath = null;
+        File theFile = new File(userPath + fileName);
+        if (theFile.exists())
+            filePath = userPath + fileName;
+        if (filePath != null)
+        {
+            try
+            {
+                FileInputStream fin = new FileInputStream(filePath);
+                BufferedReader in = new BufferedReader(new InputStreamReader(fin));
+                boolean found = false;
+                do
+                {
+                    String line = in.readLine();
+                    StringTokenizer filetokens = new StringTokenizer( line, "= \t" );
+                    if( (filetokens.nextToken()).equals(token) )
+                    {
+                        info = filetokens.nextToken();
+                        found = true;
+                    }
+                }
+                while( !found );
+                in.close();
+            }
+            catch (Exception fileEx)
+            {
+            }
+        }
+        return info;
+    }
+
+
+    public void WriteConfigEntry( String token, String data )
+    {
+        String userPath = System.getProperty( "user.home" );
+        if (userPath == null)
+            userPath = "";
+        else
+            userPath += File.separatorChar;
+        String filePath = userPath + fileName;
+        String tmpFilePath = userPath + tmpFileName;
+        try
+        {
+            FileOutputStream fout = new FileOutputStream( tmpFilePath );
+            BufferedWriter out = new BufferedWriter(new OutputStreamWriter(fout));
+            File theFile = new File(filePath);
+            if ( theFile.exists() )
+            {
+                FileInputStream fin = new FileInputStream(filePath);
+                BufferedReader in = new BufferedReader(new InputStreamReader(fin));
+                String line = null;
+                do
+                {
+                    line = in.readLine();
+                    if( line != null )
+                    {
+                        StringTokenizer filetokens = new StringTokenizer( line, "= \t" );
+                        if( !(filetokens.nextToken()).equals(token) )
+                        {
+                            out.write( line );
+                            out.newLine();
+                        }
+                    }
+                }
+                while( line != null );
+                in.close();
+            }
+            out.write( token );
+            out.write( "=" );
+            out.write( data );
+            out.newLine();
+            out.close();
+
+            if( theFile.exists() )
+                theFile.delete();
+            File theNewFile = new File( tmpFilePath );
+            theNewFile.renameTo( theFile );
+        }
+        catch (Exception fileEx)
+        {
+            System.out.println( fileEx.toString() );
+        }
+    }
+
 
     private void init( boolean readFromProperties )
     {

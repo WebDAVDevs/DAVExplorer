@@ -80,7 +80,7 @@ public class WebDAVResponseInterpreter
     private static Vector lockListeners = new Vector();
     private final static String EditDir = "Edit";
     private final static String WebDAVClassName = "DAVExplorer";
-    private final static String lockInfoFilename = "lockinfo.dat";
+//    private final static String lockInfoFilename = "lockinfo.dat";
     private final static String WebDAVLockDir = "";
     private final static String HTTPString = "HTTP/1.1";
     private static String WebDAVEditDir = null;
@@ -616,23 +616,7 @@ public class WebDAVResponseInterpreter
 
     public String getLockInfo()
     {
-        File lockFile = new File(userPathDir + lockInfoFilename);
-        if (!lockFile.exists())
-            return new String("");
-        String lockInfo = null;
-        try
-        {
-            FileInputStream fin = new FileInputStream(lockFile);
-            BufferedReader in = new BufferedReader(new InputStreamReader(fin));
-            lockInfo = in.readLine();
-            in.close();
-        }
-        catch (Exception fileEx)
-        { }
-        if (lockInfo == null)
-            return new String("");
-        else
-            return lockInfo;
+        return GlobalData.getGlobalData().ReadConfigEntry("lockinfo");
     }
 
     public boolean Refreshing()

@@ -58,14 +58,17 @@ public class WebDAVManager
 {
     public HTTPResponse Response;
     private WebDAVConnection Con;
-    private String HostName = null;
+    private String Hostname = null;
     private int Port;
+    private String ProxyHostname = null;
+    private int ProxyPort;
     private String MethodName;
     private String ResourceName;
     private NVPair[] Headers;
     private byte[] Body;
     private String ExtraInfo;
     private Vector Listeners = new Vector();
+    private static String WebDAVPrefix = "http://";
 
     private boolean logging = false;
     private String logFilename = null;
@@ -76,31 +79,79 @@ public class WebDAVManager
 
     public void sendRequest(WebDAVRequestEvent e)
     {
+        String ProxyTempHost = null;
+        int ProxyTempPort = 0;
+        String proxy = GlobalData.getGlobalData().ReadConfigEntry("proxy");
+        boolean useProxy = false;
+        // find out if proxy is used
+        if( (proxy.length() > 0) || proxy.startsWith(WebDAVPrefix) )
+        {
+            if( proxy.startsWith(WebDAVPrefix) )
+                proxy = proxy.substring(WebDAVPrefix.length());
+            StringTokenizer str = new StringTokenizer( proxy, "/" );
+            if( !str.hasMoreTokens() )
+            {
+                GlobalData.getGlobalData().errorMsg("Invalid proxy name.");
+                return;
+            }
+            proxy = str.nextToken();
+
+            str = new StringTokenizer( proxy, ":" );
+            if( !str.hasMoreTokens() )
+            {
+                GlobalData.getGlobalData().errorMsg("Invalid proxy name.");
+                return;
+            }
+            useProxy = true;
+            ProxyTempHost = str.nextToken();
+            if( str.hasMoreTokens() )
+            {
+                try
+                {
+                    ProxyTempPort = Integer.parseInt( str.nextToken() );
+                }
+                catch (Exception ex)
+                {
+                    GlobalData.getGlobalData().errorMsg("Invalid proxy port number.");
+                    Port = 0;
+                    return;
+                }
+            }
+        }
+
         WebDAVTreeNode tn = e.getNode();
         String TempHost = e.getHost();
         int TempPort = e.getPort();
 
-        if( ((TempHost!=null) && (TempHost.length()>0) && !TempHost.equals(HostName))
-            || (TempPort!=Port) )
+        if( ((TempHost!=null) && (TempHost.length()>0) && !TempHost.equals(Hostname)) ||
+            (TempPort!=Port) ||
+            ((ProxyTempHost!=null) && (ProxyTempHost.length()>0) && !ProxyTempHost.equals(ProxyHostname)) ||
+            (ProxyTempPort!=ProxyPort) )
         {
             try
             {
-                HostName = TempHost;
+                if( useProxy )
+                {
+                    ProxyHostname = ProxyTempHost;
+                    ProxyPort = ProxyTempPort;
+                    HTTPConnection.setProxyServer( ProxyHostname, ProxyPort );
+                }
+                Hostname = TempHost;
                 if (TempPort != 0)
                 {
                     Port = TempPort;
                     if( GlobalData.getGlobalData().doSSL() )
-                        Con = new WebDAVConnection( "https", HostName, Port );
+                        Con = new WebDAVConnection( "https", Hostname, Port );
                     else
-                        Con = new WebDAVConnection(HostName, Port);
+                        Con = new WebDAVConnection(Hostname, Port);
                 }
                 else
                 {
                     Port = 0;
                     if( GlobalData.getGlobalData().doSSL() )
-                        Con = new WebDAVConnection( "https", HostName, 443 );
+                        Con = new WebDAVConnection( "https", Hostname, 443 );
                     else
-                        Con = new WebDAVConnection(HostName);
+                        Con = new WebDAVConnection(Hostname);
                 }
                 Con.setLogging( logging, logFilename );
             }
@@ -116,8 +167,8 @@ public class WebDAVManager
         {
             try
             {
-                Con.addDigestAuthorization(HostName,user, pass);
-                Con.addBasicAuthorization(HostName,user,pass);
+                Con.addDigestAuthorization(Hostname,user, pass);
+                Con.addBasicAuthorization(Hostname,user,pass);
             }
             catch (Exception exc)
             {
@@ -158,7 +209,7 @@ public class WebDAVManager
 
     public WebDAVResponseEvent GenerateWebDAVResponse(HTTPResponse Response, WebDAVTreeNode Node)
     {
-        WebDAVResponseEvent e = new WebDAVResponseEvent(this,HostName, Port, ResourceName,MethodName,Response,ExtraInfo, Node);
+        WebDAVResponseEvent e = new WebDAVResponseEvent(this,Hostname, Port, ResourceName,MethodName,Response,ExtraInfo, Node);
         return e;
     }
 
@@ -185,6 +236,18 @@ public class WebDAVManager
         if( Con != null )
         {
             Con.setLogging( logging, filename );
+        }
+    }
+
+    protected WebDAVConnection createProxyConnection( String Hostname, int Port )
+    {
+        if( Port != 0 )
+        {
+            return new WebDAVConnection( Hostname, Port );
+        }
+        else
+        {
+            return new WebDAVConnection( Hostname );
         }
     }
 }

@@ -187,6 +187,7 @@ public class WebDAVMenu extends JMenuBar implements ActionListener
     {
         JMenu mnu_EditMenu = new JMenu( "Edit", true );
 
+        mnu_EditMenu.add(new WebDAVMenuItem( "Edit Proxy Info",this, true ));
         mnu_EditMenu.add(new WebDAVMenuItem( "Edit Lock Info",this, true ));
         mnu_EditMenu.addSeparator();
         mnu_EditMenu.add(new WebDAVMenuItem( "Clear Auth Buffer", this, true ));

@@ -84,7 +84,7 @@ public class Main extends JFrame
     WebDAVMenu CommandMenu;
     Hashtable authTable;
     String authHost;
-    public final static String VERSION = "0.71";
+    public final static String VERSION = "0.71-dev";
     public final static String UserAgent = "UCI DAV Explorer/" + VERSION;
     String writeToDir;
 
@@ -627,6 +627,10 @@ public class Main extends JFrame
             else if (command.equals("Clear Auth Buffer"))
             {
                 authTable.clear();
+            }
+            else if (command.equals("Edit Proxy Info"))
+            {
+                WebDAVProxyInfo proxyInfo = new WebDAVProxyInfo(GlobalData.getGlobalData().getMainFrame(), "Proxy Info", true);
             }
             else if (command.equals("Edit Lock Info"))
             {
