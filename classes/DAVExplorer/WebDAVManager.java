@@ -160,6 +160,14 @@ public class WebDAVManager
                 GlobalData.getGlobalData().errorMsg( "Error: Protocol not supported.\n" + httpException.toString() );
             }
         }
+        if( Con == null )
+        {
+            // user hit enter twice? Creating a new WebDAVConnection can take
+            // a while, especially if a proxy is involved
+            // so we just return here
+            return;
+        }
+
         String user = e.getUser();
         String pass = e.getPass();
 
