@@ -8,6 +8,7 @@ Changes for version 0.81-dev:
   command line: java -jar -DSharePoint=true DAVExplorer.jar
 - Fixed handling problems of non-ASCII UTF-8 characters
 - Improved the logging of chunked data
+- Now allowing untrusted certificates by presenting a choice to the user
 
 Changes for version 0.80:
 - Makefile for HTTPClient now works with JSSE installed as "bundled" extension.
