@@ -92,7 +92,7 @@ public class PropModel extends AbstractTableModel implements TreeTableModel
         if( removed )
             return getRemoved( root, null );
         else
-            return getModified( root, null );
+            return getModified( root, null, false );
     }
 
     public void addNode( PropNode parentNode, PropNode node, boolean root )
@@ -454,14 +454,14 @@ public class PropModel extends AbstractTableModel implements TreeTableModel
         }
     }
 
-    private Element getModified( PropNode node, Element parent )
+    private Element getModified( PropNode node, Element parent, boolean ignoreModifiedFlag )
     {
         Element prop = null;
         Element retval = null;
         if( parent == null )
         {
             // root
-            if( childrenModified(node) )
+            if( childrenModified(node) || childrenRemoved(node) )
             {
                 AsGen namespace = WebDAVXML.findNamespace( new AsGen(), WebDAVProp.DAV_SCHEMA );
                 if( namespace == null )
@@ -479,15 +479,17 @@ public class PropModel extends AbstractTableModel implements TreeTableModel
                 {
                     for( int i=0; i<children.length; i++ )
                     {
-                        getModified( (PropNode)children[i], prop );
+                        getModified( (PropNode)children[i], prop, false );
                     }
                 }
             }
             else
                 return null;
         }
-        else if( childrenModified(node) )
+        else if( childrenModified(node) || childrenRemoved(node) || ignoreModifiedFlag )
         {
+            // if there are modified or removed children, we need to set all of the tree
+            // here, since the server just replaces the tree
             AsGen namespace = WebDAVXML.findNamespace( new AsGen(), node.getNamespace() );
             if( namespace == null )
                 namespace = WebDAVXML.createNamespace( new AsGen(), node.getNamespace() );
@@ -506,7 +508,7 @@ public class PropModel extends AbstractTableModel implements TreeTableModel
             retval = prop;
             for( int i=0; i<children.length; i++ )
             {
-                getModified( (PropNode)children[i], prop );
+                getModified( (PropNode)children[i], prop, true );
             }
         }
 
@@ -534,7 +536,17 @@ public class PropModel extends AbstractTableModel implements TreeTableModel
                 Object[] children = node.getRemovedChildren();
                 for( int i=0; i<children.length; i++ )
                 {
+                    // the child node we are looking at and all its children are deleted
                     getRemoved( (PropNode)children[i], prop );
+                }
+                children = node.getChildren();
+                for( int i=0; i<children.length; i++ )
+                {
+                    if( childrenRemoved((PropNode)children[i]) )
+                    {
+                        // some node below the current child node is deleted
+                        getRemoved( (PropNode)children[i], prop );
+                    }
                 }
             }
             else
@@ -542,6 +554,9 @@ public class PropModel extends AbstractTableModel implements TreeTableModel
         }
         else
         {
+            // delete the whole tree from the child on. If only parts of the tree
+            // were deleted, the getModified() function above makes sure that the
+            // data tree gets its correct shape
             AsGen namespace = WebDAVXML.findNamespace( new AsGen(), node.getNamespace() );
             if( namespace == null )
                 namespace = WebDAVXML.createNamespace( new AsGen(), node.getNamespace() );
