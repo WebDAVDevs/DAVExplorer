@@ -34,6 +34,10 @@
  * @author      Joachim Feise (dav-exp@ics.uci.edu)
  * @date        23 September 2003
  * Changes:     Changed the formatting of the parameter lists.
+ * @author      Jason McIntosh/Joachim Feise (dav-exp@ics.uci.edu)
+ * @date        29 October 2003
+ * Changes:     Integrated Jason's patch to handle cases where
+ *              lastModified is null or a funky string.
  */
 
 package edu.uci.ics.DAVExplorer;
@@ -217,7 +221,7 @@ public class DataNode
 
     public Date getDate()
     {
-        if( lastModified.length() == 0 )
+        if( lastModified == null || lastModified.length() == 0 )
             return null;
 
         DateFormat df = DateFormat.getDateTimeInstance( DateFormat.SHORT, DateFormat.SHORT );
@@ -260,6 +264,8 @@ public class DataNode
                             case DateFormat.FULL:
                                 // all combinations tried, fallback to
                                 // old Date(String) ctor
+                                // Reason: the old Date ctor recognizes
+                                // even strange date strings.
                                 return new Date(lastModified);
                         }
                         break;
