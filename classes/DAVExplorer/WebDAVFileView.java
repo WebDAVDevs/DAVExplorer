@@ -131,27 +131,43 @@ public class WebDAVFileView implements ViewSelectionListener
                 ZipFile file = new ZipFile( jarPath );
                 ZipEntry entry = file.getEntry( folderIconPath );
                 InputStream is = file.getInputStream( entry );
-                byte[] ba = new byte[is.available()];
-                is.read( ba );
-                FOLDER_ICON = new ImageIcon( ba );
+                int len = (int)entry.getSize();
+                if( len != -1 )
+		{
+                    byte[] ba = new byte[len];
+                    is.read( ba, 0, len );
+                    FOLDER_ICON = new ImageIcon( ba );
+		}
 
                 entry = file.getEntry( resPath );
                 is = file.getInputStream( entry );
-                ba = new byte[is.available()];
-                is.read( ba );
-                FILE_ICON = new ImageIcon( ba );
+                len = (int)entry.getSize();
+                if( len != -1 )
+		{
+                    byte[] ba = new byte[len];
+                    is.read( ba, 0, len );
+                    FILE_ICON = new ImageIcon( ba );
+		}
 
                 entry = file.getEntry( lckPath );
                 is = file.getInputStream( entry );
-                ba = new byte[is.available()];
-                is.read( ba );
-                LOCK_ICON = new ImageIcon( ba );
+                len = (int)entry.getSize();
+                if( len != -1 )
+		{
+                    byte[] ba = new byte[len];
+                    is.read( ba, 0, len );
+                    LOCK_ICON = new ImageIcon( ba );
+		}
 
                 entry = file.getEntry( unlckPath );
                 is = file.getInputStream( entry );
-                ba = new byte[is.available()];
-                is.read( ba );
-                UNLOCK_ICON = new ImageIcon( ba );
+                len = (int)entry.getSize();
+                if( len != -1 )
+		{
+                    byte[] ba = new byte[len];
+                    is.read( ba, 0, len );
+                    UNLOCK_ICON = new ImageIcon( ba );
+		}
             }
             catch( IOException e )
             {

@@ -121,30 +121,50 @@ public class WebDAVFileView implements ViewSelectionListener
         {
             try
             {
+                folderIconPath = iconPath + "TreeClosed.gif";
+                resPath = iconPath + "resource.gif";
+                lckPath = iconPath + "lck.gif";
+                unlckPath = iconPath + "unlck.gif";
                 ZipFile file = new ZipFile( jarPath );
                 ZipEntry entry = file.getEntry( folderIconPath );
                 InputStream is = file.getInputStream( entry );
-                byte[] ba = new byte[is.available()];
-                is.read( ba );
-                FOLDER_ICON = new ImageIcon( ba );
-                
+                int len = (int)entry.getSize();
+                if( len != -1 )
+		{
+                    byte[] ba = new byte[len];
+                    is.read( ba, 0, len );
+                    FOLDER_ICON = new ImageIcon( ba );
+		}
+
                 entry = file.getEntry( resPath );
                 is = file.getInputStream( entry );
-                ba = new byte[is.available()];
-                is.read( ba );
-                FILE_ICON = new ImageIcon( ba );
+                len = (int)entry.getSize();
+                if( len != -1 )
+		{
+                    byte[] ba = new byte[len];
+                    is.read( ba, 0, len );
+                    FILE_ICON = new ImageIcon( ba );
+		}
 
                 entry = file.getEntry( lckPath );
                 is = file.getInputStream( entry );
-                ba = new byte[is.available()];
-                is.read( ba );
-                LOCK_ICON = new ImageIcon( ba );
+                len = (int)entry.getSize();
+                if( len != -1 )
+		{
+                    byte[] ba = new byte[len];
+                    is.read( ba, 0, len );
+                    LOCK_ICON = new ImageIcon( ba );
+		}
 
                 entry = file.getEntry( unlckPath );
                 is = file.getInputStream( entry );
-                ba = new byte[is.available()];
-                is.read( ba );
-                UNLOCK_ICON = new ImageIcon( ba );
+                len = (int)entry.getSize();
+                if( len != -1 )
+		{
+                    byte[] ba = new byte[len];
+                    is.read( ba, 0, len );
+                    UNLOCK_ICON = new ImageIcon( ba );
+		}
             }
             catch( IOException e )
             {
@@ -432,6 +452,7 @@ public class WebDAVFileView implements ViewSelectionListener
     
     private static String getIconPath()
     {
+        String icons = WebDAVClassName + File.separatorChar + IconDir;
         String classPath = System.getProperty("java.class.path");
         if (classPath == null)
         {
@@ -453,7 +474,7 @@ public class WebDAVFileView implements ViewSelectionListener
             }
             if (!nextPath.endsWith(new Character(File.separatorChar).toString()))
                 nextPath += File.separatorChar;
-            nextPath += WebDAVClassName + File.separatorChar + IconDir;
+            nextPath += icons;
             File iconDirFile = new File(nextPath);
             if (iconDirFile.exists())
                 return nextPath;
@@ -462,9 +483,12 @@ public class WebDAVFileView implements ViewSelectionListener
                 try
                 {
                     ZipFile zfile = new ZipFile( jarPath );
-                    ZipEntry entry = zfile.getEntry( WebDAVClassName + File.separatorChar + IconDir + "resource.gif" );
+                    icons = WebDAVClassName + "/" + IconDir + "/";
+                    ZipEntry entry = zfile.getEntry( icons );
                     if( entry != null )
-                        return nextPath;
+                    {
+                        return icons;
+                    }
                     else
                         jarPath = null;
                 }

@@ -90,13 +90,10 @@ public class WebDAVToolBar extends JPanel implements ActionListener
         addTool( toolbar, "save", "Write File" );
         addTool( toolbar, "copy", "Duplicate" );
         addTool( toolbar, "delete", "Delete" );
-//        addTool( toolbar, "delete", "Create Folder" );
         toolbar.addSeparator();
         addTool( toolbar, "lock", "Lock" );
         addTool( toolbar, "unlock", "Unlock" );
-//        addTool( toolbar, "launch", "View Lock Properties" );
         addTool( toolbar, "propfind", "View Properties" );
-//        addTool( toolbar, "launch", "Refresh" );
         return toolbar;
     }
 
@@ -161,9 +158,13 @@ public class WebDAVToolBar extends JPanel implements ActionListener
                 ZipFile file = new ZipFile( jarPath );
                 ZipEntry entry = file.getEntry( filename );
                 InputStream is = file.getInputStream( entry );
-                byte[] ba = new byte[is.available()];
-                is.read( ba );
-                return new ImageIcon( ba, description );
+                int len = (int)entry.getSize();
+                if( len != -1 )
+		{
+                    byte[] ba = new byte[len];
+                    is.read( ba, 0, len );
+                    return new ImageIcon( ba, description );
+		}
             }
             catch( IOException e )
             {
@@ -171,6 +172,7 @@ public class WebDAVToolBar extends JPanel implements ActionListener
                 return null;
             }
         }
+        return null;
     }
 
     public synchronized void addActionListener(ActionListener l)

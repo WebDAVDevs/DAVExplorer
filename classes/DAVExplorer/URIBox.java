@@ -130,9 +130,9 @@ public class URIBox extends JPanel implements ActionListener
             {
                 try
                 {
-                    ZipFile zfile = new ZipFile( jarPath );
+                    ZipFile jfile = new ZipFile( jarPath );
                     icons = WebDAVClassName + "/" + IconDir + "/";
-                    ZipEntry entry = zfile.getEntry( icons );
+                    ZipEntry entry = jfile.getEntry( icons );
                     if( entry != null )
                     {
                         return icons;
@@ -160,9 +160,13 @@ public class URIBox extends JPanel implements ActionListener
                 ZipFile file = new ZipFile( jarPath );
                 ZipEntry entry = file.getEntry( filename );
                 InputStream is = file.getInputStream( entry );
-                byte[] ba = new byte[is.available()];
-                is.read( ba );
-                return new ImageIcon( ba, description );
+                int len = (int)entry.getSize();
+                if( len != -1 )
+		{
+                    byte[] ba = new byte[len];
+                    is.read( ba, 0, len );
+                    return new ImageIcon( ba, description );
+		}
             }
             catch( IOException e )
             {
@@ -170,6 +174,7 @@ public class URIBox extends JPanel implements ActionListener
                 return null;
             }
         }
+        return null;
     }
 
     public void actionPerformed(ActionEvent evt)

@@ -72,7 +72,11 @@ public class WebDAVToolBar extends JPanel implements ActionListener
         if (iconPath == null)
             System.exit(0);
 
-        JButton b = new JButton(loadImageIcon(iconPath + File.separatorChar + name + ".gif", name));
+        JButton b = null;
+        if( jarPath == null )
+            b = new JButton(loadImageIcon(iconPath + File.separatorChar + name + ".gif", name));
+        else
+            b = new JButton(loadImageIcon(iconPath + name + ".gif", name));
         b.setActionCommand( description );
         b.addActionListener(this);
         b.setToolTipText( description );
@@ -86,25 +90,23 @@ public class WebDAVToolBar extends JPanel implements ActionListener
         addTool( toolbar, "save", "Write File" );
         addTool( toolbar, "copy", "Duplicate" );
         addTool( toolbar, "delete", "Delete" );
-//        addTool( toolbar, "delete", "Create Folder" );
         toolbar.addSeparator();
         addTool( toolbar, "lock", "Lock" );
         addTool( toolbar, "unlock", "Unlock" );
-//        addTool( toolbar, "launch", "View Lock Properties" );
         addTool( toolbar, "propfind", "View Properties" );
-//        addTool( toolbar, "launch", "Refresh" );
         return toolbar;
     }
 
     private static String getIconPath()
     {
+        String icons = WebDAVClassName + File.separatorChar + IconDir;
         String classPath = System.getProperty("java.class.path");
         if (classPath == null)
         {
             errorMsg("Toolbar:\nNo Classpath set." );
             return null;
         }
-        
+
         StringTokenizer paths = new StringTokenizer(classPath,":;");
         while (paths.hasMoreTokens())
         {
@@ -118,7 +120,7 @@ public class WebDAVToolBar extends JPanel implements ActionListener
             }
             if (!nextPath.endsWith(new Character(File.separatorChar).toString()))
                 nextPath += File.separatorChar;
-            nextPath += WebDAVClassName + File.separatorChar + IconDir;
+            nextPath += icons;
             File iconDirFile = new File(nextPath);
             if (iconDirFile.exists())
                 return nextPath;
@@ -127,9 +129,12 @@ public class WebDAVToolBar extends JPanel implements ActionListener
                 try
                 {
                     ZipFile zfile = new ZipFile( jarPath );
-                    ZipEntry entry = zfile.getEntry( WebDAVClassName + File.separatorChar + IconDir + "resource.gif" );
+                    icons = WebDAVClassName + "/" + IconDir + "/";
+                    ZipEntry entry = zfile.getEntry( icons  );
                     if( entry != null )
-                        return nextPath;
+                    {
+                        return icons;
+                    }
                     else
                         jarPath = null;
                 }
@@ -153,9 +158,13 @@ public class WebDAVToolBar extends JPanel implements ActionListener
                 ZipFile file = new ZipFile( jarPath );
                 ZipEntry entry = file.getEntry( filename );
                 InputStream is = file.getInputStream( entry );
-                byte[] ba = new byte[is.available()];
-                is.read( ba );
-                return new ImageIcon( ba, description );
+                int len = (int)entry.getSize();
+                if( len != -1 )
+		{
+                    byte[] ba = new byte[len];
+                    is.read( ba, 0, len );
+                    return new ImageIcon( ba, description );
+		}
             }
             catch( IOException e )
             {
@@ -163,6 +172,7 @@ public class WebDAVToolBar extends JPanel implements ActionListener
                 return null;
             }
         }
+        return null;
     }
 
     public synchronized void addActionListener(ActionListener l)

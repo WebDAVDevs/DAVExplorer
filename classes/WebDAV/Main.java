@@ -523,14 +523,13 @@ public class Main extends JFrame
                 responseInterpreter.setRefresh();
                 treeView.refresh();
             }
-            else if (command.equals("About WebDAV..."))
+            else if (command.equals("About DAV Explorer..."))
             {
-                JOptionPane pane = new JOptionPane();
-                String message = new String("WebDAV Explorer Version: "+ VERSION + "\n\nYuzo Kanomata, Joachim Feise\n" +
+                String message = new String("DAV Explorer Version "+ VERSION + "\n\nYuzo Kanomata, Joachim Feise\n" +
                 "EMail: dav-exp@ics.uci.edu\n\n" +
-                "Based on code from the UCI WebDAV Client Group of the ICS 125 class Winter 1998\n" );
+                "Based on code from the UCI WebDAV Client Group\nof the ICS126B class Winter 1998\n\n" );
                 Object [] options = { "OK" };
-                pane.showOptionDialog(WebDAVFrame, message, "About WebDAV Client", JOptionPane.DEFAULT_OPTION, JOptionPane.INFORMATION_MESSAGE, null, options, options[0]);
+                pane.showOptionDialog(WebDAVFrame, message, "About DAV Explorer", JOptionPane.DEFAULT_OPTION, JOptionPane.INFORMATION_MESSAGE, null, options, options[0]);
             }
         }
     }

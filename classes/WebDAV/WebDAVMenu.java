@@ -220,7 +220,7 @@ public class WebDAVMenu extends JMenuBar implements ActionListener
     {
         JMenu mnu_HelpMenu = new JMenu("Help", true);
 
-        mnu_HelpMenu.add(new WebDAVMenuItem("About WebDAV...", this, true ));
+        mnu_HelpMenu.add(new WebDAVMenuItem("About DAV Explorer...", this, true ));
 
         return mnu_HelpMenu;
 	}

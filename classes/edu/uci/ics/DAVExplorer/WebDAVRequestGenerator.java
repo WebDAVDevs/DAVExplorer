@@ -763,9 +763,7 @@ public class WebDAVRequestGenerator implements Runnable
         if( Port==0 || Port==DEFAULT_PORT )
             Dest = HostName + Dest;
         else            
-            Dest = HostName + ":" + Port + Dest ;
-            //Dest =  HostName + ":" + Port + StrippedResource + "/" + Dest + "_copy" ;
-	
+            Dest = HostName + ":" + Port + Dest ;	
 
         if( !Dest.startsWith(WebDAVPrefix) )
             Dest = WebDAVPrefix + Dest;
@@ -863,6 +861,14 @@ public class WebDAVRequestGenerator implements Runnable
         }
         Dest = dir + Dest;
         
+        if( Port==0 || Port==DEFAULT_PORT )
+            Dest = HostName + Dest;
+        else            
+            Dest = HostName + ":" + Port + Dest ;	
+
+        if( !Dest.startsWith(WebDAVPrefix) )
+            Dest = WebDAVPrefix + Dest;
+
         Method = "MOVE";
         Body = null;
         if (KeepAlive)
