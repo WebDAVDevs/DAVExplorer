@@ -38,6 +38,8 @@ classes = GlobalConstants.class \
 	  HTTPConnection.class \
 	  HTTPResponse.class \
 	  HttpOutputStream.class \
+	  ProgressObserver.class \
+	  ProgressListener.class \
 	  AuthorizationPrompter.class \
 	  AuthorizationHandler.class \
 	  AuthorizationInfo.class \

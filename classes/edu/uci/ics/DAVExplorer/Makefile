@@ -34,28 +34,43 @@ JFLAGS   =
 classes = AppletAuthorizationPrompter.class \
 	  AppletMain.class \
 	  AsGen.class \
+	  AuthDialog.class \
 	  CopyResponseEvent.class \
 	  CopyResponseListener.class \
 	  DataNode.class \
 	  EscapeInputStream.class \
 	  EscapeReader.class \
 	  GlobalData.class \
-	  WebDAVFileView.class \
+	  JTreeTable.class \
+	  Main.class \
+	  ProgressBar.class \
+      PropAddDialog.class \
 	  PropDialog.class \
+      PropModel.class \
+      PropNode.class \
 	  PutEvent.class \
 	  PutListener.class \
+	  RelaxedX509TrustManager.class \
+	  SSLTrustDialog.class \
 	  TableMap.class \
 	  TableSorter.class \
+      TreeTableModel.class \
+      TreeTableModelAdapter.class \
 	  URIBox.class \
+	  URIContainer.class \
 	  ViewSelectionEvent.class \
 	  ViewSelectionListener.class \
+      WebDAVCompletionEvent.class \
+      WebDAVCompletionListener.class \
 	  WebDAVConnection.class \
+	  WebDAVFileView.class \
 	  WebDAVLockInfo.class \
 	  WebDAVLoginDialog.class \
 	  WebDAVManager.class \
 	  WebDAVMenu.class \
 	  WebDAVMenuListener.class \
 	  WebDAVProp.class \
+	  WebDAVProxyInfo.class \
 	  WebDAVRequestEvent.class \
 	  WebDAVRequestGenerator.class \
 	  WebDAVRequestListener.class \
@@ -66,17 +81,7 @@ classes = AppletAuthorizationPrompter.class \
 	  WebDAVTreeNode.class \
 	  WebDAVTreeView.class \
 	  WebDAVURIBoxListener.class \
-	  WebDAVXML.class \
-          GlobalData.class \
-          JTreeTable.class \
-          PropAddDialog.class \
-          PropModel.class \
-          PropNode.class \
-          TreeTableModel.class \
-          TreeTableModelAdapter.class \
-          WebDAVCompletionEvent.class \
-          WebDAVCompletionListener.class \
-	  Main.class
+	  WebDAVXML.class
 
 
 ### targets 
