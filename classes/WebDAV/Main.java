@@ -23,7 +23,7 @@
 // listeners.
 //
 // Version: 0.3.1
-// Author:  Robert Emmery  
+// Author:  Robert Emmery
 // Date:    4/2/98
 ////////////////////////////////////////////////////////////////
 // The code has been modified to include povisions for the final
@@ -156,7 +156,7 @@ public class Main extends JFrame
             }
         } );
     }
-  
+
     public void checkAuth(String in)
     {
         int pos = in.indexOf(":");
@@ -182,7 +182,7 @@ public class Main extends JFrame
             requestGenerator.setPass(authInfo.substring(pos+1));
         }
     }
-  
+
     public final static void main(String[] argv)
     {
         Main mFrame = new Main("WebDAV Explorer");
@@ -202,7 +202,7 @@ public class Main extends JFrame
             requestGenerator.setPass(pass);
         }
     }
-  
+
     class URIBoxListener_Gen implements WebDAVURIBoxListener
     {
         public void actionPerformed(ActionEvent e)
@@ -216,7 +216,7 @@ public class Main extends JFrame
             requestGenerator.execute();
         }
     }
-  
+
     class InsertionListener implements ActionListener
     {
         public void actionPerformed(ActionEvent e)
@@ -224,13 +224,13 @@ public class Main extends JFrame
             String str = e.getActionCommand();
             if (str == null)
             {
-            	treeView.refresh();
-            }    	
+                treeView.refresh();
+            }
             else
                 treeView.addRowToRoot(str,false);
         }
     }
-  
+
     class MoveUpdateListener implements ActionListener
     {
         public void actionPerformed(ActionEvent e)
@@ -252,7 +252,7 @@ public class Main extends JFrame
             requestGenerator.tableSelectionChanged(e);
         }
     }
-  
+
     class TableSelectListener_Tree implements ViewSelectionListener
     {
         public void selectionChanged(ViewSelectionEvent e)
@@ -336,7 +336,7 @@ public class Main extends JFrame
             String command = e.getActionCommand();
             if (command.equals("Exit"))
                 System.exit(0);
-                
+
             else if (command.equals("Get File"))
             {
                 saveAsDocument();
@@ -382,7 +382,7 @@ public class Main extends JFrame
             {
                 authTable.clear();
             }
-            else if (command.equals("Lock Info..."))
+            else if (command.equals("Edit Lock Info"))
             {
                 WebDAVLockInfo lockInfo = new WebDAVLockInfo(WebDAVFrame, "Lock Info", true);
             }
@@ -421,13 +421,13 @@ public class Main extends JFrame
         requestGenerator.GenerateGet("save");
         requestGenerator.execute();
     }
-    
+
     protected void saveAsDocument()
     {
         requestGenerator.GenerateGet("saveas");
         requestGenerator.execute();
     }
-    
+
     protected void deleteDocument()
     {
         JOptionPane pane = new JOptionPane();
@@ -441,7 +441,7 @@ public class Main extends JFrame
     {
         requestGenerator.DiscoverLock("lock");
     }
-    
+
     protected void unlockDocument()
     {
         requestGenerator.DiscoverLock("unlock");
@@ -454,7 +454,7 @@ public class Main extends JFrame
         requestGenerator.execute();
     }
 
-    
+
     private String selectName( String title, String prompt )
     {
         JOptionPane pane = new JOptionPane();

@@ -33,7 +33,7 @@ public class PropDialog
     String resource;
     GUI gui;
     private Vector PropDialogListeners = new Vector();
-    
+
     public PropDialog(String Resource, String Host, String xml, boolean changeable)
     {
         data = new String(xml);
@@ -53,24 +53,24 @@ public class PropDialog
     {
         return host;
     }
-    
+
     public void setData(String newData)
     {
         this.data = newData;
     }
-    
+
     public String getResource()
     {
         return resource;
     }
-    
+
     public void ok()
     {
         notifyPropDialogChange();
         gui.setVisible(false);
         gui = null;
     }
-    
+
     public void cancel()
     {
         gui.setVisible(false);
@@ -123,7 +123,7 @@ class GUI extends Frame implements ActionListener
         else
             setTitle("View Properties");
         this.pd = (PropDialog) pd;
-        setSize(400,400);
+        setSize(500,600);
         Label label = new Label(pd.getResource() + " (" + pd.getHost() + ")",Label.CENTER);
         label.setFont(new Font("Dialog", Font.PLAIN, 14));
         add("North",label);
@@ -162,9 +162,9 @@ class GUI extends Frame implements ActionListener
         {
             public Dimension getPreferredSize()
             {
-                return new Dimension(300,300);
+                return new Dimension(500,600);
             }
-            
+
             public float getAlignmentX()
             {
                 return LEFT_ALIGNMENT;
@@ -187,7 +187,7 @@ class GUI extends Frame implements ActionListener
                 }
             });
     }
-    
+
     public void actionPerformed(ActionEvent e)
     {
         if (e.getActionCommand().equals("Submit"))

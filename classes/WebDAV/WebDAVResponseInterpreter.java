@@ -22,7 +22,7 @@
 // empty intentinally.
 //
 // Version: 0.3
-// Author:  Robert Emmery  
+// Author:  Robert Emmery
 // Date:    4/2/98
 ////////////////////////////////////////////////////////////////
 // The code has been modified to include povisions for the final
@@ -79,8 +79,8 @@ public class WebDAVResponseInterpreter
     private static String classPathDir;
 
     private boolean debugXML = false;
-    
-    
+
+
     public WebDAVResponseInterpreter()
     { }
 
@@ -125,7 +125,7 @@ public class WebDAVResponseInterpreter
         try
         {
             if (Method.equals("MOVE"))
-            {      
+            {
                 parseMove();
                 resetInProgress();
                 return;
@@ -139,7 +139,7 @@ public class WebDAVResponseInterpreter
         }
         catch (Exception ex)
         { }
-   
+
         if (Method.equals("PROPFIND"))
             parsePropFind();
         else if (Method.equals("PROPPATCH"))
@@ -153,7 +153,7 @@ public class WebDAVResponseInterpreter
         else if (Method.equals("DELETE"))
             parseDelete();
         else if (Method.equals("COPY"))
-            parseCopy();   
+            parseCopy();
         else if (Method.equals("LOCK"))
             parseLock();
         else if (Method.equals("UNLOCK"))
@@ -237,7 +237,7 @@ public class WebDAVResponseInterpreter
         }
 
         printXML( body );
-        
+
         if (Extra.equals("uribox"))
         {
             if( Port > 0 )
@@ -303,7 +303,7 @@ public class WebDAVResponseInterpreter
                         }
                     }
                 }
-            }                
+            }
             if (lockToken != null)
             {
                 lockToken.trim();
@@ -370,7 +370,7 @@ public class WebDAVResponseInterpreter
         else if (Extra.equals("properties"))
         {
             Document ppatchDoc = new Document();
-            Enumeration docEnum = xml_doc.getElements(); 
+            Enumeration docEnum = xml_doc.getElements();
             while (docEnum.hasMoreElements())
             {
                 Element nameEl = (Element) docEnum.nextElement();
@@ -404,7 +404,7 @@ public class WebDAVResponseInterpreter
                             // create a tree of all property tags, nicely formatted
                             AsGen alias = new AsGen();
                             Element outProp = WebDAVXML.createElement( WebDAVXML.ELEM_PROP, Element.ELEMENT, null, alias );
-                            outProp.addChild(WebDAVXML.elemNewline,null); 
+                            outProp.addChild(WebDAVXML.elemNewline,null);
                             Enumeration propValEnum = current.getElements();
                             while (propValEnum.hasMoreElements())
                             {
@@ -443,7 +443,7 @@ public class WebDAVResponseInterpreter
 
     public String getLockInfo()
     {
-        File lockFile = new File(classPathDir + lockInfoFilename);  
+        File lockFile = new File(classPathDir + lockInfoFilename);
         if (!lockFile.exists())
             return new String("");
         String lockInfo = null;
@@ -455,18 +455,18 @@ public class WebDAVResponseInterpreter
             in.close();
         }
         catch (Exception fileEx)
-        { }         
+        { }
         if (lockInfo == null)
             return new String("");
         else
         return lockInfo;
     }
-  
+
     public boolean Refreshing()
     {
         return refresh;
     }
-  
+
     public void ResetRefresh()
     {
         refresh = false;
@@ -493,7 +493,7 @@ public class WebDAVResponseInterpreter
 
     public void parseGet()
     {
-        // inform the user 
+        // inform the user
         byte[] body = null;
         String fileName = "";
         try
@@ -502,12 +502,12 @@ public class WebDAVResponseInterpreter
             String newRes = Resource.substring(1);
             if (Extra.equals("saveas"))
             {
-                FileDialog fd = new FileDialog(mainFrame, "Save As" , FileDialog.SAVE); 
-                fd.setVisible(true); 
+                FileDialog fd = new FileDialog(mainFrame, "Save As" , FileDialog.SAVE);
+                fd.setVisible(true);
                 fileName = fd.getDirectory() + File.separatorChar + fd.getFile();
             }
             else
-            {     
+            {
                 fileName =  WebDAVEditDir + File.separatorChar + newRes;
                 // write the proper separator
                 StringBuffer fName = new StringBuffer( fileName );
@@ -522,7 +522,7 @@ public class WebDAVResponseInterpreter
             String dir = fileName.substring( 0, fileName.lastIndexOf( File.separatorChar ) );
             File theDir = new File( dir );
             theDir.mkdirs();
-            
+
             File theFile = new File(fileName);
             boolean bSave = true;
             if (theFile.exists())
@@ -536,7 +536,7 @@ public class WebDAVResponseInterpreter
                         {
                             return;
                         }
-                    } 
+                    }
                 }
             }
             if( bSave )
@@ -548,7 +548,7 @@ public class WebDAVResponseInterpreter
                 fout.write(body);
                 fout.close();
             }
-            
+
             if( Extra.equals("view") || Extra.equals("edit") )
             {
                 String app = selectApplication();
@@ -567,7 +567,7 @@ public class WebDAVResponseInterpreter
             return;
         }
     }
-  
+
     public void parsePut()
     {
         // inform the user
@@ -594,7 +594,7 @@ public class WebDAVResponseInterpreter
         try
         {
             if (res.getStatusCode() >= 300)
-            {    
+            {
                 errorMsg("WebDAV Interpreter:\n\n" + res.getStatusCode() + " " + res.getReasonLine());
             }
         }
@@ -604,7 +604,7 @@ public class WebDAVResponseInterpreter
         setRefresh();
         fireInsertionEvent(null);
     }
-  
+
     public void parseLock()
     {
         byte[] body = null;
@@ -629,7 +629,7 @@ public class WebDAVResponseInterpreter
                             stream = null;
             return;
         }
-        
+
         printXML( body );
 
         String lockToken = null;
@@ -660,13 +660,13 @@ public class WebDAVResponseInterpreter
         }
         fireLockEvent( 0, lockToken );
     }
-  
+
     public void parseUnlock()
     {
         // inform the user
         fireLockEvent( 1, null );
     }
-  
+
     public void clearStream()
     {
         stream = null;
@@ -691,7 +691,7 @@ public class WebDAVResponseInterpreter
     {
         moveListeners.addElement(l);
     }
-  
+
     public synchronized void removeMoveUpdateListener(ActionListener l)
     {
         moveListeners.removeElement(l);
@@ -710,7 +710,7 @@ public class WebDAVResponseInterpreter
     public void fireInsertionEvent(String str)
     {
         Vector ls;
-   
+
         synchronized (this)
         {
             ls = (Vector) listeners.clone();
@@ -738,7 +738,7 @@ public class WebDAVResponseInterpreter
             l.actionPerformed(e);
         }
     }
-  
+
     public void fireLockEvent(int id, String str)
     {
         Vector ls;
@@ -759,7 +759,7 @@ public class WebDAVResponseInterpreter
     {
         return inProg;
     }
-  
+
     public void setInProgress()
     {
         inProg = true;
@@ -787,7 +787,7 @@ public class WebDAVResponseInterpreter
             generator.handlePropPatch(e);
         }
     }
-  
+
     public void errorMsg(String str)
     {
         JOptionPane pane = new JOptionPane();
@@ -802,10 +802,10 @@ public class WebDAVResponseInterpreter
         int opt = pane.showConfirmDialog(null,str,"File Exists",JOptionPane.YES_NO_OPTION);
         if (opt == JOptionPane.YES_OPTION)
             return true;
-        else 
+        else
             return false;
     }
-  
+
     public boolean launchAnyway()
     {
         JOptionPane pane = new JOptionPane();
@@ -848,16 +848,16 @@ public class WebDAVResponseInterpreter
         {
             Element current = (Element)treeEnum.nextElement();
             Name tag = current.getTagName();
-            if( tag.getName().equals( WebDAVXML.ELEM_HREF ) )
+            if( (tag != null) && tag.getName().equals( WebDAVXML.ELEM_HREF ) )
             {
                 Element token = (Element)treeEnum.nextElement();
-                if( token.getType() == Element.PCDATA )
+                if( (token != null) && (token.getType() == Element.PCDATA) )
                     return token.getText();
             }
         }
         return null;
     }
-    
+
 
     private String getLockType( Element locktype )
     {
@@ -869,9 +869,9 @@ public class WebDAVResponseInterpreter
             if( (tag != null) && !tag.getName().equals( WebDAVXML.ELEM_LOCK_TYPE ) )
                 return tag.getName();
         }
-        return null;
+        return "";
     }
-    
+
 
     private String getLockScope( Element lockscope )
     {
@@ -883,9 +883,9 @@ public class WebDAVResponseInterpreter
             if( (tag != null) && !tag.getName().equals( WebDAVXML.ELEM_LOCK_SCOPE ) )
                 return tag.getName();
         }
-        return null;
+        return "";
     }
-    
+
 
     private String getOwnerInfo( Element ownerinfo )
     {
@@ -894,16 +894,16 @@ public class WebDAVResponseInterpreter
         {
             Element current = (Element)treeEnum.nextElement();
             Name tag = current.getTagName();
-            if( tag.getName().equals( WebDAVXML.ELEM_HREF ) )
+            if( (tag != null) && tag.getName().equals( WebDAVXML.ELEM_HREF ) )
             {
                 Element token = (Element)treeEnum.nextElement();
-                if( token.getType() == Element.PCDATA )
+                if( (token != null) && (token.getType() == Element.PCDATA) )
                     return token.getText();
             }
         }
-        return null;
+        return "";
     }
-    
+
 
     private String getLockTimeout( Element locktimeout )
     {
@@ -911,12 +911,12 @@ public class WebDAVResponseInterpreter
         while(treeEnum.hasMoreElements() )
         {
             Element current = (Element)treeEnum.nextElement();
-            if( current.getType() == Element.PCDATA )
+            if( (current != null) && (current.getType() == Element.PCDATA) )
                 return current.getText();
         }
-        return null;
+        return "";
     }
-    
+
 
     private String getLockDepth( Element lockdepth )
     {
@@ -924,12 +924,12 @@ public class WebDAVResponseInterpreter
         while(treeEnum.hasMoreElements() )
         {
             Element current = (Element)treeEnum.nextElement();
-            if( current.getType() == Element.PCDATA )
+            if( (current != null) && (current.getType() == Element.PCDATA) )
                 return current.getText();
         }
-        return null;
+        return "";
     }
-    
+
 
     private boolean checkHrefValue( Element el )
     {
@@ -995,7 +995,7 @@ public class WebDAVResponseInterpreter
         }
         return null;
     }
-    
+
     private void printXML( byte[] body )
     {
         String debugOutput = System.getProperty( "debug", "false" );
