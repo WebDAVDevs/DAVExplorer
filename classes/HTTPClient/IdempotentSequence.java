@@ -1,8 +1,8 @@
 /*
- * @(#)IdempotentSequence.java				0.3-2 18/06/1999
+ * @(#)IdempotentSequence.java				0.3-3 18/06/1999
  *
  *  This file is part of the HTTPClient package
- *  Copyright (C) 1996-1999  Ronald Tschalär
+ *  Copyright (C) 1996-2000 Ronald Tschalär
  *
  *  This library is free software; you can redistribute it and/or
  *  modify it under the terms of the GNU Lesser General Public
@@ -38,9 +38,10 @@ import java.util.Enumeration;
  * class also serves as a central place to record which methods have side
  * effects and which methods are idempotent.
  *
- * <P>Note: unknown methods (i.e. a method which is not HEAD, GET, POST,
- * PUT, DELETE, OPTIONS or TRACE) are treated conservatively, meaning
- * they are assumed to have side effects and are not idempotent.
+ * <P>Note: unknown methods (i.e. a method which is not HEAD, GET, POST, PUT,
+ * DELETE, OPTIONS, TRACE, PROPFIND, PROPPATCH, MKCOL, COPY, MOVE, LOCK, or
+ * UNLOCK) are treated conservatively, meaning they are assumed to have side
+ * effects and are not idempotent.
  *
  * <P>Usage:
  * <PRE>
@@ -51,7 +52,7 @@ import java.util.Enumeration;
  *     ...
  * </PRE>
  *
- * @version	0.3-2  18/06/1999
+ * @version	0.3-3  18/06/1999
  * @author	Ronald Tschalär
  */
 
@@ -65,7 +66,16 @@ class IdempotentSequence
 			     PUT     = 4,
 			     DELETE  = 5,
 			     OPTIONS = 6,
-			     TRACE   = 7;
+			     TRACE   = 7,
+
+			     // DAV methods
+			     PROPFIND  = 8,
+			     PROPPATCH = 9,
+			     MKCOL     = 10,
+			     COPY      = 11,
+			     MOVE      = 12,
+			     LOCK      = 13,
+			     UNLOCK    = 14;
 
     /** these are the history of previous requests */
     private int[]    m_history;
@@ -162,9 +172,13 @@ class IdempotentSequence
 		threads.put(r_history[idx], Boolean.FALSE);
 	    else if (t_state == null)		// new thread
 	    {
-		if (methodHasSideEffects(m_history[idx])  &&
-		    methodIsComplete(m_history[idx]))	// is idempotent
-		    threads.put(r_history[idx], Boolean.TRUE);
+		if (methodHasSideEffects(m_history[idx]))
+		{
+		    if (methodIsComplete(m_history[idx]))	// is idempotent
+			threads.put(r_history[idx], Boolean.TRUE);
+		    else
+			threads.put(r_history[idx], Boolean.FALSE);
+		}
 		else					// indeterminate
 		    threads.put(r_history[idx], INDET);
 	    }
@@ -209,7 +223,16 @@ class IdempotentSequence
 	    case DELETE:
 	    case OPTIONS:
 	    case TRACE:
+	    case PROPFIND:
+	    case PROPPATCH:
+	    case COPY:
+	    case MOVE:
 		return true;
+	    case UNKNOWN:
+	    case POST:
+	    case MKCOL:
+	    case LOCK:
+	    case UNLOCK:
 	    default:
 		return false;
 	}
@@ -242,7 +265,16 @@ class IdempotentSequence
 	    case DELETE:
 	    case OPTIONS:
 	    case TRACE:
+	    case PROPFIND:
+	    case COPY:
+	    case MOVE:
+	    case LOCK:
+	    case UNLOCK:
 		return true;
+	    case UNKNOWN:
+	    case POST:
+	    case PROPPATCH:
+	    case MKCOL:
 	    default:
 		return false;
 	}
@@ -263,7 +295,18 @@ class IdempotentSequence
 	    case GET:
 	    case OPTIONS:
 	    case TRACE:
+	    case PROPFIND:
+	    case LOCK:
+	    case UNLOCK:
 		return false;
+	    case UNKNOWN:
+	    case POST:
+	    case PUT:
+	    case DELETE:
+	    case PROPPATCH:
+	    case MKCOL:
+	    case COPY:
+	    case MOVE:
 	    default:
 		return true;
 	}
@@ -286,6 +329,20 @@ class IdempotentSequence
 	    return OPTIONS;
 	if (method.equals("TRACE"))
 	    return TRACE;
+	if (method.equals("PROPFIND"))
+	    return PROPFIND;
+	if (method.equals("PROPPATCH"))
+	    return PROPPATCH;
+	if (method.equals("MKCOL"))
+	    return MKCOL;
+	if (method.equals("COPY"))
+	    return COPY;
+	if (method.equals("MOVE"))
+	    return MOVE;
+	if (method.equals("LOCK"))
+	    return LOCK;
+	if (method.equals("UNLOCK"))
+	    return UNLOCK;
 
 	return UNKNOWN;
     }
@@ -303,14 +360,17 @@ class IdempotentSequence
 	seq.add(new Request(null, "GET", "/b1", null, null, null, false));
 	seq.add(new Request(null, "PUT", "/b3", null, null, null, false));
 	seq.add(new Request(null, "GET", "/b2", null, null, null, false));
+	seq.add(new Request(null, "POST", "/b8", null, null, null, false));
 	seq.add(new Request(null, "PUT", "/b3", null, null, null, false));
 	seq.add(new Request(null, "GET", "/b1", null, null, null, false));
 	seq.add(new Request(null, "TRACE", "/b4", null, null, null, false));
+	seq.add(new Request(null, "GET", "/b9", null, null, null, false));
 	seq.add(new Request(null, "LINK", "/b4", null, null, null, false));
 	seq.add(new Request(null, "GET", "/b4", null, null, null, false));
 	seq.add(new Request(null, "PUT", "/b5", null, null, null, false));
 	seq.add(new Request(null, "HEAD", "/b5", null, null, null, false));
 	seq.add(new Request(null, "PUT", "/b5", null, null, null, false));
+	seq.add(new Request(null, "POST", "/b9", null, null, null, false));
 	seq.add(new Request(null, "GET", "/b6", null, null, null, false));
 	seq.add(new Request(null, "DELETE", "/b6", null, null, null, false));
 	seq.add(new Request(null, "HEAD", "/b6", null, null, null, false));
@@ -333,6 +393,10 @@ class IdempotentSequence
 	    System.err.println("Sequence b6 failed");
 	if (seq.isIdempotent(new Request(null, null, "/b7", null, null, null, false)))
 	    System.err.println("Sequence b7 failed");
+	if (seq.isIdempotent(new Request(null, null, "/b8", null, null, null, false)))
+	    System.err.println("Sequence b8 failed");
+	if (seq.isIdempotent(new Request(null, null, "/b9", null, null, null, false)))
+	    System.err.println("Sequence b9 failed");
 
 	System.out.println("Tests finished");
     }
