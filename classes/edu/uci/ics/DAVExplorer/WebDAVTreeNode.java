@@ -254,6 +254,15 @@ public class WebDAVTreeNode extends DefaultMutableTreeNode
                         Element token = (Element)enumHref.nextElement();
                         if( (token != null) && (token.getType() == Element.PCDATA || token.getType() == Element.CDATA) )
                         {
+                            // workaround for broken MS Parser if filename has & in it
+                            // not needed anymore with patch in the parser
+                            // but left in here as a reminder just in case...
+                            //if( resName.length() > 0 )
+                            //    resName += "&";
+                            //resName += new String(truncateResource(token.getText()));
+                            //if( fullName.length() > 0 )
+                            //    fullName += "&";
+                            //fullName += new String(getFullResource(token.getText()));
                             resName = new String(truncateResource(token.getText()));
                             fullName = new String(getFullResource(token.getText()));
                         }
