@@ -65,7 +65,13 @@ classes = AsGen.class \
 	  WebDAVURIBoxListener.class \
 	  WebDAVXML.class \
           GlobalData.class \
-          AuthHandler.class \
+          JTreeTable.class \
+          PropAddDialog.class \
+          PropModel.class \
+          TreeTableModel.class \
+          TreeTableModelAdapter.class \
+          WebDAVCompletionEvent.class \
+          WebDAVCompletionListener.class \
 	  Main.class
 
 
