@@ -1,3 +1,12 @@
+Changes for version 0.61:
+- Added check for CDATA to improve interoperability for Sharemation's server.
+- Changed the enumeration in parseResponse() to SiblingEnumeration to
+  avoid parsing the wrong href tag (thanks to Michelle Harris for
+  alerting us to this problem).
+- Fixed string comparison in case of multiple <propstat> tags.
+- href tag is now stripped from lock owner string (thanks to Eric Giguere
+  for submitting this fix).
+
 Changes for version 0.60:
 - Fixed logging of incoming data.
 - The DAV4J workaround (see below in the changes for version 0.57) is also required
@@ -18,22 +27,19 @@ Changes for version 0.57:
   The workaround is activated with the following command line:
   java -jar -Dpropfind=allprop DAVExplorer.jar
 
-
 Changes for version 0.56:
 - DAVExplorer is now instrumented for function trace output.
   Function trace output is enabled by running DAVExplorer with the following
   command line:
   java -jar -Ddebug=option DAVExplorer.jar
   where option is one of:
-  all			all function traces are enabled
-  request		function traces related to HTTP requests are enabled
-  response		function traces related to HTTP responses are enabled
-  treeview		function traces related to the tree view on the left side
+  all                   all function traces are enabled
+  request               function traces related to HTTP requests are enabled
+  response              function traces related to HTTP responses are enabled
+  treeview              function traces related to the tree view on the left side
                         of the DAVExplorer window are enabled
-  treenode		function traces related to each node in the tree view are
+  treenode              function traces related to each node in the tree view are
                         enabled
-  fileview		function traces related to the file view on the right side
+  fileview              function traces related to the file view on the right side
                         of the DAVExplorer window are enabled
-
   The trace output is written to stderr.
-
