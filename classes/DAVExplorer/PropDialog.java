@@ -183,7 +183,7 @@ class GUI extends Frame implements ActionListener
             {
                 public void windowClosing(WindowEvent we_Event)
                 {
-                    System.exit(0);
+                    cancel();
                 }
             });
     }
@@ -192,10 +192,22 @@ class GUI extends Frame implements ActionListener
     {
         if (e.getActionCommand().equals("Submit"))
         {
-            pd.setData(textArea.getText());
-            pd.ok();
+            ok();
         }
         else
-            pd.cancel();
+            cancel();
+    }
+
+
+    protected void ok()
+    {
+        pd.setData(textArea.getText());
+        pd.ok();
+    }
+
+
+    protected void cancel()
+    {
+        pd.cancel();
     }
 }
