@@ -140,6 +140,7 @@ public class Main extends JFrame
         WebDAVToolBar toolbar = new WebDAVToolBar();
         toolbar.addActionListener( menuListener );
         URIBox uribox = new URIBox();
+        GlobalData.getGlobalData().setURIBox(uribox);
         uribox.addActionListener(new URIBoxListener_Gen());
 
         treeView.addViewSelectionListener( fileView );
