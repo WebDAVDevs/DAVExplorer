@@ -1,0 +1,7 @@
+classes
+DAVExplorer.bin
+Makefile
+make.bat
+*.gz
+swingall.jar
+exclude*

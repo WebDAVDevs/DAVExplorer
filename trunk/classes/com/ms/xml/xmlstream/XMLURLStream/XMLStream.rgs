@@ -1,0 +1,24 @@
+HKCR
+{
+	XMLStream.XMLStream.1 = s 'XMLStream Class'
+	{
+		CLSID = s '{0C97E34E-412B-11D1-A2CB-00C04FD73533}'
+	}
+	XMLStream.XMLStream = s 'XMLStream Class'
+	{
+		CurVer = s 'XMLStream.XMLStream.1'
+	}
+	NoRemove CLSID
+	{
+		ForceRemove {0C97E34E-412B-11D1-A2CB-00C04FD73533} = s 'XMLStream Class'
+		{
+			ProgID = s 'XMLStream.XMLStream.1'
+			VersionIndependentProgID = s 'XMLStream.XMLStream'
+			ForceRemove 'Programmable'
+			InprocServer32 = s '%MODULE%'
+			{
+				val ThreadingModel = s 'Apartment'
+			}
+		}
+	}
+}

@@ -1,0 +1,13 @@
+Manifest-Version: 1.0
+Main-Class: edu/uci/ics/DAVExplorer.Main
+Name: edu/uci/ics/DAVExplorer/
+Specification-Title: "UCI DAV Explorer"
+Specification-Version: "0.91"
+Specification-Vendor: "University of California, Irvine; School of Information and Computer Science"
+Implementation-Title: "DAVExplorer"
+Implementation-Version: "0.91"
+Implementation-Vendor: "University of California, Irvine; School of Information and Computer Science"
+Name: HTTPClient/
+Sealed: true
+Name: com/ms/xml/
+Sealed: true
