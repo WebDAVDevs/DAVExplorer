@@ -51,6 +51,12 @@
 // Change List:
 // Removed the authentication dialog and listener, since authentication is now handled
 // as AuthenticationHandler in HTTPClient
+//
+// Version: 0.6
+// Changes by: Joe Feise
+// Date: 2000-June-20
+// Change List:
+// Better reporting in case the connection is closed
 
 package DAVExplorer;
 
@@ -74,7 +80,7 @@ public class Main extends JFrame
     WebDAVMenu CommandMenu;
     Hashtable authTable;
     String authHost;
-    public final static String VERSION = "0.61";
+    public final static String VERSION = "0.62";
     public final static String UserAgent = "UCI DAV Explorer/" + VERSION;
     String writeToDir;
 
@@ -384,7 +390,7 @@ public class Main extends JFrame
             }
             catch( ResponseException ex )
             {
-                GlobalData.getGlobalData().errorMsg( "HTTP or Server error, please retry the last operation" );
+                GlobalData.getGlobalData().errorMsg( "HTTP error or Server timeout,\nplease retry the last operation" );
                 return;
             }
 
