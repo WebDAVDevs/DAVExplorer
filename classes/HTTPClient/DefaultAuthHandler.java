@@ -545,9 +545,16 @@ public class DefaultAuthHandler implements AuthorizationHandler, GlobalConstants
 		for (int idx=0; idx<qops.length; idx++)
 		{
 		    if (qops[idx].equalsIgnoreCase("auth-int")  &&
-			(req.getStream() == null  ||
+			(req.getStream() == null
+			/* we don't support stream filters yet, so we can't do
+			 * auth-int if we have an output stream. See if we can
+			 * fall back to auth, or bail out otherwise.
+			 * TODO: enable when we have stream filters:
+			 ||
 			 req.getConnection().ServProtVersKnown  &&
-			 req.getConnection().ServerProtocolVersion >= HTTP_1_1))
+			 req.getConnection().ServerProtocolVersion >= HTTP_1_1
+			 */
+			 ))
 		    {
 			p = "auth-int";
 			break;
@@ -561,9 +568,12 @@ public class DefaultAuthHandler implements AuthorizationHandler, GlobalConstants
 			if (qops[idx].equalsIgnoreCase("auth-int"))
 			    throw new AuthSchemeNotImplException(
 				"Digest auth scheme: Can't comply with qop " +
-				"option 'auth-int' because an HttpOutputStream " +
-				"is being used and the server doesn't speak " +
-				"HTTP/1.1");
+				"option 'auth-int' because an " +
+				"HttpOutputStream is being used and we " +
+				"don't support stream-filters in modules yet");
+				/* TODO: Use this we stream-filters implemented
+				"the server doesn't speak HTTP/1.1");
+				*/
 
 		    throw new AuthSchemeNotImplException("Digest auth scheme: "+
 				"None of the available qop options '" +
@@ -629,15 +639,20 @@ public class DefaultAuthHandler implements AuthorizationHandler, GlobalConstants
 	// calc "response" attribute
 
 	String hash = null;
-	if (qop != -1 && params[qop].getValue().equalsIgnoreCase("auth-int") &&
-	    req.getStream() == null)
+	if (qop != -1 && params[qop].getValue().equalsIgnoreCase("auth-int"))
 	{
+	    if (req.getStream() != null)
+		throw new AuthSchemeNotImplException(
+		    "Digest auth scheme: Can't comply with qop option " +
+		    "'auth-int' because an HttpOutputStream is being used " +
+		    "and we don't support stream-filters in modules yet");
+
 	    hash = MD5.hexDigest(req.getData() == null ? NUL : req.getData());
 	}
 
-    params[response] = new NVPair("response", 
-	           calcResponseAttr(hash, extra, params, alg, uri, qop, nonce,
-			   nc, cnonce, req.getMethod()));
+	params[response] = new NVPair("response", 
+	      calcResponseAttr(hash, extra, params, alg, uri, qop, nonce,
+			       nc, cnonce, req.getMethod()));
 
 
 	// calc digest if necessary
