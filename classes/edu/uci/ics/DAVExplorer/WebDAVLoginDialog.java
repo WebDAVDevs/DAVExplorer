@@ -84,16 +84,13 @@ Public methods and attributes section
     Vector listeners = new Vector();
 
     //Construction
-    public WebDAVLoginDialog( String strCaption, String realm, boolean isModal )
+    public WebDAVLoginDialog( String strCaption, String realm, String scheme, boolean isModal )
     {
         super( GlobalData.getGlobalData().getMainFrame(), strCaption, isModal );
 
-//        Rectangle recthDimensions = getParent().getBounds();
-//        setBounds(recthDimensions.x + (recthDimensions.width - 350)/ 2,
-//             recthDimensions.y + (recthDimensions.height - 110)/2, 350, 110 );
-
-        JPanel groupPanel = new JPanel(new GridLayout( 5, 1 ));
+        JPanel groupPanel = new JPanel(new GridLayout( 6, 1 ));
         groupPanel.add(new JLabel("Realm: " + realm, JLabel.CENTER ));
+        groupPanel.add(new JLabel("Scheme: " + scheme, JLabel.CENTER ));
         groupPanel.add(new JLabel("Login name:"));
         groupPanel.add(txtUsername = new JTextField(40));
         groupPanel.add(new JLabel("Password:"));

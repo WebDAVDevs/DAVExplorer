@@ -65,6 +65,7 @@
 package DAVExplorer;
 
 import HTTPClient.AuthorizationInfo;
+import HTTPClient.DefaultAuthHandler;
 import HTTPClient.CookieModule;
 
 import javax.swing.*;
@@ -118,7 +119,8 @@ public class Main extends JFrame
         CommandMenu.addWebDAVMenuListener( menuListener );
 
         // Set the HTTPClient authentication handler
-        AuthorizationInfo.setAuthHandler( new AuthHandler() );
+        ((DefaultAuthHandler)AuthorizationInfo.getAuthHandler()).setAuthorizationPrompter(new AuthDialog());
+
         // allow all cookies
         CookieModule.setCookiePolicyHandler( null );
 
