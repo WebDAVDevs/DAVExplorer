@@ -99,7 +99,7 @@ import java.io.File;
 
 public class Main extends JFrame
 {
-    public final static String VERSION = "0.83-dev";
+    public final static String VERSION = "0.90";
     public final static String UserAgent = "UCI DAV Explorer/" + VERSION;
     public final static String COPYRIGHT = "Copyright (c) 1998-2003 Regents of the University of California";
     public final static String EMAIL = "EMail: dav-exp@ics.uci.edu";
