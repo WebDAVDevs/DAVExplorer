@@ -1,3 +1,6 @@
+Changes for version 0.62:
+- Improved recovery after server timeout
+
 Changes for version 0.61:
 - Added check for CDATA to improve interoperability for Sharemation's server.
 - Changed the enumeration in parseResponse() to SiblingEnumeration to
