@@ -53,6 +53,12 @@ public class WebDAVResponseEvent extends EventObject {
     public WebDAVResponseEvent(Object module, String hostname, int Port,String resource, String method, HTTPResponse response, String extra, WebDAVTreeNode node)
     {
         super (module);
+
+        if( GlobalData.getGlobalData().getDebugResponse() )
+        {
+            System.err.println( "WebDAVResponseEvent::Constructor" );
+        }
+
         this.httpResponse = response;
         this.MethodName = method;
         this.ExtraInfo = extra;

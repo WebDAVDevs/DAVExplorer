@@ -50,6 +50,7 @@ classes = AsGen.class \
 	  WebDAVTreeView.class \
 	  WebDAVURIBoxListener.class \
 	  WebDAVXML.class \
+          GlobalData.class \
 	  Main.class
 
 

@@ -65,7 +65,7 @@ public class Main extends JFrame
     WebDAVLoginDialog ld;
     Hashtable authTable;
     String authHost;
-    public final static String VERSION = "0.54";
+    public final static String VERSION = "0.56";
     public final static String UserAgent = "UCI DAV Explorer/" + VERSION;
     String writeToDir;
 
@@ -160,6 +160,23 @@ public class Main extends JFrame
         c.gridheight = GridBagConstraints.REMAINDER;
         gridbag.setConstraints(splitPane,c);
         p.add(splitPane);
+
+        String doLog = System.getProperty( "debug" );
+        if( doLog != null )
+        {
+            if( doLog.equalsIgnoreCase("all") )
+                GlobalData.getGlobalData().setDebugAll( true );
+            else if( doLog.equalsIgnoreCase( "request" ) )
+                GlobalData.getGlobalData().setDebugRequest( true );
+            else if( doLog.equalsIgnoreCase( "response" ) )
+                GlobalData.getGlobalData().setDebugResponse( true );
+            else if( doLog.equalsIgnoreCase( "treeview" ) )
+                GlobalData.getGlobalData().setDebugTreeView( true );
+            else if( doLog.equalsIgnoreCase( "treenode" ) )
+                GlobalData.getGlobalData().setDebugTreeNode( true );
+            else if( doLog.equalsIgnoreCase( "fileview" ) )
+                GlobalData.getGlobalData().setDebugFileView( true );
+        }
 
         getContentPane().add(p);
         treeView.initTree();

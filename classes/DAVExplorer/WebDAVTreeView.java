@@ -153,6 +153,11 @@ public class WebDAVTreeView implements ViewSelectionListener, CopyResponseListen
     {
         public void treeExpanded( TreeExpansionEvent evt )
         {
+            if( GlobalData.getGlobalData().getDebugTreeView() )
+            {
+                System.err.println( "WebDAVTreeView::treeExpansionListener::treeExpanded" );
+            }
+
             TreePath selectedPath = selectionModel.getSelectionPath();
             Cursor c = mainFrame.getCursor(); // save original cursor
             mainFrame.setCursor( Cursor.getPredefinedCursor( Cursor.WAIT_CURSOR ) );
@@ -185,7 +190,13 @@ public class WebDAVTreeView implements ViewSelectionListener, CopyResponseListen
     // in the file view
 
     // Goal here is to load the node without changing the selection
-    public void PutEventResponse(PutEvent e){
+    public void PutEventResponse(PutEvent e)
+    {
+        if( GlobalData.getGlobalData().getDebugTreeView() )
+        {
+            System.err.println( "WebDAVTreeView::PutEventResponse" );
+        }
+
         WebDAVTreeNode tn = e.getNode();
 
         TreeNode path[] = tn.getPath();
@@ -214,6 +225,11 @@ public class WebDAVTreeView implements ViewSelectionListener, CopyResponseListen
     //Yuzo: Added Copy ResposeListner stuff
     public synchronized void CopyEventResponse(CopyResponseEvent e)
     {
+        if( GlobalData.getGlobalData().getDebugTreeView() )
+        {
+            System.err.println( "WebDAVTreeView::CopyEventResponse" );
+        }
+
         WebDAVTreeNode tn = e.getNode();
 
         TreeNode path[] = tn.getPath();
@@ -269,6 +285,10 @@ public class WebDAVTreeView implements ViewSelectionListener, CopyResponseListen
     //  the particular row.
     protected void tableSelectionChanged(ViewSelectionEvent e)
     {
+        if( GlobalData.getGlobalData().getDebugTreeView() )
+        {
+            System.err.println( "WebDAVTreeView::tableSelectionChanged" );
+        }
 
         WebDAVTreeNode tn = (WebDAVTreeNode)e.getNode();
         TreePath tp = (TreePath)e.getPath();
@@ -333,6 +353,11 @@ public class WebDAVTreeView implements ViewSelectionListener, CopyResponseListen
 
     public void refresh()
     {
+        if( GlobalData.getGlobalData().getDebugTreeView() )
+        {
+            System.err.println( "WebDAVTreeView::refresh" );
+        }
+
         // Make sure the directory structure is current.
         int row = tree.getRowForPath(currPath);
         tree.clearSelection();
@@ -355,10 +380,15 @@ public class WebDAVTreeView implements ViewSelectionListener, CopyResponseListen
     // notifications out.
     public void setSelectedNode( WebDAVTreeNode tn )
     {
-	
-	// Could make sure of currPath by geeting it fro tn
+        if( GlobalData.getGlobalData().getDebugTreeView() )
+        {
+            System.err.println( "WebDAVTreeView::setSelectedNode" );
+        }
 
-	TreePath tp = new TreePath(tn.getPath());
+	
+        // Could make sure of currPath by geeting it fro tn
+
+        TreePath tp = new TreePath(tn.getPath());
 
 
         tree.removeTreeExpansionListener(treeExpListener);
@@ -394,6 +424,11 @@ public class WebDAVTreeView implements ViewSelectionListener, CopyResponseListen
         // This is where we handle the tree selection event.
         public void valueChanged(TreeSelectionEvent e)
         {
+        if( GlobalData.getGlobalData().getDebugTreeView() )
+        {
+            System.err.println( "WebDAVTreeView::SelectionChangeListener::valueChanged" );
+        }
+
             //Need to make sure that the newly selected node (dir)
             //has its children's children loaded.  This is needed to
             // ensure that handles on the files are correct.
@@ -499,6 +534,11 @@ public class WebDAVTreeView implements ViewSelectionListener, CopyResponseListen
 
     public boolean addRowToRoot(String name, boolean local)
     {
+        if( GlobalData.getGlobalData().getDebugTreeView() )
+        {
+            System.err.println( "WebDAVTreeView::addRowToRoot" );
+        }
+
         // Add item to the tree. If local == true, the item is
         // considered to be a file on a local file system.
         String newName = "";
@@ -648,6 +688,11 @@ public class WebDAVTreeView implements ViewSelectionListener, CopyResponseListen
 
     public void refreshLocalNoSelection( WebDAVTreeNode n )
     {
+        if( GlobalData.getGlobalData().getDebugTreeView() )
+        {
+            System.err.println( "WebDAVTreeView::refreshLocalNoSelection" );
+        }
+
         tree.removeTreeExpansionListener(treeExpListener);
         tree.removeTreeSelectionListener(treeSelectionListener);
 
@@ -663,6 +708,11 @@ public class WebDAVTreeView implements ViewSelectionListener, CopyResponseListen
 
     public void refreshLocal( WebDAVTreeNode n )
     {
+        if( GlobalData.getGlobalData().getDebugTreeView() )
+        {
+            System.err.println( "WebDAVTreeView::refreshLocal" );
+        }
+
         TreeNode path[] = n.getPath();
 
         String s = new String();

@@ -125,6 +125,10 @@ public class WebDAVResponseInterpreter
 
     public void handleResponse(WebDAVResponseEvent e)
     {
+        if( GlobalData.getGlobalData().getDebugResponse() )
+        {
+            System.err.println( "WebDAVResponseInterpreter::handleResponse" );
+        }
 
         res = e.getResponse();
         Method = e.getMethodName();
@@ -298,6 +302,11 @@ public class WebDAVResponseInterpreter
 
     public void parsePropFind()
     {
+        if( GlobalData.getGlobalData().getDebugResponse() )
+        {
+            System.err.println( "WebDAVResponseInterpreter::parsePropFind" );
+        }
+
         byte[] body = null;
         Document xml_doc = null;
 
@@ -627,6 +636,11 @@ public class WebDAVResponseInterpreter
 
     public void setRefresh( WebDAVTreeNode node )
     {
+        if( GlobalData.getGlobalData().getDebugResponse() )
+        {
+            System.err.println( "WebDAVResponseInterpreter::setRefresh" );
+        }
+
         refresh = true;
         Node = node;
         // Piggy back on the Copy Response stuff
@@ -637,6 +651,11 @@ public class WebDAVResponseInterpreter
 
     public void parsePropPatch()
     {
+        if( GlobalData.getGlobalData().getDebugResponse() )
+        {
+            System.err.println( "WebDAVResponseInterpreter::parsePropPatch" );
+        }
+
         // inform the user
         setRefresh( Node );
         fireInsertionEvent(null);
@@ -644,6 +663,11 @@ public class WebDAVResponseInterpreter
 
     public void parseMkCol()
     {
+        if( GlobalData.getGlobalData().getDebugResponse() )
+        {
+            System.err.println( "WebDAVResponseInterpreter::parseMkCol" );
+        }
+
         clearStream();
 
 	if (Extra.equals("mkcol"))
@@ -665,6 +689,11 @@ public class WebDAVResponseInterpreter
 
     public void parseGet()
     {
+        if( GlobalData.getGlobalData().getDebugResponse() )
+        {
+            System.err.println( "WebDAVResponseInterpreter::parseGet" );
+        }
+
         // inform the user
         byte[] body = null;
         String fileName = "";
@@ -756,10 +785,10 @@ public class WebDAVResponseInterpreter
 
     public void parsePut()
     {
-    //Old
-        // inform the user
-        //setRefresh();
-        //fireInsertionEvent(null);
+        if( GlobalData.getGlobalData().getDebugResponse() )
+        {
+            System.err.println( "WebDAVResponseInterpreter::parsePut" );
+        }
 
     // Piggy back on the Copy Response stuff
     clearStream();
@@ -782,6 +811,11 @@ public class WebDAVResponseInterpreter
 
     public void parseDelete()
     {
+        if( GlobalData.getGlobalData().getDebugResponse() )
+        {
+            System.err.println( "WebDAVResponseInterpreter::parseDelete" );
+        }
+
         // Piggy back on the Copy Response stuff
         clearStream();
         CopyResponseEvent e = new CopyResponseEvent( this, Node);
@@ -809,6 +843,11 @@ public class WebDAVResponseInterpreter
 
     public void executeCopy()
     {
+        if( GlobalData.getGlobalData().getDebugResponse() )
+        {
+            System.err.println( "WebDAVResponseInterpreter::executeCopy" );
+        }
+
         CopyResponseEvent e = new CopyResponseEvent( this, Node);
 
         copyListener.CopyEventResponse(e);
@@ -816,6 +855,11 @@ public class WebDAVResponseInterpreter
 
     public void parseCopy()
     {
+        if( GlobalData.getGlobalData().getDebugResponse() )
+        {
+            System.err.println( "WebDAVResponseInterpreter::parseCopy" );
+        }
+
         // inform the user
         setRefresh( Node );
         fireInsertionEvent(null);
@@ -823,6 +867,11 @@ public class WebDAVResponseInterpreter
 
     public void parseMove()
     {
+        if( GlobalData.getGlobalData().getDebugResponse() )
+        {
+            System.err.println( "WebDAVResponseInterpreter::parseMove" );
+        }
+
         try
         {
             if (res.getStatusCode() >= 300)
@@ -847,6 +896,11 @@ public class WebDAVResponseInterpreter
 
     public void parseLock()
     {
+        if( GlobalData.getGlobalData().getDebugResponse() )
+        {
+            System.err.println( "WebDAVResponseInterpreter::parseLock" );
+        }
+
         byte[] body = null;
         Document xml_doc = null;
         try
@@ -903,6 +957,11 @@ public class WebDAVResponseInterpreter
 
     public void parseUnlock()
     {
+        if( GlobalData.getGlobalData().getDebugResponse() )
+        {
+            System.err.println( "WebDAVResponseInterpreter::parseUnlock" );
+        }
+
         // inform the user
         fireLockEvent( 1, null );
     }
@@ -949,6 +1008,11 @@ public class WebDAVResponseInterpreter
 
     public void fireInsertionEvent(String str)
     {
+        if( GlobalData.getGlobalData().getDebugResponse() )
+        {
+            System.err.println( "WebDAVResponseInterpreter::fireInsertionEvent" );
+        }
+
         Vector ls;
 
         synchronized (this)
@@ -965,6 +1029,11 @@ public class WebDAVResponseInterpreter
 
     public void fireMoveUpdate(String str)
     {
+        if( GlobalData.getGlobalData().getDebugResponse() )
+        {
+            System.err.println( "WebDAVResponseInterpreter::fireMoveUpdate" );
+        }
+
         Vector ls;
 
         synchronized (this)
@@ -981,6 +1050,11 @@ public class WebDAVResponseInterpreter
 
     public void fireLockEvent(int id, String str)
     {
+        if( GlobalData.getGlobalData().getDebugResponse() )
+        {
+            System.err.println( "WebDAVResponseInterpreter::fireLockEvent" );
+        }
+
         Vector ls;
 
         synchronized (this)
@@ -994,23 +1068,6 @@ public class WebDAVResponseInterpreter
             l.actionPerformed(e);
         }
     }
-
-/*
-    public boolean inProgress()
-    {
-        return inProg;
-    }
-
-    public void setInProgress()
-    {
-        inProg = true;
-    }
-
-    public void resetInProgress()
-    {
-        inProg = false;
-    }
-*/
 
     public String getResource()
     {
@@ -1085,6 +1142,11 @@ public class WebDAVResponseInterpreter
 
     private String getLockToken( Element locktoken )
     {
+        if( GlobalData.getGlobalData().getDebugResponse() )
+        {
+            System.err.println( "WebDAVResponseInterpreter::getLockToken" );
+        }
+
         TreeEnumeration treeEnum = new TreeEnumeration( locktoken );
         while(treeEnum.hasMoreElements() )
         {
@@ -1103,6 +1165,11 @@ public class WebDAVResponseInterpreter
 
     private String getLockType( Element locktype )
     {
+        if( GlobalData.getGlobalData().getDebugResponse() )
+        {
+            System.err.println( "WebDAVResponseInterpreter::getLockType" );
+        }
+
         TreeEnumeration treeEnum = new TreeEnumeration( locktype );
         while(treeEnum.hasMoreElements() )
         {
@@ -1117,6 +1184,11 @@ public class WebDAVResponseInterpreter
 
     private String getLockScope( Element lockscope )
     {
+        if( GlobalData.getGlobalData().getDebugResponse() )
+        {
+            System.err.println( "WebDAVResponseInterpreter::getLockScope" );
+        }
+
         TreeEnumeration treeEnum = new TreeEnumeration( lockscope );
         while(treeEnum.hasMoreElements() )
         {
@@ -1131,6 +1203,11 @@ public class WebDAVResponseInterpreter
 
     private String getOwnerInfo( Element ownerinfo )
     {
+        if( GlobalData.getGlobalData().getDebugResponse() )
+        {
+            System.err.println( "WebDAVResponseInterpreter::getOwnerInfo" );
+        }
+
         TreeEnumeration treeEnum = new TreeEnumeration( ownerinfo );
         while(treeEnum.hasMoreElements() )
         {
@@ -1157,6 +1234,11 @@ public class WebDAVResponseInterpreter
 
     private String getLockTimeout( Element locktimeout )
     {
+        if( GlobalData.getGlobalData().getDebugResponse() )
+        {
+            System.err.println( "WebDAVResponseInterpreter::getLockTimeout" );
+        }
+
         TreeEnumeration treeEnum = new TreeEnumeration( locktimeout );
         while(treeEnum.hasMoreElements() )
         {
@@ -1170,6 +1252,11 @@ public class WebDAVResponseInterpreter
 
     private String getLockDepth( Element lockdepth )
     {
+        if( GlobalData.getGlobalData().getDebugResponse() )
+        {
+            System.err.println( "WebDAVResponseInterpreter::getLockDepth" );
+        }
+
         TreeEnumeration treeEnum = new TreeEnumeration( lockdepth );
         while(treeEnum.hasMoreElements() )
         {
@@ -1183,6 +1270,11 @@ public class WebDAVResponseInterpreter
 
     private int getStatus( Element status )
     {
+        if( GlobalData.getGlobalData().getDebugResponse() )
+        {
+            System.err.println( "WebDAVResponseInterpreter::getStatus" );
+        }
+
         TreeEnumeration treeEnum = new TreeEnumeration( status );
         while(treeEnum.hasMoreElements() )
         {
@@ -1211,6 +1303,11 @@ public class WebDAVResponseInterpreter
 
     private boolean checkHrefValue( Element el )
     {
+        if( GlobalData.getGlobalData().getDebugResponse() )
+        {
+            System.err.println( "WebDAVResponseInterpreter::checkHrefValue" );
+        }
+
         TreeEnumeration treeEnum = new TreeEnumeration( el );
         while(treeEnum.hasMoreElements() )
         {
@@ -1246,6 +1343,11 @@ public class WebDAVResponseInterpreter
 
     private Element skipElements( Element rootElem, String[] token )
     {
+        if( GlobalData.getGlobalData().getDebugResponse() )
+        {
+            System.err.println( "WebDAVResponseInterpreter::skipElements" );
+        }
+
         int index = 0;
         TreeEnumeration enumTree =  new TreeEnumeration( rootElem );
         while( enumTree.hasMoreElements() )
@@ -1280,6 +1382,11 @@ public class WebDAVResponseInterpreter
 
     private void parseProperties( Element properties, XMLOutputStream xml_prop )
     {
+        if( GlobalData.getGlobalData().getDebugResponse() )
+        {
+            System.err.println( "WebDAVResponseInterpreter::parseProperties" );
+        }
+
         String[] token = new String[2];
         token[0] = new String( WebDAVXML.ELEM_PROPSTAT );
         token[1] = new String( WebDAVXML.ELEM_PROP );

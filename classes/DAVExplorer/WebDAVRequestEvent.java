@@ -64,6 +64,12 @@ public class WebDAVRequestEvent extends EventObject
                               NVPair[] Headers, byte[] Body, String Extra, String User, String Pass, WebDAVTreeNode n )
     {
         super(module);
+
+        if( GlobalData.getGlobalData().getDebugRequest() )
+        {
+            System.err.println( "WebDAVRequestEvent::Constructor" );
+        }
+
         this.MethodName = MethodName;
         this.HostName = HostName;
         this.Port = Port;

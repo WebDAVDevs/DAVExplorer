@@ -120,6 +120,11 @@ public class WebDAVTreeNode extends DefaultMutableTreeNode
 // Yuzo Note They did this function wrong
     public void removeChildren()
     {
+        if( GlobalData.getGlobalData().getDebugTreeNode() )
+        {
+            System.err.println( "WebDAVTreeNode::removeChildren" );
+        }
+
         int count = super.getChildCount();
         for (int c=0;c<count;c++)
         {
@@ -138,6 +143,11 @@ public class WebDAVTreeNode extends DefaultMutableTreeNode
 
     protected void loadRemote(byte[] byte_xml)
     {
+        if( GlobalData.getGlobalData().getDebugTreeNode() )
+        {
+            System.err.println( "WebDAVTreeNode::loadRemote" );
+        }
+
         Vector nodesChildren = new Vector();
         Document xml_doc = null;
         Element multiElem = null;
@@ -206,6 +216,11 @@ public class WebDAVTreeNode extends DefaultMutableTreeNode
 
     protected void parseResponse(Element respElem, String ResourceName, Vector nodesChildren)
     {
+        if( GlobalData.getGlobalData().getDebugTreeNode() )
+        {
+            System.err.println( "WebDAVTreeNode::parseResponse" );
+        }
+
         DataNode node = null;
         String resName = "";
         String fullName = "";
@@ -293,6 +308,11 @@ public class WebDAVTreeNode extends DefaultMutableTreeNode
 
     protected DataNode parseProps( Element propElem, String ResourceName, String resName )
     {
+        if( GlobalData.getGlobalData().getDebugTreeNode() )
+        {
+            System.err.println( "WebDAVTreeNode::parseProps" );
+        }
+
         boolean isColl = false;
         boolean isLocked = false;
         String lockToken = null;
@@ -363,6 +383,11 @@ public class WebDAVTreeNode extends DefaultMutableTreeNode
 
     protected void loadLocal(String name, Object[] full_path)
     {
+        if( GlobalData.getGlobalData().getDebugTreeNode() )
+        {
+            System.err.println( "WebDAVTreeNode::loadLocal" );
+        }
+
         String fileName = name;
         for (int i=2;i<full_path.length;i++)
         {
@@ -440,6 +465,11 @@ public class WebDAVTreeNode extends DefaultMutableTreeNode
 
     public void loadChildren( boolean select )
     {
+        if( GlobalData.getGlobalData().getDebugTreeNode() )
+        {
+            System.err.println( "WebDAVTreeNode::loadChildren" );
+        }
+
         Object[] full_path = getPath();
 
         if( full_path == null || full_path.length <= 1 )
@@ -532,6 +562,11 @@ public class WebDAVTreeNode extends DefaultMutableTreeNode
 
     public String truncateResource(String res)
     {
+        if( GlobalData.getGlobalData().getDebugTreeNode() )
+        {
+            System.err.println( "WebDAVTreeNode::truncateResource" );
+        }
+
         int pos = res.indexOf(HTTPPrefix);
         if (pos >= 0)
             res = res.substring(HTTPPrefix.length());
@@ -552,6 +587,11 @@ public class WebDAVTreeNode extends DefaultMutableTreeNode
     }
 
     public String getFullResource(String res) {
+        if( GlobalData.getGlobalData().getDebugTreeNode() )
+        {
+            System.err.println( "WebDAVTreeNode::getFullResource" );
+        }
+
         int pos = res.indexOf(HTTPPrefix);
         if (pos >= 0)
             res = res.substring(HTTPPrefix.length());
@@ -570,6 +610,11 @@ public class WebDAVTreeNode extends DefaultMutableTreeNode
 
     private String getLockToken( Element locktoken )
     {
+        if( GlobalData.getGlobalData().getDebugTreeNode() )
+        {
+            System.err.println( "WebDAVTreeNode::getLockToken" );
+        }
+
         TreeEnumeration treeEnum = new TreeEnumeration( locktoken );
         while(treeEnum.hasMoreElements() )
         {
@@ -594,6 +639,11 @@ public class WebDAVTreeNode extends DefaultMutableTreeNode
 
     private Element skipElements( Element rootElem, String[] token )
     {
+        if( GlobalData.getGlobalData().getDebugTreeNode() )
+        {
+            System.err.println( "WebDAVTreeNode::skipElements" );
+        }
+
         int index = 0;
         TreeEnumeration enumTree =  new TreeEnumeration( rootElem );
         while( enumTree.hasMoreElements() )
@@ -622,6 +672,11 @@ public class WebDAVTreeNode extends DefaultMutableTreeNode
 
     private String getDisplayName( Element displayName )
     {
+        if( GlobalData.getGlobalData().getDebugTreeNode() )
+        {
+            System.err.println( "WebDAVTreeNode::getDisplayName" );
+        }
+
         TreeEnumeration treeEnum = new TreeEnumeration( displayName );
         while(treeEnum.hasMoreElements() )
         {
@@ -639,6 +694,11 @@ public class WebDAVTreeNode extends DefaultMutableTreeNode
 
     private String lockDiscovery( Element lockdiscovery )
     {
+        if( GlobalData.getGlobalData().getDebugTreeNode() )
+        {
+            System.err.println( "WebDAVTreeNode::lockDiscovery" );
+        }
+
         String[] token = new String[1];
         token[0] = new String( WebDAVXML.ELEM_ACTIVE_LOCK );
         int index = 0;
@@ -671,6 +731,11 @@ public class WebDAVTreeNode extends DefaultMutableTreeNode
 
     private boolean getResourceType( Element resourcetype )
     {
+        if( GlobalData.getGlobalData().getDebugTreeNode() )
+        {
+            System.err.println( "WebDAVTreeNode::getResourceType" );
+        }
+
         TreeEnumeration treeEnum = new TreeEnumeration( resourcetype );
         while(treeEnum.hasMoreElements() )
         {
@@ -684,6 +749,11 @@ public class WebDAVTreeNode extends DefaultMutableTreeNode
 
     private String getContentType( Element contenttype )
     {
+        if( GlobalData.getGlobalData().getDebugTreeNode() )
+        {
+            System.err.println( "WebDAVTreeNode::getContentType" );
+        }
+
         TreeEnumeration treeEnum = new TreeEnumeration( contenttype );
         while(treeEnum.hasMoreElements() )
         {
@@ -696,6 +766,11 @@ public class WebDAVTreeNode extends DefaultMutableTreeNode
 
     private String getContentLength( Element contentlength )
     {
+        if( GlobalData.getGlobalData().getDebugTreeNode() )
+        {
+            System.err.println( "WebDAVTreeNode::getContentLength" );
+        }
+
         TreeEnumeration treeEnum = new TreeEnumeration( contentlength );
         while(treeEnum.hasMoreElements() )
         {
@@ -708,6 +783,11 @@ public class WebDAVTreeNode extends DefaultMutableTreeNode
 
     private String getLastModified( Element lastmodified )
     {
+        if( GlobalData.getGlobalData().getDebugTreeNode() )
+        {
+            System.err.println( "WebDAVTreeNode::getLastModified" );
+        }
+
         TreeEnumeration treeEnum = new TreeEnumeration( lastmodified );
         while(treeEnum.hasMoreElements() )
         {

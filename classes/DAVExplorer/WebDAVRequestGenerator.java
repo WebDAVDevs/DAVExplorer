@@ -293,6 +293,11 @@ public class WebDAVRequestGenerator implements Runnable
 
     public synchronized boolean DiscoverLock(String method)
     {
+        if( GlobalData.getGlobalData().getDebugRequest() )
+        {
+            System.err.println( "WebDAVRequestGenerator::DiscoverLock" );
+        }
+
         Extra = new String(method);
         String[] prop = new String[1];
         String[] schema = new String[1];
@@ -320,6 +325,15 @@ public class WebDAVRequestGenerator implements Runnable
 
     public synchronized boolean GeneratePropFind(String FullPath, String command, String Depth, String[] props, String[] schemas, boolean flagGetFilesBelow )
     {
+        if( GlobalData.getGlobalData().getDebugRequest() )
+        {
+            System.err.println( "WebDAVRequestGenerator::GeneratePropFind" );
+            if( command != null )
+                System.err.println( "\tCommand: "+ command );
+            if( Depth != null )
+				System.err.println( "\tDepth: " + Depth );
+        }
+
         Headers = null;
         Body = null;
 
@@ -482,6 +496,11 @@ public class WebDAVRequestGenerator implements Runnable
     public synchronized boolean GeneratePropPatch(String Host, int port, String Res, Document old_xml, Document new_xml)
     {
         // need to determine here the patches (if any)
+        if( GlobalData.getGlobalData().getDebugRequest() )
+        {
+            System.err.println( "WebDAVRequestGenerator::GeneratePropPatch" );
+        }
+
         Headers = null;
         Body = null;
         boolean setUsed = false;
@@ -623,7 +642,11 @@ public class WebDAVRequestGenerator implements Runnable
 
     public synchronized boolean GenerateMkCol( String parentDir, String dirname )
     {
-
+        if( GlobalData.getGlobalData().getDebugRequest() )
+        {
+            System.err.println( "WebDAVRequestGenerator::GenerateMkCol" );
+        }
+ 
         Headers = null;
         Body = null;
 
@@ -640,7 +663,7 @@ public class WebDAVRequestGenerator implements Runnable
             dest = dest.substring( pos + 1 );
         StrippedResource = StrippedResource + dest;
 
-        Method = "MKCOL";
+       Method = "MKCOL";
         Headers = new NVPair[1];
         if (Port == 0 || Port == DEFAULT_PORT)
             Headers[0] = new NVPair("Host",HostName);
@@ -651,6 +674,11 @@ public class WebDAVRequestGenerator implements Runnable
 
     public synchronized boolean GenerateGet(String localName)
     {
+        if( GlobalData.getGlobalData().getDebugRequest() )
+        {
+            System.err.println( "WebDAVRequestGenerator::GenerateGet" );
+        }
+
         Headers = null;
         Body = null;
 
@@ -673,6 +701,11 @@ public class WebDAVRequestGenerator implements Runnable
 
     public synchronized boolean GenerateDelete(String lockToken)
     {
+        if( GlobalData.getGlobalData().getDebugRequest() )
+        {
+            System.err.println( "WebDAVRequestGenerator::GenerateDelete" );
+        }
+
         Headers = null;
         Body = null;
 
@@ -727,6 +760,11 @@ public class WebDAVRequestGenerator implements Runnable
 
     public synchronized boolean GeneratePut(String fileName, String destDir, String lockToken, WebDAVTreeNode selectedCollection)
     {
+        if( GlobalData.getGlobalData().getDebugRequest() )
+        {
+            System.err.println( "WebDAVRequestGenerator::GeneratePut" );
+        }
+
         Headers = null;
         Body = null;
 
@@ -808,6 +846,11 @@ public class WebDAVRequestGenerator implements Runnable
 
     public synchronized boolean GenerateCopy(String Dest, boolean Overwrite, boolean KeepAlive)
     {
+        if( GlobalData.getGlobalData().getDebugRequest() )
+        {
+            System.err.println( "WebDAVRequestGenerator::GenerateCopy" );
+        }
+
         Headers = null;
         Body = null;
         Extra = "copy"; //Yuzo added
@@ -903,6 +946,11 @@ public class WebDAVRequestGenerator implements Runnable
 
     public synchronized boolean GenerateRename( String Dest, String dir )
     {
+        if( GlobalData.getGlobalData().getDebugRequest() )
+        {
+            System.err.println( "WebDAVRequestGenerator::GenerateRename" );
+        }
+
 	// Why have the below when the DIscoverLock puts something else
 	// the Extra field
         Extra = new String(tableResource);
@@ -912,6 +960,10 @@ public class WebDAVRequestGenerator implements Runnable
 
     public synchronized boolean GenerateMove(String Dest, String dir, boolean Overwrite, boolean KeepAlive, String lockToken, String extraPrefix)
     {
+        if( GlobalData.getGlobalData().getDebugRequest() )
+        {
+            System.err.println( "WebDAVRequestGenerator::GenerateMove" );
+        }
 	
         Headers = null;
         Body = null;
@@ -1044,6 +1096,11 @@ public class WebDAVRequestGenerator implements Runnable
 
     public synchronized boolean GenerateLock(String OwnerInfo, String lockToken)
     {
+        if( GlobalData.getGlobalData().getDebugRequest() )
+        {
+            System.err.println( "WebDAVRequestGenerator::GenerateLock" );
+        }
+
         Headers = null;
         Body = null;
         // Only exclusive write lock is supported at the time
@@ -1143,6 +1200,11 @@ public class WebDAVRequestGenerator implements Runnable
 
     public synchronized boolean GenerateUnlock(String lockToken)
     {
+        if( GlobalData.getGlobalData().getDebugRequest() )
+        {
+            System.err.println( "WebDAVRequestGenerator::GenerateUnlock" );
+        }
+
         Headers = null;
         Body = null;
 

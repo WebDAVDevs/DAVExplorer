@@ -130,41 +130,41 @@ public class WebDAVFileView implements ViewSelectionListener, ActionListener
                 InputStream is = file.getInputStream( entry );
                 int len = (int)entry.getSize();
                 if( len != -1 )
-        {
+                {
                     byte[] ba = new byte[len];
                     is.read( ba, 0, len );
                     FOLDER_ICON = new ImageIcon( ba );
-        }
+                }
 
                 entry = file.getEntry( resPath );
                 is = file.getInputStream( entry );
                 len = (int)entry.getSize();
                 if( len != -1 )
-        {
+                {
                     byte[] ba = new byte[len];
                     is.read( ba, 0, len );
                     FILE_ICON = new ImageIcon( ba );
-        }
+                }
 
                 entry = file.getEntry( lckPath );
                 is = file.getInputStream( entry );
                 len = (int)entry.getSize();
                 if( len != -1 )
-        {
+                {
                     byte[] ba = new byte[len];
                     is.read( ba, 0, len );
                     LOCK_ICON = new ImageIcon( ba );
-        }
+                }
 
                 entry = file.getEntry( unlckPath );
                 is = file.getInputStream( entry );
                 len = (int)entry.getSize();
                 if( len != -1 )
-        {
+                {
                     byte[] ba = new byte[len];
                     is.read( ba, 0, len );
                     UNLOCK_ICON = new ImageIcon( ba );
-        }
+                }
             }
             catch( IOException e )
             {
@@ -212,6 +212,11 @@ public class WebDAVFileView implements ViewSelectionListener, ActionListener
 
             public void setValueAt(Object value, int row, int column)
             {
+                if( GlobalData.getGlobalData().getDebugFileView() )
+                {
+                    System.err.println( "WebDAVFileView::AbstractTableModel::setValueAt" );
+                }
+
                 if (column == 2)
                 {
                     String val = null;
@@ -227,18 +232,6 @@ public class WebDAVFileView implements ViewSelectionListener, ActionListener
 
                     if ( val != null)
                     {
-            /*
-                    Object obj[] = parentNode.getUserObjectPath();
-                        if (parentPath == null || parentPath.equals("") ){
-                        for (int i = 0; i < obj.length; i++){
-                            if (i > 0){
-                                parentPath = parentPath + obj[i];
-                            }
-                        }
-                        }
-            */
-
-
                         if (!parentPath.startsWith(WebDAVPrefix))
                             return;
 
@@ -330,23 +323,28 @@ public class WebDAVFileView implements ViewSelectionListener, ActionListener
     // and files in the Selected Node.
     public synchronized void selectionChanged(ViewSelectionEvent e)
     {
+        if( GlobalData.getGlobalData().getDebugFileView() )
+        {
+            System.err.println( "WebDAVFileView::selectionChanged" );
+        }
+
         table.clearSelection();
         clearTable();
-    selectedRow = -1;
+        selectedRow = -1;
 
         parentNode = (WebDAVTreeNode)e.getNode();
 
-    // set Parent Path
+        // set Parent Path
 
-    TreePath tp = e.getPath();
+        TreePath tp = e.getPath();
 
-    Object pathString[] = tp.getPath();
-    parentPath = "";
-    if( pathString.length > 0 ){
-        for (int i = 1; i < pathString.length; i++){
-            parentPath += pathString[i].toString() + "/";
+        Object pathString[] = tp.getPath();
+        parentPath = "";
+        if( pathString.length > 0 ){
+            for (int i = 1; i < pathString.length; i++){
+                parentPath += pathString[i].toString() + "/";
+            }
         }
-    }
 
         if (table.getRowCount() != 0)
         {
@@ -357,16 +355,7 @@ public class WebDAVFileView implements ViewSelectionListener, ActionListener
         WebDAVTreeNode tn = (WebDAVTreeNode)path.getLastPathComponent();
 
 
-    WebDAVTreeNode pn = (WebDAVTreeNode)tn.getParent();
-
-    /*
-        int count = tn.getChildCount();
-        for (int i=0; i < count; i++)
-        {
-            WebDAVTreeNode child = (WebDAVTreeNode) tn.getChildAt(i);
-    }
-    */
-
+        WebDAVTreeNode pn = (WebDAVTreeNode)tn.getParent();
 
         Cursor c = mainFrame.getCursor(); // save original cursor
         mainFrame.setCursor( Cursor.getPredefinedCursor( Cursor.WAIT_CURSOR ) );
@@ -385,7 +374,7 @@ public class WebDAVFileView implements ViewSelectionListener, ActionListener
 
         if (sub == null)
         {
-    //System.out.println(" No  resource");
+            //System.out.println(" No  resource");
         }
         else
         {
@@ -405,6 +394,11 @@ public class WebDAVFileView implements ViewSelectionListener, ActionListener
 
     protected void addDirToTable(WebDAVTreeNode n)
     {
+        if( GlobalData.getGlobalData().getDebugFileView() )
+        {
+            System.err.println( "WebDAVFileView::addDirToTable" );
+        }
+
         // Add the directories to the Table
 
         int count = n.getChildCount();
@@ -436,6 +430,11 @@ public class WebDAVFileView implements ViewSelectionListener, ActionListener
 
     protected void addFileToTable(Vector v)
     {
+        if( GlobalData.getGlobalData().getDebugFileView() )
+        {
+            System.err.println( "WebDAVFileView::addFileToTable" );
+        }
+
         for (int i=0; i < v.size(); i++)
         {
             Object[] rowObj = new Object[7];
@@ -490,17 +489,22 @@ public class WebDAVFileView implements ViewSelectionListener, ActionListener
     }
 
 
-// Added to reutrn the currently selected collection, null if none of resource
-// null if no collection selected
-
-    public WebDAVTreeNode getSelectedCollection(){
+    // Added to return the currently selected collection, null if none of resource
+    // null if no collection selected
+    public WebDAVTreeNode getSelectedCollection()
+    {
+        if( GlobalData.getGlobalData().getDebugFileView() )
+        {
+            System.err.println( "WebDAVFileView::getSelectedCollection" );
+        }
 
         try {
-        if (selectedRow < 0){
-        return null;
-        }
+            if (selectedRow < 0)
+            {
+                return null;
+            }
             boolean isCollection =
-        new Boolean(table.getValueAt(selectedRow,0).toString()).booleanValue();
+                new Boolean(table.getValueAt(selectedRow,0).toString()).booleanValue();
 
             if (isCollection) {
         //Get the TreeNode and return it
@@ -545,50 +549,55 @@ public class WebDAVFileView implements ViewSelectionListener, ActionListener
    }
 
     // Attempt to get at the selected item's dataNode
-    public String getSelectedLockToken(){
-    if (selectedRow < 0){
-        return null;
-    }
+    public String getSelectedLockToken()
+    {
+        if( GlobalData.getGlobalData().getDebugFileView() )
+        {
+            System.err.println( "WebDAVFileView::getSelectedLockToken" );
+        }
+
+        if (selectedRow < 0){
+            return null;
+        }
 
         //Get the TreeNode and return dataNode's lockTocken
-    WebDAVTreeNode n = getSelectedCollection();
+        WebDAVTreeNode n = getSelectedCollection();
 
-	if (n != null) {
-	    // return lockToken from the Node's dataNode
-	    DataNode dn = n.getDataNode();
-	    // Get the lockToken
-	    return dn.getLockToken();
-	    
+	    if (n != null) {
+	        // return lockToken from the Node's dataNode
+            DataNode dn = n.getDataNode();
+	        // Get the lockToken
+	        return dn.getLockToken();
         }
-	// Must be resource
+        // Must be resource
 
-	// 1. Find the resource's data Node
-	DataNode dn = parentNode.getDataNode();
+        // 1. Find the resource's data Node
+        DataNode dn = parentNode.getDataNode();
 
-	// Do a search of the subNodes
-	boolean found = false;
-	Vector sub = dn.getSubNodes();
-	String token = null;
-	DataNode node;
+        // Do a search of the subNodes
+        boolean found = false;
+        Vector sub = dn.getSubNodes();
+        String token = null;
+        DataNode node;
 
-	for( int i = 0; i < sub.size() && !found; i++){
-	    node = (DataNode)sub.elementAt(i);
-	    String s = node.getName(); 
-	    if(selectedResource.equals( s )){
-		found = true;
-		token = node.getLockToken();
-	    }
+        for( int i = 0; i < sub.size() && !found; i++){
+	        node = (DataNode)sub.elementAt(i);
+	        String s = node.getName(); 
+	        if(selectedResource.equals( s )){
+		        found = true;
+		        token = node.getLockToken();
+	        }
         }
 
 
         // 2. Get the token
-    if (token == null)
-    {
-        System.out.println("Error: getSelectedCollection, dataNode not found for selected item");
-        return null;
-    }
-    else
-        return token;
+        if (token == null)
+        {
+            System.out.println("Error: getSelectedCollection, dataNode not found for selected item");
+            return null;
+        }
+        else
+            return token;
     }
 
 
@@ -600,7 +609,13 @@ public class WebDAVFileView implements ViewSelectionListener, ActionListener
     }
 
 
-    public String getSelected(){
+    public String getSelected()
+    {
+        if( GlobalData.getGlobalData().getDebugFileView() )
+        {
+            System.err.println( "WebDAVFileView::getSelected" );
+        }
+
         String s = "";
         if ( selectedRow >= 0 )
         {
@@ -608,16 +623,15 @@ public class WebDAVFileView implements ViewSelectionListener, ActionListener
 
             s =  getParentPathString() + (String)table.getValueAt( selectedRow , 2);
 
-        boolean isCollection =
-            new Boolean(table.getValueAt(selectedRow,0).toString()).booleanValue
-();
+            boolean isCollection =
+                new Boolean(table.getValueAt(selectedRow,0).toString()).booleanValue();
 
-        if(isCollection)
-        return s + "/";
-        else
+            if(isCollection)
+                return s + "/";
+            else
                 return s;
         } else{
-        // Return the parent node
+            // Return the parent node
             return getParentPathString();
         }
     }
@@ -661,6 +675,11 @@ public class WebDAVFileView implements ViewSelectionListener, ActionListener
 
     public synchronized void update()
     {
+        if( GlobalData.getGlobalData().getDebugFileView() )
+        {
+            System.err.println( "WebDAVFileView::update" );
+        }
+
         table.clearSelection();
         updateTable(data);
     }
@@ -718,6 +737,11 @@ public class WebDAVFileView implements ViewSelectionListener, ActionListener
 
     public void setupTable(JTable table)
     {
+        if( GlobalData.getGlobalData().getDebugFileView() )
+        {
+            System.err.println( "WebDAVFileView::setupTable" );
+        }
+
         table.clearSelection();
         table.setSelectionModel(selectionModel);
         selectionModel.addListSelectionListener(new SelectionChangeListener());
@@ -813,6 +837,11 @@ public class WebDAVFileView implements ViewSelectionListener, ActionListener
 
     public void updateTable(Vector newdata)
     {
+        if( GlobalData.getGlobalData().getDebugFileView() )
+        {
+            System.err.println( "WebDAVFileView::selectionChanged" );
+        }
+
         this.data = newdata;
         fireTableModuleEvent();
         synchronized( this )
@@ -853,6 +882,11 @@ public class WebDAVFileView implements ViewSelectionListener, ActionListener
 
     public void treeSelectionChanged(ViewSelectionEvent e)
     {
+        if( GlobalData.getGlobalData().getDebugFileView() )
+        {
+            System.err.println( "WebDAVFileView::treeSelectionChanged" );
+        }
+
         table.clearSelection();
         clearTable();
         WebDAVTreeNode t_node = (WebDAVTreeNode) e.getNode();
@@ -991,6 +1025,11 @@ public class WebDAVFileView implements ViewSelectionListener, ActionListener
 
     public void handleDoubleClick(MouseEvent e)
     {
+        if( GlobalData.getGlobalData().getDebugFileView() )
+        {
+            System.err.println( "WebDAVFileView::handleDoubleClick" );
+        }
+
         Point pt = e.getPoint();
         int col = table.columnAtPoint(pt);
         int row = table.rowAtPoint(pt);
@@ -1054,6 +1093,11 @@ public class WebDAVFileView implements ViewSelectionListener, ActionListener
     {
         public void valueChanged(ListSelectionEvent e)
         {
+            if( GlobalData.getGlobalData().getDebugFileView() )
+            {
+                System.err.println( "WebDAVFileView::SelectionChangeListener::valueChanged" );
+            }
+
             Vector ls;
             synchronized (this)
             {
