@@ -1,3 +1,11 @@
+Changes for version 0.70-dev:
+- Now using the standard https port (443) for requests with SSL.
+- Fixed bug in HTTPClient that prevented proper handling of authentication in
+  case the server allows multiple possible authentication headers.
+- Fixed broken handling of & in filenames in the MS parser.
+- Closing the properties dialog with the close button does not exit the application
+  anymore.
+
 Changes for version 0.70:
 - Support for SSL (https protocol)
   The SSL package supported is Sun's Java Secure Socket Extensions 1.0.2 (JSSE),
