@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 1999 Regents of the University of California.
+ * Copyright (c) 1999-2001 Regents of the University of California.
  * All rights reserved.
  *
  * This software was developed at the University of California, Irvine.
@@ -53,7 +53,7 @@ public class TableSorter extends TableMap
 
     public void setModel(TableModel model)
     {
-        super.setModel(model); 
+        super.setModel(model);
         reallocateIndexes();
     }
 
@@ -296,20 +296,20 @@ public class TableSorter extends TableMap
             return -1;
         }
     }
-    
+
     public synchronized Object getValueAt(int aRow, int aColumn)
     {
         Object o = null;
 
         checkModel();
         try
-		{
-			o = model.getValueAt(indexes[aRow], aColumn);
-		}
-		catch( ArrayIndexOutOfBoundsException e )
-		{
-		}
-		return o;
+        {
+            o = model.getValueAt(indexes[aRow], aColumn);
+        }
+        catch( ArrayIndexOutOfBoundsException e )
+        {
+        }
+        return o;
     }
 
     public void setValueAt(Object aValue, int aRow, int aColumn)
@@ -333,7 +333,7 @@ public class TableSorter extends TableMap
     }
 
     // There is no-where else to put this.
-    // Add a mouse listener to the Table to trigger a table sort 
+    // Add a mouse listener to the Table to trigger a table sort
     // when a column heading is clicked in the JTable.
     public void addMouseListenerToHeaderInTable(JTable table)
     {

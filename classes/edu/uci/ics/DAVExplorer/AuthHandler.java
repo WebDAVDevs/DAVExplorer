@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 1999 Regents of the University of California.
+ * Copyright (c) 1999-2001 Regents of the University of California.
  * All rights reserved.
  *
  * This software was developed at the University of California, Irvine.
@@ -65,7 +65,7 @@ class AuthHandler implements AuthorizationHandler
                                                RoRequest req, RoResponse resp )
         throws AuthSchemeNotImplException
     {
-	AuthorizationInfo cred;
+    AuthorizationInfo cred;
 
         // we only handle Basic authentication
         if( !info.getScheme().equalsIgnoreCase("Basic") )
@@ -73,9 +73,9 @@ class AuthHandler implements AuthorizationHandler
 
         // Ask the user for username/password
         if( !req.allowUI() )
-	    return null;
+        return null;
 
-	inp = new WebDAVLoginDialog( "Login", true );
+    inp = new WebDAVLoginDialog( "Login", true );
 
         if( inp.getUsername().equals( "" ) || inp.getUserPassword().equals( "" ) )
             return null;
@@ -83,7 +83,7 @@ class AuthHandler implements AuthorizationHandler
         NVPair answer;
         answer = new NVPair( inp.getUsername(), inp.getUserPassword() );
 
-	// Now process the username/password
+    // Now process the username/password
         cred = new AuthorizationInfo( info.getHost(), info.getPort(), info.getScheme(),
                                       info.getRealm(),
                                       Codecs.base64Encode( answer.getName() + ":" +

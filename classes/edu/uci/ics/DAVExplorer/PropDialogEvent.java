@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 1999 Regents of the University of California.
+ * Copyright (c) 1999-2001 Regents of the University of California.
  * All rights reserved.
  *
  * This software was developed at the University of California, Irvine.
@@ -34,22 +34,22 @@ public class PropDialogEvent extends java.util.EventObject
         data = new_data;
         initialData = initial;
     }
-    
+
     public String getHost()
     {
         return HostName;
     }
-    
+
     public String getResource()
     {
         return ResourceName;
     }
-    
+
     public String getData()
     {
         return data;
     }
-    
+
     public String getInitialData()
     {
         return initialData;

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 1999 Regents of the University of California.
+ * Copyright (c) 1999-2001 Regents of the University of California.
  * All rights reserved.
  *
  * This software was developed at the University of California, Irvine.
@@ -23,7 +23,7 @@
 // Implementing the method selectionChanged(ViewSelectionEvent e)
 // will allow this listner access to the Path and Node information
 // carried by ViewSelectionEvent.  (see ViewSelectionEvent.java)
-// 
+//
 ////////////////////////////////////////////////////////////////
 // The code has been modified to include povisions for the final
 // WebDAV xml namespaces.  A small number of program errors have

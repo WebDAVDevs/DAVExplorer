@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 1999 Regents of the University of California.
+ * Copyright (c) 1999-2001 Regents of the University of California.
  * All rights reserved.
  *
  * This software was developed at the University of California, Irvine.
@@ -21,7 +21,7 @@
 //
 // This class creates an event object which carries the path
 // and node to the recieving listener.
-// 
+//
 ////////////////////////////////////////////////////////////////
 // The code has been modified to include povisions for the final
 // WebDAV xml namespaces.  A small number of program errors have

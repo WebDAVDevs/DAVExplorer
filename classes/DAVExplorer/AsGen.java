@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 1999 Regents of the University of California.
+ * Copyright (c) 1999-2001 Regents of the University of California.
  * All rights reserved.
  *
  * This software was developed at the University of California, Irvine.
@@ -48,32 +48,32 @@ class AsNode
         m_alias = alias;
         m_parent = parent;
     }
-    
+
     public String getAlias()
     {
         return m_alias;
     }
-    
+
     public String getSchema()
     {
         return m_schema;
     }
-    
+
     public boolean isAttributeSet()
     {
         return m_attributeSet;
     }
-    
+
     public void setAttribute()
     {
         m_attributeSet = true;
     }
-    
+
     public AsNode getParent()
     {
         return m_parent;
     }
-    
+
     AsNode m_parent = null;
     String m_schema;
     String m_alias;
@@ -99,7 +99,7 @@ public class AsGen
         if( m_current != null )
             m_current = m_current.getParent();
     }
-    
+
     public String getAlias()
     {
         if( m_current == null )
@@ -115,7 +115,7 @@ public class AsGen
         else
             return m_current.getSchema();
     }
-    
+
     public boolean isAttributeSet()
     {
         if( m_current == null )
@@ -129,7 +129,7 @@ public class AsGen
         if( m_current != null )
             m_current.setAttribute();
     }
-    
+
     private String getNextAs()
     {
         String str = m_lastGenerated;

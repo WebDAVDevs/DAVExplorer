@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 1999 Regents of the University of California.
+ * Copyright (c) 1999-2001 Regents of the University of California.
  * All rights reserved.
  *
  * This software was developed at the University of California, Irvine.
@@ -17,7 +17,7 @@
  * WARRANTIES OF MERCHANTIBILITY AND FITNESS FOR A PARTICULAR PURPOSE.
  */
 // This code was originally written by an undergraduate project
-// team at UCI. 
+// team at UCI.
 ////////////////////////////////////////////////////////////////
 // The code has been modified to include povisions for the final
 // WebDAV xml namespaces.  A small number of program errors have
@@ -63,12 +63,12 @@ public class DataNode
         this.collection = collection;
         this.subNodes = subNodes;
     }
-    
+
     public void setSubNodes(Vector subNodes)
     {
         this.subNodes = subNodes;
     }
-    
+
     public Vector getSubNodes()
     {
         return subNodes;
@@ -78,84 +78,84 @@ public class DataNode
     {
         name = newName;
     }
-    
+
     public void setDisplay(String newDisplay)
     {
         display = newDisplay;
     }
-    
+
     public void setType(String newType)
     {
         type = newType;
     }
-    
+
     public void setSize(long newSize)
     {
         size = newSize;
     }
-    
+
     public void setDate(String newDate)
     {
         lastModified = newDate;
     }
-    
+
     public void lock( String lockToken )
     {
         locked = true;
         this.lockToken = lockToken;
     }
-    
+
     public void unlock()
     {
         locked = false;
         lockToken = null;
     }
-    
+
     public void makeCollection()
     {
         collection = true;
     }
-    
+
     public void makeNonCollection()
     {
         collection = false;
     }
-    
+
     public String getName()
     {
         return new String(name);
     }
-    
+
     public String getDisplay()
     {
         return new String(display);
     }
-    
+
     public String getType()
     {
         return new String(type);
     }
-    
+
     public String getLockToken()
     {
         return lockToken;
     }
-    
+
     public long getSize()
     {
         return size;
     }
-    
+
     public String getDate()
     {
         return new String(lastModified);
     }
-    
+
     public boolean isLocked()
     {
         return locked;
     }
-    
+
     public boolean isCollection()
     {
         return collection;
