@@ -62,3 +62,5 @@ all: $(classes)
 clean::
 	- rm -f *.class
 
+dist::
+	- rm -f *.class CVS

@@ -48,3 +48,10 @@ clean::
 	- cd $(SRC)/DAVExplorer; make clean
 	- rm -f DAVExplorer.jar
 
+dist::
+	- cd $(SRC)/com; make dist
+	- cd $(SRC)/HTTPClient; make dist
+	- cd $(SRC)/DAVExplorer; make dist
+	- rm -f DAVExplorer.jar
+	- rm -f $(SRC)/CVS
+

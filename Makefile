@@ -33,3 +33,7 @@ clean::
 	- cd $(SRC)/classes; make clean
 	- rm -f $(SRC)/DAVExplorer.jar
 
+dist::
+	- cd $(SRC)/classes; make dist
+	- rm -f $(SRC)/DAVExplorer.jar
+	- rm -f $(SRC)/CVS

@@ -25,3 +25,7 @@ ms::
 clean::
 	- cd $(SRC)/ms; make clean
 
+dist::
+	- cd $(SRC)/ms; make clean
+	- rm -f $(SRC)/CVS
+

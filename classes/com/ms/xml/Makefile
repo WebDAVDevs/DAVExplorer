@@ -83,3 +83,10 @@ clean::
 	- cd $(SRC)/util; rm -f *.class
 	- cd $(SRC)/xmlstream; rm -f *.class
 
+dist::
+	- cd $(SRC)/dso; rm -f *.class CVS
+	- cd $(SRC)/om; rm -f *.class CVS
+	- cd $(SRC)/parser; rm -f *.class CVS
+	- cd $(SRC)/util; rm -f *.class CVS
+	- cd $(SRC)/xmlstream; rm -f *.class CVS
+	- rm -f $(SRC)/CVS
