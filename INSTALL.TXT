@@ -7,20 +7,14 @@ restrict the capabilities of DAV Explorer.
 Note: If not compiling from source, skip steps 1-3 and 5.
 If use of SSL is not required, step 4 can also be skipped.
 
-1. Login to the DAV Explorer CVS archive with the command
-   'cvs -d :pserver:cvsguest@opera.ics.uci.edu:/webdav'
-   The password for the cvsguest account is: cvs
+1. Login to the DAV Explorer Subversion archive with any Subversion client.
+   The Subversion archive is located at http://louvre.ics.uci.edu:8080/svn/DAVExplorer/
+   The username for the archive is "guest", the password is "guest".
 
 2. Navigate to your chosen source directory.
 
-3. Retrieve all DAV Explorer source files from the DAV Explorer CVS archive,
-   by using the command
-   'cvs -d :pserver:cvsguest@opera.ics.uci.edu:/webdav checkout DAVExplorer'.
-   Retrieve all MS Parser and HTTPClient source files and class files from the
-   CVS archive with the commands
-   'cvs -d :pserver:cvsguest@opera.ics.uci.edu:/webdav checkout parser'
-   and 'cvs -d :pserver:cvsguest@opera.ics.uci.edu:/webdav checkout HTTPClient',
-   respectively.
+3. Retrieve all DAV Explorer source files from the DAV Explorer Subversion
+   archive, from the trunk directory.
 
 4. If SSL support is required, retrieve the Java Secure Socket Extensions from
    http://java.sun.com/products/jsse/

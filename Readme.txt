@@ -1,7 +1,7 @@
 1. OVERVIEW
 
-DAV Explorer is a WebDAV and DeltaV client application that uses the WebDAV
-and DeltaV protocols to provide:
+DAV Explorer is a WebDAV and DeltaV client application that uses the WebDAV,
+DeltaV and ACL protocols to provide:
      A tree view of a WebDAV server 
      Upload and download of Web resources 
      Locking and unlocking of resources for collaboration support 
@@ -14,6 +14,9 @@ and DeltaV protocols to provide:
      Creating new versions of resources
      Checking out and checking in of resources
      Listing of resource versions
+     Listing of Access Control information
+     Adding and Modification of Access Control Lists
+     ACL Reports
 
 The user interface for DAV Explorer is similar in look and functionality
 to the Explorer program which is provided by the Windows operating system.
@@ -28,6 +31,8 @@ DAV Explorer also supports the linear versioning of resources through the
 use of RFC 3253, the DeltaV Versioning Extensions to WebDAV protocol specification.
 DAV Explorer supports the linear checkout, uncheckout, checkin, and reporting
 functionality specified in the DeltaV specification.
+DAV Explorer also supports the WebDAV Access Control Protocol as specified
+in RFC 3744.
 
 DAV Explorer is a Java application which uses Java 2 and has successfully
 been run on Microsoft Windows from Windows 95 to Server 2003,
@@ -80,11 +85,10 @@ License.txt in the distribution for details.
 The DAV Explorer source files can be downloaded from
 http://www.ics.uci.edu/~webdav/download.html.
 
-The source files are also available via Remote CVS at
-:pserver:cvsguest@opera.ics.uci.edu:/webdav
-The password for the CVS archive is "cvs".
-To retrieve the complete source tree, check out the modules DAVExplorer,
-HTTPClient and parser. 
+The source files are also available via Subversion at
+http://louvre.ics.uci.edu:8080/svn/DAVExplorer/
+The username for the Subversion archive is "guest", the password is "guest".
+To retrieve the complete source tree, check out the trunk directory. 
 This account is read-only, please submit code patches to <dav-exp@ics.uci.edu>. 
 
 If the DAV Explorer jar file is created from the source, it has to be
@@ -142,7 +146,7 @@ Thanks to everybody.
 
 6. CHANGELOG
 
-Changes for version 0.91-dev:
+Changes for version 0.91:
 - Re-Enabled authentication requests for PUT, broken by changing to streaming
   PUT data in 0.82 (thanks to Marc Richard for alerting us to the problem.)
 - Added support for proxy entry in applet settings (thanks to Luís Ferreira
@@ -160,6 +164,7 @@ Changes for version 0.91-dev:
   ISO 8601 format instead of the RFC 2616 format required by the WebDAV
   RFC (thanks to Frédéric Esnouf for alerting us to the problem.)
 - Fixed the charset handling and unencoding of data from the server.
+- ACL (RFC 3744) support.
 
 Changes for version 0.90:
 - Bug fix in HTTPClient for PUT with Stream and Digest authentication.
