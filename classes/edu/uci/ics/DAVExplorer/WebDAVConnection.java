@@ -118,7 +118,8 @@ public class WebDAVConnection extends HTTPConnection
         long fileSize = file.length();
 
         HttpOutputStream out = new HttpOutputStream( fileSize );
-        HTTPResponse response = Put( filename, out, headers );
+        //HTTPResponse response = Put( filename, out, headers );
+        HTTPResponse response = ExtensionMethod( "PUT", filename, out, headers );
 
         FileInputStream file_in = new FileInputStream( file );
         byte[] b = new byte[65536];     // in my MacOS9 tests, this value seemed to work best
