@@ -944,9 +944,12 @@ public class WebDAVResponseInterpreter
                     if( currentTag.getName().equals( WebDAVXML.ELEM_LOCK_TOKEN ) )
                     {
                         lockToken = getLockToken( current );
-                        lockToken.trim();
-                        int pos = lockToken.indexOf("opaque");
-                        lockToken = lockToken.substring(pos);
+                        if( lockToken != null )
+						{
+                            lockToken.trim();
+                            int pos = lockToken.indexOf("opaque");
+                            lockToken = lockToken.substring(pos);
+						}
                         break;
                     }
                 }
@@ -1219,12 +1222,17 @@ public class WebDAVResponseInterpreter
                 if( current != null )
                 {
                     tag = current.getTagName();
-                    if( (tag != null) && tag.getName().equals( WebDAVXML.ELEM_HREF ) )
-                    {
-                        Element token = (Element)treeEnum.nextElement();
-                        if( (token != null) && token.getType() == Element.PCDATA )
-                            return token.getText();
-                    }
+                    if( tag != null )
+					{
+                        if( tag.getName().equals( WebDAVXML.ELEM_HREF ) )
+                        {
+                            Element token = (Element)treeEnum.nextElement();
+                            if( (token != null) && token.getType() == Element.PCDATA )
+                                return token.getText();
+                        }
+					}
+                    else if( current.getType() == Element.PCDATA )
+                        return current.getText();
                 }
             }
         }

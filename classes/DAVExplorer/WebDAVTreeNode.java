@@ -655,12 +655,12 @@ public class WebDAVTreeNode extends DefaultMutableTreeNode
         {
             Element current = (Element)treeEnum.nextElement();
             Name tag = current.getTagName();
-            if( tag.getName().equals( WebDAVXML.ELEM_HREF ) )
+            if( (tag!=null) && tag.getName().equals( WebDAVXML.ELEM_HREF ) )
             {
                 Element token = (Element)treeEnum.nextElement();
-                if( token.getType() == Element.PCDATA )
+                if( (token!=null) && token.getType() == Element.PCDATA )
                     return token.getText();
-            }
+			}
         }
         return null;
     }

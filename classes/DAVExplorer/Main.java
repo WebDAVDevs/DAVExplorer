@@ -65,7 +65,7 @@ public class Main extends JFrame
     WebDAVLoginDialog ld;
     Hashtable authTable;
     String authHost;
-    public final static String VERSION = "0.57";
+    public final static String VERSION = "0.58";
     public final static String UserAgent = "UCI DAV Explorer/" + VERSION;
     String writeToDir;
 

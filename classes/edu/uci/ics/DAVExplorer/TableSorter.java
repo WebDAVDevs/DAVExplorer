@@ -297,10 +297,19 @@ public class TableSorter extends TableMap
         }
     }
     
-    public Object getValueAt(int aRow, int aColumn)
+    public synchronized Object getValueAt(int aRow, int aColumn)
     {
+        Object o = null;
+
         checkModel();
-        return model.getValueAt(indexes[aRow], aColumn);
+        try
+		{
+			o = model.getValueAt(indexes[aRow], aColumn);
+		}
+		catch( ArrayIndexOutOfBoundsException e )
+		{
+		}
+		return o;
     }
 
     public void setValueAt(Object aValue, int aRow, int aColumn)
