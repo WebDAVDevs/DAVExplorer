@@ -110,12 +110,15 @@ public class WebDAVToolBar extends JPanel implements ActionListener
     private static String getIconPath()
     {
         String icons = WebDAVClassName;
-        int pos = icons.indexOf("/");
-        while( pos >=0 )
+        if( File.separatorChar != '/' )
         {
-            icons = icons.substring( 0, pos) + File.separatorChar + icons.substring( pos+1 );
-            pos = icons.indexOf( "/" );
-        }
+			int pos = icons.indexOf("/");
+			while( pos >=0 )
+			{
+				icons = icons.substring( 0, pos) + File.separatorChar + icons.substring( pos+1 );
+				pos = icons.indexOf( "/" );
+			}
+		}
         icons += File.separatorChar + IconDir;
         String classPath = System.getProperty("java.class.path");
         if (classPath == null)
@@ -132,7 +135,7 @@ public class WebDAVToolBar extends JPanel implements ActionListener
             if( lowerPath.endsWith( jarExtension ) )
             {
                 jarPath = nextPath;
-                pos = lowerPath.indexOf( jarExtension );
+                int pos = lowerPath.indexOf( jarExtension );
                 nextPath = nextPath.substring( 0, pos );
             }
             if (!nextPath.endsWith(new Character(File.separatorChar).toString()))
