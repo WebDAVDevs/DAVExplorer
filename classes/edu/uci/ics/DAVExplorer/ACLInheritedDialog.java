@@ -38,8 +38,7 @@ public class ACLInheritedDialog extends PropDialog
     public ACLInheritedDialog( Element properties, String resource,
             String hostname )
     {
-        init( new ACLPropModel(properties), properties, resource, hostname, null, false );
-        setTitle( "View Inherited ACL Set" );
+        init( new ACLPropModel(properties), resource, hostname, "View Inherited ACL Set", null, false );
         buttonPanel.remove(addButton);
         buttonPanel.remove(deleteButton);
         buttonPanel.remove(saveButton);

@@ -81,6 +81,7 @@ public class ACLResponseInterpreter extends DeltaVResponseInterpreter
         HostName = e.getHost();
         Port = e.getPort();
         Charset = getCharset();
+        Resource = e.getResource();
 
         // get the resource name, and unescape it
         Resource = GlobalData.getGlobalData().unescape( e.getResource(), "ISO-8859-1", null );
@@ -338,12 +339,16 @@ public class ACLResponseInterpreter extends DeltaVResponseInterpreter
         switch( extendedCode )
         {
             case WebDAVResponseEvent.ACL_PRINCIPAL_PROP_SET:
+                handlePrincipalPropSet( xml_doc );
                 break;
             case WebDAVResponseEvent.PRINCIPAL_MATCH:
+                handlePrincipalMatch( xml_doc );
                 break;
             case WebDAVResponseEvent.PRINCIPAL_PROPERTY_SEARCH:
+                handlePrincipalPropertySearch( xml_doc );
                 break;
             case WebDAVResponseEvent.PRINCIPAL_SEARCH_PROPERTY_SET:
+                handlePrincipalSearchPropertySet( xml_doc );
                 break;
             default:
                 super.parseReport();
@@ -716,6 +721,121 @@ public class ACLResponseInterpreter extends DeltaVResponseInterpreter
                 return RESOURCETYPE_PRINCIPAL;
         }
         return super.getResourceType( resourcetype );
+    }
+
+
+    protected void handlePrincipalPropSet( Document xml_doc )
+    {
+        // expecting a <multistatus> tag, skipping everything up to it
+        String[] token = new String[1];
+        token[0] = new String( WebDAVXML.ELEM_MULTISTATUS );
+        Element rootElem = skipElements( xml_doc, token );
+        Vector subtrees = new Vector();
+        
+        if( rootElem != null )
+        {
+            TreeEnumeration enumTree =  new TreeEnumeration( rootElem );
+            while( enumTree.hasMoreElements() )
+            {
+                Element current = (Element)enumTree.nextElement();
+                Name currentTag = current.getTagName();
+                if( currentTag != null )
+                {
+                    // expecting a <response> tag
+                    if( currentTag.getName().equals( WebDAVXML.ELEM_RESPONSE ) )
+                    {
+                        subtrees.add( current );
+                    }
+                }
+            }
+            PrincipalPropertiesModel model = new PrincipalPropertiesModel( subtrees );
+            PropDialog dlg = new PropDialog( model, Resource, HostName, "View Principal Property Set", null, false );
+        }
+    }
+
+
+    protected void handlePrincipalMatch( Document xml_doc )
+    {
+        // expecting a <multistatus> tag, skipping everything up to it
+        String[] token = new String[1];
+        token[0] = new String( WebDAVXML.ELEM_MULTISTATUS );
+        Element rootElem = skipElements( xml_doc, token );
+        
+        if( rootElem != null )
+        {
+            TreeEnumeration enumTree =  new TreeEnumeration( rootElem );
+            while( enumTree.hasMoreElements() )
+            {
+                Element current = (Element)enumTree.nextElement();
+                Name currentTag = current.getTagName();
+                if( currentTag != null )
+                {
+                    // expecting a <response> tag
+                    if( currentTag.getName().equals( WebDAVXML.ELEM_RESPONSE ) )
+                    {
+                        PropDialog dlg = new PropDialog( current, Resource, HostName, "View Principal Match", null, false );
+                    }
+                }
+            }
+        }
+    }
+
+
+    protected void handlePrincipalPropertySearch( Document xml_doc )
+    {
+        // expecting a <multistatus> tag, skipping everything up to it
+        String[] token = new String[1];
+        token[0] = new String( WebDAVXML.ELEM_MULTISTATUS );
+        Element rootElem = skipElements( xml_doc, token );
+        
+        if( rootElem != null )
+        {
+            TreeEnumeration enumTree =  new TreeEnumeration( rootElem );
+            while( enumTree.hasMoreElements() )
+            {
+                Element current = (Element)enumTree.nextElement();
+                Name currentTag = current.getTagName();
+                if( currentTag != null )
+                {
+                    // expecting a <response> tag
+                    if( currentTag.getName().equals( WebDAVXML.ELEM_RESPONSE ) )
+                    {
+                        PrincipalPropertiesModel model = new PrincipalPropertiesModel( current );
+                        PropDialog dlg = new PropDialog( model, Resource, HostName, "View Principal Properties", null, false );
+                    }
+                }
+            }
+        }
+    }
+
+
+    protected void handlePrincipalSearchPropertySet( Document xml_doc )
+    {
+        // expecting a <principal-search-property-set> tag, skipping everything up to it
+        String[] token = new String[1];
+        token[0] = new String( ACLXML.ELEM_PRINCIPAL_SEARCH_PROPERTY_SET );
+        Element rootElem = skipElements( xml_doc, token );
+        Vector subtrees = new Vector();
+        
+        if( rootElem != null )
+        {
+            TreeEnumeration enumTree =  new TreeEnumeration( rootElem );
+            while( enumTree.hasMoreElements() )
+            {
+                Element current = (Element)enumTree.nextElement();
+                Name currentTag = current.getTagName();
+                if( currentTag != null )
+                {
+                    // expecting a <principal-search-property> tag
+                    if( currentTag.getName().equals( ACLXML.ELEM_PRINCIPAL_SEARCH_PROPERTY ) )
+                    {
+                        subtrees.add( current );
+                    }
+                }
+            }
+            PrincipalPropertiesModel model = new PrincipalPropertiesModel( subtrees );
+            PropDialog dlg = new PropDialog( model, Resource, HostName, "View Principal Search Properties", null, false );
+        }
     }
 
 

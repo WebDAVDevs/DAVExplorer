@@ -1097,8 +1097,10 @@ class GlobalData
     {
         Rectangle recthDimensions = dlg.getParent().getBounds();
         Rectangle bounds = dlg.getBounds();
-        dlg.setBounds( recthDimensions.x + (recthDimensions.width-bounds.width)/2,
-                   recthDimensions.y + (recthDimensions.height - bounds.height)/2,
-                   bounds.width, bounds.height );
+        int x = recthDimensions.x + (recthDimensions.width-bounds.width)/2;
+        if( x < 0 ) x = 0;
+        int y = recthDimensions.y + (recthDimensions.height - bounds.height)/2;
+        if( y < 0 ) y = 0;
+        dlg.setBounds( x, y, bounds.width, bounds.height );
     }
 }

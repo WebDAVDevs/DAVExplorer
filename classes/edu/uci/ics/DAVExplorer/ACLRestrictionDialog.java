@@ -38,8 +38,7 @@ public class ACLRestrictionDialog extends PropDialog
     public ACLRestrictionDialog( Element properties, String resource,
             String hostname )
     {
-        init( new ACLPropModel(properties), properties, resource, hostname, null, false );
-        setTitle( "View ACL Restrictions" );
+        init( new ACLPropModel(properties), resource, hostname, "View ACL Restrictions", null, false );
         buttonPanel.remove(addButton);
         buttonPanel.remove(deleteButton);
         buttonPanel.remove(saveButton);

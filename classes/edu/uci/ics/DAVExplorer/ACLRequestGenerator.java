@@ -318,10 +318,10 @@ public class ACLRequestGenerator extends DeltaVRequestGenerator
         topElem.addChild( WebDAVXML.elemNewline, null );
         Element propElem = WebDAVXML.createElement( ACLXML.ELEM_PRINCIPAL_PROPERTY, Element.ELEMENT, topElem, asgen );
         propElem.addChild( WebDAVXML.elemNewline, null );
-        addProperties( propElem, asgen, props, 1 );
-        addChild( topElem, propElem, 1, true );
+        addProperties( propElem, asgen, props, 1, false );
+        addChild( topElem, propElem, 1, false );
         miniDoc.addChild( topElem, null );
-        
+
         ByteArrayOutputStream byte_str = new ByteArrayOutputStream();
         XMLOutputStream xml_out = new XMLOutputStream(byte_str);
         try
@@ -444,7 +444,6 @@ public class ACLRequestGenerator extends DeltaVRequestGenerator
             asgen = WebDAVXML.createNamespace( new AsGen(), null );
 
         Element topElem = WebDAVXML.createElement( ACLXML.ELEM_PRINCIPAL_SEARCH_PROPERTY_SET, Element.ELEMENT, null, asgen );
-        topElem.addChild( WebDAVXML.elemNewline, null );
         miniDoc.addChild( topElem, null );
         
         ByteArrayOutputStream byte_str = new ByteArrayOutputStream();
@@ -574,8 +573,20 @@ public class ACLRequestGenerator extends DeltaVRequestGenerator
 
     protected void addProperties( Element parent, AsGen DAVns, Vector props, int indent )
     {
-        Element propElem = WebDAVXML.createElement( WebDAVXML.ELEM_PROP, Element.ELEMENT, parent, DAVns );
-        propElem.addChild( WebDAVXML.elemNewline, null );
+        addProperties( parent, DAVns, props, indent, true );
+    }
+
+
+    protected void addProperties( Element parent, AsGen DAVns, Vector props, int indent, boolean usePropElem )
+    {
+        Element propElem;
+        if( usePropElem )
+        {
+            propElem = WebDAVXML.createElement( WebDAVXML.ELEM_PROP, Element.ELEMENT, parent, DAVns );
+            propElem.addChild( WebDAVXML.elemNewline, null );
+        }
+        else
+            propElem = parent;
         for( int i=0; i<props.size(); i++ )
         {
             String[] prop = (String[])props.get( i );
@@ -589,6 +600,7 @@ public class ACLRequestGenerator extends DeltaVRequestGenerator
             Element property = WebDAVXML.createElement( prop[0], Element.ELEMENT, propElem, namespace );
             addChild( propElem, property, indent+1, false );
         }
-        addChild( parent, propElem, indent, false );
+        if( usePropElem )
+            addChild( parent, propElem, indent, false );
     }
 }

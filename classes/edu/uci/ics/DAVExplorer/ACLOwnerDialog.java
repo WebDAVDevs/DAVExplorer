@@ -45,7 +45,6 @@ public class ACLOwnerDialog extends PropDialog
      */
     public ACLOwnerDialog( Element properties, String resource, String hostname, boolean owner, boolean changeable )
     {
-        init( new ACLPropModel(properties), properties, resource, hostname, null, false );
         String title;
         if( changeable )
             title = "View/Modify ACL ";
@@ -58,7 +57,7 @@ public class ACLOwnerDialog extends PropDialog
             title += "Owner";
         else
             title += "Group";
-        setTitle( title );
+        init( new ACLPropModel(properties), resource, hostname, title, null, false );
         buttonPanel.remove(addButton);
         buttonPanel.remove(deleteButton);
         pack();

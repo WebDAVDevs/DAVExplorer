@@ -101,7 +101,7 @@ implements ActionListener, ChangeListener, ListSelectionListener, WebDAVCompleti
         JPanel buttonPanel = new JPanel();
         buttonPanel.add(okButton);
         buttonPanel.add(cancelButton);
-        getRootPane().setDefaultButton( cancelButton );
+        getRootPane().setDefaultButton( okButton );
         cancelButton.grabFocus();
         getContentPane().add( "South", buttonPanel );
         setBackground(Color.lightGray);

@@ -39,11 +39,12 @@ public class ACLPrivilegesDialog extends PropDialog
     public ACLPrivilegesDialog( Element properties, String resource,
             String hostname, boolean supported )
     {
-        init( new ACLPropModel(properties), properties, resource, hostname, null, false );
+        String title;
         if( supported )
-            setTitle( "View supported Privileges" );
+            title = "View supported Privileges";
         else
-            setTitle( "View User Privileges" );
+            title = "View User Privileges";
+        init( new ACLPropModel(properties), resource, hostname, title, null, false );
         buttonPanel.remove(addButton);
         buttonPanel.remove(deleteButton);
         buttonPanel.remove(saveButton);

@@ -62,6 +62,12 @@ import com.ms.xml.util.Name;
  */
 public class PropModel extends AbstractTableModel implements TreeTableModel
 {
+    protected PropModel()
+    {
+        root = new PropNode( "Properties", null, null );
+    }
+
+
     /**
      * Constructor
      * @param properties
@@ -607,7 +613,7 @@ public class PropModel extends AbstractTableModel implements TreeTableModel
      * @param properties
      * @param currentNode
      */
-    private void parseProperties( Element properties, PropNode currentNode )
+    protected void parseProperties( Element properties, PropNode currentNode )
     {
         if( GlobalData.getGlobalData().getDebugResponse() )
         {
@@ -632,36 +638,6 @@ public class PropModel extends AbstractTableModel implements TreeTableModel
                         if (propValEl.getType() != Element.ELEMENT)
                             continue;
                         String ns = WebDAVProp.locateNamespace( propValEl, tagname );
-                        /**
-                         * Namespace Handling
-                         * Unfortunately, the 1997-era Microsoft parser does not properly
-                         * handle namespaces. It should really be replaced with a modern
-                         * DOM parser.
-                         * Until then, we are stuck with code like this to get the
-                         * actual namespace by walking up the tree.
-                         */
-/*                        String ns = null;
-                        Atom namespace = tagname.getNameSpace();
-                        if( namespace != null )
-                            ns = tagname.getNameSpace().toString();
-                        Element parent = propValEl;
-                        Name name = null;
-                        if( ns != null )
-                            name = Name.create( ns, "xmlns" );
-                        else
-                            name = Name.create( "xmlns" );
-                        while( parent != null )
-                        {
-                            String attr = (String)parent.getAttribute(name);
-                            if( attr == null )
-                                parent = parent.getParent();
-                            else
-                            {
-                                ns = attr;
-                                break;
-                            }
-                        }
-*/                            
                         Element token = getChildElement(propValEl);
                         if( (token != null) && (token.getType() == Element.PCDATA || token.getType() == Element.CDATA) )
                         {
@@ -824,7 +800,7 @@ public class PropModel extends AbstractTableModel implements TreeTableModel
      * @param el
      * @return
      */
-    private Element getChildElement( Element el )
+    protected Element getChildElement( Element el )
     {
         TreeEnumeration treeEnum = new TreeEnumeration( el );
         while(treeEnum.hasMoreElements() )
@@ -846,7 +822,7 @@ public class PropModel extends AbstractTableModel implements TreeTableModel
      * @param el
      * @return
      */
-    private String getValue( Element el )
+    protected String getValue( Element el )
     {
         Element token = getChildElement(el);
         if( token != null )
@@ -860,7 +836,7 @@ public class PropModel extends AbstractTableModel implements TreeTableModel
      * @param node
      * @return
      */
-    private boolean childrenModified( PropNode node )
+    protected boolean childrenModified( PropNode node )
     {
         if( node.isModified() )
             return true;
@@ -879,7 +855,7 @@ public class PropModel extends AbstractTableModel implements TreeTableModel
      * @param node
      * @return
      */
-    private boolean childrenRemoved( PropNode node )
+    protected boolean childrenRemoved( PropNode node )
     {
         Object[] children = node.getRemovedChildren();
         if( children.length > 0 )
@@ -898,7 +874,7 @@ public class PropModel extends AbstractTableModel implements TreeTableModel
      * 
      * @param node
      */
-    private void clear( PropNode node )
+    protected void clear( PropNode node )
     {
         node.clear();
         Object[] children = node.getChildren();

@@ -39,8 +39,7 @@ public class ACLListDialog extends PropDialog
      */
     public ACLListDialog( Element properties, String resource, String hostname )
     {
-        init( new ACLPropModel(properties), properties, resource, hostname, null, false );
-        setTitle( "View ACL" );
+        init( new ACLPropModel(properties), resource, hostname, "View ACL", null, false );
         buttonPanel.remove(addButton);
         buttonPanel.remove(deleteButton);
         buttonPanel.remove(saveButton);

@@ -71,7 +71,7 @@ public class PropDialog extends JDialog
     {
         super( GlobalData.getGlobalData().getMainFrame() );
         model = new PropModel( properties );
-        init( model, properties, resource, hostname, locktoken, changeable );
+        init( model, resource, hostname, null, locktoken, changeable );
         pack();
         setSize( getPreferredSize() );
         GlobalData.getGlobalData().center( this );
@@ -79,10 +79,33 @@ public class PropDialog extends JDialog
     }
 
 
-    public PropDialog( PropModel model, Element properties, String resource, String hostname, String locktoken, boolean changeable )
+    public PropDialog( Element properties, String resource, String hostname, String title, String locktoken, boolean changeable )
     {
         super( GlobalData.getGlobalData().getMainFrame() );
-        init( model, properties, resource, hostname, locktoken, changeable );
+        model = new PropModel( properties );
+        init( model, resource, hostname, title, locktoken, changeable );
+        pack();
+        setSize( getPreferredSize() );
+        GlobalData.getGlobalData().center( this );
+        show();
+    }
+
+
+    public PropDialog( PropModel model, String resource, String hostname, String locktoken, boolean changeable )
+    {
+        super( GlobalData.getGlobalData().getMainFrame() );
+        init( model, resource, hostname, null, locktoken, changeable );
+        pack();
+        setSize( getPreferredSize() );
+        GlobalData.getGlobalData().center( this );
+        show();
+    }
+
+
+    public PropDialog( PropModel model, String resource, String hostname, String title, String locktoken, boolean changeable )
+    {
+        super( GlobalData.getGlobalData().getMainFrame() );
+        init( model, resource, hostname, title, locktoken, changeable );
         pack();
         setSize( getPreferredSize() );
         GlobalData.getGlobalData().center( this );
@@ -96,13 +119,18 @@ public class PropDialog extends JDialog
     }
 
     
-    protected void init( PropModel model, Element properties, String resource, String hostname, String locktoken, boolean changeable )
+    protected void init( PropModel model, String resource, String hostname, String title, String locktoken, boolean changeable )
     {
         this.changeable = changeable;
-        if( changeable )
-            setTitle("View/Modify Properties");
+        if( title != null )
+            setTitle( title );
         else
-            setTitle("View Properties");
+        {
+            if( changeable )
+                setTitle("View/Modify Properties");
+            else
+                setTitle("View Properties");
+        }
         this.resource = hostname + resource;
         this.locktoken = locktoken;
         JLabel label = new JLabel( this.resource, JLabel.CENTER );
