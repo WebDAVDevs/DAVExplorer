@@ -76,10 +76,12 @@ import java.io.FileOutputStream;
 import java.io.InputStream;
 import java.io.File;
 import java.io.IOException;
+import java.io.UnsupportedEncodingException;
 
 
 /**
- * 
+ * This singleton class defines various global data structures
+ * and functions useful everywhere.
  */
 class GlobalData
 {
@@ -145,8 +147,9 @@ class GlobalData
 
 
     /**
-     * 
-     * @return
+     * Get the singleton instance
+     *  
+     * @return      The singleton GlobalData instance
      */
     static GlobalData getGlobalData()
     {
@@ -457,8 +460,8 @@ class GlobalData
 
 
     /**
-     * 
-     * @param c
+     * Set a new cursor
+     * @param c     The new cursor
      */
     public void setCursor( Cursor c )
     {
@@ -468,8 +471,7 @@ class GlobalData
 
 
     /**
-     * 
-     *
+     * Reset the cursor to the original one.
      */
     public void resetCursor()
     {
@@ -479,15 +481,26 @@ class GlobalData
 
 
     /**
-     * 
-     * @param text
-     * @param encoding
-     * @param href
-     * @return
+     * HTTP-unescape string
+     * @param text          Escaped string
+     * @param encoding      Target encoding, UTF-8 is the default if this
+     *                      parameter is null or the empty string
+     * @param href          Indicates if this string is a URI
+     * @return              The unescaped string, or an empty string if the
+     *                      function failed.
      */
     public String unescape( String text, String encoding, boolean href )
     {
-        ByteArrayInputStream byte_in = new ByteArrayInputStream( text.getBytes() );
+        ByteArrayInputStream byte_in;
+        try
+        {
+            // assume the text is UTF-8 encoded
+            byte_in = new ByteArrayInputStream( text.getBytes("UTF-8") );
+        }
+        catch( UnsupportedEncodingException e )
+        {
+            byte_in = new ByteArrayInputStream( text.getBytes() );
+        }
         EscapeInputStream iStream = new EscapeInputStream( byte_in, true );
         try
         {
@@ -586,10 +599,10 @@ class GlobalData
     
 
     /**
-     * 
-     * @param token
-     * @param defaultString
-     * @return
+     * Reads the entry defined by the token from the configuration file. 
+     * @param token             The token to look for
+     * @param defaultString     The default return if the token is not found
+     * @return                  The entry referenced by the token
      */
     public String ReadConfigEntry( String token, String defaultString )
     {
@@ -605,9 +618,9 @@ class GlobalData
 
 
     /**
-     * 
-     * @param token
-     * @return
+     * Reads the entry defined by the token from the configuration file. 
+     * @param token             The token to look for
+     * @return                  The entry referenced by the token
      */
     public String ReadConfigEntry( String token )
     {
@@ -616,10 +629,10 @@ class GlobalData
 
 
     /**
-     * 
-     * @param token
-     * @param multiple
-     * @return
+     * Reads multiple entries defined by the token from the configuration file. 
+     * @param token             The token to look for
+     * @param multiple          True if multiple entries should be returned
+     * @return                  The entries referenced by the token
      */
     public Vector ReadConfigEntry( String token, boolean multiple )
     {
