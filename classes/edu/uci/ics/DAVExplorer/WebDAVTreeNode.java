@@ -179,6 +179,7 @@ public class WebDAVTreeNode extends DefaultMutableTreeNode
             return;
         }
 
+		dataNode = null;	// we are building a new subtree
         String[] token = new String[1];
         token[0] = new String( WebDAVXML.ELEM_MULTISTATUS );
 
@@ -230,7 +231,6 @@ public class WebDAVTreeNode extends DefaultMutableTreeNode
         if( respElem.numElements() == 0 )
             return;
 
-        dataNode = null;
         SiblingEnumeration enumTree =  new SiblingEnumeration( respElem.getChild(0) );
         while( enumTree.hasMoreElements() )
         {
