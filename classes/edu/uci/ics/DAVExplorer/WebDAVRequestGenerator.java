@@ -720,12 +720,12 @@ public class WebDAVRequestGenerator implements Runnable
 
             if (lockToken != null)
             {
-                Headers = new NVPair[3];
-                Headers[2] = new NVPair("If","(<" + lockToken + ">)");
+                Headers = new NVPair[4];
+                Headers[3] = new NVPair("If","(<" + lockToken + ">)");
             }
             else
             {
-                Headers = new NVPair[2];
+                Headers = new NVPair[3];
             }
 
             if (Port == 0 || Port == DEFAULT_PORT)
@@ -733,7 +733,8 @@ public class WebDAVRequestGenerator implements Runnable
             else
                 Headers[0] = new NVPair("Host",HostName + ":" + Port);
 
-            Headers[1] = new NVPair("Content-Length",new Integer(fileSize).toString());
+            Headers[1] = new NVPair( "Content-Type", getContentType(fileName) );
+            Headers[2] = new NVPair( "Content-Length", new Integer(fileSize).toString() );
         }
         catch (Exception e)
         {
@@ -1133,6 +1134,63 @@ public class WebDAVRequestGenerator implements Runnable
         pane.showOptionDialog(mainFrame,str, "Error Message", JOptionPane.DEFAULT_OPTION, JOptionPane.ERROR_MESSAGE, null,options, options[0]);
     }
 
+
+    private String getContentType( String file )
+    {
+        String content = "application/octet-stream";
+
+        int pos = file.indexOf( "." );
+        if( pos >= 0 )
+        {
+            String extension = file.substring( pos+1 ).toLowerCase();
+            if( extension.equals( "txt" ) )
+                content = "text/plain";
+            else if( extension.equals( "htm" ) || extension.equals( "html" ) )
+                content = "text/html";
+            else if( extension.equals( "gif" ) )
+                content = "image/gif";
+            else if( extension.equals( "jpg" ) || extension.equals( "jpeg" ) )
+                content = "image/jpeg";
+            else if( extension.equals( "css" ) )
+                content = "text/css";
+            else if( extension.equals( "pdf" ) )
+                content = "application/pdf";
+            else if( extension.equals( "doc" ) )
+                content = "application/msword";
+            else if( extension.equals( "ppt" ) )
+                content = "application/vnd.ms-powerpoint";
+            else if( extension.equals( "xls" ) )
+                content = "application/vnd.ms-excel";
+            else if( extension.equals( "ps" ) )
+                content = "application/postscript";
+            else if( extension.equals( "zip" ) )
+                content = "application/zip";
+            else if( extension.equals( "fm" ) )
+                content = "application/vnd.framemaker";
+            else if( extension.equals( "mif" ) )
+                content = "application/vnd.mif";
+            else if( extension.equals( "png" ) )
+                content = "image/png";
+            else if( extension.equals( "tif" ) || extension.equals( "tiff" ) )
+                content = "image/tiff";
+            else if( extension.equals( "rtf" ) )
+                content = "text/rtf";
+            else if( extension.equals( "xml" ) )
+                content = "text/xml";
+            else if( extension.equals( "mpg" ) || extension.equals( "mpeg" ) )
+                content = "video/mpeg";
+            else if( extension.equals( "mov" ) )
+                content = "video/quicktime";
+            else if( extension.equals( "hqx" ) )
+                content = "application/mac-binhex40";
+            else if( extension.equals( "au" ) )
+                content = "audio/basic";
+            else if( extension.equals( "vrm" ) || extension.equals( "vrml" ) )
+                content = "model/vrml";
+        }
+
+        return content;
+    }
 
     private void printXML( Document miniDoc )
     {
