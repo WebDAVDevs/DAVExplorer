@@ -502,16 +502,23 @@ public class WebDAVRequestGenerator implements Runnable
         execute();
     }
   
-    public synchronized void GenerateMkCol()
+    public synchronized void GenerateMkCol( String parentDir, String dirname )
     {
         Headers = null;
         Body = null;
 
+        ResourceName = parentDir;
         if (!parseResourceName())
         {
             System.out.println("Error Generating MKCOL Method...");
             return;
         }
+        String dest = dirname;
+        int pos = dest.lastIndexOf( File.separatorChar );
+        if( pos >= 0 )
+            dest = dest.substring( pos + 1 );
+        StrippedResource = StrippedResource + "/" + dest;
+
         System.out.println("Generating MKCOL Method...");
 
         Method = "MKCOL";

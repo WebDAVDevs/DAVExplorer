@@ -98,14 +98,9 @@ System.out.println("*PATH 2");
        return super.getChildCount();
      }
 
-//Yuzo: I changed the below from if (!hasLoaded)
-    if ((!hasLoaded) && (!interpreter.Refreshing()) ) {
-System.out.println("*PATH 3, getchildCount=" + super.getChildCount());
-      	loadChildren();
-    }
-    else if ((!hasLoaded) )
+    if( !hasLoaded )
     {
-        System.out.println("*PATH 4, getchildCount=" + super.getChildCount());
+        System.out.println("*PATH 3, getchildCount=" + super.getChildCount());
       	loadChildren();
     }
 
@@ -114,7 +109,7 @@ System.out.println("*PATH 3, getchildCount=" + super.getChildCount());
 
   protected void loadRemote(byte[] byte_xml) {
 
-System.out.println("#loadRemote called");
+    System.out.println("#loadRemote called");
     Vector nodesChildren = new Vector();
     Document xml_doc = null; 
     Element multiElem = null;
@@ -161,8 +156,6 @@ System.out.println("#loadRemote called");
           continue;
 	parseResponse(respElem, ResourceName, nodesChildren);
       } 
-// Yuzo: added bug fix attempt
-	hasLoaded = true;
     }
     else {
       dataNode = null;

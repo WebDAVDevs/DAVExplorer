@@ -50,7 +50,7 @@ public class Main extends JFrame
     WebDAVLoginDialog ld;
     Hashtable authTable;
     String authHost;
-    public final static String VERSION = "0.3.1";
+    public final static String VERSION = "0.4";
 
     public Main(String frameName)
     {
@@ -125,7 +125,7 @@ public class Main extends JFrame
         p.add(splitPane);
 
         getContentPane().add(p);
-        treeView.fireSelectionEvent();
+        treeView.initTree();
         pack();
         setVisible(true);
 
@@ -397,7 +397,14 @@ public class Main extends JFrame
             }
             else if (command.equals("Create Folder"))
             {
-                requestGenerator.GenerateMkCol();
+                String prompt = new String( "Enter directory name:" );
+                String title = new String( "Directory Name" );
+                String dirname = selectName( title, prompt );
+                if( dirname != null )
+                {
+                    requestGenerator.GenerateMkCol( treeView.getCurrentPath(), dirname );
+                    requestGenerator.execute();
+                }
             }
             else if (command.equals("Edit Resource"))
             {
@@ -434,11 +441,20 @@ public class Main extends JFrame
             else if (command.equals("About WebDAV..."))
             {
                 JOptionPane pane = new JOptionPane();
-                String message = new String("WebDAV Explorer\nVersion: "+ VERSION + "\n\nUCI WebDAV Client Group is:\nUniversity of California, Irvine\n\tGerair Balian\n\tMirza Baig\n\tRobert Emmery\n\tThai Le\n\tTu Le\n" +
-                                "Update for the final WebDAV Specification and Namespaces by Yuzo Kanomata and Joachim Feise\n");
+                String message = new String("WebDAV Explorer Version: "+ VERSION + "\n\nUCI WebDAV Client Group is:\nUniversity of California, Irvine\n\tGerair Balian\n\tMirza Baig\n\tRobert Emmery\n\tThai Le\n\tTu Le\n" +
+                                "Update for the final WebDAV Specification and Namespaces:\nYuzo Kanomata and Joachim Feise\n");
                 Object [] options = { "OK" };
                 pane.showOptionDialog(WebDAVFrame, message, "About WebDAV Client", JOptionPane.DEFAULT_OPTION, JOptionPane.INFORMATION_MESSAGE, null, options, options[0]);
             }
         }
     }
+    
+    private String selectName( String title, String prompt )
+    {
+        JOptionPane pane = new JOptionPane();
+        String ret = pane.showInputDialog( null, prompt, title ,JOptionPane.QUESTION_MESSAGE );
+        return ret;
+    }
+
+
 }

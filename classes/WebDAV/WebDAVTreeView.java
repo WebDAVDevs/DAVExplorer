@@ -194,7 +194,7 @@ public class WebDAVTreeView
         }
     }
 
-    public void fireSelectionEvent()
+    public void initTree()
     {
         // For initialization purposes. 
         // This function is called when the client starts.

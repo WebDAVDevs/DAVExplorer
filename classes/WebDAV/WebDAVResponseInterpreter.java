@@ -611,6 +611,8 @@ public class WebDAVResponseInterpreter
     public void parseMkCol()
     {
         // inform the user
+        setRefresh();
+        fireInsertionEvent(null);
     }
 
     public void parseGet()
@@ -626,7 +628,7 @@ public class WebDAVResponseInterpreter
             {
                 FileDialog fd = new FileDialog(mainFrame, "Save As" , FileDialog.SAVE); 
                 fd.setVisible(true); 
-                fileName = fd.getFile();  
+                fileName = fd.getDirectory() + File.separatorChar + fd.getFile();
                 System.out.println("dialog select: " + fileName);
             }
             else

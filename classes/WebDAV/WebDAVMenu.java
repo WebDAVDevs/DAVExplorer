@@ -137,8 +137,8 @@ public class WebDAVMenu extends JMenuBar implements ActionListener
 //        mnu_FileMenu.add(new WebDAVMenuItem("Rename", this));
         mnu_FileMenu.add(new WebDAVMenuItem("Delete", this));
         mnu_FileMenu.addSeparator();
-//        mnu_FileMenu.add(new WebDAVMenuItem("Create Folder", this));
-//        mnu_FileMenu.addSeparator();
+        mnu_FileMenu.add(new WebDAVMenuItem("Create Folder", this));
+        mnu_FileMenu.addSeparator();
         mnu_FileMenu.add(new WebDAVMenuItem("Exit", this));
 
         return mnu_FileMenu;
