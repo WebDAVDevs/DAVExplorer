@@ -86,8 +86,8 @@ class StreamDemultiplexor implements GlobalConstants
       * Joachim Feise (dav-exp@ics.uci.edu)
       * Logging extension
       */
-    private static boolean logging = false;
-    private static String  logFilename = null;
+    private boolean logging = false;
+    private String  logFilename = null;
 
 
     static
@@ -394,8 +394,8 @@ class StreamDemultiplexor implements GlobalConstants
     // 31 October 2001: Joachim Feise (dav-exp@ics.uci.edu): added logging
     public void setLogging( boolean logging, String filename )
     {
-        StreamDemultiplexor.logging = logging;
-		StreamDemultiplexor.logFilename = filename;
+        this.logging = logging;
+		logFilename = filename;
     }
 
     // 31 October 2001: Joachim Feise (dav-exp@ics.uci.edu): added logging

@@ -144,8 +144,8 @@ public final class Response implements RoResponse, GlobalConstants, Cloneable
       * Joachim Feise (dav-exp@ics.uci.edu)
       * Logging extension
       */
-    private static boolean logging = false;
-    private static String  logFilename = null;
+    private boolean logging = false;
+    private String  logFilename = null;
     private static String  inboundHeader = "\r\n========= Inbound Message =========\r\n";
 
     static
@@ -1477,12 +1477,21 @@ public final class Response implements RoResponse, GlobalConstants, Cloneable
     // 2001-May-23: dav-exp@ics.uci.edu  added logging
     public void setLogging( boolean logging, String filename )
     {
-        Response.logging = logging;
-        Response.logFilename = filename;
-        if( http_resp != null )
-            http_resp.setLogging( logging, filename );
-        if( stream_handler != null )
-            stream_handler.setLogging( logging, filename );
+        setLogging( logging, filename, true );
+    }
+    
+    
+    public void setLogging( boolean logging, String filename, boolean deep )
+    {
+        this.logging = logging;
+        logFilename = filename;
+        if( deep )
+        {
+            if( http_resp != null )
+                http_resp.setLogging( logging, filename );
+            if( stream_handler != null )
+                stream_handler.setLogging( logging, filename );
+        }
     }
 
 

@@ -366,7 +366,15 @@ class AuthorizationModule implements HTTPClientModule
 
 		if (auth_sent != null  ||  prxy_sent != null)
 		{
-		    try { resp.getInputStream().close(); }
+		    try
+            {
+                // 28 April 2003: Joachim Feise (dav-dev@ics.uci.edu)
+                //  this preforms logging before the request is resent
+                resp.setLogging( false, null, false );
+                resp.getData();
+                
+                resp.getInputStream().close();
+            }
 		    catch (IOException ioe) { }
 
 		    if (auth_sent != null)
