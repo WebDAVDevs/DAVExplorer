@@ -84,15 +84,16 @@ Public methods and attributes section
     Vector listeners = new Vector();
 
     //Construction
-    public WebDAVLoginDialog( String strCaption, boolean isModal )
+    public WebDAVLoginDialog( String strCaption, String realm, boolean isModal )
     {
         super( GlobalData.getGlobalData().getMainFrame(), strCaption, isModal );
 
-        Rectangle recthDimensions = getParent().getBounds();
-        setBounds(recthDimensions.x + (recthDimensions.width - 350)/ 2,
-             recthDimensions.y + (recthDimensions.height - 110)/2, 350, 110 );
+//        Rectangle recthDimensions = getParent().getBounds();
+//        setBounds(recthDimensions.x + (recthDimensions.width - 350)/ 2,
+//             recthDimensions.y + (recthDimensions.height - 110)/2, 350, 110 );
 
-        JPanel groupPanel = new JPanel(new GridLayout( 4, 1 ));
+        JPanel groupPanel = new JPanel(new GridLayout( 5, 1 ));
+        groupPanel.add(new JLabel("Realm: " + realm, JLabel.CENTER ));
         groupPanel.add(new JLabel("Login name:"));
         groupPanel.add(txtUsername = new JTextField(40));
         groupPanel.add(new JLabel("Password:"));
@@ -118,6 +119,7 @@ Public methods and attributes section
         add( p, BorderLayout.SOUTH );
         add(groupPanel, BorderLayout.CENTER);
         pack();
+        center();
         txtUsername.requestFocus();
         setVisible( true );
     }
@@ -171,6 +173,15 @@ Public methods and attributes section
 /*-----------------------------------------------------------------------
 Protected methods and attributes section
 -----------------------------------------------------------------------*/
+    protected void center()
+    {
+        Rectangle recthDimensions = getParent().getBounds();
+        Rectangle bounds = getBounds();
+        setBounds(recthDimensions.x + (recthDimensions.width-bounds.width)/2,
+             recthDimensions.y + (recthDimensions.height - bounds.height)/2, bounds.width, bounds.height );
+    }
+
+
     protected String m_strUsername;
     protected String m_strUserPassword;
     protected JTextField txtUsername;

@@ -75,7 +75,7 @@ class AuthHandler implements AuthorizationHandler
         if( !req.allowUI() )
         return null;
 
-    inp = new WebDAVLoginDialog( "Login", true );
+        inp = new WebDAVLoginDialog( "Login", info.getRealm(), true );
 
         if( inp.getUsername().equals( "" ) || inp.getUserPassword().equals( "" ) )
             return null;
