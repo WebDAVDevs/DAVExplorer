@@ -49,6 +49,9 @@
  * @author      Joachim Feise (dav-exp@ics.uci.edu)
  * @date        27 April 2003
  * Changes:     Added shared lock functionality.
+ * @author      Joachim Feise (dav-exp@ics.uci.edu)
+ * @date        23 September 2003
+ * Changes:     Code cleanup.
  */
 
 package edu.uci.ics.DAVExplorer;
@@ -69,40 +72,41 @@ import com.ms.xml.util.Name;
 
 public class WebDAVRequestGenerator implements Runnable
 {
-    private static final int DEFAULT_PORT = 80;
-    private static String HostName = "";
-    private static int Port = 0;
-    private static String Method = null;
-    private static String Path = "";
-    private static String ResourceName = "";
-    private static String tableResource = "";
-    private static String StrippedResource = "";
-    private static NVPair[] Headers = null;
-    private static byte[] Body = null;
-    private static String Extra = new String();
-    private static String User = "";
-    private static String Password = "";
-    private static Vector listeners = new Vector();
+    protected static final int DEFAULT_PORT = 80;
+    protected static String HostName = "";
+    protected static int Port = 0;
+    protected static String Method = null;
+    protected static String Path = "";
+    protected static String ResourceName = "";
+    protected static String tableResource = "";
+    protected static String StrippedResource = "";
+    protected static NVPair[] Headers = null;
+    protected static byte[] Body = null;
+    protected static String Extra = "";
+    protected static String User = "";
+    protected static String Password = "";
+    protected static Vector listeners = new Vector();
 
-    private WebDAVTreeNode Node = null;
-    private WebDAVTreeNode parentNode = null;
+    protected WebDAVTreeNode Node = null;
+    protected WebDAVTreeNode parentNode = null;
 
 
-    private boolean debugXML = false;
+    protected boolean debugXML = false;
 
-    private String userAgent = null;
+    protected String userAgent = null;
 
     // Need to save the following values for the second
     // go around for the Move and Delete when trying
-    private WebDAVTreeNode Node2;
-    private String ResourceName2;
-    private String Dest2;
-    private String dir2;
-    private boolean Overwrite2;
-    private boolean KeepAlive2;
-    private boolean secondTime = false;
+    protected WebDAVTreeNode Node2;
+    protected String ResourceName2;
+    protected String Dest2;
+    protected String dir2;
+    protected boolean Overwrite2;
+    protected boolean KeepAlive2;
+    protected boolean secondTime = false;
 
-    public static void reset() {
+    public static void reset()
+    {
         HostName = "";
         Port = 0;
         Method = null;
@@ -112,11 +116,10 @@ public class WebDAVRequestGenerator implements Runnable
         StrippedResource = "";
         Headers = null;
         Body = null;
-        Extra = new String();
+        Extra = "";
         User = "";
         Password = "";
         listeners = new Vector();
-
     }
 
 
@@ -172,11 +175,11 @@ public class WebDAVRequestGenerator implements Runnable
         tableResource = name;
         if (Path.length() == 0)
         {
-            ResourceName = new String(name);
+            ResourceName = name;
         }
         else
         {
-            ResourceName = Path + new String(name);
+            ResourceName = Path + name;
         }
 
         Node = node;
@@ -349,14 +352,14 @@ public class WebDAVRequestGenerator implements Runnable
     }
 
 
-    public synchronized boolean DiscoverLock(String method)
+    public synchronized boolean DiscoverLock(String extra)
     {
         if( GlobalData.getGlobalData().getDebugRequest() )
         {
             System.err.println( "WebDAVRequestGenerator::DiscoverLock" );
         }
 
-        Extra = new String(method);
+        Extra = extra;
         String[] prop = new String[1];
         String[] schema = new String[1];
 
@@ -372,9 +375,9 @@ public class WebDAVRequestGenerator implements Runnable
         }
         else
         {
-            prop[0] = new String("lockdiscovery");
-            schema[0] = new String(WebDAVProp.DAV_SCHEMA);
-            retval = GeneratePropFind(null, "prop", "zero", prop, schema, false );
+            prop[0] = "lockdiscovery";
+            schema[0] = WebDAVProp.DAV_SCHEMA;
+            retval = GeneratePropFind( null, "prop", "zero", prop, schema, false );
     }
         if( retval )
         {
@@ -416,7 +419,6 @@ public class WebDAVRequestGenerator implements Runnable
 
         if (!ok)
         {
-            //GlobalData.getGlobalData().errorMsg( "Error Generating OPTIONS Method for " + StrippedResource );
             return false;
         }
 
@@ -482,7 +484,6 @@ public class WebDAVRequestGenerator implements Runnable
 
         if (!ok)
         {
-            //GlobalData.getGlobalData().errorMsg( "Error Generating PROPFIND Method for " + StrippedResource );
             return false;
         }
         String com = "allprop";
@@ -559,12 +560,12 @@ public class WebDAVRequestGenerator implements Runnable
         return true;
     }
 
-    private void addChild( Element parent, Element child, int tabcount, boolean leadingCR )
+    protected void addChild( Element parent, Element child, int tabcount, boolean leadingCR )
     {
         addChild( parent, child, tabcount, tabcount, leadingCR, true );
     }
 
-    private void addChild( Element parent, Element child, int leadingTabcount, int trailingTabcount, boolean leadingCR, boolean trailingCR )
+    protected void addChild( Element parent, Element child, int leadingTabcount, int trailingTabcount, boolean leadingCR, boolean trailingCR )
     {
         if( parent != null )
         {
@@ -584,7 +585,7 @@ public class WebDAVRequestGenerator implements Runnable
         }
     }
 
-    private static boolean docContains(Document doc, Element e)
+    protected static boolean docContains(Document doc, Element e)
     {
         Enumeration docEnum = doc.getElements();
         while (docEnum.hasMoreElements())
@@ -629,7 +630,6 @@ public class WebDAVRequestGenerator implements Runnable
 
         if (!ok)
         {
-            //GlobalData.getGlobalData().errorMsg( "Error Generating PROPPATCH Method for " + StrippedResource );
             return false;
         }
 
@@ -718,7 +718,6 @@ public class WebDAVRequestGenerator implements Runnable
         StrippedResource = parseResourceName( true );
         if( StrippedResource == null )
         {
-            //GlobalData.getGlobalData().errorMsg( "Error Generating MKCOL Method" );
             return false;
         }
         String dest = dirname;
@@ -749,7 +748,6 @@ public class WebDAVRequestGenerator implements Runnable
         StrippedResource = parseResourceName( true );
         if( StrippedResource == null )
         {
-            //GlobalData.getGlobalData().errorMsg( "Error Generating GET Method" );
             return false;
         }
 
@@ -782,13 +780,12 @@ public class WebDAVRequestGenerator implements Runnable
         else
         {
             Node2 = Node;
-            ResourceName2 = new String(ResourceName);
+            ResourceName2 = ResourceName;
         }
 
         StrippedResource = parseResourceName( true );
         if( StrippedResource == null )
         {
-            //GlobalData.getGlobalData().errorMsg( "Error Generating DELETE Method" );
             return false;
         }
 
@@ -841,7 +838,6 @@ public class WebDAVRequestGenerator implements Runnable
         StrippedResource = parseResourceName( true );
         if( StrippedResource == null )
         {
-            //GlobalData.getGlobalData().errorMsg( "File is not local" );
             return false;
         }
 
@@ -871,21 +867,8 @@ public class WebDAVRequestGenerator implements Runnable
 
         try
         {
-            //FileInputStream file_in = new FileInputStream(file);
             long fileSize = file.length();
             Method = "PUT";
-/*
-            int off = 0;
-            int fileSize = (int) file.length();
-            Body = new byte[fileSize];
-            int rcvd = 0;
-            do
-            {
-                off += rcvd;
-                rcvd = file_in.read(Body, off, fileSize-off);
-            }
-            while (rcvd != -1 && off+rcvd < fileSize);
-*/
             Extra = fileName;
 
             if (lockToken != null)
@@ -926,10 +909,8 @@ public class WebDAVRequestGenerator implements Runnable
         Extra = "copy"; //Yuzo added
 
         StrippedResource = parseResourceName( true );
-System.out.println("Copy: strippedResource: "+StrippedResource);
         if( StrippedResource == null )
         {
-            //GlobalData.getGlobalData().errorMsg( "Error Generating COPY Method" );
             return false;
         }
 
@@ -1030,7 +1011,7 @@ System.out.println("Copy: strippedResource: "+StrippedResource);
         }
         // Why have the below when the DIscoverLock puts something else
         // the Extra field
-        Extra = new String(tableResource);
+        Extra = tableResource;
 
         return DiscoverLock("rename:" + Dest + ":" + dir );
     }
@@ -1058,10 +1039,10 @@ System.out.println("Copy: strippedResource: "+StrippedResource);
     else
     {
         Node2 = Node;
-        ResourceName2 = new String(ResourceName);
-        Dest2 = new String(Dest);
+        ResourceName2 = ResourceName;
+        Dest2 = Dest;
         if( dir != null )
-            dir2 = new String(dir);
+            dir2 = dir;
         else dir2 = null;
         Overwrite2 = Overwrite;
         KeepAlive2 = KeepAlive;
@@ -1075,7 +1056,6 @@ System.out.println("Copy: strippedResource: "+StrippedResource);
         StrippedResource = parseResourceName( true );
         if( StrippedResource == null )
         {
-            //GlobalData.getGlobalData().errorMsg( "Error Generating MOVE Method" );
             return false;
         }
         String ow = (Overwrite) ? "T" : "F";
@@ -1184,7 +1164,6 @@ System.out.println("Copy: strippedResource: "+StrippedResource);
         StrippedResource = parseResourceName( true );
         if( StrippedResource == null )
         {
-            //GlobalData.getGlobalData().errorMsg( "Error Generating LOCK Method for " + StrippedResource );
             return false;
         }
 
@@ -1293,7 +1272,6 @@ System.out.println("Copy: strippedResource: "+StrippedResource);
         StrippedResource = parseResourceName( true );
         if( StrippedResource == null )
         {
-            //GlobalData.getGlobalData().errorMsg( "Error Generating UNLOCK Method" );
             return false;
         }
 
@@ -1322,7 +1300,7 @@ System.out.println("Copy: strippedResource: "+StrippedResource);
     }
 
 
-    private String getContentType( String file )
+    protected String getContentType( String file )
     {
         String content = "application/octet-stream";
 
@@ -1342,7 +1320,7 @@ System.out.println("Copy: strippedResource: "+StrippedResource);
         return content;
     }
 
-    private void printXML( Document miniDoc )
+    protected void printXML( Document miniDoc )
     {
         String debugOutput = System.getProperty( "debug", "false" );
         if( debugOutput.equals( "true" ) || debugXML )
@@ -1359,41 +1337,41 @@ System.out.println("Copy: strippedResource: "+StrippedResource);
         }
     }
 
-    private String[] extensions = { "htm", "text/html",
-                                    "html", "text/html",
-                                    "gif", "image/gif",
-                                    "jpg", "image/jpeg",
-                                    "jpeg", "image/jpeg",
-                                    "css", "text/css",
-                                    "pdf", "application/pdf",
-                                    "doc", "application/msword",
-                                    "ppt", "application/vnd.ms-powerpoint",
-                                    "xls", "application/vnd.ms-excel",
-                                    "ps", "application/postscript",
-                                    "zip", "application/zip",
-                                    "fm", "application/vnd.framemaker",
-                                    "mif", "application/vnd.mif",
-                                    "png", "image/png",
-                                    "tif", "image/tiff",
-                                    "tiff", "image/tiff",
-                                    "rtf", "text/rtf",
-                                    "xml", "text/xml",
-                                    "mpg", "video/mpeg",
-                                    "mpeg", "video/mpeg",
-                                    "mov", "video/quicktime",
-                                    "hqx", "application/mac-binhex40",
-                                    "au", "audio/basic",
-                                    "vrm", "model/vrml",
-                                    "vrml", "model/vrml",
-                                    "txt", "text/plain",
-                                    "c", "text/plain",
-                                    "cc", "text/plain",
-                                    "cpp", "text/plain",
-                                    "h", "text/plain",
-                                    "sh", "text/plain",
-                                    "bat", "text/plain",
-                                    "ada", "text/plain",
-                                    "java", "text/plain",
-                                    "rc", "text/plain"
+    protected String[] extensions = { "htm", "text/html",
+                                      "html", "text/html",
+                                      "gif", "image/gif",
+                                      "jpg", "image/jpeg",
+                                      "jpeg", "image/jpeg",
+                                      "css", "text/css",
+                                      "pdf", "application/pdf",
+                                      "doc", "application/msword",
+                                      "ppt", "application/vnd.ms-powerpoint",
+                                      "xls", "application/vnd.ms-excel",
+                                      "ps", "application/postscript",
+                                      "zip", "application/zip",
+                                      "fm", "application/vnd.framemaker",
+                                      "mif", "application/vnd.mif",
+                                      "png", "image/png",
+                                      "tif", "image/tiff",
+                                      "tiff", "image/tiff",
+                                      "rtf", "text/rtf",
+                                      "xml", "text/xml",
+                                      "mpg", "video/mpeg",
+                                      "mpeg", "video/mpeg",
+                                      "mov", "video/quicktime",
+                                      "hqx", "application/mac-binhex40",
+                                      "au", "audio/basic",
+                                      "vrm", "model/vrml",
+                                      "vrml", "model/vrml",
+                                      "txt", "text/plain",
+                                      "c", "text/plain",
+                                      "cc", "text/plain",
+                                      "cpp", "text/plain",
+                                      "h", "text/plain",
+                                      "sh", "text/plain",
+                                      "bat", "text/plain",
+                                      "ada", "text/plain",
+                                      "java", "text/plain",
+                                      "rc", "text/plain"
                                   };
 }

@@ -68,6 +68,9 @@
  * @author      Joachim Feise (dav-exp@ics.uci.edu)
  * @date        27 April 2003
  * Changes:     Added shared lock functionality.
+ * @author      Joachim Feise (dav-exp@ics.uci.edu)
+ * @date        23 September 2003
+ * Changes:     Integrated the DeltaV code from the Spring 2003 ICS125 team.
  */
 
 
@@ -104,15 +107,16 @@ public class Main extends JFrame
     public Main(String frameName)
     {
         super (frameName);
-//        Uncomment the following 8 lines if you want system's L&F
-//        try
-//        {
-//            UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());
-//        }
-//        catch (Exception except)
-//        {
-//            System.out.println("Error Loading L&F");
-//        }
+        /* Uncomment the following 8 lines if you want system's L&F
+        try
+        {
+            UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());
+        }
+        catch (Exception except)
+        {
+            System.out.println("Error Loading L&F");
+        }
+        */
 
         GlobalData.getGlobalData().setMainFrame( this );
 
@@ -144,22 +148,31 @@ public class Main extends JFrame
         treeView.addViewSelectionListener( fileView );
         fileView.addViewSelectionListener( treeView );
 
-        requestGenerator = new WebDAVRequestGenerator();
+        requestGenerator = new DeltaVRequestGenerator();
         requestGenerator.addRequestListener(new RequestListener());
 
         // Get the rename Event
         fileView.addRenameListener(new RenameListener());
+        fileView.addDisplayLockListener(new DisplayLockListener());
+        fileView.addDisplayVersionListener(new DisplayVersionListener());
 
         requestGenerator.setUserAgent( UserAgent );
 
 
-        responseInterpreter = new WebDAVResponseInterpreter( requestGenerator );
-        responseInterpreter.addInsertionListener(new InsertionListener());
+        //responseInterpreter = new WebDAVResponseInterpreter( requestGenerator );
+        responseInterpreter = new DeltaVResponseInterpreter( requestGenerator );
+        responseInterpreter.addInsertionListener(new TreeInsertionListener());
         responseInterpreter.addMoveUpdateListener(new MoveUpdateListener());
         responseInterpreter.addLockListener(new LockListener());
         responseInterpreter.addActionListener(fileView); // Listens for a reset
-                                                        // for a unsucessful
-                                                        // Rename request
+                                                         // for an unsucessful
+                                                         // Rename request
+        //5/18/03 Matt
+        // create listeners for our 4 functions
+        responseInterpreter.addVersionControlListener(new VersionControlListener());
+        responseInterpreter.addCheckoutListener(new CheckoutListener());
+        responseInterpreter.addUnCheckoutListener(new UnCheckoutListener());
+        responseInterpreter.addCheckinListener(new CheckinListener());      
 
         // Add the CopyEvent Listener
         responseInterpreter.addCopyResponseListener(treeView);
@@ -238,11 +251,12 @@ public class Main extends JFrame
             System.out.println( COPYRIGHT );
             System.out.println( "Authors: Yuzo Kanomata, Joachim Feise" );
             System.out.println( EMAIL );
-            System.out.println( "Based on code from the UCI WebDAV Client Group" );
-            System.out.println( "of the ICS126B class Winter 1998:" );
-            System.out.println( "Gerair Balian, Mirza Baig, Robert Emmery, Thai Le, Tu Le." );
+            System.out.println( "Based on code from the UCI WebDAV Client Group of the ICS126B class" );
+            System.out.println( "Winter 1998: Gerair Balian, Mirza Baig, Robert Emmery, Thai Le, Tu Le." );
+            System.out.println( "Basic DeltaV support based on code from the DeltaV Team of the ICS125" );
+            System.out.println( "class Spring 2003: Max Slabyak, Matt Story, Hyung Kim." );
             System.out.println( "Uses the HTTPClient library (http://www.innovation.ch/java/HTTPClient/)." );
-            System.out.println( "Uses Microsoft's published XML parser code from June 1997.\n" );
+            System.out.println( "Uses Microsoft's published XML parser from June 1997.\n" );
             System.out.println( "For other contributors see the contributors.txt file.\n" );
             System.out.println( "Options:" );
             System.out.println( "-Dhelp=yes" );
@@ -303,13 +317,17 @@ public class Main extends JFrame
                 }
                 else
                 {
-                    String[] props = new String[6];
+                    String[] props = new String[9];
                     props[0] = "displayname";
                     props[1] = "resourcetype";
                     props[2] = "getcontenttype";
                     props[3] = "getcontentlength";
                     props[4] = "getlastmodified";
                     props[5] = "lockdiscovery";
+                    // DeltaV support
+                    props[6] = "checked-in";
+                    props[7] = "checked-out";
+                    props[8] = "version-name";
                     if( requestGenerator.GeneratePropFind( str, "prop", "one", props, null, false ) )
                     {
                         requestGenerator.execute();
@@ -327,18 +345,24 @@ public class Main extends JFrame
         }
     }
 
-    class InsertionListener implements ActionListener
+    class TreeInsertionListener implements InsertionListener
     {
         public void actionPerformed(ActionEvent e)
+        {
+            actionPerformed( e, false );
+        }
+
+        public void actionPerformed(ActionEvent e, boolean deltaV )
         {
             String str = e.getActionCommand();
             if (str == null)
             {
                 treeView.refresh();
-            } else{
-                treeView.addRowToRoot(str,false);
-
-        }
+            }
+            else
+            {
+                treeView.addRowToRoot( str, false, deltaV );
+            }
         }
     }
 
@@ -398,13 +422,97 @@ public class Main extends JFrame
         }
     }
 
+
+    class VersionControlListener implements ActionListener
+    {
+        public void actionPerformed(ActionEvent e)
+        {
+            String res = e.getActionCommand();
+            int code = e.getID();
+            String str;
+            if( code >=200 && code < 300 )
+                str = "Version control enabled for " + res + ".";
+            else
+                str = "Version control command failed. Error: " + res;
+
+            JOptionPane.showMessageDialog( GlobalData.getGlobalData().getMainFrame(), str );
+        }
+    }
+
+
+    class CheckoutListener implements ActionListener
+    {
+        public void actionPerformed(ActionEvent e)
+        {
+            String res = e.getActionCommand();
+            int code = e.getID();
+            String str;
+            if( code >=200 && code < 300 )
+                str = "Checkout for " + res + " successful.";
+            else
+                str = "Checkout failed. Error: " + res; 
+
+            JOptionPane.showMessageDialog( GlobalData.getGlobalData().getMainFrame(), str );
+        }
+    }  
+    
+
+    class UnCheckoutListener implements ActionListener
+    {
+        public void actionPerformed(ActionEvent e)
+        {
+            String res = e.getActionCommand();
+            int code = e.getID();
+            String str;
+            if( code >=200 && code < 300 )
+            str = "Uncheckout for " + res + " successful.";
+            else
+                str = "Uncheckout failed. Error: " + res; 
+
+            JOptionPane.showMessageDialog( GlobalData.getGlobalData().getMainFrame(), str );
+        }
+    }   
+    
+
+    class CheckinListener implements ActionListener
+    {
+        public void actionPerformed(ActionEvent e)
+        {
+            String res = e.getActionCommand();
+            int code = e.getID();
+            String str;
+            if( code >=200 && code < 300 )
+            str = "Checkin for " + res + " successful.";
+            else
+                str = "Checkin failed. Error: " + res; 
+
+            JOptionPane.showMessageDialog( GlobalData.getGlobalData().getMainFrame(), str );
+        }
+    }     
+
+
     class DisplayLockListener implements ActionListener
     {
         public void actionPerformed(ActionEvent e)
         {
+            if( e.getActionCommand() != null )
+                requestGenerator.setResource( e.getActionCommand(), null );
             requestGenerator.DiscoverLock("display");
         }
     }
+
+
+    class DisplayVersionListener implements ActionListener
+    {
+        public void actionPerformed(ActionEvent e)
+        {
+            if( e.getActionCommand() != null )
+                requestGenerator.setResource( e.getActionCommand(), null );
+            if( requestGenerator.GenerateVersionHistory("display") )
+                requestGenerator.execute();
+        }
+    }
+
 
     class RenameListener implements ActionListener
     {
@@ -434,13 +542,6 @@ public class Main extends JFrame
         }
     }
 
-    class TreeSelectListener_Table implements ViewSelectionListener
-    {
-        public void selectionChanged(ViewSelectionEvent e)
-        {
-            fileView.treeSelectionChanged(e);
-        }
-    }
 
     class RequestListener implements WebDAVRequestListener
     {
@@ -449,6 +550,7 @@ public class Main extends JFrame
             webdavManager.sendRequest(e);
         }
     }
+
 
     class ResponseListener implements WebDAVResponseListener
     {
@@ -491,7 +593,6 @@ public class Main extends JFrame
                 if (tn != null)
                 {
                     tn.finishLoadChildren();
-
                 }
             }
             else if ( extra.equals("select") )
@@ -500,11 +601,8 @@ public class Main extends JFrame
                 if (tn != null)
                 {
                     tn.finishLoadChildren();
-
-
                     treeView.setSelectedNode(tn);
                 }
-
             }
             else if ( extra.equals("uribox") )
             {
@@ -521,6 +619,7 @@ public class Main extends JFrame
             }
         }
     }
+
 
     class MenuListener_Gen implements ActionListener
     {
@@ -676,7 +775,7 @@ public class Main extends JFrame
 
                     // This sets the resource name to s and the node to n
                     // This is neccessary so that n is passed to
-                    // response interpretor, whc then routes a
+                    // response interpretor, which then routes a
                     // message to the Tree Model.
                     // This will then call for a rebuild of the Model at the
                     // Parent node n.
@@ -783,6 +882,71 @@ public class Main extends JFrame
             {
                 WebDAVLockInfo lockInfo = new WebDAVLockInfo(GlobalData.getGlobalData().getMainFrame(), "Lock Info", true);
             }
+            else if (command.equals("Create Version"))
+            {
+                String s = fileView.getSelected();
+                if( (s == null) || (s.length() == 0) )
+                {
+                    GlobalData.getGlobalData().errorMsg( "No resource selected." );
+                    return;
+                }
+                WebDAVTreeNode n = fileView.getParentNode();
+                requestGenerator.setResource( s, n );
+                if( requestGenerator.GenerateEnableVersioning() )
+                    requestGenerator.execute();
+            }
+            else if (command.equals("Version Report"))
+            {
+                String s = fileView.getSelected();
+                if( (s == null) || (s.length() == 0) )
+                {
+                    GlobalData.getGlobalData().errorMsg( "No resource selected." );
+                    return;
+                }
+                WebDAVTreeNode n = fileView.getParentNode();
+                requestGenerator.setResource( s, n );
+                if( requestGenerator.GenerateVersionHistory("display") )
+                    requestGenerator.execute();
+            }
+            else if (command.equals("Check Out"))
+            {
+                String s = fileView.getSelected();
+                if( (s == null) || (s.length() == 0) )
+                {
+                    GlobalData.getGlobalData().errorMsg( "No resource selected." );
+                    return;
+                }
+                WebDAVTreeNode n = fileView.getParentNode();
+                requestGenerator.setResource( s, n );
+                if( requestGenerator.GenerateCheckOut() )
+                    requestGenerator.execute();
+            }
+            else if (command.equals("Uncheckout"))
+            {
+                String s = fileView.getSelected();
+                if( (s == null) || (s.length() == 0) )
+                {
+                    GlobalData.getGlobalData().errorMsg( "No resource selected." );
+                    return;
+                }
+                WebDAVTreeNode n = fileView.getParentNode();
+                requestGenerator.setResource( s, n );
+                if( requestGenerator.GenerateUnCheckOut() )
+                    requestGenerator.execute();
+            }
+            else if (command.equals("Check In"))
+            {
+                String s = fileView.getSelected();
+                if( (s == null) || (s.length() == 0) )
+                {
+                    GlobalData.getGlobalData().errorMsg( "No resource selected." );
+                    return;
+                }
+                WebDAVTreeNode n = fileView.getParentNode();
+                requestGenerator.setResource( s, n );
+                if( requestGenerator.GenerateCheckIn() )
+                    requestGenerator.execute();
+            }
             else if (command.equals("HTTP Logging"))
             {
                 boolean logging = false;
@@ -807,7 +971,7 @@ public class Main extends JFrame
                         fd.setCurrentDirectory( new File(dirName) );
                         fd.setApproveButtonMnemonic( 'U' );
                         fd.setApproveButtonToolTipText( "Use the selected file for logging" );
-                        int val = fd.showDialog( GlobalData.getGlobalData().getMainFrame(), "Use Selected" );
+                        int val = fd.showDialog( GlobalData.getGlobalData().getMainFrame(), "Logging" );
                         if( val == JFileChooser.APPROVE_OPTION)
                         {
                             logFilename = fd.getSelectedFile().getAbsolutePath();
@@ -861,11 +1025,12 @@ public class Main extends JFrame
                 COPYRIGHT + "\n" +
                 "Authors: Yuzo Kanomata, Joachim Feise\n" +
                 EMAIL + "\n\n" +
-                "Based on code from the UCI WebDAV Client Group\n" +
-                "of the ICS126B class Winter 1998:\n" +
-                "Gerair Balian, Mirza Baig, Robert Emmery, Thai Le, Tu Le.\n" +
+                "Based on code from the UCI WebDAV Client Group of the ICS126B class\n" +
+                "Winter 1998: Gerair Balian, Mirza Baig, Robert Emmery, Thai Le, Tu Le.\n" +
+                "Basic DeltaV support based on code from the DeltaV Team of the ICS125\n" +
+                "class Spring 2003: Max Slabyak, Matt Story, Hyung Kim.\n" +
                 "Uses the HTTPClient library (http://www.innovation.ch/java/HTTPClient/).\n" +
-                "Uses Microsoft's published XML parser code from June 1997.\n" +
+                "Uses Microsoft's published XML parser from June 1997.\n" +
                 "For other contributors see the contributors.txt file.");
                 Object [] options = { "OK" };
 				JOptionPane.showOptionDialog(GlobalData.getGlobalData().getMainFrame(), message, "About DAV Explorer", JOptionPane.DEFAULT_OPTION, JOptionPane.INFORMATION_MESSAGE, null, options, options[0]);
@@ -873,15 +1038,18 @@ public class Main extends JFrame
         }
     }
 
+
     public void addWebDAVCompletionListener( WebDAVCompletionListener l )
     {
         listenerList.add( WebDAVCompletionListener.class, l );
     }
 
+
     public void removeWebDAVCompletionListener( WebDAVCompletionListener l )
     {
         listenerList.remove(WebDAVCompletionListener.class, l );
     }
+
 
     protected void fireWebDAVCompletion( Object source, boolean success )
     {
@@ -1050,8 +1218,8 @@ public class Main extends JFrame
 
     protected WebDAVFileView fileView;
     protected WebDAVTreeView treeView;
-    protected WebDAVRequestGenerator requestGenerator;
-    protected WebDAVResponseInterpreter responseInterpreter;
+    protected DeltaVRequestGenerator requestGenerator;
+    protected DeltaVResponseInterpreter responseInterpreter;
     protected WebDAVManager webdavManager;
     protected WebDAVMenu CommandMenu;
     protected Hashtable authTable;

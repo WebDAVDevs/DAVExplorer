@@ -47,6 +47,12 @@
  * @author      Joachim Feise (dav-exp@ics.uci.edu)
  * @date        13 May 2003
  * Changes:     Fixed column sorting.
+ * @author      Joachim Feise (dav-exp@ics.uci.edu)
+ * @date        9 September 2003
+ * Changes:     Fixed response to double click on lock icon.
+ * @author      Joachim Feise (dav-exp@ics.uci.edu)
+ * @date        23 September 2003
+ * Changes:     Integrated the DeltaV code from the Spring 2003 ICS125 team.
  */
 
 package edu.uci.ics.DAVExplorer;
@@ -66,6 +72,7 @@ import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
 import javax.swing.event.TableModelEvent;
 import javax.swing.border.BevelBorder;
+import javax.swing.SwingConstants;
 import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.Cursor;
@@ -83,6 +90,7 @@ public class WebDAVFileView implements ViewSelectionListener, ActionListener
 {
     final String[] colNames = { " ",
                                 "Lock",
+                                "Versions",
                                 "Name",
                                 "Display",
                                 "Type",
@@ -99,10 +107,13 @@ public class WebDAVFileView implements ViewSelectionListener, ActionListener
     Vector selListeners = new Vector();
     Vector renameListeners = new Vector();
     Vector displayLockListeners = new Vector();
+    Vector displayVersionListeners = new Vector();
     ImageIcon FILE_ICON;
     ImageIcon LOCK_ICON;
     ImageIcon UNLOCK_ICON;
     ImageIcon FOLDER_ICON;
+    ImageIcon VERSION_ICON;
+    ImageIcon NOVERSION_ICON;
     WebDAVTreeNode parentNode;
     String parentPath = new String();
     String selectedResource;
@@ -115,6 +126,8 @@ public class WebDAVFileView implements ViewSelectionListener, ActionListener
         FILE_ICON = GlobalData.getGlobalData().getImageIcon("resource.gif", "");
         LOCK_ICON = GlobalData.getGlobalData().getImageIcon("lck.gif", "");
         UNLOCK_ICON = GlobalData.getGlobalData().getImageIcon("unlck.gif", "");
+        VERSION_ICON = GlobalData.getGlobalData().getImageIcon("version.gif", "");
+        NOVERSION_ICON = GlobalData.getGlobalData().getImageIcon("noversion.gif", "");
 
         dataModel = new AbstractTableModel()
         {
@@ -148,13 +161,27 @@ public class WebDAVFileView implements ViewSelectionListener, ActionListener
             {
                 if (data.size() == 0)
                     return null;
-                return getValueAt( 0, col).getClass();
+                // try to find a cell in the column that has a value
+                // using that value as representative for the column
+                Object cell = null;
+                int count = 0;
+                while( cell == null && count < data.size() )
+                {
+                    cell = getValueAt( count++, col);
+                    if( cell != null )
+                        break;
+                }
+
+                if( cell == null )
+                    return null;
+
+                return cell.getClass();
             }
 
             public  boolean isCellEditable( int row, int col )
             {
                 // only allow edit of name
-                return (col == 2);
+                return (col == 3);
             }
 
 
@@ -165,7 +192,7 @@ public class WebDAVFileView implements ViewSelectionListener, ActionListener
                     System.err.println( "WebDAVFileView::AbstractTableModel::setValueAt" );
                 }
 
-                if (col == 2)
+                if (col == 3)
                 {
                     // name
                     String val = null;
@@ -357,18 +384,26 @@ public class WebDAVFileView implements ViewSelectionListener, ActionListener
         int count = n.getChildCount();
         for (int i=0; i < count; i++)
         {
-            WebDAVTreeNode child = (WebDAVTreeNode) n.getChildAt(i);
+            WebDAVTreeNode child = (WebDAVTreeNode)n.getChildAt(i);
             DataNode d_node = child.getDataNode();
             if (d_node != null)
             {
-                Object[] rowObj = new Object[7];
+                Object[] rowObj = new Object[8];
+                if( d_node instanceof DeltaVDataNode )
+                {
+                    rowObj[2] = new Boolean( ((DeltaVDataNode)d_node).hasVersions() );
+                }
+                else
+                {
+                    rowObj[2] = "false";
+                }
                 rowObj[0] = "true";
                 rowObj[1] = new Boolean(d_node.isLocked());
-                rowObj[2] = d_node.getName();
-                rowObj[3] = d_node.getDisplay();
-                rowObj[4] = d_node.getType();
-                rowObj[5] = new Long(d_node.getSize());
-                rowObj[6] = d_node.getDate();
+                rowObj[3] = d_node.getName();
+                rowObj[4] = d_node.getDisplay();
+                rowObj[5] = d_node.getType();
+                rowObj[6] = new Long(d_node.getSize());
+                rowObj[7] = d_node.getDate();
 
                 addRow(rowObj);
             }
@@ -386,16 +421,24 @@ public class WebDAVFileView implements ViewSelectionListener, ActionListener
 
         for (int i=0; i < v.size(); i++)
         {
-            Object[] rowObj = new Object[7];
             DataNode d_node = (DataNode)v.elementAt(i);
 
+            Object[] rowObj = new Object[8];
+            if( d_node instanceof DeltaVDataNode )
+            {
+                rowObj[2] = new Boolean( ((DeltaVDataNode)d_node).hasVersions() );
+            }
+            else
+            {
+                rowObj[2] = "false";
+            }
             rowObj[0] = "false";
             rowObj[1] = new Boolean(d_node.isLocked());
-            rowObj[2] = d_node.getName();
-            rowObj[3] = d_node.getDisplay();
-            rowObj[4] = d_node.getType();
-            rowObj[5] = new Long(d_node.getSize());
-            rowObj[6] = d_node.getDate();
+            rowObj[3] = d_node.getName();
+            rowObj[4] = d_node.getDisplay();
+            rowObj[5] = d_node.getType();
+            rowObj[6] = new Long(d_node.getSize());
+            rowObj[7] = d_node.getDate();
 
             addRow(rowObj);
         }
@@ -434,7 +477,8 @@ public class WebDAVFileView implements ViewSelectionListener, ActionListener
    /* Yuzo Added: purpose, to get Selected Resource which is the
       old full name of a renamed item. */
 
-    public String getOldSelectedResource(){
+    public String getOldSelectedResource()
+    {
         return getParentPathString() + selectedResource;
     }
 
@@ -471,9 +515,9 @@ public class WebDAVFileView implements ViewSelectionListener, ActionListener
                     node = (WebDAVTreeNode)enum.nextElement();
         
                     String s = (String) node.getUserObject();
-                    column = table.convertColumnIndexToView(2); // name
+                    column = table.convertColumnIndexToView(3); // name
                     if( column == -1 )
-                        column = 2;     // use default
+                        column = 3;     // use default
                     if (s.equals(table.getValueAt( selectedRow, column)))
                     {
                         found = true;
@@ -591,9 +635,9 @@ public class WebDAVFileView implements ViewSelectionListener, ActionListener
         {
             TreePath tp = new TreePath(parentNode.getPath());
 
-            int column = table.convertColumnIndexToView(2); // name
+            int column = table.convertColumnIndexToView(3); // name
             if( column == -1 )
-                column = 2;     // use default
+                column = 3;     // use default
             s =  getParentPathString() + (String)table.getValueAt( selectedRow , column);
 
             column = table.convertColumnIndexToView(0); // collection/file
@@ -617,9 +661,9 @@ public class WebDAVFileView implements ViewSelectionListener, ActionListener
 
     public void resetName()
     {
-        int column = table.convertColumnIndexToView(2);
+        int column = table.convertColumnIndexToView(3);
         if( column == -1 )
-            column = 2;     // use default
+            column = 3;     // use default
         table.setValueAt( selectedResource, selectedRow, column );
         update();
     }
@@ -710,9 +754,11 @@ public class WebDAVFileView implements ViewSelectionListener, ActionListener
                         setIcon(FOLDER_ICON);
                     else
                         setIcon(FILE_ICON);
+                    setHorizontalAlignment( SwingConstants.CENTER );
                 }
                 catch (Exception e)
                 {
+                    // ignore
                 }
             }
         };
@@ -721,7 +767,7 @@ public class WebDAVFileView implements ViewSelectionListener, ActionListener
         // lock indicator
         resizeCol = table.getColumn(colNames[1]);
         resizeCol.setMaxWidth(30);
-        resizeCol.setMinWidth(30);
+        resizeCol.setMinWidth(25);
         DefaultTableCellRenderer lockIconRenderer = new DefaultTableCellRenderer()
         {
             public void setValue(Object value)
@@ -733,34 +779,61 @@ public class WebDAVFileView implements ViewSelectionListener, ActionListener
                         setIcon(LOCK_ICON);
                     else
                         setIcon(UNLOCK_ICON);
+                    setHorizontalAlignment( SwingConstants.CENTER );
                 }
                 catch (Exception e)
                 {
+                    // ignore
                 }
             }
         };
         resizeCol.setCellRenderer(lockIconRenderer);
 
-        // name
+        // version indicator
         resizeCol = table.getColumn(colNames[2]);
-        resizeCol.setMinWidth(100);
-
+        resizeCol.setMaxWidth(50);
+        resizeCol.setMinWidth(25);
+        DefaultTableCellRenderer versionIconRenderer = new DefaultTableCellRenderer()
+        {
+            public void setValue(Object value)
+            {
+                try
+                {
+                    boolean isVersioned = new Boolean(value.toString()).booleanValue();
+                    if (isVersioned)
+                        setIcon(VERSION_ICON);
+                    else
+                        setIcon(NOVERSION_ICON);
+                    setHorizontalAlignment( SwingConstants.CENTER );
+                }
+                catch (Exception e)
+                {
+                    // ignore
+                }
+            }
+        };
+        resizeCol.setCellRenderer(versionIconRenderer);
+        
+        // name
         resizeCol = table.getColumn(colNames[3]);
         resizeCol.setMinWidth(100);
 
         resizeCol = table.getColumn(colNames[4]);
         resizeCol.setMinWidth(100);
-        ren = new DefaultTableCellRenderer();
-        ren.setHorizontalAlignment(JLabel.CENTER);
-        resizeCol.setCellRenderer(ren);
 
         resizeCol = table.getColumn(colNames[5]);
-        resizeCol.setMinWidth(50);
+        resizeCol.setMinWidth(100);
         ren = new DefaultTableCellRenderer();
         ren.setHorizontalAlignment(JLabel.CENTER);
         resizeCol.setCellRenderer(ren);
 
         resizeCol = table.getColumn(colNames[6]);
+        resizeCol.setMinWidth(50);
+        ren = new DefaultTableCellRenderer();
+        ren.setHorizontalAlignment(JLabel.CENTER);
+        resizeCol.setCellRenderer(ren);
+
+        resizeCol = table.getColumn(colNames[7]);
         resizeCol.setMinWidth(210);
         ren = new DefaultTableCellRenderer();
         ren.setHorizontalAlignment(JLabel.CENTER);
@@ -835,70 +908,11 @@ public class WebDAVFileView implements ViewSelectionListener, ActionListener
             if( sorter != null )
             {
                 // sort by name by default
-                sorter.sortByColumn( 2, true );
+                sorter.sortByColumn( 3, true );
             }
         }
 
         selectedRow = -1;
-    }
-
-
-    public void treeSelectionChanged(ViewSelectionEvent e)
-    {
-        if( GlobalData.getGlobalData().getDebugFileView() )
-        {
-            System.err.println( "WebDAVFileView::treeSelectionChanged" );
-        }
-
-        table.clearSelection();
-        clearTable();
-        WebDAVTreeNode t_node = (WebDAVTreeNode) e.getNode();
-        parentNode = t_node;
-        parentPath = e.getPath().toString();
-        int cnt = t_node.getChildCount();
-        if (table.getRowCount() != 0)
-            return;
-        for (int i=0;i<cnt;i++)
-        {
-            WebDAVTreeNode child = (WebDAVTreeNode) t_node.getChildAt(i);
-            DataNode d_node = child.getDataNode();
-            if (d_node == null)
-                return;
-            Object[] rowObj = new Object[8];
-            rowObj[0] = "true";
-            rowObj[1] = new Boolean(d_node.isLocked());
-            rowObj[2] = d_node.getName();
-            rowObj[3] = d_node.getDisplay();
-            rowObj[4] = d_node.getType();
-            rowObj[5] = (new Long(d_node.getSize())).toString();
-            rowObj[6] = d_node.getDate();
-            rowObj[7] = new Integer(i);
-            addRow(rowObj);
-        }
-        fireTableModuleEvent();
-
-        DataNode this_data_node = t_node.getDataNode();
-        if (this_data_node == null)
-            return;
-        Vector subs = this_data_node.getSubNodes();
-        if (subs == null)
-            return;
-        for (int i=0;i<subs.size();i++)
-        {
-            Object[] rowObj = new Object[8];
-            DataNode d_node = (DataNode) subs.elementAt(i);
-
-            rowObj[0] = "false";
-            rowObj[1] = new Boolean(d_node.isLocked());
-            rowObj[2] = d_node.getName();
-            rowObj[3] = d_node.getDisplay();
-            rowObj[4] = d_node.getType();
-            rowObj[5] = (new Long(d_node.getSize())).toString();
-            rowObj[6] = d_node.getDate();
-            rowObj[7] = new Integer(-1);
-            addRow(rowObj);
-        }
-        fireTableModuleEvent();
     }
 
 
@@ -938,6 +952,18 @@ public class WebDAVFileView implements ViewSelectionListener, ActionListener
     }
 
 
+    public synchronized void addDisplayVersionListener(ActionListener l)
+    {
+        displayVersionListeners.addElement(l);
+    }
+
+
+    public synchronized void removeDisplayVersionListener(ActionListener l)
+    {
+        displayVersionListeners.removeElement(l);
+    }
+
+
     public void handlePress(MouseEvent e)
     {
         Point cursorPoint = new Point(e.getX(),e.getY());
@@ -971,14 +997,30 @@ public class WebDAVFileView implements ViewSelectionListener, ActionListener
     public void displayLock()
     {
         Vector ls;
-        synchronized (this)
+        synchronized( this )
         {
-            ls = (Vector) displayLockListeners.clone();
+            ls = (Vector)displayLockListeners.clone();
         }
-        ActionEvent e = new ActionEvent(this,0,null);
-        for (int i=0; i<ls.size();i++)
+        ActionEvent e = new ActionEvent( this, 0, getParentPathString() + selectedResource );
+        for( int i=0; i<ls.size(); i++ )
         {
-            ActionListener l = (ActionListener) ls.elementAt(i);
+            ActionListener l = (ActionListener)ls.elementAt(i);
+            l.actionPerformed(e);
+        }
+    }
+
+
+    public void displayVersions()
+    {
+        Vector ls;
+        synchronized( this )
+        {
+            ls = (Vector)displayVersionListeners.clone();
+        }
+        ActionEvent e = new ActionEvent( this, 0, getParentPathString() + selectedResource );
+        for( int i=0; i<ls.size(); i++ )
+        {
+            ActionListener l = (ActionListener)ls.elementAt(i);
             l.actionPerformed(e);
         }
     }
@@ -995,49 +1037,67 @@ public class WebDAVFileView implements ViewSelectionListener, ActionListener
         int col = table.columnAtPoint(pt);
         int row = table.rowAtPoint(pt);
 
-        int column = table.convertColumnIndexToView(1); // lock
-        if( column == -1 )
-            column = 1;     // use default
-        if ( (col == column) && (row != -1) )
+        int lockColumn = table.convertColumnIndexToView(1); // lock
+        if( lockColumn == -1 )
+            lockColumn = 1;     // use default
+        int versionColumn = table.convertColumnIndexToView(2); // version
+        if( versionColumn == -1 )
+        versionColumn = 2;     // use default
+        if( (col == lockColumn) && (row != -1) )
         {
             Boolean locked = null;
             try
             {
                 locked = (Boolean) table.getValueAt( row, col );
             }
-            catch (Exception exc)
+            catch( Exception exc )
             {
                 System.out.println(exc);
                 return;
             }
-            if ( (locked != null) && (locked.booleanValue()) )
+            if( (locked != null) && (locked.booleanValue()) )
             {
                 displayLock();
                 return;
             }
         }
+        else if( (col == versionColumn) && (row != -1) )
+        {
+            Boolean versions = null;
+            try
+            {
+                versions = (Boolean) table.getValueAt( row, col );
+            }
+            catch( Exception exc )
+            {
+                System.out.println(exc);
+                return;
+            }
+            if( (versions != null) && (versions.booleanValue()) )
+            {
+                // TODO: Handle double click on version column: get report and display in grid
+                displayVersions();
+                return;
+            }
+        }
+
+        if( selListeners == null )
+            return;
 
         Vector ls;
-        if (selListeners == null)
-        {
-            return;
-        }
-        synchronized (this)
+        synchronized( this )
         {
             ls = (Vector) selListeners.clone();
         }
 
         int selRow = selectionModel.getMaxSelectionIndex();
-        if (selRow != -1)
+        if( selRow != -1 )
         {
             if( sorter == null )
                 return;
             int origRow = sorter.getTrueRow(selRow);
             if (origRow == -1)
-            {
                 return;
-            }
-
             if (origRow > parentNode.getChildCount()-1)
                 return;
 
@@ -1045,7 +1105,7 @@ public class WebDAVFileView implements ViewSelectionListener, ActionListener
             TreePath path = new TreePath(tempNode.getPath());
 
             ViewSelectionEvent selEvent = new ViewSelectionEvent(this, tempNode, path );
-            for (int i=0; i<ls.size();i++)
+            for( int i=0; i<ls.size(); i++ )
             {
                 ViewSelectionListener l = (ViewSelectionListener) ls.elementAt(i);
                 l.selectionChanged(selEvent);
@@ -1071,9 +1131,9 @@ public class WebDAVFileView implements ViewSelectionListener, ActionListener
             int selRow = selectionModel.getMaxSelectionIndex();
             if ((selRow >= 0) && (data.size() > 0) )
             {
-                int column = table.convertColumnIndexToView(2); // name
+                int column = table.convertColumnIndexToView(3); // name
                 if( column == -1 )
-                    column = 2;     // use default
+                    column = 3;     // use default
                 selectedResource = (String) table.getValueAt( selRow, column );
                 String selResource = new String(selectedResource);
                 selectedRow = selRow; // set the class global variable to

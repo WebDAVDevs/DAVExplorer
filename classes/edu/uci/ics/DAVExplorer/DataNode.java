@@ -20,7 +20,7 @@
 /**
  * Title:       DataNode
  * Description: Node holding information about resources and collections
- * Copyright:   Copyright (c) 1998-2001 Regents of the University of California. All rights reserved.
+ * Copyright:   Copyright (c) 1998-2003 Regents of the University of California. All rights reserved.
  * @author      Undergraduate project team ICS 126B 1998
  * @date        1998
  * @author      Yuzo Kanomata, Joachim Feise (dav-exp@ics.uci.edu)
@@ -31,6 +31,9 @@
  * @author      Joachim Feise (dav-exp@ics.uci.edu)
  * @date        13 May 2003
  * Changes:     Changed date conversion for column sorting.
+ * @author      Joachim Feise (dav-exp@ics.uci.edu)
+ * @date        23 September 2003
+ * Changes:     Changed the formatting of the parameter lists.
  */
 
 package edu.uci.ics.DAVExplorer;
@@ -54,8 +57,15 @@ public class DataNode
     protected Vector subNodes = null;
 
 
-    public DataNode(boolean collection, boolean locked, String lockToken, String name, String display, String type,
-                  long size, Date date, Vector subNodes)
+    public DataNode( boolean collection,
+                     boolean locked,
+                     String lockToken,
+                     String name,
+                     String display,
+                     String type,
+                     long size,
+                     Date date,
+                     Vector subNodes )
     {
         DateFormat df = DateFormat.getDateTimeInstance( DateFormat.FULL, DateFormat.FULL );
         df.setLenient( true );
@@ -64,15 +74,29 @@ public class DataNode
     }
 
 
-    public DataNode(boolean collection, boolean locked, String lockToken, String name, String display, String type,
-                  long size, String date, Vector subNodes)
+    public DataNode( boolean collection,
+                     boolean locked,
+                     String lockToken,
+                     String name,
+                     String display,
+                     String type,
+                     long size,
+                     String date,
+                     Vector subNodes )
     {
         init( collection, locked, lockToken, name, display, type, size, date, subNodes );
     }
 
 
-    private void init(boolean collection, boolean locked, String lockToken, String name, String display, String type,
-                      long size, String date, Vector subNodes)
+    private void init( boolean collection,
+                       boolean locked,
+                       String lockToken,
+                       String name,
+                       String display,
+                       String type,
+                       long size,
+                       String date,
+                       Vector subNodes )
     {
         this.name = name;
         this.display = display;

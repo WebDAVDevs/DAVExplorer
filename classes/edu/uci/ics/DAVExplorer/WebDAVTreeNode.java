@@ -45,6 +45,9 @@
  * @date        17 March 2003
  * Changes:     Integrated Brian Johnson's applet changes.
  *              Added better error reporting.
+ * @author      Joachim Feise (dav-exp@ics.uci.edu)
+ * @date        23 September 2003
+ * Changes:     Refactored code during DeltaV integration.
  */
 
 package edu.uci.ics.DAVExplorer;
@@ -58,13 +61,12 @@ import java.text.DateFormat;
 import com.ms.xml.om.Element;
 import com.ms.xml.om.Document;
 import com.ms.xml.om.TreeEnumeration;
-import com.ms.xml.om.SiblingEnumeration;
 import com.ms.xml.util.Name;
 
 public class WebDAVTreeNode extends DefaultMutableTreeNode
 {
-    protected static WebDAVRequestGenerator generator = new WebDAVRequestGenerator();
-    protected static WebDAVResponseInterpreter interpreter = new WebDAVResponseInterpreter();
+    protected static DeltaVRequestGenerator generator = new DeltaVRequestGenerator();
+    protected static DeltaVResponseInterpreter interpreter = new DeltaVResponseInterpreter();
 
     protected boolean hasLoaded = false;
     protected final static String WebDAVRoot = "DAV Explorer";
@@ -74,11 +76,14 @@ public class WebDAVTreeNode extends DefaultMutableTreeNode
     protected boolean childrenLoaded = false;
     protected boolean localLoad = false;
 
-    public static void reset() {
-        generator = new WebDAVRequestGenerator();
-        interpreter = new WebDAVResponseInterpreter();
+
+    public static void reset()
+    {
+        generator = new DeltaVRequestGenerator();
+        interpreter = new DeltaVResponseInterpreter();
     }
 
+    
     public WebDAVTreeNode( Object o, String ua )
     {
         super(o);
@@ -87,6 +92,7 @@ public class WebDAVTreeNode extends DefaultMutableTreeNode
         hasLoaded = true;
     }
 
+    
     public WebDAVTreeNode( Object o, boolean isRoot, String ua )
     {
         super(o);
@@ -97,37 +103,44 @@ public class WebDAVTreeNode extends DefaultMutableTreeNode
         dataNode = new DataNode( true, false, null, o.toString(), "DAV Root Node", "", 0, "", null );
     }
 
+    
     public void setUserAgent( String ua )
     {
         userAgent = ua;
         generator.setUserAgent( userAgent );
     }
 
+    
     public DataNode getDataNode()
     {
         return dataNode;
     }
 
+    
     public void setDataNode( DataNode newNode )
     {
         dataNode = newNode;
     }
 
+    
     public boolean isLeaf()
     {
         return false;
     }
 
+    
     public boolean hasLoadedChildren()
     {
         return childrenLoaded;
     }
 
+    
     public void setHasLoadedChildren( boolean b )
     {
         childrenLoaded = b;
     }
 
+    
     public void removeChildren()
     {
         if( GlobalData.getGlobalData().getDebugTreeNode() )
@@ -144,11 +157,13 @@ public class WebDAVTreeNode extends DefaultMutableTreeNode
         dataNode = null;
     }
 
+    
     public int getChildCount()
     {
         return super.getChildCount();
     }
 
+    
     protected void loadRemote( byte[] byte_xml )
     {
         if( GlobalData.getGlobalData().getDebugTreeNode() )
@@ -183,7 +198,7 @@ public class WebDAVTreeNode extends DefaultMutableTreeNode
         String[] token = new String[1];
         token[0] = new String( WebDAVXML.ELEM_MULTISTATUS );
 
-        Element rootElem = skipElements( xml_doc, token );
+        Element rootElem = interpreter.skipElements( xml_doc, token );
         if( rootElem != null )
         {
             TreeEnumeration enumTree =  new TreeEnumeration( rootElem );
@@ -195,7 +210,7 @@ public class WebDAVTreeNode extends DefaultMutableTreeNode
                 {
                     if( currentTag.getName().equals( WebDAVXML.ELEM_RESPONSE ) )
                     {
-                        parseResponse( current, ResourceName, nodesChildren );
+                        dataNode = interpreter.parseResponse( current, ResourceName, nodesChildren, dataNode, userAgent, this );
                     }
                 }
             }
@@ -213,216 +228,6 @@ public class WebDAVTreeNode extends DefaultMutableTreeNode
             dataNode.setSubNodes(nodesChildren);
             hasLoaded = true;
         }
-    }
-
-
-    protected void parseResponse( Element respElem, String ResourceName, Vector nodesChildren )
-    {
-        if( GlobalData.getGlobalData().getDebugTreeNode() )
-        {
-            System.err.println( "WebDAVTreeNode::parseResponse" );
-        }
-
-        DataNode node = null;
-        String resName = "";
-        String fullName = "";
-        Element current = null;
-
-        if( respElem.numElements() == 0 )
-            return;
-
-        SiblingEnumeration enumTree =  new SiblingEnumeration( respElem.getChild(0) );
-        while( enumTree.hasMoreElements() )
-        {
-            current = (Element)enumTree.nextElement();
-            Name currentTag = current.getTagName();
-            if( currentTag != null )
-            {
-                if( currentTag.getName().equals( WebDAVXML.ELEM_HREF ) )
-                {
-                    TreeEnumeration enumHref =  new TreeEnumeration( current );
-                    while( enumHref.hasMoreElements() )
-                    {
-                        Element token = (Element)enumHref.nextElement();
-                        if( (token != null) && (token.getType() == Element.PCDATA || token.getType() == Element.CDATA) )
-                        {
-                            // workaround for broken MS Parser if filename has & in it
-                            // not needed anymore with patch in the parser
-                            // but left in here as a reminder just in case...
-                            //if( resName.length() > 0 )
-                            //    resName += "&";
-                            //resName += new String(truncateResource(token.getText()));
-                            //if( fullName.length() > 0 )
-                            //    fullName += "&";
-                            //fullName += new String(getFullResource(token.getText()));
-
-                            // TODO: get encoding
-                            resName = new String( truncateResource(GlobalData.getGlobalData().unescape(token.getText(), null, true)) );
-                            fullName = new String( getFullResource(GlobalData.getGlobalData().unescape(token.getText(), null, true)) );
-                        }
-                    }
-                }
-                else if( currentTag.getName().equals( WebDAVXML.ELEM_PROPSTAT ) )
-                {
-                    if( resName != "" )
-                    {
-                        DataNode curnode = parseProps( current, ResourceName, resName );
-                        if( node == null )
-                            node = curnode;
-                        else
-                        {
-                            // update node values as necessary
-                            if( curnode.getDisplay().length() != 0 )
-                                node.setDisplay( curnode.getDisplay() );    // overwrite any old value
-                            if( curnode.isLocked() && !node.isLocked() )
-                            {
-                                node.lock( curnode.getLockToken() );        // never change back to unlocked here
-                            }
-                            if( curnode.isCollection() )
-                                node.makeCollection();                      // never change back to normal node
-                            if( curnode.getType().length() != 0 )
-                                node.setType( curnode.getType() );          // overwrite any old value
-                            if( curnode.getSize()!=0 )
-                                node.setSize( curnode.getSize() );          // overwrite any old value
-                            if( curnode.getDate() != null )
-                                node.setDate( curnode.getDate() );          // overwrite any old value
-                        }
-                    }
-                }
-            }
-        }
-
-        // save data node
-        if( node != null )
-        {
-            String ResourceNameStrp = "";
-            if (ResourceName.endsWith("/"))
-                ResourceNameStrp = ResourceName.substring(0,ResourceName.length() - 1);
-            if ( (fullName.equals(ResourceName)) || (fullName.equals(ResourceNameStrp)) )
-            {
-                // this is the container
-                int pathLen = getPath().length;
-                String hostName = resName;
-                if (pathLen == 2)
-                {
-                    if( GlobalData.getGlobalData().getSSL() )
-                        hostName = GlobalData.WebDAVPrefixSSL + interpreter.getHost() + "/" + ResourceName;
-                    else
-                        hostName = GlobalData.WebDAVPrefix + interpreter.getHost() + "/" + ResourceName;
-                }
-                // update node values
-                dataNode = new DataNode( node.isCollection(), node.isLocked(), node.getLockToken(),
-                                         hostName, node.getDisplay(), node.getType(), node.getSize(),
-                                         node.getDate(), null );
-            }
-            else
-            {
-                if( node.isCollection() )
-                {
-                    WebDAVTreeNode childNode = new WebDAVTreeNode( resName, userAgent );
-                    childNode.setDataNode(node);
-                    insert(childNode,0);
-                }
-                else
-                {
-                    nodesChildren.addElement(node);
-                }
-            }
-        }
-
-        // handle the case when the server doesn't send properties for the container
-        // itself
-        if( dataNode == null )
-        {
-            // create a container with as much data as we have
-            int pathLen = getPath().length;
-            String hostName = resName;
-            if (pathLen == 2)
-            {
-                if( GlobalData.getGlobalData().getSSL() )
-                    hostName = GlobalData.WebDAVPrefixSSL + interpreter.getHost() + "/" + ResourceName;
-                else
-                    hostName = GlobalData.WebDAVPrefix + interpreter.getHost() + "/" + ResourceName;
-            }
-            // update node values
-            dataNode = new DataNode( true, false, null,
-                                     hostName, ResourceName, "httpd/unix-directory", 0,
-                                     "", null );
-        }
-    }
-
-
-    protected DataNode parseProps( Element propElem, String ResourceName, String resName )
-    {
-        if( GlobalData.getGlobalData().getDebugTreeNode() )
-        {
-            System.err.println( "WebDAVTreeNode::parseProps" );
-        }
-
-        boolean isColl = false;
-        boolean isLocked = false;
-        String lockToken = null;
-        String resDisplay = "";
-        String resType = "";
-        String resLength = "0";
-        String resDate = "";
-
-        String[] token = new String[1];
-        token[0] = new String( WebDAVXML.ELEM_PROP );
-
-        Element rootElem = skipElements( propElem, token );
-        if( rootElem != null )
-        {
-            TreeEnumeration enumTree =  new TreeEnumeration( rootElem );
-            while( enumTree.hasMoreElements() )
-            {
-                Element current = (Element)enumTree.nextElement();
-                Name currentTag = current.getTagName();
-                if( currentTag != null )
-                {
-                    if( currentTag.getName().equals( WebDAVProp.PROP_DISPLAYNAME ) )
-                    {
-                        resDisplay = getDisplayName( current );
-                    }
-                    else if( currentTag.getName().equals( WebDAVProp.PROP_LOCKDISCOVERY ) )
-                    {
-                        lockToken = lockDiscovery( current );
-                        if( lockToken != null )
-                            isLocked = true;
-                    }
-                    else if( currentTag.getName().equals( WebDAVProp.PROP_RESOURCETYPE ) )
-                    {
-                        isColl = getResourceType( current );
-                    }
-                    else if( currentTag.getName().equals( WebDAVProp.PROP_GETCONTENTTYPE ) )
-                    {
-                        resType = getContentType( current );
-                    }
-                    else if( currentTag.getName().equals( WebDAVProp.PROP_GETCONTENTLENGTH ) )
-                    {
-                        resLength = getContentLength( current );
-                    }
-                    else if( currentTag.getName().equals( WebDAVProp.PROP_GETLASTMODIFIED ) )
-                    {
-                        resDate = getLastModified( current );
-                    }
-                }
-            }
-        }
-
-        // This is where we fill out the data node
-        long size = 0;
-        try
-        {
-            size = Long.parseLong(resLength);
-        }
-        catch( Exception e )
-        {
-            // ignore error, use default value
-        }
-        DataNode newNode = new DataNode(isColl, isLocked, lockToken, resName,
-                                        resDisplay, resType, size, resDate,null);
-        return newNode;
     }
 
 
@@ -499,13 +304,15 @@ public class WebDAVTreeNode extends DefaultMutableTreeNode
     public void finishLoadChildren()
     {
         byte[] byte_xml = interpreter.getXML();
-        if (byte_xml != null) {
-        loadRemote(byte_xml);
+        if( byte_xml != null )
+        {
+            loadRemote(byte_xml);
         }
         interpreter.ResetRefresh();
 
         childrenLoaded = true;
     }
+
 
     public void loadChildren( boolean select )
     {
@@ -552,6 +359,9 @@ public class WebDAVTreeNode extends DefaultMutableTreeNode
                 // workaround for IBM's DAV4J, which does not handle propfind properly
                 // with the prop tag. To use the workaround, run DAV Explorer with
                 // 'java -jar -Dpropfind=allprop DAVExplorer.jar'
+                // Note that this prevents the detection of DeltaV information, since
+                // RFC 3253 states in section 3.11 that "A DAV:allprop PROPFIND request
+                // SHOULD NOT return any of the properties defined by this document."
                 String doAllProp = System.getProperty( "propfind" );
                 if( (doAllProp != null) && doAllProp.equalsIgnoreCase("allprop") )
                 {
@@ -562,13 +372,18 @@ public class WebDAVTreeNode extends DefaultMutableTreeNode
                 }
                 else
                 {
-                    String[] props = new String[6];
+                    String[] props;
+                    props = new String[9];
                     props[0] = "displayname";
                     props[1] = "resourcetype";
                     props[2] = "getcontenttype";
                     props[3] = "getcontentlength";
                     props[4] = "getlastmodified";
                     props[5] = "lockdiscovery";
+                    // DeltaV support
+                    props[6] = "checked-in";
+                    props[7] = "checked-out";
+                    props[8] = "version-name";
                     if( generator.GeneratePropFindForNode( pathToResource, "prop", "one", props, null, true, this ) )
                     {
                         generator.execute();
@@ -601,6 +416,9 @@ public class WebDAVTreeNode extends DefaultMutableTreeNode
                 // workaround for IBM's DAV4J, which does not handle propfind properly
                 // with the prop tag. To use the workaround, run DAV Explorer with
                 // 'java -jar -Dpropfind=allprop DAVExplorer.jar'
+                // Note that this prevents the detection of DeltaV information, since
+                // RFC 3253 states in section 3.11 that "A DAV:allprop PROPFIND request
+                // SHOULD NOT return any of the properties defined by this document."
                 String doAllProp = System.getProperty( "propfind" );
                 if( doAllProp != null )
                 {
@@ -613,13 +431,18 @@ public class WebDAVTreeNode extends DefaultMutableTreeNode
                     }
                     else
                     {
-                        String[] props = new String[6];
+                        String[] props;
+                        props = new String[9];
                         props[0] = "displayname";
                         props[1] = "resourcetype";
                         props[2] = "getcontenttype";
                         props[3] = "getcontentlength";
                         props[4] = "getlastmodified";
                         props[5] = "lockdiscovery";
+                        // DeltaV support
+                        props[6] = "checked-in";
+                        props[7] = "checked-out";
+                        props[8] = "version-name";
                         if( generator.GeneratePropFindForNode( pathToResource, "prop", "one", props, null, true, this ) )
                         {
                             generator.execute();
@@ -640,262 +463,41 @@ public class WebDAVTreeNode extends DefaultMutableTreeNode
         return localLoad;
     }
 
-    public String truncateResource(String res)
+
+    public boolean isDeltaV()
     {
-        if( GlobalData.getGlobalData().getDebugTreeNode() )
-        {
-            System.err.println( "WebDAVTreeNode::truncateResource" );
-        }
-
-        int pos = res.indexOf(GlobalData.WebDAVPrefixSSL);
-        if (pos >= 0)
-            res = res.substring(GlobalData.WebDAVPrefixSSL.length());
-        pos = res.indexOf(GlobalData.WebDAVPrefix);
-        if (pos >= 0)
-            res = res.substring(GlobalData.WebDAVPrefix.length());
-        pos = res.indexOf("/");
-        if( pos >= 0 )
-            res = res.substring(pos);
-
-        if (res.endsWith("/"))
-            res = res.substring(0, res.length() - 1);
-        pos = res.lastIndexOf("/");
-        if (pos >= 0)
-            res = res.substring(pos);
-        if ((res.startsWith("/")) && (res.length() > 1))
-            res = res.substring(1);
-        if (res.length() == 0)
-            res = "/";
-        return res;
+        return getDeltaV();
     }
-
-    public String getFullResource(String res) {
-        if( GlobalData.getGlobalData().getDebugTreeNode() )
-        {
-            System.err.println( "WebDAVTreeNode::getFullResource" );
-        }
-
-        int pos = res.indexOf(GlobalData.WebDAVPrefixSSL);
-        if (pos >= 0)
-            res = res.substring(GlobalData.WebDAVPrefixSSL.length());
-        pos = res.indexOf(GlobalData.WebDAVPrefix);
-        if (pos >= 0)
-            res = res.substring(GlobalData.WebDAVPrefix.length());
-        pos = res.indexOf("/");
-        if( pos >= 0 )
-            res = res.substring(pos);
-        if (res.endsWith("/"))
-            res = res.substring(0,res.length() - 1);
-        if (res.length() == 0)
-            res = "/";
-        if ( (res.startsWith("/")) && (res.length() > 1) )
-            res = res.substring(1);
-        return res;
+    
+    
+    public boolean getDeltaV()
+    {
+        if( !(dataNode instanceof DeltaVDataNode ) )
+            return false;
+        return ((DeltaVDataNode)dataNode).getDeltaV();
+    }
+    
+    
+    public void setDeltaV( boolean deltaV )
+    {
+        if( !(dataNode instanceof DeltaVDataNode ) )
+            return;
+        ((DeltaVDataNode)dataNode).setDeltaV( deltaV );
+    }
+    
+    
+    public boolean getDeltaVReports()
+    {
+        if( !(dataNode instanceof DeltaVDataNode ) )
+            return false;
+        return ((DeltaVDataNode)dataNode).getDeltaVReports();
     }
 
 
-    private String getLockToken( Element locktoken )
+    public void setDeltaVReports( boolean reports )
     {
-        if( GlobalData.getGlobalData().getDebugTreeNode() )
-        {
-            System.err.println( "WebDAVTreeNode::getLockToken" );
-        }
-
-        TreeEnumeration treeEnum = new TreeEnumeration( locktoken );
-        while(treeEnum.hasMoreElements() )
-        {
-            Element current = (Element)treeEnum.nextElement();
-            Name tag = current.getTagName();
-            if( (tag!=null) && tag.getName().equals( WebDAVXML.ELEM_HREF ) )
-            {
-                Element token = (Element)treeEnum.nextElement();
-                if( (token!=null) && (token.getType() == Element.PCDATA || token.getType() == Element.CDATA) )
-                {
-                    // TODO: get encoding
-                    return GlobalData.getGlobalData().unescape( token.getText(), null, false );
-                }
-            }
-        }
-        return null;
-    }
-
-
-    private Element skipElements( Document xml_doc, String[] token )
-    {
-        Element rootElem = (Element)xml_doc.getRoot();
-        return skipElements( rootElem, token );
-    }
-
-    private Element skipElements( Element rootElem, String[] token )
-    {
-        if( GlobalData.getGlobalData().getDebugTreeNode() )
-        {
-            System.err.println( "WebDAVTreeNode::skipElements" );
-        }
-
-        int index = 0;
-        TreeEnumeration enumTree =  new TreeEnumeration( rootElem );
-        while( enumTree.hasMoreElements() )
-        {
-            Element current = (Element)enumTree.nextElement();
-            Name currentTag = current.getTagName();
-            if( index >= 0 )
-            {
-                if( (currentTag != null) && (currentTag.getName().equals( token[index] )) )
-                {
-                    if( !currentTag.getName().equals( WebDAVXML.ELEM_HREF ) )
-                    {
-                        // we only care about the subtree from this point on
-                        // NOTE: do not get the href subtree, since the href tree
-                        // is a sibling to the tree we need
-                        enumTree = new TreeEnumeration( current );
-                    }
-                    index++;
-                }
-                if( index >= token.length )
-                    return current;
-            }
-        }
-        return null;
-    }
-
-    private String getDisplayName( Element displayName )
-    {
-        if( GlobalData.getGlobalData().getDebugTreeNode() )
-        {
-            System.err.println( "WebDAVTreeNode::getDisplayName" );
-        }
-
-        TreeEnumeration treeEnum = new TreeEnumeration( displayName );
-        while(treeEnum.hasMoreElements() )
-        {
-            Element current = (Element)treeEnum.nextElement();
-            Name tag = current.getTagName();
-            if( (tag != null) && tag.getName().equals( WebDAVProp.PROP_DISPLAYNAME ) )
-            {
-                Element token = (Element)treeEnum.nextElement();
-                if( (token != null) && (token.getType() == Element.PCDATA || token.getType() == Element.CDATA) )
-                {
-                    // TODO: get encoding
-                    return GlobalData.getGlobalData().unescape( token.getText(), null, false );
-                }
-            }
-        }
-        return "";
-    }
-
-    private String lockDiscovery( Element lockdiscovery )
-    {
-        if( GlobalData.getGlobalData().getDebugTreeNode() )
-        {
-            System.err.println( "WebDAVTreeNode::lockDiscovery" );
-        }
-
-        String[] token = new String[1];
-        token[0] = new String( WebDAVXML.ELEM_ACTIVE_LOCK );
-        int index = 0;
-        TreeEnumeration enumTree =  new TreeEnumeration( lockdiscovery );
-        while( enumTree.hasMoreElements() )
-        {
-            Element current = (Element)enumTree.nextElement();
-            Name currentTag = current.getTagName();
-            if( index >= 0 )
-            {
-                if( (currentTag != null) && (currentTag.getName().equals( token[index] )) )
-                {
-                    // we only care about the subtree from this point on
-                    enumTree = new TreeEnumeration( current );
-                    index++;
-                }
-                if( index >= token.length )
-                    index = -1;
-            }
-            else if( currentTag != null )
-            {
-                if( currentTag.getName().equals( WebDAVXML.ELEM_LOCK_TOKEN ) )
-                {
-                    return getLockToken( current );
-                }
-            }
-        }
-        return null;
-    }
-
-    private boolean getResourceType( Element resourcetype )
-    {
-        if( GlobalData.getGlobalData().getDebugTreeNode() )
-        {
-            System.err.println( "WebDAVTreeNode::getResourceType" );
-        }
-
-        TreeEnumeration treeEnum = new TreeEnumeration( resourcetype );
-        while(treeEnum.hasMoreElements() )
-        {
-            Element current = (Element)treeEnum.nextElement();
-            Name tag = current.getTagName();
-            if( (tag != null) && tag.getName().equals( WebDAVXML.ELEM_COLLECTION ) )
-                return true;
-        }
-        return false;
-    }
-
-    private String getContentType( Element contenttype )
-    {
-        if( GlobalData.getGlobalData().getDebugTreeNode() )
-        {
-            System.err.println( "WebDAVTreeNode::getContentType" );
-        }
-
-        TreeEnumeration treeEnum = new TreeEnumeration( contenttype );
-        while(treeEnum.hasMoreElements() )
-        {
-            Element token = (Element)treeEnum.nextElement();
-            if( (token != null) && (token.getType() == Element.PCDATA || token.getType() == Element.CDATA) )
-            {
-                // TODO: get encoding
-                return GlobalData.getGlobalData().unescape( token.getText(), null, false );
-            }
-        }
-        return "";
-    }
-
-    private String getContentLength( Element contentlength )
-    {
-        if( GlobalData.getGlobalData().getDebugTreeNode() )
-        {
-            System.err.println( "WebDAVTreeNode::getContentLength" );
-        }
-
-        TreeEnumeration treeEnum = new TreeEnumeration( contentlength );
-        while(treeEnum.hasMoreElements() )
-        {
-            Element token = (Element)treeEnum.nextElement();
-            if( (token != null) && (token.getType() == Element.PCDATA || token.getType() == Element.CDATA) )
-            {
-                // TODO: get encoding
-                return GlobalData.getGlobalData().unescape( token.getText(), null, false );
-            }
-        }
-        return "0";
-    }
-
-    private String getLastModified( Element lastmodified )
-    {
-        if( GlobalData.getGlobalData().getDebugTreeNode() )
-        {
-            System.err.println( "WebDAVTreeNode::getLastModified" );
-        }
-
-        TreeEnumeration treeEnum = new TreeEnumeration( lastmodified );
-        while(treeEnum.hasMoreElements() )
-        {
-            Element token = (Element)treeEnum.nextElement();
-            if( (token != null) && (token.getType() == Element.PCDATA || token.getType() == Element.CDATA) )
-            {
-                // TODO: get encoding
-                return GlobalData.getGlobalData().unescape( token.getText(), null, false );
-            }
-        }
-        return "";
+        if( !(dataNode instanceof DeltaVDataNode ) )
+            return;
+        ((DeltaVDataNode)dataNode).setDeltaVReports( reports );
     }
 }

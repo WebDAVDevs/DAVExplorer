@@ -18,7 +18,7 @@
  */
 
 /**
- * Title:       WebDAVURIBox Listener
+ * Title:       WebDAVXML
  * Description: Define the Generic DAV XML Elements from section 12 of the WebDAV spec
  * <draft-ietf-webdav-protocol-05>
  * Copyright:   Copyright (c) 1997-2001 Regents of the University of California. All rights reserved.

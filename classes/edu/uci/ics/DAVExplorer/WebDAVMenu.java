@@ -49,6 +49,9 @@
  * @author      Joachim Feise (dav-exp@ics.uci.edu)
  * @date        27 April 2003
  * Changes:     Added shared lock functionality.
+ * @author      Joachim Feise (dav-exp@ics.uci.edu)
+ * @date        23 September 2003
+ * Changes:     Integrated the DeltaV code from the Spring 2003 ICS125 team.
  */
 
 package edu.uci.ics.DAVExplorer;
@@ -109,6 +112,7 @@ public class WebDAVMenu extends JMenuBar implements ActionListener
     {
         this.add(generateFileMenu());
         this.add(generateEditMenu());
+        this.add(generateVersionMenu());
         this.add(generateViewMenu());
         this.add(generateHelpMenu());
         menuListeners = new Vector();
@@ -175,18 +179,18 @@ public class WebDAVMenu extends JMenuBar implements ActionListener
     {
         JMenu mnu_FileMenu = new JMenu( "File", true );
 
-        mnu_FileMenu.add(new WebDAVMenuItem( "Get File", this, true ));
-        mnu_FileMenu.add(new WebDAVMenuItem( "Write File",this, true ));
+        mnu_FileMenu.add( new WebDAVMenuItem( "Get File", this, true ) );
+        mnu_FileMenu.add( new WebDAVMenuItem( "Write File",this, true ) );
         mnu_FileMenu.addSeparator();
-        mnu_FileMenu.add(new WebDAVMenuItem( "Exclusive Lock", this, true ));
-        mnu_FileMenu.add(new WebDAVMenuItem( "Shared Lock", this, true ));
-        mnu_FileMenu.add(new WebDAVMenuItem( "Unlock", this, true ));
+        mnu_FileMenu.add( new WebDAVMenuItem( "Exclusive Lock", this, true ) );
+        mnu_FileMenu.add( new WebDAVMenuItem( "Shared Lock", this, true ) );
+        mnu_FileMenu.add( new WebDAVMenuItem( "Unlock", this, true ) );
         mnu_FileMenu.addSeparator();
-        mnu_FileMenu.add(new WebDAVMenuItem( "Copy", this, true ));
-        mnu_FileMenu.add(new WebDAVMenuItem( "Move", this, true ));
-        mnu_FileMenu.add(new WebDAVMenuItem( "Delete", this, true ));
+        mnu_FileMenu.add( new WebDAVMenuItem( "Copy", this, true ) );
+        mnu_FileMenu.add( new WebDAVMenuItem( "Move", this, true ) );
+        mnu_FileMenu.add( new WebDAVMenuItem( "Delete", this, true ) );
         mnu_FileMenu.addSeparator();
-        mnu_FileMenu.add(new WebDAVMenuItem( "Create Collection", this, true ));
+        mnu_FileMenu.add( new WebDAVMenuItem( "Create Collection", this, true ) );
 
         if (!GlobalData.getGlobalData().isAppletMode()) {
         mnu_FileMenu.addSeparator();
@@ -205,17 +209,38 @@ public class WebDAVMenu extends JMenuBar implements ActionListener
 
         mnu_EditMenu.add(new WebDAVMenuItem( "Edit Lock Info",this, true ));
 
-        if (!GlobalData.getGlobalData().isAppletMode()) {
-            mnu_EditMenu.add(new WebDAVMenuItem( "Edit Proxy Info",this, true ));
-        mnu_EditMenu.addSeparator();
-        mnu_EditMenu.add(new WebDAVMenuItem( "Clear Auth Buffer", this, true ));
-        mnu_EditMenu.addSeparator();
-        logging = new WebDAVCheckBoxMenuItem( "HTTP Logging", this, true );
-        mnu_EditMenu.add( logging );
-        }
+//        if (!GlobalData.getGlobalData().isAppletMode())
+//        {
+            mnu_EditMenu.add( new WebDAVMenuItem( "Edit Proxy Info",this, true ) );
+            mnu_EditMenu.addSeparator();
+            mnu_EditMenu.add( new WebDAVMenuItem( "Clear Auth Buffer", this, true ) );
+            mnu_EditMenu.addSeparator();
+            logging = new WebDAVCheckBoxMenuItem( "HTTP Logging", this, true );
+            mnu_EditMenu.add( logging );
+//        }
 
         return mnu_EditMenu;
     }
+
+
+    /*
+    Generate the Version menu
+    */
+    protected JMenu generateVersionMenu()
+    {
+        JMenu mnu_VersionMenu = new JMenu( "Versions", true );
+
+        mnu_VersionMenu.add( new WebDAVMenuItem( "Create Version",this, true ) );
+        mnu_VersionMenu.addSeparator();
+        mnu_VersionMenu.add( new WebDAVMenuItem( "Version Report",this, true ) );
+        mnu_VersionMenu.addSeparator();
+        mnu_VersionMenu.add( new WebDAVMenuItem( "Check Out", this, true ) );
+        mnu_VersionMenu.add( new WebDAVMenuItem( "Uncheckout", this, true ) );
+        mnu_VersionMenu.add( new WebDAVMenuItem( "Check In", this, true ) );
+
+        return mnu_VersionMenu;
+    }
+
 
     /*
     Generate the View menu
@@ -224,11 +249,11 @@ public class WebDAVMenu extends JMenuBar implements ActionListener
     {
         JMenu mnu_ViewMenu = new JMenu( "View", true );
 
-        mnu_ViewMenu.add(new WebDAVMenuItem( "View Lock Properties", this, true ));
+        mnu_ViewMenu.add( new WebDAVMenuItem( "View Lock Properties", this, true ) );
         mnu_ViewMenu.addSeparator();
-        mnu_ViewMenu.add(new WebDAVMenuItem( "View/Modify Properties", this, true ));
+        mnu_ViewMenu.add( new WebDAVMenuItem( "View/Modify Properties", this, true ) );
         mnu_ViewMenu.addSeparator();
-        mnu_ViewMenu.add(new WebDAVMenuItem( "Refresh",this, true ));
+        mnu_ViewMenu.add( new WebDAVMenuItem( "Refresh",this, true ) );
 
         return mnu_ViewMenu;
     }
@@ -240,7 +265,7 @@ public class WebDAVMenu extends JMenuBar implements ActionListener
     {
         JMenu mnu_HelpMenu = new JMenu("Help", true);
 
-        mnu_HelpMenu.add(new WebDAVMenuItem("About DAV Explorer...", this, true ));
+        mnu_HelpMenu.add( new WebDAVMenuItem("About DAV Explorer...", this, true ) );
 
         return mnu_HelpMenu;
     }
