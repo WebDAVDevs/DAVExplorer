@@ -84,7 +84,7 @@ public class Main extends JFrame
     WebDAVMenu CommandMenu;
     Hashtable authTable;
     String authHost;
-    public final static String VERSION = "0.71-dev";
+    public final static String VERSION = "0.72";
     public final static String UserAgent = "UCI DAV Explorer/" + VERSION;
     String writeToDir;
 
