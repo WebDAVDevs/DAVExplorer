@@ -155,5 +155,5 @@ clean::
 
 dist::
 	- find . -name '*.class' -exec rm -f {} \;
-	- find . -name '*.CVS' -exec rm -rf {} \;
+	- find . -name 'CVS' -exec rm -rf {} \;
 
