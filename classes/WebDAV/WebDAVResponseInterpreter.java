@@ -78,8 +78,10 @@ public class WebDAVResponseInterpreter
     private static JFrame mainFrame;
     private static String classPathDir;
 
-    private boolean debugXML = false;
+    private WebDAVTreeNode Node;
+    private static CopyResponseListener copyListener;
 
+    private boolean debugXML = false;
 
     public WebDAVResponseInterpreter()
     { }
@@ -116,14 +118,20 @@ public class WebDAVResponseInterpreter
 
     public void handleResponse(WebDAVResponseEvent e)
     {
+System.out.println("handleResponse");
         res = e.getResponse();
         Method = e.getMethodName();
         Extra = e.getExtraInfo();
         HostName = e.getHost();
         Port = e.getPort();
         Resource = e.getResource();
+	Node = e.getNode();
+System.out.println("handleResponse Method =" + Method + " Extra=" + Extra + 
+	" Node =" + Node );
         try
         {
+System.out.println("handleResponse:in try");
+System.out.println("StatusCode=" + res.getStatusCode() );
             if (Method.equals("MOVE"))
             {
                 parseMove();
@@ -132,13 +140,16 @@ public class WebDAVResponseInterpreter
             }
             if (res.getStatusCode() >= 300)
             {
+System.out.println("StatusCode=" + res.getStatusCode() );
                 resetInProgress();
                 errorMsg("WebDAV Interpreter:\n\n" + res.getStatusCode() + " " + res.getReasonLine());
                 return;
             }
         }
         catch (Exception ex)
-        { }
+        { System.out.println(ex); }
+   
+System.out.println("handleResponse:Method=" + Method);
 
         if (Method.equals("PROPFIND"))
             parsePropFind();
@@ -152,8 +163,17 @@ public class WebDAVResponseInterpreter
             parsePut();
         else if (Method.equals("DELETE"))
             parseDelete();
-        else if (Method.equals("COPY"))
-            parseCopy();
+        else if (Method.equals("COPY")){
+	    //Original
+            //parseCopy();   
+	    try{
+	    	if (res.getStatusCode() == 201){
+		    executeCopy();
+	    	} else {
+		    System.out.println("COPY response=" + res.getStatusCode());	
+	    	}
+	    } catch(Exception ex){ System.out.println(ex); }
+	}
         else if (Method.equals("LOCK"))
             parseLock();
         else if (Method.equals("UNLOCK"))
@@ -213,8 +233,10 @@ public class WebDAVResponseInterpreter
 
     public void parsePropFind()
     {
+System.out.println("parsePropFind Extra=" + Extra);
         byte[] body = null;
         Document xml_doc = null;
+
         try
         {
             body = res.getData();
@@ -326,6 +348,8 @@ public class WebDAVResponseInterpreter
             }
             else if (Extra.equals("delete"))
             {
+System.out.println("Extra equals delete");
+		generator.setNode(Node); // sets the Node which will be operated
                 generator.GenerateDelete(lockToken);
                 generator.execute();
             }
@@ -343,6 +367,7 @@ public class WebDAVResponseInterpreter
                 }
                 else
                     dest = tmp;
+		generator.setNode(Node);
                 generator.GenerateMove(dest, dir, false, true, lockToken);
                 generator.execute();
             }
@@ -433,6 +458,14 @@ public class WebDAVResponseInterpreter
                 }
             }
         }
+	else if(Extra.equals("expand")){
+System.out.println("parseResponse of expand");
+		
+        }
+	else if(Extra.equals("index")){
+System.out.println("parseResponse of index");
+
+	}
         else
         {
             //  "refresh"
@@ -474,6 +507,7 @@ public class WebDAVResponseInterpreter
 
     public void setRefresh()
     {
+System.out.println("**%%setRefresh");
         refresh = true;
     }
 
@@ -486,9 +520,14 @@ public class WebDAVResponseInterpreter
 
     public void parseMkCol()
     {
+	//old
         // inform the user
-        setRefresh();
-        fireInsertionEvent(null);
+        //setRefresh();
+        //fireInsertionEvent(null);
+
+	clearStream();
+	CopyResponseEvent e = new CopyResponseEvent( this, Node);
+	copyListener.CopyEventResponse(e);
     }
 
     public void parseGet()
@@ -570,21 +609,50 @@ public class WebDAVResponseInterpreter
 
     public void parsePut()
     {
+	//Old
         // inform the user
-        setRefresh();
-        fireInsertionEvent(null);
+        //setRefresh();
+        //fireInsertionEvent(null);
+	
+	// Piggy back on the Copy Response stuff
+	clearStream();
+	CopyResponseEvent e = new CopyResponseEvent( this, Node);
+	copyListener.CopyEventResponse(e);
+	
+
     }
 
     public void parseDelete()
     {
+	//Old
         // inform the user
-        setRefresh();
-        fireInsertionEvent(null);
+        //setRefresh();
+        //fireInsertionEvent(null);
+
+	// Piggy back on the Copy Response stuff
+	clearStream();
+	CopyResponseEvent e = new CopyResponseEvent( this, Node);
+	copyListener.CopyEventResponse(e);
+	
+    }
+
+    public void addCopyResponseListener( CopyResponseListener l){
+	// Add only one for now
+	copyListener = l;
+    }
+
+    public void executeCopy(){
+	CopyResponseEvent e = new CopyResponseEvent( this, Node);
+	
+	copyListener.CopyEventResponse(e);
     }
 
     public void parseCopy()
     {
         // inform the user
+	System.out.println("ParseCopy");
+
+	
         setRefresh();
         fireInsertionEvent(null);
     }
@@ -600,9 +668,17 @@ public class WebDAVResponseInterpreter
         }
         catch( Exception e )
         {
+	    System.out.println(e);
         }
-        setRefresh();
-        fireInsertionEvent(null);
+	
+	//old
+        //setRefresh();
+        //fireInsertionEvent(null);
+
+	clearStream();
+	CopyResponseEvent e = new CopyResponseEvent( this, Node);
+	copyListener.CopyEventResponse(e);
+	
     }
 
     public void parseLock()
@@ -669,6 +745,7 @@ public class WebDAVResponseInterpreter
 
     public void clearStream()
     {
+System.out.println("**##@@ clearStream");
         stream = null;
     }
 
@@ -716,10 +793,13 @@ public class WebDAVResponseInterpreter
             ls = (Vector) listeners.clone();
         }
         ActionEvent e = new ActionEvent(this,0,str);
+System.out.println("fireInsertionEvent: action =" + str + " to listners=" + ls.size());
         for (int i=0;i<ls.size();i++)
         {
             ActionListener l = (ActionListener) ls.elementAt(i);
+System.out.println("fireInsertionEvent: listener=" + i+ "," + l +", str=" + str);
             l.actionPerformed(e);
+System.out.println("firedInsertionEvent: listener=" + i+ "," + l);
         }
     }
 
@@ -748,9 +828,11 @@ public class WebDAVResponseInterpreter
             ls = (Vector) lockListeners.clone();
         }
         ActionEvent e = new ActionEvent( this, id, str );
+System.out.println("FireLockEvent =" + str);
         for (int i=0;i<ls.size();i++)
         {
             ActionListener l = (ActionListener) ls.elementAt(i);
+System.out.println("FireLockEvent to listener" + l);
             l.actionPerformed(e);
         }
     }

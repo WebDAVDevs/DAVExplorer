@@ -81,36 +81,60 @@ public class Main extends JFrame
 //        {
 //            System.out.println("Error Loading L&F");
 //        }
+
         WebDAVFrame = this;
+
         authTable = new Hashtable();
-        authHost = null;
+        //authHost = null;
+
         treeView = new WebDAVTreeView(WebDAVFrame);
         fileView = new WebDAVFileView(WebDAVFrame);
+
         CommandMenu = new WebDAVMenu();
         setJMenuBar(CommandMenu);
 
         MenuListener_Gen menuListener = new MenuListener_Gen();
+
+        CommandMenu.addWebDAVMenuListener( menuListener );
+
         WebDAVToolBar toolbar = new WebDAVToolBar();
         toolbar.addActionListener( menuListener );
         URIBox uribox = new URIBox();
         uribox.addActionListener(new URIBoxListener_Gen());
 
-        CommandMenu.addWebDAVMenuListener( menuListener );
-        fileView.addViewSelectionListener(new TableSelectListener_Gen());
-        fileView.addViewSelectionListener(new TableSelectListener_Tree());
+        //CommandMenu.addWebDAVMenuListener(new MenuListener_Gen());
 
-        treeView.addViewSelectionListener(new TreeSelectListener_Gen());
-        treeView.addViewSelectionListener(new TreeSelectListener_Table());
+//        fileView.addViewSelectionListener(new TableSelectListener_Gen());
+//        fileView.addViewSelectionListener(new TableSelectListener_Tree());
+
+//        treeView.addViewSelectionListener(new TreeSelectListener_Gen());
+//        treeView.addViewSelectionListener(new TreeSelectListener_Table());
+
+
+// Yuzo: Radical design change
+//	treeView.addTreeSelectionListener( fileView );
+        treeView.addViewSelectionListener( fileView );
+        fileView.addViewSelectionListener( treeView );
+
         requestGenerator = new WebDAVRequestGenerator(WebDAVFrame);
-        requestGenerator.setUserAgent( UserAgent );
+        requestGenerator.addRequestListener(new RequestListener());
+
+// Get the rename Event
         fileView.addRenameListener(new RenameListener());
-        fileView.addDisplayLockListener(new DisplayLockListener());
+//        fileView.addDisplayLockListener(new DisplayLockListener());
+
+        requestGenerator.setUserAgent( UserAgent );
+
+
         responseInterpreter = new WebDAVResponseInterpreter(WebDAVFrame);
         responseInterpreter.addInsertionListener(new InsertionListener());
         responseInterpreter.addMoveUpdateListener(new MoveUpdateListener());
         responseInterpreter.addLockListener(new LockListener());
+
+	// Yuzo Add the CopyEvent Listener
+	responseInterpreter.addCopyResponseListener(treeView);
+
         webdavManager = new WebDAVManager(WebDAVFrame);
-        requestGenerator.addRequestListener(new RequestListener());
         webdavManager.addResponseListener(new ResponseListener());
 
         JScrollPane fileScrPane = fileView.getScrollPane();
@@ -208,11 +232,12 @@ public class Main extends JFrame
         public void actionPerformed(ActionEvent e)
         {
             String str = e.getActionCommand();
+System.out.println("URIBoxListener_Gen: str=" + str);
             checkAuth(str);
             if (!str.endsWith("/"))
                 str += "/";
             requestGenerator.setExtraInfo("uribox");
-            requestGenerator.GeneratePropFind(str,"allprop","one",null,null);
+            requestGenerator.GeneratePropFind(str,"allprop","one",null,null,false);
             requestGenerator.execute();
         }
     }
@@ -224,10 +249,14 @@ public class Main extends JFrame
             String str = e.getActionCommand();
             if (str == null)
             {
-                treeView.refresh();
-            }
-            else
+System.out.println("InsertionListener, str == null");
+            	treeView.refresh();
+            } else{
+System.out.println("InsertionListener, str=" + str);
+System.out.println("InsertionListener, Adding DAV SERVER=" + str);
                 treeView.addRowToRoot(str,false);
+		
+	    }
         }
     }
 
@@ -249,6 +278,7 @@ public class Main extends JFrame
     {
         public void selectionChanged(ViewSelectionEvent e)
         {
+System.out.println("Main.TableSelectListener_Gen");
             requestGenerator.tableSelectionChanged(e);
         }
     }
@@ -265,6 +295,7 @@ public class Main extends JFrame
     {
         public void selectionChanged(ViewSelectionEvent e)
         {
+System.out.println("**$$%% TreeSelectListener_Gen:" + e);
             requestGenerator.treeSelectionChanged(e);
         }
     }
@@ -300,8 +331,13 @@ public class Main extends JFrame
         public void actionPerformed(ActionEvent e)
         {
             String str = e.getActionCommand();
-            if (str != null)
+            if (str != null){
+		String s = fileView.getSelected();
+		WebDAVTreeNode n = fileView.getParentNode();
+
+		requestGenerator.setResource(s, n);
                 requestGenerator.GenerateRename( str, treeView.getCurrentPath() );
+	    }
         }
     }
 
@@ -326,6 +362,38 @@ public class Main extends JFrame
         public void responseFormed(WebDAVResponseEvent e)
         {
             responseInterpreter.handleResponse(e);
+
+
+
+	    // The above loads the Response into memory
+	    // The post event processing Should be below!
+	    
+	    String extra = e.getExtraInfo();
+
+	    String method = e.getMethodName();
+System.out.println("in Main:ResponseListener extra=" + extra + ", method=" + method);
+
+
+
+	    if ( method.equals("COPY") ){
+
+		System.out.println("In MAIN.RESPONSELISTENER, method copy");
+	    }else if (extra == null) {
+		// Skip
+	    }else if( extra.equals("expand") || extra.equals("index") ){
+		WebDAVTreeNode tn = e.getNode();
+		System.out.println("In MAIN.RESPONSELISTENER, node =" + 
+			(String)tn.getUserObject() );
+		if (tn != null){
+		    tn.finishLoadChildren();
+		}
+	    } else if ( extra.equals("uribox") ){
+		System.out.println("In MAIN.RESPONSELISTENER, uribox");
+	    } else if ( extra.equals("copy") ) {
+		System.out.println("In MAIN.RESPONSELISTENER, extra copy");
+	    } else if (extra.equals("delete")){
+		System.out.println("Got delete in Main:ResponseListener");
+	    }
         }
     }
 
@@ -345,24 +413,56 @@ public class Main extends JFrame
             {
                 FileDialog fd = new FileDialog(WebDAVFrame, "Write File" , FileDialog.LOAD);
                 fd.setVisible(true);
+
                 if( fd.getDirectory() != null )
                 {
                     String fullPath = fd.getDirectory() + fd.getFile();
                     String token = treeView.getLockToken( fd.getFile() );
+
+		// Get the current Node so that we can update it later
+		    String s = "";
+		    WebDAVTreeNode n = fileView.getParentNode();
+		    requestGenerator.setResource(s, n);
+
+System.out.println("*********in calling Generate Put, node =" + n + ", path =" +
+		 treeView.getCurrentPath() + ", token =" +token);
+
                     requestGenerator.GeneratePut( fullPath, treeView.getCurrentPath(), token );
                     requestGenerator.execute();
                 }
+
             }
             else if (command.equals("Lock"))
             {
+		String s = fileView.getSelected();
+		WebDAVTreeNode n = fileView.getParentNode();
+		requestGenerator.setResource(s, n);
                 lockDocument();
             }
             else if (command.equals("Unlock"))
             {
+		String s = fileView.getSelected();
+		WebDAVTreeNode n = fileView.getParentNode();
+		requestGenerator.setResource(s, n);
                 unlockDocument();
             }
             else if (command.equals("Duplicate"))
             {
+		// Yuzo: I have the semantics set so that
+		// we get a string if something is selected in the 
+		// FileView.
+		String s = fileView.getSelected();
+		WebDAVTreeNode n = fileView.getParentNode();
+
+		// This sets the resource name to s and the node to n
+		// This is neccessary so that n is passed to 
+		// response interpretor, whc then routes a 
+		// message to the Tree Model.
+		// This will then call for a rebuild of the Model at the 
+		// Parent node n.
+
+		requestGenerator.setResource(s, n);
+		
                 requestGenerator.GenerateCopy( null, true, true );
                 requestGenerator.execute();
             }
@@ -377,6 +477,9 @@ public class Main extends JFrame
                 String dirname = selectName( title, prompt );
                 if( dirname != null )
                 {
+		    WebDAVTreeNode n = fileView.getParentNode();
+		    requestGenerator.setNode(n);
+		    
                     requestGenerator.GenerateMkCol( treeView.getCurrentPath(), dirname );
                     requestGenerator.execute();
                 }
@@ -431,6 +534,11 @@ public class Main extends JFrame
             }
             else if (command.equals("View Lock Properties"))
             {
+// Yuzo test to stop repeat 
+		String s = fileView.getSelected();
+		WebDAVTreeNode n = fileView.getParentNode();
+		requestGenerator.setResource(s, n);
+		
                 requestGenerator.DiscoverLock("display");
             }
             else if (command.equals("Refresh"))
@@ -471,9 +579,13 @@ public class Main extends JFrame
     {
         JOptionPane pane = new JOptionPane();
         String str = new String("Are you sure?");
-        int opt = pane.showConfirmDialog( WebDAVFrame, str, "Delete File", JOptionPane.YES_NO_OPTION );
-        if (opt == JOptionPane.YES_OPTION)
+        int opt = pane.showConfirmDialog( WebDAVFrame, str,"Delete File",JOptionPane.YES_NO_OPTION);
+        if (opt == JOptionPane.YES_OPTION){
+	    String s = fileView.getSelected();
+	    WebDAVTreeNode n = fileView.getParentNode();
+	    requestGenerator.setResource(s, n);
             requestGenerator.DiscoverLock("delete");
+	}
     }
 
     protected void lockDocument()
@@ -488,8 +600,10 @@ public class Main extends JFrame
 
     protected void viewProperties()
     {
+	String s = fileView.getSelected();
+	requestGenerator.setResource(s, null);
         requestGenerator.setExtraInfo("properties");
-        requestGenerator.GeneratePropFind(null,"allprop","zero",null,null);
+        requestGenerator.GeneratePropFind(null,"allprop","zero",null,null,false);
         requestGenerator.execute();
     }
 

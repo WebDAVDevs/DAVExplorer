@@ -66,10 +66,12 @@ public class WebDAVRequestGenerator implements Runnable
     private static String StrippedResource = "";
     private static NVPair[] Headers = null;
     private static byte[] Body = null;
-    private static String Extra = "";
+    private static String Extra = new String();
     private static String User = "";
     private static String Password = "";
     private static JFrame mainFrame;
+
+    private WebDAVTreeNode Node = null;
 
     private static Vector listeners = new Vector();
     
@@ -104,30 +106,57 @@ public class WebDAVRequestGenerator implements Runnable
     
     public void tableSelectionChanged(ViewSelectionEvent e)
     {
+System.out.println("In tableSelectionChanged");
         if (e.getNode() != null)
         {
             return;
         }
         else
         {
-            tableResource = e.getPath();
+            tableResource = (String)e.getPath().toString();
+System.out.println("tableResource =" + tableResource +", Path length=" + Path.length() );
             if (Path.length() == 0)
             {
                 ResourceName = tableResource;
             }
             ResourceName = Path + tableResource;
+System.out.println("ResouceName =" + ResourceName );
         }
     }
+
+//Yuzo
+//SetResourceName to the value
+    public void setResource(String name, WebDAVTreeNode node){
+	tableResource = name;
+	if (Path.length() == 0){
+	    ResourceName = new String(name);
+	} else {
+	    ResourceName = Path + new String(name);
+	}
+
+	Node = node;
+System.out.println("in setResourceName, ResourceName =" + ResourceName
+	+ "Path=" + Path +", node =" + node);
+
+    }
+
+    public void setNode( WebDAVTreeNode node ) {
+	Node = node;
+    }
+
 
     public void treeSelectionChanged(ViewSelectionEvent e)
     {
         String Item;
-        Path = e.getPath();
+        Path = (String)e.getPath().toString();
         ResourceName = Path + "/";
 
+System.out.println("***treeSelectionChanged: path is=" + Path);
         if (Path.startsWith(WebDAVPrefix))
         {
+System.out.println("***treeSelectionChanged, WebDAVPrefix: path is=" + Path);
         }
+
     }
 
     public boolean parseResourceName()
@@ -143,6 +172,7 @@ public class WebDAVRequestGenerator implements Runnable
             return false;
         }
         String stripped = ResourceName.substring(WebDAVPrefix.length());
+System.out.println("calling parseStripped on:" + stripped);
         return parseStripped( stripped );
     }
 
@@ -232,11 +262,13 @@ public class WebDAVRequestGenerator implements Runnable
             newHeaders[Headers.length] = new NVPair( "User-Agent", userAgent );
             Headers = newHeaders;
         }
-        WebDAVRequestEvent e = new WebDAVRequestEvent(this, Method,HostName,Port,StrippedResource,
-                          Headers, Body, Extra, User, Password);
+        WebDAVRequestEvent e = new WebDAVRequestEvent(this, Method,HostName,Port,StrippedResource, Headers, Body, Extra, User, Password, Node);
+	Node = null;
         for (int i=0;i<ls.size();i++)
         {
             WebDAVRequestListener l = (WebDAVRequestListener) ls.elementAt(i);
+System.out.println("RUN in WebDAVRequestGenerator:WebDAVRequestListener:"
+		+ l + ":number" + i);
             l.requestFormed(e); 
         }
     }
@@ -259,17 +291,45 @@ public class WebDAVRequestGenerator implements Runnable
 
         prop[0] = new String("lockdiscovery");
         schema[0] = new String(WebDAVProp.DAV_SCHEMA);
-        GeneratePropFind(null,"prop","zero",prop,schema);
+        GeneratePropFind(null,"prop","zero",prop,schema, false);
         execute();
     }
 
-    public synchronized void GeneratePropFind(String FullPath, String command, String Depth, String[] props, String[] schemas)
+    public synchronized void GeneratePropFindForNode(	String FullPath, 
+							String command, 
+							String Depth, 
+							String[] props, 
+							String[] schemas, 
+							boolean flag,
+						WebDAVTreeNode n )
+    {
+	Node = n;
+	GeneratePropFind( FullPath, command, Depth, props, schemas, flag);
+    }
+
+    public synchronized void GeneratePropFind(String FullPath, String command, String Depth, String[] props, String[] schemas, boolean flagGetFilesBelow )
     {
         Headers = null;
         Body = null;
 
+System.out.println("ResourceName at begin of Propfind=" + ResourceName);
         boolean ok;
-        if (FullPath != null)
+	if (flagGetFilesBelow){  // In this case, loadChildren Flags 
+				// this boolean in order to have 
+				// the ResourceName be set to the FullPath.
+				// This is to ensure that Expanding a non
+				// selected tree node will actually have the 
+				// properties of the children of the node
+				// loaded into our tree.
+	    if (ResourceName.equals(FullPath)){
+		Extra = "index";
+	    } else {
+		Extra = "expand";
+	    }
+	    ResourceName = FullPath;
+	    parseResourceName();
+	    ok = true;
+        } else if (FullPath != null)
         {
             ok = parseStripped( FullPath );
         }
@@ -282,6 +342,7 @@ public class WebDAVRequestGenerator implements Runnable
             ok = parseResourceName();
         }
 
+System.out.println("ResourceName=" + ResourceName);
         if (!ok)
         {
             errorMsg( "Error Generating PROPFIND Method for " + StrippedResource );
@@ -590,6 +651,8 @@ public class WebDAVRequestGenerator implements Runnable
   
     public synchronized void GenerateDelete(String lockToken)
     {
+System.out.println("GenerateDlete for token =" + lockToken );
+
         Headers = null;
         Body = null;
 
@@ -620,6 +683,7 @@ public class WebDAVRequestGenerator implements Runnable
     {
         Headers = null;
         Body = null;
+
 
         ResourceName = destDir;
         if (!parseResourceName())
@@ -690,6 +754,12 @@ public class WebDAVRequestGenerator implements Runnable
     {
         Headers = null;
         Body = null;
+	System.out.println("GenerateCopy: ResourceName =" + ResourceName );
+	System.out.println("GenerateCopy: StrippedResource =" + StrippedResource);
+	System.out.println("GenerateCopy: Host =" + HostName);
+	System.out.println("GenerateCopy: Port =" + Port);
+	System.out.println("GenerateCopy: Dest =" + Dest );
+	Extra = "copy"; //Yuzo added
 
         if (!parseResourceName())
         {
@@ -698,6 +768,7 @@ public class WebDAVRequestGenerator implements Runnable
         }  
 
         String ow = (Overwrite) ? "T" : "F";
+
         if (Dest == null)
         {
             if( StrippedResource.endsWith( "/" ) )
@@ -706,13 +777,20 @@ public class WebDAVRequestGenerator implements Runnable
                 Dest = StrippedResource;
             Dest = Dest + "_copy";
         }
-         if( Port==0 || Port==DEFAULT_PORT )
+
+        if( Port==0 || Port==DEFAULT_PORT )
             Dest = HostName + Dest;
         else            
-            Dest = HostName + ":" + Port + Dest;
+            Dest = HostName + ":" + Port + Dest ;
+            //Dest =  HostName + ":" + Port + StrippedResource + "/" + Dest + "_copy" ;
+	
+
         if( !Dest.startsWith(WebDAVPrefix) )
             Dest = WebDAVPrefix + Dest;
 
+	System.out.println("GenerateCopy: Dest=" + Dest);
+	System.out.println("GenerateCopy: KeepAlive=" + KeepAlive);
+	
         Method = "COPY";
         Body = null;
         if (KeepAlive)
@@ -741,6 +819,20 @@ public class WebDAVRequestGenerator implements Runnable
             try
             {
                 miniDoc.save(xml_out);
+	/*
+		
+	XMLOutputStream out = new XMLOutputStream(System.out);
+            try
+            {
+                miniDoc.save(out);
+            }
+            catch (Exception e)
+            {
+            }
+*/
+
+		
+
                 Body = byte_str.toByteArray();
 
                 Headers = new NVPair[5];

@@ -60,12 +60,20 @@ public class WebDAVTreeNode extends DefaultMutableTreeNode {
   protected DataNode dataNode;
   protected static WebDAVRequestGenerator generator = new WebDAVRequestGenerator();
   protected static WebDAVResponseInterpreter interpreter = new WebDAVResponseInterpreter();
+
+    protected boolean childrenLoaded = false;
+
   public WebDAVTreeNode (Object o) {
     super(o);
+System.out.println("%%child " + o.toString() + " created..");
+    hasLoaded = true;
   }
+
   public WebDAVTreeNode (Object o, boolean isRoot) {
     super(o);
     hasLoaded = true;
+    childrenLoaded = true;
+System.out.println("%%%%child " + o.toString() + " created..");
     dataNode = new DataNode(true,false,null, o.toString(),"WebDAV Root Node","",0,"",null);
   }
   
@@ -81,8 +89,23 @@ public class WebDAVTreeNode extends DefaultMutableTreeNode {
   }
 
 
+// Yuzo
+    public boolean hasLoadedChildren(){
+	return childrenLoaded;
+    }
+
+    public void setHasLoadedChildren( boolean b){
+System.out.println("Setting setHasLoadedChildren to=" + b + " for node =" + this);
+	childrenLoaded = b;
+    }
+
+
+
+
+// Yuzo Note They did this function wrong 
   public void removeChildren() {
 
+System.out.println("removeChildren() calling getChildCount()");
     int count = super.getChildCount();
     for (int c=0;c<count;c++) {
       remove(0);
@@ -90,31 +113,25 @@ public class WebDAVTreeNode extends DefaultMutableTreeNode {
   }
 
   public int getChildCount() {
-     
-     if ( (hasLoaded) && (interpreter.Refreshing()) ) {
-       Object[] full_path = getPath();
-       if (full_path.length > 1) {      
-         removeChildren();
-         dataNode = null;
-         hasLoaded = false;
-         interpreter.clearStream();
-       }
-       interpreter.ResetRefresh();
-     }
-     else if (hasLoaded){
-       return super.getChildCount();
-     }
-
-    if( !hasLoaded )
-    {
-      	loadChildren();
-    }
-
+System.out.println("$$getChildCount =" + super.getChildCount());
     return super.getChildCount();
   }
 
+
+
+
+
   protected void loadRemote(byte[] byte_xml) {
 
+System.out.println("loadRemote called");
+/*
+if ((byte_xml != null) && (byte_xml.length > 0)){
+for (int i = 0; i < byte_xml.length; i++){
+System.out.print((char)byte_xml[i]);
+}
+System.out.println();
+}
+*/
     Vector nodesChildren = new Vector();
     Document xml_doc = null; 
     Element multiElem = null;
@@ -127,14 +144,20 @@ public class WebDAVTreeNode extends DefaultMutableTreeNode {
 
 
     try {
+System.out.println("$1:");
       ByteArrayInputStream byte_in = new ByteArrayInputStream(byte_xml);
+System.out.println("$2:");
       EscapeInputStream iStream = new EscapeInputStream( byte_in, true );
       XMLInputStream xml_in = new XMLInputStream( iStream );
+System.out.println("$3:");
       xml_doc = new Document();
+System.out.println("$4:");
       xml_doc.load(xml_in);
     }
     catch (Exception inEx) {
+System.out.println("Exception:" + inEx);
       dataNode = null;
+System.out.println("SETTING hasLoaded to FALSE!!!!!!!");
       hasLoaded = false;
       interpreter.clearStream();
       return;
@@ -142,6 +165,7 @@ public class WebDAVTreeNode extends DefaultMutableTreeNode {
 
     Enumeration docEnum = xml_doc.getElements();
     while (docEnum.hasMoreElements()) {
+System.out.print("*");
       multiElem = (Element) docEnum.nextElement();
       Name multiTag = multiElem.getTagName();
       if (multiTag == null)
@@ -152,8 +176,10 @@ public class WebDAVTreeNode extends DefaultMutableTreeNode {
       break;
     } 
     if (found) { 
+System.out.println("*loadRemote path  FOUND");
       Enumeration multiEnum = multiElem.getElements(); 
       while (multiEnum.hasMoreElements()) {
+System.out.print("*");
         respElem = (Element) multiEnum.nextElement();
         Name respTag = respElem.getTagName();
         if (respTag == null)
@@ -162,9 +188,12 @@ public class WebDAVTreeNode extends DefaultMutableTreeNode {
           continue;
 	parseResponse(respElem, ResourceName, nodesChildren);
       } 
+System.out.println();
     }
     else {
+System.out.println("*loadRemote path NOT  FOUND");
       dataNode = null;
+System.out.println("SETTING hasLoaded to FALSE!!!!!!!");
       hasLoaded = false;
     }
     interpreter.clearStream();
@@ -173,11 +202,29 @@ public class WebDAVTreeNode extends DefaultMutableTreeNode {
       dataNode.setSubNodes(nodesChildren);
       hasLoaded = true;
     }
+	//Yuzo added:
+      hasLoaded = true;
+
+int s= nodesChildren.size();
+System.out.println("dataNodesChildren:" + s);
+for (int j = 0; j < s ; j++){
+	System.out.println("   NodesChildren=" + nodesChildren.elementAt(j) );
+}
+System.out.println("NodesChildren:" + s);
+Enumeration childNodes = this.children();
+while ( childNodes.hasMoreElements()){
+    int count = 1;
+    WebDAVTreeNode tn = (WebDAVTreeNode)childNodes.nextElement();
+    System.out.println("   " + count++ + ": " + (String)tn.getUserObject() );
+}
+System.out.println("At end of loadRemote, hasLoaded=" + hasLoaded);
+
   }
 
 
-  public void parseResponse(Element respElem, String ResourceName, Vector nodesChildren) {
+  protected void parseResponse(Element respElem, String ResourceName, Vector nodesChildren) {
 
+System.out.println("parseResponse");
 
     Enumeration respEnum = respElem.getElements();
     
@@ -227,7 +274,7 @@ public class WebDAVTreeNode extends DefaultMutableTreeNode {
   }
 
 
-  public void parseProps(Element propElem, String ResourceName, String resName, String fullName, Vector nodesChildren) {
+  protected void parseProps(Element propElem, String ResourceName, String resName, String fullName, Vector nodesChildren) {
 
       boolean isColl, isLocked, done;
       int leftToFind;
@@ -241,6 +288,8 @@ public class WebDAVTreeNode extends DefaultMutableTreeNode {
       resDate = new String("");
       done = false;
       leftToFind = 6;
+
+System.out.println("**&&parseProps called");
 
           Enumeration enumProps = propElem.getElements();
 	  
@@ -388,6 +437,7 @@ public class WebDAVTreeNode extends DefaultMutableTreeNode {
       }
   }
   protected void loadLocal(String name, Object[] full_path) {
+System.out.println("loadLocal called");
 
      String fileName = name;
      for (int i=2;i<full_path.length;i++)
@@ -432,6 +482,7 @@ System.out.println(e);
                                             f.length(),fileDate.toLocaleString(), nodesChildren);
      }
      else {
+System.out.println("SETTING hasLoaded to FALSE!!!!!!!");
 	hasLoaded = false;
         //System.out.println("ERROR: invalid directory");
 	dataNode = null;
@@ -440,33 +491,83 @@ System.out.println(e);
      hasLoaded = true;
   }
 
-  protected void loadChildren() {
+    // This finishes the Load Children when a call is made to a 
+    // DAV server
+    public void finishLoadChildren(){
+
+
+
+System.out.println("CONTINUING in finishLoadChildren:1");
+	byte[] byte_xml = interpreter.getXML();
+System.out.println("CONTINUING in finishLoadChildren:2");
+        loadRemote(byte_xml);
+System.out.println("CONTINUING in finishLoadChildren:3");
+    	interpreter.ResetRefresh();
+    }
+
+  public void loadChildren() {
 
     Object[] full_path = getPath();
+System.out.println("loadChildren called");
     if( full_path == null || full_path.length <= 1 )
         return;
         
     String name = full_path[1].toString();
     if (name.startsWith(WebDAVPrefix)) {
+System.out.println("Path, loadChildren name has WebDAVprefix");
       byte[] byte_xml = interpreter.getXML();
       if (byte_xml == null)  {
+System.out.println("Path, loadChildren byte_xml == null");
+System.out.println("SETTING hasLoaded to FALSE!!!!!!!");
     	hasLoaded = false;
     	dataNode = null;
         interpreter.ResetRefresh();
         generator.setExtraInfo("index");
-        generator.GeneratePropFind(null,"allprop","one",null,null);
-        generator.execute();
-        byte_xml = interpreter.getXML();
-        loadRemote(byte_xml);
+
+	String pathToResource = name;
+	for (int i=2; i < full_path.length; i++){
+	    pathToResource = pathToResource + "/" + full_path[i].toString(); 
+	}
+	pathToResource = pathToResource + "/";
+	
+        generator.GeneratePropFindForNode(pathToResource,"allprop","one",null,null, true, this);
+        //generator.execute();
+        generator.run();
+
         return;
-      }	 
-      else {
+      }	 else {
+System.out.println("Path, loadChildren byte_xml NOT null");
+
+	// This is that case of the Select/Expand being called to a new DAV Server.
+	// The buffer should have data in it via the response.
+	// This should change in the future, as processing here is 
+	// unsafe -- the thread that gets the buffer may not be finished yet.
+
+    	interpreter.clearStream();  // Added to finish after lock/unlock
+
+    	hasLoaded = false;
+    	dataNode = null;
+        interpreter.ResetRefresh();
+        generator.setExtraInfo("index");
+
+	String pathToResource = name;
+	for (int i=2; i < full_path.length; i++){
+	    pathToResource = pathToResource + "/" + full_path[i].toString(); 
+	}
+	pathToResource = pathToResource + "/";
+	
+        generator.GeneratePropFindForNode(pathToResource,"allprop","one",null,null, true, this);
+        //generator.execute();
+        generator.run();
+	/*
         loadRemote(byte_xml);
     	interpreter.clearStream();
     	interpreter.ResetRefresh();
+	*/
       }
     }    
     else {
+System.out.println("Path, loadChildren name NOT WebDAVprefix");
       loadLocal(name,full_path);
     }
   }

@@ -36,7 +36,7 @@
 // Date: 3/17/99
 //
 // Change List:
-//  1. Added support for nested namespaces
+
 
 package WebDAV;
 
@@ -138,7 +138,7 @@ public class AsGen
         byte[] byte_str = str.getBytes();
         if (str.endsWith("Z"))
         {
-            byte_str[len-1] = 'A';
+            byte_str[len-1] = (byte)'A';
             boolean found = false;
             boolean append = true;
             int i = len-2;
@@ -151,7 +151,7 @@ public class AsGen
                 }
                 else
                 {
-                    byte_str[i] = 'A';
+                    byte_str[i] = (byte)'A';
                 }
                 i--;
             }

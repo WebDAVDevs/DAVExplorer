@@ -37,6 +37,7 @@
 // Date: 3/17/99
 //
 // Change List:
+// 1. Added the WebDAVTreeNode that initiated the Request.
 
 
 package WebDAV;
@@ -56,9 +57,11 @@ public class WebDAVRequestEvent extends EventObject {
   private String User;
   private String Pass;
 
+  private WebDAVTreeNode node;
+
 
   public WebDAVRequestEvent(Object module, String MethodName, String HostName, int Port, String ResourceName,
-                                NVPair[] Headers, byte[] Body, String Extra, String User, String Pass) {
+                                NVPair[] Headers, byte[] Body, String Extra, String User, String Pass, WebDAVTreeNode n) {
 
     super(module);
     this.MethodName = MethodName;
@@ -70,6 +73,7 @@ public class WebDAVRequestEvent extends EventObject {
     this.Extra = Extra;
     this.User = User;
     this.Pass = Pass;
+    this.node =n;
 
   }
 
@@ -102,4 +106,8 @@ public class WebDAVRequestEvent extends EventObject {
   public String getExtraInfo() {
     return Extra;
   }
+
+    public WebDAVTreeNode getNode(){
+	return node;
+    }
 }
