@@ -1,6 +1,6 @@
 # Makefile for DAV Explorer
 #
-# Copyright (c) 1999-2001 Regents of the University of California.
+# Copyright (c) 1999-2005 Regents of the University of California.
 # All rights reserved.
 #
 # Redistribution and use in source and binary forms are permitted
@@ -31,57 +31,85 @@ JFLAGS   =
 
 ### all source files
 
-classes = AppletMain.class \
-	  AsGen.class \
-	  AuthDialog.class \
-	  CopyResponseEvent.class \
-	  CopyResponseListener.class \
-	  DataNode.class \
-	  EscapeInputStream.class \
-	  EscapeReader.class \
-	  GlobalData.class \
-	  JTreeTable.class \
-	  Main.class \
-	  ProgressBar.class \
-      PropAddDialog.class \
-	  PropDialog.class \
-      PropModel.class \
-      PropNode.class \
-	  PutEvent.class \
-	  PutListener.class \
-	  RelaxedX509TrustManager.class \
-	  SSLTrustDialog.class \
-	  TableMap.class \
-	  TableSorter.class \
-      TreeTableModel.class \
-      TreeTableModelAdapter.class \
-	  URIBox.class \
-	  URIContainer.class \
-	  ViewSelectionEvent.class \
-	  ViewSelectionListener.class \
-      WebDAVCompletionEvent.class \
-      WebDAVCompletionListener.class \
-	  WebDAVConnection.class \
-	  WebDAVFileView.class \
-	  WebDAVLockInfo.class \
-	  WebDAVLoginDialog.class \
-	  WebDAVManager.class \
-	  WebDAVMenu.class \
-	  WebDAVMenuListener.class \
-	  WebDAVProp.class \
-	  WebDAVProxyInfo.class \
-	  WebDAVRequestEvent.class \
-	  WebDAVRequestGenerator.class \
-	  WebDAVRequestListener.class \
-	  WebDAVResponseEvent.class \
-	  WebDAVResponseInterpreter.class \
-	  WebDAVResponseListener.class \
-	  WebDAVToolBar.class \
-	  WebDAVTreeNode.class \
-	  WebDAVTreeView.class \
-	  WebDAVURIBoxListener.class \
-	  WebDAVXML.class
-
+classes = ACLAddDialog.class \
+	ACLChangePrivilegesDialog.class \
+	ACLDialog.class \
+	ACLInheritedDialog.class \
+	ACLModel.class \
+	ACLNode.class \
+	ACLOwnerDialog.class \
+	ACLPrivilegesDialog.class \
+	ACLPropModel.class \
+	ACLPropertySearchModel.class \
+	ACLPropertySearchNode.class \
+	ACLReportChangeSearchPropertiesDialog.class \
+	ACLReportPropertiesDialog.class \
+	ACLReportSearchPropertyDialog.class \
+	ACLRequestGenerator.class \
+	ACLResponseInterpreter.class \
+	ACLRestrictionDialog.class \
+	ACLXML.class \
+	AppletMain.class \
+	AsGen.class \
+	AuthDialog.class \
+	ContentEncoding.class \
+	CopyResponseEvent.class \
+	CopyResponseListener.class \
+	DataNode.class \
+	DeltaVDataNode.class \
+	DeltaVProp.class \
+	DeltaVRequestGenerator.class \
+	DeltaVResponseInterpreter.class \
+	DeltaVXML.class \
+	EscapeInputStream.class \
+	EscapeReader.class \
+	GlobalData.class \
+	InsertionListener.class \
+	JTreeTable.class \
+	Main.class \
+	PrincipalPropertiesModel.class \
+	ProgressBar.class \
+	PropAddDialog.class \
+	PropDialog.class \
+	PropModel.class \
+	PropNode.class \
+	PutEvent.class \
+	PutListener.class \
+	RelaxedX509TrustManager.class \
+	ResponseException.class \
+	SSLTrustDialog.class \
+	TableMap.class \
+	TableSorter.class \
+	TransferEncoding.class \
+	TreeTableModel.class \
+	TreeTableModelAdapter.class \
+	URIBox.class \
+	URIContainer.class \
+	VersionInfoDialog.class \
+	ViewSelectionEvent.class \
+	ViewSelectionListener.class \
+	WebDAVCompletionEvent.class \
+	WebDAVCompletionListener.class \
+	WebDAVConnection.class \
+	WebDAVFileView.class \
+	WebDAVLockInfo.class \
+	WebDAVLoginDialog.class \
+	WebDAVManager.class \
+	WebDAVMenu.class \
+	WebDAVMenuListener.class \
+	WebDAVProp.class \
+	WebDAVProxyInfo.class \
+	WebDAVRequestEvent.class \
+	WebDAVRequestGenerator.class \
+	WebDAVRequestListener.class \
+	WebDAVResponseEvent.class \
+	WebDAVResponseInterpreter.class \
+	WebDAVResponseListener.class \
+	WebDAVToolBar.class \
+	WebDAVTreeNode.class \
+	WebDAVTreeView.class \
+	WebDAVURIBoxListener.class \
+	WebDAVXML.class
 
 ### targets 
 

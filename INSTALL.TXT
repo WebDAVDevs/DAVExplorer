@@ -8,13 +8,18 @@ Note: If not compiling from source, skip steps 1-3 and 5.
 If use of SSL is not required, step 4 can also be skipped.
 
 1. Login to the DAV Explorer Subversion archive with any Subversion client.
-   The Subversion archive is located at http://louvre.ics.uci.edu:8080/svn/DAVExplorer/
-   The username for the archive is "guest", the password is "guest".
+   The Subversion archive is located at
+   http://louvre.ics.uci.edu:8080/svn/DAVExplorer/
+   NOTE: the archive location may change in the near future, so be sure to check
+   the DAV Explorer download website http://www.ics.uci.edu/~webdav/download.html
+   for any changes.
 
 2. Navigate to your chosen source directory.
 
 3. Retrieve all DAV Explorer source files from the DAV Explorer Subversion
-   archive, from the trunk directory.
+   archive, from the trunk directory, using your favorite Subversion client tool.
+   The command line format:
+   svn checkout http://louvre.ics.uci.edu:8080/svn/DAVExplorer/trunk DAVExplorer
 
 4. If SSL support is required, retrieve the Java Secure Socket Extensions from
    http://java.sun.com/products/jsse/
@@ -40,4 +45,5 @@ If use of SSL is not required, step 4 can also be skipped.
    You can also run DAVExplorer by using the command 'java -jar DAVExplorer.jar'.
    For SSL support, run DAVExplorerSSL.bat or DAVExplorerSSL.sh, respectively.
    Alternatively, the command 'java -jar -Dssl=true DAVExplorer.jar' can be used.
+   SSL support can also be selected from the Edit menu.
    Under MacOS 9, you can use the provided MRJ wrapper DAVExplorer.bin.

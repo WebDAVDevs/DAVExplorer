@@ -87,9 +87,14 @@ http://www.ics.uci.edu/~webdav/download.html.
 
 The source files are also available via Subversion at
 http://louvre.ics.uci.edu:8080/svn/DAVExplorer/
-The username for the Subversion archive is "guest", the password is "guest".
-To retrieve the complete source tree, check out the trunk directory. 
-This account is read-only, please submit code patches to <dav-exp@ics.uci.edu>. 
+To retrieve the complete source tree, check out the trunk directory with your
+favorite Subversion client tool.
+The command line format:
+svn checkout http://louvre.ics.uci.edu:8080/svn/DAVExplorer/trunk DAVExplorer
+Anonymous access is read-only, please submit code patches to <dav-exp@ics.uci.edu>. 
+NOTE: the archive location may change in the near future, so be sure to check
+the DAV Explorer download website http://www.ics.uci.edu/~webdav/download.html
+for any changes.
 
 If the DAV Explorer jar file is created from the source, it has to be
 signed with the jarsigner tool before it can run as applet. The jar file
@@ -119,6 +124,7 @@ DAV Explorer accepts the following command line options:
   
 -DSSL=yes
   This option enables the use of SSL.
+  NOTE: SSL support can also be enabled through an entry in the Edit menu.
   
 -DSharePoint=yes
   This option enables a workaround for a bug in Microsoft's SharePoint
@@ -149,7 +155,7 @@ Thanks to everybody.
 Changes for version 0.91:
 - Re-Enabled authentication requests for PUT, broken by changing to streaming
   PUT data in 0.82 (thanks to Marc Richard for alerting us to the problem.)
-- Added support for proxy entry in applet settings (thanks to Luís Ferreira
+- Added support for proxy entry in applet settings (thanks to Lu?s Ferreira
   for the suggestion.)
 - Fixed usage of webpage-provided username/password for applet usage.
 - Added workaround for Documentum Modified-Date bug (their date strings
@@ -158,13 +164,14 @@ Changes for version 0.91:
 - Integrated John Barton's refactoring changes and drop support.
 - Added the -Dcompress option to disable accepting compressed data.
   This is a workaround for a bug in MS Exchange that results in corrupt
-  compressed data (thanks to Frédéric Esnouf for alerting us to the problem.)
+  compressed data (thanks to Fr?d?ric Esnouf for alerting us to the problem.)
 - Added handling of ISO 8601 Date strings. This is a workaround for a bug
   in MS Exchange, whose date strings in the <getlastmodified> tag uses the
   ISO 8601 format instead of the RFC 2616 format required by the WebDAV
-  RFC (thanks to Frédéric Esnouf for alerting us to the problem.)
+  RFC (thanks to Fr?d?ric Esnouf for alerting us to the problem.)
 - Fixed the charset handling and unencoding of data from the server.
-- ACL (RFC 3744) support.
+- Added Edit menu option to select SSL. The selection is persisted.
+- Added ACL (RFC 3744) support.
 
 Changes for version 0.90:
 - Bug fix in HTTPClient for PUT with Stream and Digest authentication.
