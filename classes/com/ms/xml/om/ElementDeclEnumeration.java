@@ -1,10 +1,10 @@
 /*
  * @(#)ElementDeclEnumeration.java 1.0 8/25/97
- * 
+ *
  * Copyright (c) 1997 Microsoft, Corp. All Rights Reserved.
- * 
+ *
  */
- 
+
 package com.ms.xml.om;
 
 import com.ms.xml.util.Name;
@@ -54,7 +54,7 @@ public class ElementDeclEnumeration implements Enumeration
     public Object nextElement()
     {
         Element elemDecl = (Element)elemDecls.nextElement();
-        
+
         return elemDecl.toSchema();
     }
 

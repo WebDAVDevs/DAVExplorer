@@ -1,10 +1,10 @@
 /*
  * @(#)ElementImpl.java 1.0 6/3/97
- * 
+ *
  * Copyright (c) 1997 Microsoft, Corp. All Rights Reserved.
- * 
+ *
  */
- 
+
 package com.ms.xml.om;
 
 import com.ms.xml.util.Attribute;
@@ -23,9 +23,9 @@ import java.util.Vector;
 import java.util.Enumeration;
 
 /**
- * This class represents the default implementation of the <code>Element</code> interface. 
- * These are 
- * created by the XML parser when using the default element factory. 
+ * This class represents the default implementation of the <code>Element</code> interface.
+ * These are
+ * created by the XML parser when using the default element factory.
  * @see Element
  * @see Parser
  * @see ElementFactory
@@ -39,19 +39,18 @@ public class ElementImpl implements Element
     {
         this(null, Element.ELEMENT);
     }
-    
+
     public ElementImpl(Name tag, int type)
     {
         this.tag = tag;
         this.type = type;
     }
 
-    /** 
+    /**
      * Retrieves the name of the tag as a string. The string
      * will be in uppercase.
-     * 
-     * @return the tag name or null for DATA and PCDATA elements. 
-     
+     *
+     * @return the tag name or null for DATA and PCDATA elements.
      */
     public Name getTagName()
     {
@@ -63,15 +62,15 @@ public class ElementImpl implements Element
      * This is always one of the following values:
      * <code>DOCUMENT</code>, <code>ELEMENT</code>, <code>PCDATA</code>, <code>PI</code>,
      * <code>META</code>, <code>COMMENT</code>, or <code>CDATA</code>.
-     * 
+     *
      * @return the element type.
-     */    
+     */
     public int getType()
     {
         return type;
     }
 
-     /** 
+     /**
      * Returns the non-marked-up text contained by this element.
      * For text elements, this is the raw data. For elements
      * with child nodes, this method traverses the entire subtree and
@@ -94,10 +93,10 @@ public class ElementImpl implements Element
             if (d != null)
             {
                 DTD dtd = d.getDTD();
-                if (dtd != null) 
+                if (dtd != null)
                 {
                     Element ent = dtd.findEntity(getTagName());
-                    if (ent != null) 
+                    if (ent != null)
                     {
                         return ent.getText();
                     }
@@ -119,28 +118,28 @@ public class ElementImpl implements Element
 
             return sb.toString();
         }
-        
+
         return "";
     }
-    
+
     /**
-     * Sets the text for this element. This text is Only meaningful in 
+     * Sets the text for this element. This text is Only meaningful in
      * <code>CDATA</code>, <code>PCDATA</code>, and <code>COMMENT</code> nodes.
      *
      * @param The text to set.
-     */    
+     */
     public void setText(String text)
     {
         // No restrictions here, so that subclasses can use this.
         this.text = text;
     }
 
-    /** 
-     * Retrieves the parent of this element. 
+    /**
+     * Retrieves the parent of this element.
      * Every element in the tree except the Document object  itself, has
-     * a parent.  
+     * a parent.
      *
-     * @return the parent element or null if  the element is at the root of 
+     * @return the parent element or null if  the element is at the root of
      * the tree.
      */
     public Element getParent()
@@ -151,7 +150,7 @@ public class ElementImpl implements Element
     /**
      * Sets the parent of this element.
      * @param parent The element to set as the parent.
-      * @return No return value.
+     * @return No return value.
      */
     public void setParent(Element parent)
     {
@@ -162,8 +161,8 @@ public class ElementImpl implements Element
     /**
      * Returns an enumeration of the children of this element.
      * <code>Enumeration.nextElement</code> returns <code>Element</code> objects.
-     * 
-     * @return an enumeration of child objects. It must not return null. 
+     *
+     * @return an enumeration of child objects. It must not return null.
      * See <code>EnumWrapper<code> for an easy way to return an empty enumeration.
      */
     public Enumeration getElements()
@@ -174,11 +173,9 @@ public class ElementImpl implements Element
 
     /**
      * Returns an element collection of the children of this element.
-     * This method must not return null. 
-     * See <code>EnumWrapper</code> for an empty enumeration. 
-     
-     * @return element collection of child objects. 
-     
+     * This method must not return null.
+     * See <code>EnumWrapper</code> for an empty enumeration.
+     * @return element collection of child objects.
      */
     public ElementCollection getChildren()
     {
@@ -206,13 +203,12 @@ public class ElementImpl implements Element
     /**
      * Adds a child to this element. Any element can only
      * have one parent element, and so the previous parent will lose this child
-     * from its subtree.  
-     
-     * @param elem  The element to add.      
+     * from its subtree.
+     * @param elem  The element to add.
      * The child element becomes the last element if <i>after</i> is null.
      * The child is added to the beginning of the list if <i>after</i> is this object.
      * @param after  The element after which to add it.
-      * @return No return value.
+     * @return No return value.
      */
     public void addChild(Element elem, Element after)
     {
@@ -236,13 +232,13 @@ public class ElementImpl implements Element
     }
 
     /**
-     * Adds a child to this element. 
+     * Adds a child to this element.
      * @param elem The element to add.
-     * @param pos  The position to add this element (calling <code>getChild(pos)</code> 
-     * will return this element). If <i>pos</i> is less than 0, <i>elem</i> becomes 
+     * @param pos  The position to add this element (calling <code>getChild(pos)</code>
+     * will return this element). If <i>pos</i> is less than 0, <i>elem</i> becomes
      * the new last element.
      * @param reserved The reserved parameter.
-      * @return No return value.
+     * @return No return value.
      */
     public void addChild(Element elem, int pos, int reserved)
     {
@@ -258,10 +254,10 @@ public class ElementImpl implements Element
       * Retrieves the child element by index.
       * @param index The index of the child element.
       * @return null if there is no child by that index.
-      */   
+      */
     public Element getChild(int index)
     {
-        if (children != null && index >= 0 && index < children.size()) 
+        if (children != null && index >= 0 && index < children.size())
         {
             try {
                 return (Element)children.elementAt(index);
@@ -275,7 +271,7 @@ public class ElementImpl implements Element
       * Removes a child element from the tree.
       * @return No return value.
       * @param elem  The element to remove.
-      */   
+      */
     public void removeChild(Element elem)
     {
         if (children != null)
@@ -284,12 +280,12 @@ public class ElementImpl implements Element
             children.removeElement(elem);
         }
     }
-    
+
     /**
      * Retrieves an enumeration for the element attributes.
-     * 
+     *
      * The enumeration returns <code>Attribute</code> objects.
-     * @return the enumeration. 
+     * @return the enumeration.
      * This method must not return null (see <code>EnumWrapper</code>
      * for returning empty enumerations).
      * @see Attribute
@@ -303,9 +299,9 @@ public class ElementImpl implements Element
     /**
      * Retrieves an attribute's value given its name.
      * @param name The name of the attribute.
-     * @return the value of the attribute; returns 
+     * @return the value of the attribute; returns
      * null if the attribute is not found.
-     */    
+     */
     public Object getAttribute(String name)
     {
         return getAttribute(qualifyName(name));
@@ -314,9 +310,9 @@ public class ElementImpl implements Element
     /**
      * Retrieves an attribute's value given its name.
      * @param name The name of the attribute.
-     * @return the value of the attribute; returns 
+     * @return the value of the attribute; returns
      * null if the attribute is not found.
-     */    
+     */
     public Object getAttribute(Name attrName)
     {
         Object obj = null;
@@ -326,14 +322,14 @@ public class ElementImpl implements Element
         }
         return obj;
     }
-    
+
     /**
-     * Sets the attribute of this element.    
+     * Sets the attribute of this element.
      *
      * @param name  The attribute name.
      * @param value The attribute value.
      * @return any previous value, if any.
-     */    
+     */
     public void setAttribute(String name, Object value)
     {
         setAttribute(qualifyName(name), value);
@@ -342,17 +338,17 @@ public class ElementImpl implements Element
     /**
      * Deletes an attribute from an element.
      * @param name The attribute to delete.
-      * @return No return value.
-     */    
+     * @return No return value.
+     */
     public void removeAttribute(String name)
     {
         removeAttribute(qualifyName(name));
     }
-    
+
     /**
      * Deletes an attribute from an element.
-     * @param attrName The attribute name to delete. 
-     */    
+     * @param attrName The attribute name to delete.
+     */
     public void removeAttribute(Name attrName)
     {
         if (attrlist != null)
@@ -360,24 +356,24 @@ public class ElementImpl implements Element
             attrlist.remove(attrName);
         }
     }
-    
+
     /**
      * Retrieves the string representation of this element.
      * @return a string representing the element.
      */
     public String toString()
     {
-        return getClass().getName() + "[tag=" + tag + 
-            ",type=" + type + 
+        return getClass().getName() + "[tag=" + tag +
+            ",type=" + type +
             ",text=" + text + "]";
     }
 
     /**
-     * Sets the attribute of this element.    
+     * Sets the attribute of this element.
      *
-     * @param attrName The attribute name. 
+     * @param attrName The attribute name.
      * @param value The attribute value.
-     */    
+     */
     public void setAttribute(Name attrName, Object value)
     {
         if (attrlist == null)
@@ -386,7 +382,7 @@ public class ElementImpl implements Element
         }
         attrlist.put(attrName, value);
     }
-    
+
     /**
      * Removes child nodes and attributes.
      */
@@ -397,7 +393,7 @@ public class ElementImpl implements Element
         text = null;
         parent = null;
         if (attrlist != null)
-            attrlist.removeAll(); 
+            attrlist.removeAll();
     }
 
     /**
@@ -405,7 +401,7 @@ public class ElementImpl implements Element
      */
     public void saveAttributes(Atom ns, XMLOutputStream o) throws IOException
     {
-        for (Enumeration en = getAttributes(); en.hasMoreElements(); ) 
+        for (Enumeration en = getAttributes(); en.hasMoreElements(); )
         {
             Attribute a = (Attribute)en.nextElement();
             Name n = a.getName();
@@ -432,13 +428,13 @@ public class ElementImpl implements Element
                 o.write('\"');
                 for (Enumeration av = v.elements(); av.hasMoreElements();)
                 {
-                    Name avn = (Name)av.nextElement();                    
+                    Name avn = (Name)av.nextElement();
                     if (qualified)
                         o.writeQualifiedName(avn, ns);
                     else
                         o.writeChars(avn.toString());
                     if (av.hasMoreElements())
-                        o.write(' ');    
+                        o.write(' ');
                 }
                 o.write('\"');
             }
@@ -448,13 +444,13 @@ public class ElementImpl implements Element
     }
 
     /**
-    * Determines if the attribute is qualified. 
-     * @param attr The name of the attribute.
-     * @param dtd The Document Definition Type (DTD) in which the attribute 
-     * is found.
-     * @return true if the attribute is qualified; otherwise, returns false.
-      * 
-     */
+    * Determines if the attribute is qualified.
+    * @param attr The name of the attribute.
+    * @param dtd The Document Definition Type (DTD) in which the attribute
+    * is found.
+    * @return true if the attribute is qualified; otherwise, returns false.
+    *
+    */
     public boolean isAttributeQualified(Name attr, DTD dtd)
     {
         if (dtd != null) {
@@ -496,9 +492,9 @@ public class ElementImpl implements Element
         Name tagName = getTagName();
         if (parent != null && parent.getTagName() != null && parent.getTagName().getNameSpace() != null) {
 //            o.writeQualifiedName(tagName, parent.getTagName().getNameSpace());
-	      
-	     o.writeQualifiedName(tagName, Atom.create("")); 
-	} else if (tagName.getNameSpace() != null) {
+
+         o.writeQualifiedName(tagName, Atom.create(""));
+    } else if (tagName.getNameSpace() != null) {
             o.writeQualifiedName(tagName, Atom.create(""));
         } else {
             o.writeChars(tagName.getName());
@@ -508,7 +504,7 @@ public class ElementImpl implements Element
     /**
      * Saves the element in XML format.
      * @param o The output stream to save to.
-     * @exception IOException if an error occurs when writing to the output 
+     * @exception IOException if an error occurs when writing to the output
      * stream.
      * @return No return value.
      */
@@ -528,7 +524,7 @@ public class ElementImpl implements Element
                 {
                     int oldStyle = -1;
                     boolean wasmixed = o.mixed;
-                    if (tag != null) 
+                    if (tag != null)
                     {
                         o.writeChars("<");
                         // Write out the tag name
@@ -539,22 +535,22 @@ public class ElementImpl implements Element
                         Object v = getAttribute(nameXMLSPACE);
                         String value = null;
                         if (v != null) value = v.toString();
-                        if (value != null) 
+                        if (value != null)
                         {
                             oldStyle = o.getOutputStyle();
                             boolean preserveWS = value.equalsIgnoreCase("preserve");
-                            o.setOutputStyle(preserveWS ? XMLOutputStream.COMPACT : 
+                            o.setOutputStyle(preserveWS ? XMLOutputStream.COMPACT :
                                 XMLOutputStream.PRETTY);
-                        }    
+                        }
                         // Write the close start tag.
                         if (numElements() > 0)
                         {
-                            o.write('>');                            
+                            o.write('>');
                         }
                         else
                         {
                             o.writeChars("/>");
-                        }                                                
+                        }
                     }
                     // find out if this is a mixed element.
                     ElementEnumeration ee = null;
@@ -578,13 +574,13 @@ public class ElementImpl implements Element
                     }
                     o.nameSpaceContext.pop();
                     o.addIndent(-1);
-                    if (tag != null && numElements() > 0) 
-                    {                        
+                    if (tag != null && numElements() > 0)
+                    {
                         o.writeIndent();
                         o.writeChars("</");
                         writeTagName(o);
                         o.writeChars(">");
-                        if (oldStyle != -1) 
+                        if (oldStyle != -1)
                         {
                             o.setOutputStyle(oldStyle);
                         }
@@ -609,7 +605,7 @@ public class ElementImpl implements Element
                 o.writeNewLine();
                 break;
             case Element.ENTITYREF:
-                if (o.savingDTD) 
+                if (o.savingDTD)
                 {
                     o.write('%');
                 }
@@ -633,7 +629,7 @@ public class ElementImpl implements Element
                 o.writeNewLine();
                 // record name space context
                 Atom as, href;
-                
+
                 as = Atom.create(getAttribute(nameXMLAS).toString());
                 href = Atom.create(getAttribute(nameXMLHREF).toString());
                 o.nameSpaceContext.addNameSpace(href, as);
@@ -703,10 +699,10 @@ public class ElementImpl implements Element
     }
 
     Atom getNamespace(String str)
-    {   
+    {
         Atom name = Atom.create(str);
         Document d = getDocument();
-        if (d != null) 
+        if (d != null)
         {
             DTD dtd = d.getDTD();
             if (dtd != null)
@@ -721,14 +717,14 @@ public class ElementImpl implements Element
 
     Document getDocument()
     {
-        if (doc == null) 
+        if (doc == null)
         {
             Element e = this;
-            while (e.getParent() != null) 
+            while (e.getParent() != null)
             {
                 e = e.getParent();
             }
-            if (e instanceof Document) 
+            if (e instanceof Document)
             {
                 doc = (Document)e;
             }
@@ -743,32 +739,32 @@ public class ElementImpl implements Element
 
     /**
      * type of element.
-     */    
+     */
     int type;
-    
+
     /**
      * Text for element.
-     */    
+     */
     String text;
-    
+
     /**
      * Parent of element.
-     */    
-    Element parent;    
-    
+     */
+    Element parent;
+
     /**
      * Children element list.
-     */    
-    Vector children; 
+     */
+    Vector children;
 
     /**
      * Cached pointer to owning Document
      */
     Document doc;
-    
+
     /**
      * The attribute list.
-     * 
+     *
      */
     protected Attributes attrlist;
 

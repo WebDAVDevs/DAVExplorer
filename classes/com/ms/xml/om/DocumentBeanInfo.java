@@ -12,24 +12,24 @@ public class DocumentBeanInfo extends SimpleBeanInfo {
         Document.class;
 
 /**
- * Returns the method descriptions for the methods that are 
+ * Returns the method descriptions for the methods that are
  * to be made available through scripting.
  * @return an array of <code>MethodDescriptor</code> objects.
 */
-    public MethodDescriptor[] getMethodDescriptors() 
+    public MethodDescriptor[] getMethodDescriptors()
     {
         // First find the "method" objects.
         Method addChildMethod;
         Method removeChildMethod;
-        Method createElement1Method;  
-        Method createElement2Method;  
-        Method parsedMethod;  
-        Method loadMethod;  
-//        Method reportErrorMethod;  
-//        Method createOutputStreamMethod;  
-//        Method saveMethod;  
-        Method elementDeclarationsMethod;  
-        Method clearMethod;  
+        Method createElement1Method;
+        Method createElement2Method;
+        Method parsedMethod;
+        Method loadMethod;
+//        Method reportErrorMethod;
+//        Method createOutputStreamMethod;
+//        Method saveMethod;
+        Method elementDeclarationsMethod;
+        Method clearMethod;
 
         Class args[] = { };
         Class addChildArgs[] = { Element.class, Element.class };
@@ -52,7 +52,7 @@ public class DocumentBeanInfo extends SimpleBeanInfo {
 //            createOutputStreamMethod = Document.class.getMethod("createOutputStream", createOutputStreamArgs);
 //            saveMethod = Document.class.getMethod("save", saveArgs);
             elementDeclarationsMethod = Document.class.getMethod("elementDeclarations", args);
-            clearMethod = Document.class.getMethod("clear", args);        
+            clearMethod = Document.class.getMethod("clear", args);
         } catch (Exception ex) {
             // "should never happen"
             throw new Error("Missing method: " + ex);
@@ -60,7 +60,7 @@ public class DocumentBeanInfo extends SimpleBeanInfo {
 
         // Now create the MethodDescriptor array
         // with visible event response methods:
-        MethodDescriptor result[] = { 
+        MethodDescriptor result[] = {
             new MethodDescriptor(addChildMethod),
             new MethodDescriptor(removeChildMethod),
             new MethodDescriptor(createElement1Method),
@@ -72,9 +72,8 @@ public class DocumentBeanInfo extends SimpleBeanInfo {
 //            new MethodDescriptor(saveMethod),
             new MethodDescriptor(elementDeclarationsMethod),
             new MethodDescriptor(clearMethod),
-        };          
+        };
 
         return result;
     }
-
 }

@@ -1,10 +1,10 @@
 /*
  * @(#)ElementDecl.java 1.0 6/3/97
- * 
+ *
  * Copyright (c) 1997 Microsoft, Corp. All Rights Reserved.
- * 
+ *
  */
- 
+
 package com.ms.xml.parser;
 
 import com.ms.xml.om.ElementImpl;
@@ -26,16 +26,16 @@ import java.io.IOException;
  * @version 1.0, 6/3/97
  */
 public class ElementDecl extends ElementImpl
-{    
+{
     /**
      * name of element declared
      */
     Name name;
-    
+
     /**
      * attribute list
      * @see AttDef
-     */    
+     */
     private Vector attdefs;
 
     /**
@@ -55,7 +55,7 @@ public class ElementDecl extends ElementImpl
 
     /**
      * Schema representation
-     */    
+     */
     Element schema = null;
 
     ElementDecl(Name name)
@@ -63,7 +63,7 @@ public class ElementDecl extends ElementImpl
         super(name,Element.ELEMENTDECL);
         this.name = name;
     }
-    
+
     /**
      * Parse element declaration:
      */
@@ -137,12 +137,12 @@ public class ElementDecl extends ElementImpl
 			parser.error("Element declaration syntax error. Expected '>' instead of '" + parser.tokenString(parser.token) + "'");
 		}
 	}
-    
+
     final void parseAttList(Parser parser) throws ParseException
     {
         int i;
         Vector names;
-        AttDef attdef;       
+        AttDef attdef;
         parser.nextToken();
         while (parser.token == Parser.NAME)
         {
@@ -196,7 +196,7 @@ public class ElementDecl extends ElementImpl
                     parser.error("Unknown token in attlist declaration " + parser.token);
                     break;
             }
-       
+
             if (parser.nextToken() == Parser.HASH)
 			{
                 parser.parseKeyword(0, "attribute default");
@@ -208,7 +208,7 @@ public class ElementDecl extends ElementImpl
                     case Parser.IMPLIED:
                         attdef.presence = (byte)AttDef.IMPLIED;
                         break;
-                    case Parser.FIXED:    
+                    case Parser.FIXED:
 						attdef.presence = (byte)AttDef.FIXED;
                         break;
 					default:
@@ -216,7 +216,7 @@ public class ElementDecl extends ElementImpl
                 }
 				parser.nextToken();
             }
-            if (attdef.presence == (byte)AttDef.FIXED || 
+            if (attdef.presence == (byte)AttDef.FIXED ||
                 attdef.presence == (byte)AttDef.DEFAULT)
             {
                 switch(parser.token)
@@ -232,7 +232,7 @@ public class ElementDecl extends ElementImpl
             addAttDef(attdef);
         }
     }
-    
+
     final void initContent(Context context, Parser parser) throws ParseException
     {
         context.ed = this;
@@ -270,7 +270,7 @@ public class ElementDecl extends ElementImpl
 
 		for (Enumeration en =  attdefs.elements(); en.hasMoreElements();)
 		{
-			AttDef ad = (AttDef)en.nextElement(); 
+			AttDef ad = (AttDef)en.nextElement();
 			if (ad.getPresence() == AttDef.REQUIRED && e.getAttribute(ad.getName()) == null)
 				parser.error("Attribute '" + ad.getName() + "' is required.");
 		}
@@ -303,7 +303,7 @@ public class ElementDecl extends ElementImpl
 
    /**
     * Retrieves the name of the element declaration.
-    * @return  the <code>Name</code> object containing the element declaration 
+    * @return  the <code>Name</code> object containing the element declaration
       * name.
     */
     public final Name getName()
@@ -321,7 +321,7 @@ public class ElementDecl extends ElementImpl
 		Object value = attdef.parseAttribute(e, parser);
 		e.setAttribute(name, value);
     }
-    
+
     final void addAttDef(AttDef attdef)
     {
         if (attdefs == null)
@@ -342,7 +342,7 @@ public class ElementDecl extends ElementImpl
 		{
             for (Enumeration en =  attdefs.elements(); en.hasMoreElements();)
 		    {
-		    	AttDef attdef = (AttDef)en.nextElement(); 
+		    	AttDef attdef = (AttDef)en.nextElement();
 				if (attdef.name == name)
 					return attdef;
 			}
@@ -375,10 +375,10 @@ public class ElementDecl extends ElementImpl
             Element elementContent = content.toSchema();
             elementType.addChild( elementContent, null );
 
-            if (attdefs != null) 
+            if (attdefs != null)
             {
                 Enumeration e = attdefs.elements();
-                while (e.hasMoreElements()) 
+                while (e.hasMoreElements())
                 {
                     AttDef def = (AttDef)e.nextElement();
                     elementType.addChild( def.toSchema(), null );
@@ -387,7 +387,7 @@ public class ElementDecl extends ElementImpl
 
             schema = elementType;
         }
-          
+
         return schema;
     }
 
@@ -396,7 +396,7 @@ public class ElementDecl extends ElementImpl
      * output stream.
      * @param o  The output stream to write to.
       * @return No return value.
-     * @exception  IOException if there is a problem writing to the output 
+     * @exception  IOException if there is a problem writing to the output
       * stream.
      */
     public void save(XMLOutputStream o) throws IOException
@@ -404,7 +404,7 @@ public class ElementDecl extends ElementImpl
         o.writeIndent();
         o.writeChars("<!ELEMENT ");
         o.writeQualifiedName(name, null);
-	    o.writeChars(" ");	
+	    o.writeChars(" ");
 		Atom ns = name.getNameSpace();
 		content.save(ns, o);
         o.write('>');
@@ -430,8 +430,8 @@ public class ElementDecl extends ElementImpl
             }
             o.write('>');
 			o.setOutputStyle(style);
-        } 
-        o.writeNewLine();        
+        }
+        o.writeNewLine();
     }
 
     static Name nameELEMENTTYPE = Name.create("ELEMENTTYPE","XML");

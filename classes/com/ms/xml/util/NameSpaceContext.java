@@ -1,9 +1,9 @@
 /*
  * @(#)XMLOutputStream.java 1.0 6/10/97
- * 
+ *
  * Copyright (c) 1997 Microsoft, Corp. All Rights Reserved.
- * 
- */ 
+ *
+ */
 package com.ms.xml.util;
 
 import java.util.Hashtable;
@@ -19,7 +19,7 @@ public class NameSpaceContext
 		current.put(url, n);
 	}
 
-    /**
+        /**
 	 * find name space, long name is the key
 	 */
 	public final Atom findNameSpace(Atom n)
@@ -27,13 +27,13 @@ public class NameSpaceContext
 		return (Atom)current.get(n);
 	}
 
-    
+
     public final void push()
     {
         contexts.push(current);
         current = (Hashtable)current.clone();
     }
-    
+
     public final void pop()
     {
         current = (Hashtable)contexts.pop();

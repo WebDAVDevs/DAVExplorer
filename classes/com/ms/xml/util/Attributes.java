@@ -1,8 +1,8 @@
 /*
  * @(#)Attributes.java 1.0 6/3/97
- * 
+ *
  * Copyright (c) 1997 Microsoft, Corp. All Rights Reserved.
- * 
+ *
  */
 package com.ms.xml.util;
 
@@ -56,7 +56,7 @@ public class Attributes extends ReadOnlyAttributes
         }
     }
 
-    /**
+   /**
     * Construct attributes collection using the vector of attributes.
     *
     * @param   v   Attribute vector
@@ -72,7 +72,7 @@ public class Attributes extends ReadOnlyAttributes
     public void remove(Name name)
 	{
         Attribute a = lookup(name);
-        if (a != null) 
+        if (a != null)
         {
             attributes.removeElement(a);
         }
@@ -83,16 +83,16 @@ public class Attributes extends ReadOnlyAttributes
      * attribute if it already exists.
      * @return the previous value for the name attribute or null.
      */
-    public Object put(Name name, Object value) 
+    public Object put(Name name, Object value)
     {
         Attribute a = lookup(name);
         Object o = null;
-        if (a != null) 
+        if (a != null)
         {
             o = a.getValue();
             a.setValue(value);
-        } 
-        else 
+        }
+        else
         {
             attributes.addElement(new Attribute(name, value));
         }
@@ -104,11 +104,11 @@ public class Attributes extends ReadOnlyAttributes
      * if it already exists.
      * @return the previous value for the name attribute or null.
      */
-    public Object put(Attribute v) 
+    public Object put(Attribute v)
     {
         Object o = null;
         Attribute a = lookup(v.getName());
-        if (a != null) 
+        if (a != null)
         {
             o = a.getValue();
             attributes.removeElement(a);
@@ -121,5 +121,4 @@ public class Attributes extends ReadOnlyAttributes
     {
         attributes.removeAllElements();
     }
-}    
-
+}

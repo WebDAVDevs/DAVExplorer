@@ -1,10 +1,10 @@
 /*
  * @(#)Entity.java 1.0 6/3/97
- * 
+ *
  * Copyright (c) 1997 Microsoft, Corp. All Rights Reserved.
- * 
+ *
  */
- 
+
 package com.ms.xml.parser;
 
 import com.ms.xml.util.Name;
@@ -20,7 +20,7 @@ import java.util.Enumeration;
 import java.util.Vector;
 
 /**
- * This class implements an <code>Entity</code> object representing an XML internal 
+ * This class implements an <code>Entity</code> object representing an XML internal
  * or external entity as defined in the XML Document Type Definition (DTD).
  *
  * @version 1.0, 6/3/97
@@ -45,7 +45,7 @@ public class Entity extends ElementImpl
         setText(text);
         setPosition(0, 0);
     }
-    
+
     Entity(Name name, boolean par, int c)
     {
         this(name, par);
@@ -53,7 +53,7 @@ public class Entity extends ElementImpl
         super.setText(String.valueOf(cdata));
         setPosition(0, 0);
     }
-    
+
     EntityReader getReader(EntityReader prev)
     {
         return new EntityReader(
@@ -66,7 +66,7 @@ public class Entity extends ElementImpl
         this.url = url;
         sys = true;
     }
-   
+
 	String getURL()
 	{
 		return url;
@@ -133,7 +133,7 @@ public class Entity extends ElementImpl
 	/**
     * Saves the entity to the given output stream with indenting and new lines.
     * @param o  The output stream.
-    * @exception IOException if there is a problem writing to the output stream. 
+    * @exception IOException if there is a problem writing to the output stream.
     */
     public void save(XMLOutputStream o) throws IOException
     {
@@ -149,8 +149,8 @@ public class Entity extends ElementImpl
 	/**
     * Saves the entity to the given output stream.
     * @param o  The output stream.
-    * @exception  IOException if there is a problem writing to the output 
-      * stream. 
+    * @exception  IOException if there is a problem writing to the output
+      * stream.
     */
     public void saveEntity(XMLOutputStream o) throws IOException
     {
@@ -162,14 +162,14 @@ public class Entity extends ElementImpl
 		if (url != null) {
 			if (pubid == null)
 				o.writeChars("SYSTEM ");
-			else 
+			else
 			{
 			    o.writeChars("PUBLIC ");
                 o.writeQuotedString(pubid);
                 o.write(' ');
 			}
             o.writeQuotedString(url.toString());
-			if (ndata != null) 
+			if (ndata != null)
 			{
 				o.writeChars(" NDATA ");
 	            o.writeQualifiedName(ndata, name.getNameSpace());
@@ -224,27 +224,27 @@ public class Entity extends ElementImpl
 
     /**
      * NDATA identifier
-     */    
+     */
     Name ndata;
 
     /**
      * line number
-     */    
+     */
     int line;
-    
+
     /**
      * character pos
-     */    
+     */
     int column;
-    
+
     /**
      * set if paramater entity
-     */    
+     */
     boolean par;
-    
+
     /**
      * set if external entity
-     */    
+     */
     boolean sys;
 
     /**

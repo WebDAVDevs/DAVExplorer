@@ -15,4 +15,3 @@ public interface XMLStreamReader
 
   public void close();
 }
-

@@ -1,10 +1,10 @@
 /*
  * @(#)ElementEnumeration.java 1.0 7/11/97
- * 
+ *
  * Copyright (c) 1997 Microsoft, Corp. All Rights Reserved.
- * 
+ *
  */
- 
+
 package com.ms.xml.om;
 
 import com.ms.xml.util.Name;
@@ -24,7 +24,7 @@ public class ElementEnumeration implements Enumeration
     /**
      * Creates a new enumerator for enumerating over all of the children
      * of the given root node.
-     * @param root The element whose children are going to be enumerated. 
+     * @param root The element whose children are going to be enumerated.
      */
     public ElementEnumeration(Element root)
     {
@@ -38,10 +38,8 @@ public class ElementEnumeration implements Enumeration
     /**
      * Creates a new enumerator for enumerating over the immediate children
      * of the given root node that have matching tag names and/or types.
-     * @param root The element whose children are going to be enumerated. 
-     
-     * @param tag The name of the tag; this parameter can be null if the name is not important. 
-     
+     * @param root The element whose children are going to be enumerated.
+     * @param tag The name of the tag; this parameter can be null if the name is not important.
      * @param type The element type. <code>Element.ELEMENT</code> is the most common. If the
      * element type is not important, pass -1.
      */
@@ -61,7 +59,7 @@ public class ElementEnumeration implements Enumeration
      */
     public boolean hasMoreElements()
     {
-        if (next == null) 
+        if (next == null)
         {
             next = getNext();
         }
@@ -74,7 +72,7 @@ public class ElementEnumeration implements Enumeration
      */
     public Object nextElement()
     {
-        if (next != null) 
+        if (next != null)
         {
             Element result = next;
             next = null;
@@ -98,12 +96,12 @@ public class ElementEnumeration implements Enumeration
      */
     Element getNext()
     {
-        if (children != null) 
+        if (children != null)
         {
-            while (children.hasMoreElements()) 
+            while (children.hasMoreElements())
             {
                 Element e = (Element)children.nextElement();
-                if (tag == null && type == -1) 
+                if (tag == null && type == -1)
                     return e;
                 if (type != -1 && e.getType() != type)
                     continue;

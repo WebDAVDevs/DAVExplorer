@@ -1,8 +1,8 @@
 /*
  * @(#)StringHashtable.java 1.0 11/10/97
- * 
+ *
  * Copyright (c) 1997 Microsoft, Corp. All Rights Reserved.
- * 
+ *
  */
 package com.ms.xml.util;
 
@@ -26,7 +26,7 @@ class Entry
  *
  * @version 1.0, 6/3/97
  */
-public class StringHashtable 
+public class StringHashtable
 {
 	Entry[]	entries;
 
@@ -81,7 +81,7 @@ public class StringHashtable
 			{
 				return entry.value;
 			}
-			
+
 		}
 		return null;
 	}
@@ -95,18 +95,18 @@ public class StringHashtable
 		int hash = 0;
 		int off = offset;
 
-		if (length < 16) 
+		if (length < 16)
 		{
-			for (int i = length; i > 0; i--) 
+			for (int i = length; i > 0; i--)
 			{
 				hash = (hash * 37) + chars[off++];
 			}
-		} 
-		else 
+		}
+		else
 		{
 			// only sample some characters
 			int skip = length / 8;
-			for (int i = length; i > 0; i -= skip, off += skip) 
+			for (int i = length; i > 0; i -= skip, off += skip)
 			{
 				hash = (hash * 39) + chars[off];
 			}
@@ -118,7 +118,7 @@ nextEntry:	{
 				if (entry.hash == hash)
 				{
 					String key = entry.key;
-					if (key.length() == length) 
+					if (key.length() == length)
 					{
 						while(--length >= 0)
 						{
@@ -132,6 +132,4 @@ nextEntry:	{
 		}
 		return null;
 	}
-}    
-
-
+}

@@ -1,8 +1,8 @@
 /*
  * @(#)Attribute.java 1.0 6/3/97
- * 
+ *
  * Copyright (c) 1997 Microsoft, Corp. All Rights Reserved.
- * 
+ *
  */
 package com.ms.xml.util;
 
@@ -45,8 +45,8 @@ public class Attribute
      */
     public Object getValue()
     {
-		return value;
-	}
+	return value;
+    }
 
     /**
      * Used by Attributes, private to this package
@@ -55,6 +55,4 @@ public class Attribute
     {
         value = o;
     }
-}    
-
-
+}

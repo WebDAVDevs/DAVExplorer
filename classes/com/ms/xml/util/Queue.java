@@ -1,19 +1,19 @@
 /*
  * @(#)Queue.java 1.0 7/29/97
- * 
+ *
  * Copyright (c) 1997 Microsoft, Corp. All Rights Reserved.
- * 
+ *
  */
- 
+
 package com.ms.xml.util;
 
 import java.util.Vector;
 
-public class Queue extends Vector 
+public class Queue extends Vector
 {
-     
+
     /**
-     * Creates a new queue with no elements. 
+     * Creates a new queue with no elements.
      */
     public Queue()
     {
@@ -22,9 +22,9 @@ public class Queue extends Vector
 
     public boolean empty()
     {
-        return isEmpty();   
+        return isEmpty();
     }
-    
+
     /**
      * Looks at the object at the front of this queue without removing it
      */
@@ -56,7 +56,7 @@ public class Queue extends Vector
     }
 
     /**
-     * Determines if an object is in this queue. 
+     * Determines if an object is in this queue.
      */
     public int search(Object  o)
     {

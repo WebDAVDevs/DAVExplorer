@@ -1,10 +1,10 @@
 /*
  * @(#)Notation.java 1.0 6/3/97
- * 
+ *
  * Copyright (c) 1997 Microsoft, Corp. All Rights Reserved.
- * 
+ *
  */
- 
+
 package com.ms.xml.parser;
 
 import com.ms.xml.om.ElementImpl;
@@ -47,15 +47,15 @@ public class Notation extends ElementImpl
                 notationElement.setAttribute( namePUBLICID, pubid );
             }
             schema = notationElement;
-        }         
+        }
 
         return schema;
     }
-   
+
 	/**
     * Saves the notation to the given output stream with indenting and new lines.
     * @param o The output stream.
-    * @exception IOException if there is a problem writing to the output stream. 
+    * @exception IOException if there is a problem writing to the output stream.
     */
     public void save(XMLOutputStream o) throws IOException
     {
@@ -83,14 +83,14 @@ public class Notation extends ElementImpl
     Name name;
 
     /**
-     * Url 
+     * Url
      */
     String url;
 
     /**
 	 * pubid
 	 */
-    String pubid; 
+    String pubid;
 
     /**
      * Type of notation (Parser.SYSTEM or Parser.PUBLIC)

@@ -1,10 +1,10 @@
 /*
  * @(#)Atom.java 1.0 6/3/97
- * 
+ *
  * Copyright (c) 1997 Microsoft, Corp. All Rights Reserved.
- * 
+ *
  */
- 
+
 package com.ms.xml.util;
 
 import java.lang.String;
@@ -13,7 +13,7 @@ import java.util.Hashtable;
 /**
  * This is a general purpose object to allow efficient
  * sharing of duplicate strings in the system.  It does this by
- * creating a global HashTable of all Atoms that have been 
+ * creating a global HashTable of all Atoms that have been
  * constructed.
  *
  * @version 1.0, 6/3/97
@@ -24,12 +24,12 @@ public class Atom
      * The shared string
      */
     String s;
-    
+
     /**
      * Cached hash value for improved compare speed.
-     */    
+     */
     int hash;
-    
+
     /**
      * Hash table for shared atoms.
      */
@@ -40,7 +40,7 @@ public class Atom
      * This is private because all Atoms should be constructed
      * via the static Atom.create() method.
      */
-    Atom(String s, int h) 
+    Atom(String s, int h)
     {
         this.s = s;
         this.hash = h;
@@ -57,7 +57,7 @@ public class Atom
      * Create a Atom object for this string.
      * Atoms are case sensitive - i.e. it assumes any case folding
      * has already been done.
-     */    
+     */
     public static Atom create(String s)
     {
         if (s == null) return null;
@@ -74,8 +74,8 @@ public class Atom
             return (Atom)o;
         }
     }
-     
-	/**
+
+    /**
      * Return the hash code for the name.
      * @return returns the hash code for the name.
      */
@@ -83,28 +83,28 @@ public class Atom
     {
         return hash;
     }
- 
+
     /**
      * Return the string represented by the Atom.
      */
-    public String toString() 
+    public String toString()
     {
         return s;
     }
-    
+
     /**
      * Return whether this Atom is equal to another given Atom.
      */
-    public boolean equals(Object that) 
+    public boolean equals(Object that)
     {
-        if (this == that) 
+        if (this == that)
         {
             return true;
         }
-        if (that == null || getClass() != that.getClass()) 
+        if (that == null || getClass() != that.getClass())
         {
             return false;
         }
         return s.equals(((Atom)that).s);
     }
-}    
+}

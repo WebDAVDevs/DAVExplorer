@@ -1,10 +1,10 @@
 /*
  * @(#)ReadOnlyAttributes.java 1.0 97/5/6
- * 
+ *
  * Copyright (c) 1997 Microsoft, Corp. All Rights Reserved.
- * 
+ *
  */
- 
+
 package com.ms.xml.util;
 
 import java.util.Vector;
@@ -67,7 +67,7 @@ public class ReadOnlyAttributes
     public Object get(Name name)
     {
         Attribute a = lookup(name);
-        if (a == null) 
+        if (a == null)
         {
             return null;
         }
@@ -82,13 +82,13 @@ public class ReadOnlyAttributes
         return attributes.elements();
     }
 
-     
+
     public Attribute lookup(Name name)
     {
-        for (Enumeration e = attributes.elements(); e.hasMoreElements(); ) 
+        for (Enumeration e = attributes.elements(); e.hasMoreElements(); )
         {
             Attribute a = (Attribute)e.nextElement();
-            if (a.name == name) 
+            if (a.name == name)
             {
                 return a;
             }
@@ -100,4 +100,4 @@ public class ReadOnlyAttributes
     {
         return getClass().getName();
 	}
-}    
+}

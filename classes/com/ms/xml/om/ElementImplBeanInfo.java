@@ -12,11 +12,11 @@ public class ElementImplBeanInfo extends SimpleBeanInfo {
         ElementImpl.class;
 
 /**
- * Returns the method descriptions for the methods that are 
+ * Returns the method descriptions for the methods that are
  * to be made available through scripting.
  * @return an array of <code>MethodDescriptor</code> objects.
  */
-    public MethodDescriptor[] getMethodDescriptors() 
+    public MethodDescriptor[] getMethodDescriptors()
     {
         // First find the "method" objects.
         Method numElementMethod;
@@ -29,7 +29,7 @@ public class ElementImplBeanInfo extends SimpleBeanInfo {
         Method removeAttributeMethod;
         Method qualifyNameMethod;
 //        Method saveMethod;
-        
+
         Class args[] = { };
         Class addChildArgs[] = { Element.class, int.class, int.class };
         Class getChildArgs[] = { int.class };
@@ -57,7 +57,7 @@ public class ElementImplBeanInfo extends SimpleBeanInfo {
 
         // Now create the MethodDescriptor array
         // with visible event response methods:
-        MethodDescriptor result[] = { 
+        MethodDescriptor result[] = {
             new MethodDescriptor(numElementMethod),
             new MethodDescriptor(addChildMethod),
             new MethodDescriptor(getChildMethod),
@@ -68,9 +68,8 @@ public class ElementImplBeanInfo extends SimpleBeanInfo {
             new MethodDescriptor(removeAttributeMethod),
             new MethodDescriptor(qualifyNameMethod)
 //            new MethodDescriptor(saveMethod)
-        };          
+        };
 
         return result;
     }
-
 }

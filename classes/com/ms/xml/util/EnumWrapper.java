@@ -1,10 +1,10 @@
 /*
  * @(#)Document.java 1.0 6/3/97
- * 
+ *
  * Copyright (c) 1997 Microsoft, Corp. All Rights Reserved.
- * 
+ *
  */
- 
+
 package com.ms.xml.util;
 
 import java.util.Enumeration;
@@ -36,4 +36,3 @@ public class EnumWrapper implements Enumeration
     boolean done;
     Object object;
 }
-

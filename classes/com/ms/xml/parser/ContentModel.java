@@ -1,10 +1,10 @@
 /*
  * @(#)ContentModel.java 1.0 6/3/97
- * 
+ *
  * Copyright (c) 1997 Microsoft, Corp. All Rights Reserved.
- * 
+ *
  */
- 
+
 package com.ms.xml.parser;
 
 import com.ms.xml.om.Element;
@@ -25,19 +25,19 @@ import java.io.IOException;
 /**
  * This class represents the content model definition for a given
  * XML element. The content model is defined in the element
- * declaration in the Document Type Definition (DTD); for example, 
+ * declaration in the Document Type Definition (DTD); for example,
  * (a,(b|c)*,d). The
  * content model is stored in an expression tree of <code>Node</code> objects
  * for use by the XML parser during validation.
- * 
+ *
  */
 public class ContentModel
 {
     /**
      * content model
-     * points to syntax tree 
+     * points to syntax tree
      * @see Node
-     */    
+     */
     Node content;
 
     /**
@@ -45,7 +45,7 @@ public class ContentModel
      */
     Terminal end;
 
-    /** 
+    /**
      * terminal nodes
      */
     Vector terminalnodes;
@@ -67,7 +67,7 @@ public class ContentModel
 
     /**
      * content type
-     */    
+     */
     public static final byte EMPTY       = 1;
     public static final byte ANY         = 2;
     public static final byte ELEMENTS    = 4;
@@ -80,8 +80,8 @@ public class ContentModel
 
     /**
      * Retrieves a string representation of the content type.
-     * @return a <A>String</A>. 
-     */    
+     * @return a <A>String</A>.
+     */
     public String toString()
     {
         String s;
@@ -101,7 +101,7 @@ public class ContentModel
         }
         return "Content: type=" + s;
     }
-    
+
     /**
      *  parse content model in an element declaration, and build up the state
      *  transation table for element content checking
@@ -137,11 +137,11 @@ public class ContentModel
 
         BitSet empty = new BitSet(terminals);
         statetable.put(empty, new Integer(-1));
-    
-        // current state processed
-        int state = 0;                
 
-        // start with firstpos at the root                
+        // current state processed
+        int state = 0;
+
+        // start with firstpos at the root
         BitSet set = content.firstpos(terminals);
         statetable.put(set, new Integer(Dstates.size()));
         unmarked.addElement(set);
@@ -157,7 +157,7 @@ public class ContentModel
         while (unmarked.size() > 0)
         {
             int[] t = (int[])Dtrans.elementAt(state);
-        
+
             set = (BitSet)unmarked.elementAt(0);
             unmarked.removeElementAt(0);
 
@@ -176,13 +176,13 @@ public class ContentModel
                     }
                 }
 
-                Integer lookup = (Integer)statetable.get(newset);                        
+                Integer lookup = (Integer)statetable.get(newset);
                 // this state will transition to
                 int transitionTo;
-                // if new set is not in states add it                        
+                // if new set is not in states add it
                 if (lookup == null)
                 {
-                    transitionTo = Dstates.size();            
+                    transitionTo = Dstates.size();
                     statetable.put(newset, new Integer(transitionTo));
                     unmarked.addElement(newset);
                     Dstates.addElement(newset);
@@ -195,7 +195,7 @@ public class ContentModel
                 }
                 else
                 {
-                    transitionTo = lookup.intValue();                            
+                    transitionTo = lookup.intValue();
                 }
                 // set the transition for the symbol
                 t[sym] = transitionTo;
@@ -209,8 +209,8 @@ public class ContentModel
      */
     final Node parseList(Parser parser) throws ParseException
     {
-        //use Hashtable to check name uniqueness  
-        Hashtable symbols = new Hashtable(); 
+        //use Hashtable to check name uniqueness
+        Hashtable symbols = new Hashtable();
         symbols.put(parser.name, parser.name);
 
         Node n = parseNode(parser);
@@ -225,7 +225,7 @@ public class ContentModel
             case Parser.OR:
                 parser.nextToken();
                 if (parser.token == parser.NAME) {
-                    if (symbols.contains(parser.name)) 
+                    if (symbols.contains(parser.name))
                         parser.error("Warning: Repeated element in content model: " + parser.name );
                     else symbols.put(parser.name, parser.name);
                 }
@@ -250,7 +250,7 @@ public class ContentModel
             {
                 parser.nextToken();
                 if (parser.token == parser.NAME) {
-                    if (symbols.contains(parser.name)) 
+                    if (symbols.contains(parser.name))
                         parser.error("Repeated element in content model: " + parser.name );
                     else symbols.put(parser.name, parser.name);
                 }
@@ -261,7 +261,7 @@ public class ContentModel
     }
 
     /**
-     *  parse a node in an element content model declaration 
+     *  parse a node in an element content model declaration
      */
     final Node parseNode(Parser parser) throws ParseException
     {
@@ -287,7 +287,7 @@ public class ContentModel
     {
         Node n;
 
-        switch (parser.lookahead) 
+        switch (parser.lookahead)
         {
             case Parser.ASTERISK:
                 parser.nextToken();
@@ -319,8 +319,8 @@ public class ContentModel
         {
             case Parser.LPAREN:
                 parser.nextToken();
-                if (parser.token == Parser.HASH) 
-                    return parseMixed(parser); 
+                if (parser.token == Parser.HASH)
+                    return parseMixed(parser);
                 else n = parseList(parser);
                 break;
             case Parser.NAME:
@@ -334,7 +334,7 @@ public class ContentModel
     }
 
     /**
-     *  parser mixed element content model 
+     *  parser mixed element content model
      */
     final Node parseMixed(Parser parser) throws ParseException
     {
@@ -354,14 +354,14 @@ public class ContentModel
                     parser.nextToken();
                 }
                 break;
-            case Parser.OR:             
+            case Parser.OR:
                 for (;;)
                 {
                     if (parser.token == Parser.OR)
                     {
                         parser.nextToken();
                         if (parser.token == parser.NAME) {
-                            if (symbols.contains(parser.name)) 
+                            if (symbols.contains(parser.name))
                                 parser.error("Repeated element in content model: " + parser.name);
                             else symbols.put(parser.name, parser.name);
                         }
@@ -439,7 +439,7 @@ public class ContentModel
                 }
             }
         }
-       
+
         return names;
     }
 
@@ -512,16 +512,16 @@ public class ContentModel
         switch (type)
         {
             case EMPTY:
-                elementContent = new ElementImpl( nameEMPTY, Element.ELEMENT ); 
+                elementContent = new ElementImpl( nameEMPTY, Element.ELEMENT );
                 break;
             case ANY:
                 elementContent = new ElementImpl( nameANY, Element.ELEMENT );
                 break;
             case ELEMENTS:
-                if (content != null) 
-                {                    
+                if (content != null)
+                {
                     Element dummyNode = new ElementImpl( Name.create("DUMMYNODE"), Element.ELEMENT );
-                    ((Sequence)content).left.toSchema(Parser.HASH, 0, dummyNode); 
+                    ((Sequence)content).left.toSchema(Parser.HASH, 0, dummyNode);
                     elementContent = dummyNode.getChild(0);
                 }
                 break;
@@ -544,34 +544,34 @@ public class ContentModel
                 o.writeChars("ANY");
                 break;
             case ELEMENTS:
-                if (content != null) 
+                if (content != null)
                     ((Sequence)content).left.save(o, Parser.HASH, 0, ns); // skip outer sequence node
                 break;
         }
     }
 }
-    
+
 /**
- * This is the node object on the syntax tree describing element 
+ * This is the node object on the syntax tree describing element
  * content model
  */
 class Node
 {
     /**
      * firstpos
-     */    
+     */
     BitSet first;
-    
+
     /**
      * lastpos
-     */    
+     */
     BitSet last;
 
-    boolean nullable() 
+    boolean nullable()
     {
         return true;
     }
-    
+
     Node clone(ContentModel cm)
     {
         return new Node();
@@ -585,29 +585,29 @@ class Node
         }
         return empty;
     }
-    
+
     BitSet lastpos(int positions)
     {
         return firstpos(positions);
     }
-    
+
     void calcfollowpos(BitSet[] followpos)
     {
     }
 
     Element toSchema(int parentType, int level, Element currElement)
-    {      
+    {
         return null;
     }
 
     void save(XMLOutputStream o, int parentType, int level, Atom ns) throws IOException
     {
     }
-    
+
     static BitSet empty;
 
     static Name namePCDATA = Name.create("PCDATA");
-}    
+}
 
 class Terminal extends Node
 {
@@ -615,18 +615,18 @@ class Terminal extends Node
      * numbering the node
      */
     int pos;
-    
+
     /**
      * name it refers to
-     */    
+     */
     Name name;
 
-    
+
     Terminal(ContentModel cm, Name name)
     {
         this.name = name;
         this.pos = cm.terminalnodes.size();
-        
+
         cm.terminalnodes.addElement(this);
         if (name != null && cm.symboltable.get(name) == null)
         {
@@ -634,19 +634,19 @@ class Terminal extends Node
             cm.symbols.addElement(name);
         }
     }
-    
+
     Node clone(ContentModel cm)
     {
         return new Terminal(cm, name);
     }
 
-    boolean nullable() 
+    boolean nullable()
     {
         if (name == null)
             return true;
         else return false;
     }
-    
+
     BitSet firstpos(int positions)
     {
         if (first == null)
@@ -657,7 +657,7 @@ class Terminal extends Node
 
         return first;
     }
-    
+
     BitSet lastpos(int positions)
     {
         if (last == null)
@@ -668,29 +668,29 @@ class Terminal extends Node
 
         return last;
     }
-    
+
     void calcfollowpos(BitSet[] followpos)
     {
     }
 
     Element toSchema(int parentType, int level, Element currElement)
     {
-        if (name.getName() == namePCDATA.getName()) 
+        if (name.getName() == namePCDATA.getName())
         {
             if (level == 0 || level == 1 && parentType == Parser.ASTERISK)
             {
                 currElement.addChild(new ElementImpl(Name.create("PCDATA","XML"), Element.ELEMENT), null);
                 return currElement;
             }
-            else 
+            else
             {
                 Element mixedElement = new ElementImpl( Name.create("MIXED","XML"), Element.ELEMENT );
                 currElement.addChild(mixedElement, null);
                 return mixedElement;
             }
         }
-        else 
-        {   
+        else
+        {
             Element eltElement = new ElementImpl( Name.create("ELT","XML"), Element.ELEMENT );
 
             eltElement.setAttribute(Name.create("HREF","XML"), "#" + name);
@@ -709,13 +709,13 @@ class Terminal extends Node
 
     void save(XMLOutputStream o, int parentType, int level, Atom ns) throws IOException
     {
-        if (name.getName() == namePCDATA.getName()) 
+        if (name.getName() == namePCDATA.getName())
         {
             if (level == 0 || level == 1 && parentType == Parser.ASTERISK)
                 o.writeChars("(#PCDATA)");
             else o.writeChars("#PCDATA");
         }
-        else 
+        else
         {
             if (parentType == Parser.HASH || level == 1 && (parentType == Parser.QMARK || parentType == Parser.ASTERISK)) {
                 o.writeChars("(");
@@ -732,30 +732,30 @@ class Sequence extends Node
 {
     /**
      * left node
-     */    
+     */
     Node left;
-    
+
     /**
      * right node
-     */    
+     */
     Node right;
-    
+
     Sequence(Node left, Node right)
     {
         this.left = left;
         this.right = right;
     }
-    
+
     Node clone(ContentModel cm)
     {
         return new Sequence(left.clone(cm), right.clone(cm));
     }
 
-    boolean nullable() 
+    boolean nullable()
     {
         return left.nullable() && right.nullable();
     }
-    
+
     BitSet firstpos(int positions)
     {
         if (first == null)
@@ -773,7 +773,7 @@ class Sequence extends Node
 
         return first;
     }
-    
+
     BitSet lastpos(int positions)
     {
         if (last == null)
@@ -791,15 +791,15 @@ class Sequence extends Node
 
         return last;
     }
-    
+
     void calcfollowpos(BitSet[] followpos)
     {
         left.calcfollowpos(followpos);
         right.calcfollowpos(followpos);
-        
-        int l = followpos.length;        
+
+        int l = followpos.length;
         BitSet lp = left.lastpos(l);
-        BitSet fp = right.firstpos(l);        
+        BitSet fp = right.firstpos(l);
         for (int i = followpos.length - 1; i >= 0; i--)
         {
             if (lp.get(i))
@@ -812,29 +812,29 @@ class Sequence extends Node
     Element toSchema( int parentType, int level, Element currElement)
     {
         Element tempCurr;
-        Element seqElement;       
+        Element seqElement;
 
         level++;
         if (parentType == Parser.COMMA) {
             currElement = left.toSchema(Parser.COMMA, level, currElement);
-            right.toSchema(Parser.COMMA, level, currElement);            
+            right.toSchema(Parser.COMMA, level, currElement);
         }
         else {
-            seqElement = new ElementImpl( Name.create("GROUP","XML"), Element.ELEMENT );        
+            seqElement = new ElementImpl( Name.create("GROUP","XML"), Element.ELEMENT );
             seqElement.setAttribute(Name.create("GROUPTYPE","XML"), "SEQ");
-            
+
             if (parentType == Parser.QMARK)
                 seqElement.setAttribute(Name.create("OCCURS","XML"), "OPTIONAL");
             else if (parentType == Parser.ASTERISK)
                 seqElement.setAttribute(Name.create("OCCURS","XML"), "STAR");
             else if (parentType == Parser.PLUS)
                 seqElement.setAttribute(Name.create("OCCURS","XML"), "PLUS");
-            
+
             seqElement = left.toSchema(Parser.COMMA, level, seqElement);
             right.toSchema(Parser.COMMA, level, seqElement);
 
             currElement.addChild(seqElement, null);
-        }     
+        }
         level--;
 
         return currElement;
@@ -857,36 +857,36 @@ class Sequence extends Node
         }
         level--;
     }
-}    
+}
 
 class Choice extends Node
 {
     /**
      * left node
-     */    
+     */
     Node left;
-    
+
     /**
      * right node
-     */    
+     */
     Node right;
-    
+
     Choice(Node left, Node right)
     {
         this.left = left;
         this.right = right;
     }
-    
+
     Node clone(ContentModel cm)
     {
         return new Choice(left.clone(cm), right.clone(cm));
     }
 
-    boolean nullable() 
+    boolean nullable()
     {
         return left.nullable() || right.nullable();
     }
-    
+
     BitSet firstpos(int positions)
     {
         if (first == null)
@@ -896,7 +896,7 @@ class Choice extends Node
         }
         return first;
     }
-    
+
     BitSet lastpos(int positions)
     {
         if (last == null)
@@ -907,7 +907,7 @@ class Choice extends Node
 
         return last;
     }
-    
+
     void calcfollowpos(BitSet[] followpos)
     {
         left.calcfollowpos(followpos);
@@ -915,7 +915,7 @@ class Choice extends Node
     }
 
     Element toSchema(int parentType, int level, Element currElement)
-    {   
+    {
         Element tempCurr;
         Element orElement;
 
@@ -939,7 +939,7 @@ class Choice extends Node
             right.toSchema(Parser.OR, level, orElement);
 
             currElement.addChild(orElement, null);
-        }     
+        }
         level--;
 
         return currElement;
@@ -959,10 +959,10 @@ class Choice extends Node
             o.write('|');
             right.save(o, Parser.OR, level, ns);
             o.write(')');
-        }        
+        }
         level--;
     }
-}    
+}
 
 class Qmark extends Node
 {
@@ -970,22 +970,22 @@ class Qmark extends Node
      * node
      */
     Node node;
-    
+
     Qmark(Node node)
     {
         this.node = node;
     }
-    
+
     Node clone(ContentModel cm)
     {
         return new Qmark(node.clone(cm));
     }
 
-    boolean nullable() 
+    boolean nullable()
     {
         return true;
     }
-    
+
     BitSet firstpos(int positions)
     {
         if (first == null)
@@ -994,7 +994,7 @@ class Qmark extends Node
         }
         return first;
     }
-    
+
     BitSet lastpos(int positions)
     {
         if (last == null)
@@ -1004,7 +1004,7 @@ class Qmark extends Node
 
         return last;
     }
-    
+
     void calcfollowpos(BitSet[] followpos)
     {
         node.calcfollowpos(followpos);
@@ -1012,7 +1012,7 @@ class Qmark extends Node
 
     Element toSchema(int parentType, int level, Element currElement)
     {
-        level++;       
+        level++;
         node.toSchema(Parser.QMARK, level, currElement);
         level--;
 
@@ -1023,7 +1023,7 @@ class Qmark extends Node
     {
         level++;
         if (parentType == Parser.QMARK || parentType == Parser.ASTERISK)
-            o.writeChars("(");          
+            o.writeChars("(");
         node.save(o, Parser.QMARK, level, ns);
         o.write('?');
         if (parentType == Parser.QMARK || parentType == Parser.ASTERISK)
@@ -1037,14 +1037,14 @@ class Closure extends Node
 {
     /**
      * node
-     */    
+     */
     Node node;
-    
+
     Closure(Node node)
     {
         this.node = node;
     }
-    
+
     Closure()
     {
     }
@@ -1054,11 +1054,11 @@ class Closure extends Node
         return new Closure(node.clone(cm));
     }
 
-    boolean nullable() 
+    boolean nullable()
     {
         return true;
     }
-    
+
     BitSet firstpos(int positions)
     {
         if (first == null)
@@ -1067,7 +1067,7 @@ class Closure extends Node
         }
         return first;
     }
-    
+
     BitSet lastpos(int positions)
     {
         if (last == null)
@@ -1076,14 +1076,14 @@ class Closure extends Node
         }
         return last;
     }
-    
+
     void calcfollowpos(BitSet[] followpos)
     {
         node.calcfollowpos(followpos);
-        
-        int l = followpos.length;        
+
+        int l = followpos.length;
         lastpos(l);
-        firstpos(l);        
+        firstpos(l);
 
         for (int i = followpos.length - 1; i >= 0; i--)
         {
@@ -1097,7 +1097,7 @@ class Closure extends Node
     Element toSchema(int parentType, int level, Element currElement)
     {
 
-        level++;       
+        level++;
         node.toSchema(Parser.ASTERISK, level, currElement);
         level--;
 
@@ -1110,13 +1110,13 @@ class Closure extends Node
             o.writeChars("(");
         level++;
         node.save(o, Parser.ASTERISK, level, ns);
-        level--; 
+        level--;
 
         o.write('*');
         if (parentType == Parser.QMARK || parentType == Parser.ASTERISK)
             o.writeChars(")");
     }
-}    
+}
 
 
 class ClosurePlus extends Closure
@@ -1125,20 +1125,20 @@ class ClosurePlus extends Closure
     {
         this.node = node;
     }
-    
+
     Node clone(ContentModel cm)
     {
         return new ClosurePlus(node.clone(cm));
     }
 
-    boolean nullable() 
+    boolean nullable()
     {
         return node.nullable();
-    }    
+    }
 
     Element toSchema(int parentType, int level, Element currElement)
     {
-        level++;       
+        level++;
         node.toSchema(Parser.PLUS, level, currElement);
         level--;
 
@@ -1151,7 +1151,7 @@ class ClosurePlus extends Closure
             o.writeChars("(");
         level++;
         node.save(o, Parser.ASTERISK, level, ns);
-        level--; 
+        level--;
         o.write('+');
         if (parentType == Parser.QMARK || parentType == Parser.ASTERISK)
             o.writeChars(")");

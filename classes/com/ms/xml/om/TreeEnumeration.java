@@ -1,10 +1,10 @@
 /*
  * @(#)TreeEnumeration.java 1.0 7/11/97
- * 
+ *
  * Copyright (c) 1997 Microsoft, Corp. All Rights Reserved.
- * 
+ *
  */
- 
+
 package com.ms.xml.om;
 
 import com.ms.xml.util.EnumWrapper;
@@ -14,7 +14,7 @@ import java.util.Enumeration;
 import java.util.Stack;
 
 /**
- * An Enumeration for iterating over the entire subtree of a given node 
+ * An Enumeration for iterating over the entire subtree of a given node
  * in the XML tree, DFS or BFS
  *
  * @version 1.0, 8/27/97
@@ -42,7 +42,7 @@ public class TreeEnumeration implements Enumeration
         this.enumerationDir = enumDir;
         this.next           = null;
 
-        this.DFSstack       = null;   
+        this.DFSstack       = null;
         this.BFSqueue       = null;
 
         this.curr           = node;
@@ -53,7 +53,7 @@ public class TreeEnumeration implements Enumeration
             this.BFSqueue   = new Queue();
         }
         else  // default to DFS traversal
-        {                            
+        {
             this.next       = node;
             children.nextElement();
             this.DFSstack   = new Stack();
@@ -74,8 +74,8 @@ public class TreeEnumeration implements Enumeration
      * non null result.
      */
     public boolean hasMoreElements()
-    {       
-        if (next == null) 
+    {
+        if (next == null)
         {
             next = next();
         }
@@ -88,7 +88,7 @@ public class TreeEnumeration implements Enumeration
      */
     public Object nextElement()
     {
-        if (next != null) 
+        if (next != null)
         {
             Element result = next;
             next = null;
@@ -101,7 +101,7 @@ public class TreeEnumeration implements Enumeration
      * Internal method for getting next element.
      */
     Element next()
-    {                
+    {
         if( !enumerationDir ) // BFS traversal
             return nextElementTreeBFS();
         else // default to DFS traversal
@@ -121,7 +121,7 @@ public class TreeEnumeration implements Enumeration
                 curr = (Element)children.nextElement();
                 return curr;
             }
-            // go back up 
+            // go back up
             for (curr = curr.getParent(); curr != null; curr = curr.getParent())
             {
                 if(DFSstack.empty())
@@ -152,11 +152,11 @@ public class TreeEnumeration implements Enumeration
             // go to the next child
             curr = (Element)children.nextElement();
             BFSqueue.push(curr.getElements());
-            return curr;         
+            return curr;
         }
         return null;
     }
-    
+
     Element originalNode;
 
     Element next;
@@ -166,7 +166,7 @@ public class TreeEnumeration implements Enumeration
     // DFSTree enumeration
     Stack DFSstack;
     Element curr;
-   
+
     // BFSTree enumeration
     Queue BFSqueue;
 

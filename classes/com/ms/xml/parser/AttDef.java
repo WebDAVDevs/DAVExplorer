@@ -1,10 +1,10 @@
 /*
  * @(#)AttDef.java 1.0 6/3/97
- * 
+ *
  * Copyright (c) 1997 Microsoft, Corp. All Rights Reserved.
- * 
+ *
  */
- 
+
 package com.ms.xml.parser;
 
 import com.ms.xml.om.Element;
@@ -26,7 +26,7 @@ public class AttDef
 {
     /**
      * type of attribute
-     */    
+     */
     public static final int CDATA      = 0;
     public static final int ID         = 1;
     public static final int IDREF      = 2;
@@ -37,9 +37,9 @@ public class AttDef
     public static final int NMTOKENS   = 7;
     public static final int NOTATION   = 8;
     public static final int ENUMERATION= 9;
-    
+
     String typeToString()
-    {        		
+    {
         switch(type)
 		{
         case ID:
@@ -68,7 +68,7 @@ public class AttDef
 
     /**
      * presence of attribute
-     */    
+     */
     public static final int DEFAULT    = 0;
     public static final int REQUIRED   = 1;
     public static final int IMPLIED    = 2;
@@ -87,44 +87,44 @@ public class AttDef
         case DEFAULT:
         default:
             return "DEFAULT";
-        }               
+        }
     }
 
     /**
      * name of attribute declared
      */
     Name name;
-    
+
     /**
      * Construct new object for given attribute type.
      * @param name the name of the attribute
      * @param type the attribute type
-     */    
+     */
     AttDef(Name name, int type)
     {
         this(name, type, null, 0, null);
     }
-    
+
     /**
      * Construct new object for given attribute type and
      * array of possible values.
-     */    
+     */
     AttDef(Name name, int type, Vector values)
     {
         this(name, type, null, 0, values);
     }
-    
+
     /**
      * Construct new object for given attribute type.
-     */    
+     */
     AttDef(Name name, int type, Object def, int presence)
     {
         this(name, type, def, presence, null);
     }
-    
+
     /**
      * Construct new object for given attribute type.
-     */    
+     */
     AttDef(Name name, int type, Object def, int presence, Vector values)
     {
         this.name = name;
@@ -136,7 +136,7 @@ public class AttDef
 
     /**
      * Parse the attribute types.
-     */    
+     */
 	final Object parseAttribute(Element e, Parser parser) throws ParseException
 	{
 		parser.parseToken(Parser.QUOTE, "string");
@@ -215,12 +215,12 @@ public class AttDef
 					if (parser.dtd.findID(name) == null)
 					{
 						// add it to linked list to check later
-						parser.dtd.addIDCheck(name, 
-							parser.reader.line, parser.reader.column - 1, 
+						parser.dtd.addIDCheck(name,
+							parser.reader.line, parser.reader.column - 1,
 							parser.reader.owner);
 					}
 				}
-			}          
+			}
 
             value = type == IDREF ? (Object)names.elementAt(0) : (Object)names;
 			break;
@@ -233,7 +233,7 @@ public class AttDef
 			parser.nouppercase--;
 			if (i == 0)
 				reportEmpty(parser, "ENTITY name");
- 			if (i > 1 && type == ENTITY) 
+ 			if (i > 1 && type == ENTITY)
 				parser.error("ENTITY type attribute \"" + this.name + "\" cannot refer to more than one entity.");
 			for (--i; i >= 0; --i)
 			{
@@ -242,7 +242,7 @@ public class AttDef
 				{
 					parser.error("Couldn't find entity '" + name + "'");
 				}
-				if (!inDTD && presence == FIXED) 
+				if (!inDTD && presence == FIXED)
 				{
 					if (type == ENTITIES)
 						checkFixed(name, parser);
@@ -270,7 +270,7 @@ public class AttDef
 					if ((Name)def != (Name)names.elementAt(0))
 						reportMismatch(parser);
 				}
-				else 
+				else
 				{
 				    for (i = names.size() - 1; i >= 0; i--)
 					{
@@ -299,7 +299,7 @@ public class AttDef
 			if (i < 0)
 			{
 				parser.error("Attribute value '" + parser.name + "' is  not in the allowed set.");
-			}	
+			}
 			if (!inDTD && presence == FIXED && parser.name != def)
 			    reportMismatch(parser);
 
@@ -336,11 +336,11 @@ public class AttDef
 
         if( presence != DEFAULT )
             attribute.setAttribute( namePRESENCE, presenceToString() );
-                
+
         if( type == ENUMERATION )
         {
             String valueString = "";
-            for (int i = 0; i < values.size(); i++) {   
+            for (int i = 0; i < values.size(); i++) {
                 Name name = (Name)values.elementAt(i);
                 valueString = valueString + name.toString();
                 if (i < values.size() - 1)
@@ -392,7 +392,7 @@ public class AttDef
             // fall through
 		case ENUMERATION:
             o.writeChars(" (");
-            for (int i = 0; i < values.size(); i++) {   
+            for (int i = 0; i < values.size(); i++) {
                 Name name = (Name)values.elementAt(i);
 				if (type == NOTATION)
                     o.writeQualifiedName(name, ns);
@@ -451,23 +451,23 @@ public class AttDef
             break;
         }
     }
-   
-    byte type;    
-    byte presence;    
-    
+
+    byte type;
+    byte presence;
+
     /**
      * default value, can be null
-     */    
+     */
     Object def;
-    
+
     /**
      * array of values for enumerated and notation types
-     */    
+     */
     Vector values;
 
     /**
      * Return the default value for the attribute.
-     */    
+     */
     public Object getDefault()
 	{
 		return def;
@@ -481,7 +481,7 @@ public class AttDef
         return name;
     }
 
-    /** 
+    /**
      * Return the attribute type.
      */
     public int getType()
@@ -503,4 +503,4 @@ public class AttDef
     static Name namePRESENCE  = Name.create("PRESENCE","XML");
     static Name nameVALUES    = Name.create("VALUES","XML");
     static Name nameTYPE      = Name.create("TYPE","XML");
-}    
+}

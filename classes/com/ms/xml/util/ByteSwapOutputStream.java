@@ -1,16 +1,16 @@
 /*
  * @(#)ByteSwapOutputStream.java 1.0 6/5/97
- * 
+ *
  * Copyright (c) 1997 Microsoft, Corp. All Rights Reserved.
- * 
+ *
  */
- 
+
 package com.ms.xml.util;
 
 import java.io.*;
 
 /**
- * 
+ *
  * This is a class that extends OutputStream.
  * It swap bytes order and is intended to create Littleendian format.
  *
@@ -22,7 +22,6 @@ class ByteSwapOutputStream extends OutputStream
     {
         this.out = out;
         this.byte1 = -2;
-
     }
 
     public void write( int c ) throws IOException

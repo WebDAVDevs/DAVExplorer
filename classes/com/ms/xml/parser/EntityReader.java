@@ -1,10 +1,10 @@
 /*
  * @(#)EntityReader.java 1.0 6/3/97
- * 
+ *
  * Copyright (c) 1997 Microsoft, Corp. All Rights Reserved.
- * 
+ *
  */
- 
+
 package com.ms.xml.parser;
 
 import java.io.*;
@@ -15,10 +15,10 @@ import java.io.*;
  *
  * @version 1.0, 6/3/97
  */
-class EntityReader 
+class EntityReader
 {
     EntityReader(InputStream in, int line, int column, EntityReader prev, Object owner)
-    {        
+    {
         this.line = line;
         this.column = column;
         this.prev = prev;
@@ -91,22 +91,22 @@ class EntityReader
 
     /**
      * line number
-     */    
+     */
     int line;
-    
+
     /**
      * character pos
-     */    
+     */
     int column;
 
     /**
      * previous reader to go back to when this is done
      */
     EntityReader prev;
-    
+
     /**
      * Entity reading from
-     */    
+     */
     Object owner;
 
     /**

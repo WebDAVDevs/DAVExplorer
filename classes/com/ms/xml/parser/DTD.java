@@ -1,10 +1,10 @@
 /*
  * @(#)Document.java 1.0 6/3/97
- * 
+ *
  * Copyright (c) 1997 Microsoft, Corp. All Rights Reserved.
- * 
+ *
  */
- 
+
 package com.ms.xml.parser;
 
 import com.ms.xml.om.Element;
@@ -22,7 +22,7 @@ import java.io.IOException;
 
 
 /**
- * This class contains all the Document Type Definition (DTD) 
+ * This class contains all the Document Type Definition (DTD)
  * information for an XML document.
  *
  * @version 1.0, 6/17/97
@@ -33,24 +33,24 @@ public class DTD
      * Creates a new empty DTD.
      */
     public DTD()
-    {        
+    {
     }
 
-    /** 
+    /**
      * Finds a named entity in the DTD.
 	 * @param n  The name of the entity.
-	 * @return  the specified <code>Entity</code> object; returns null if it 
-      * is not found. 
+	 * @return  the specified <code>Entity</code> object; returns null if it
+      * is not found.
      */
     final void addEntity(Entity en)
-    {        
-        if (entities == null)
+    {
+       if (entities == null)
         {
             entities = new Hashtable();
-        }        
+        }
         entities.put(en.name, en);
     }
-    
+
     public final Entity findEntity(Name n)
     {
         // First see if fully qualified entity is defined in DTD
@@ -58,7 +58,7 @@ public class DTD
         if (entities != null) {
             o = (Entity)entities.get(n);
         }
-        // Then see if the entity minus the namespace matches 
+        // Then see if the entity minus the namespace matches
         // a built in entity.  This allows &amp; to be used in
         // the scope of another namespace, otherwise the user
         // would have to use &::amp; which is wierd.
@@ -73,18 +73,18 @@ public class DTD
     }
 
     final void addElementDecl(ElementDecl ed)
-    {        
+    {
         if (elementdecls == null)
         {
             elementdecls = new Hashtable();
         }
         elementdecls.put(ed.name, ed);
     }
-    
-    /** 
+
+    /**
      * Finds an element declaration for the given tag name.
 	 * @param name  The tag name.
-	 * @return  the element declaration object. 
+	 * @return  the element declaration object.
      */
     public final ElementDecl findElementDecl(Name name)
     {
@@ -93,9 +93,9 @@ public class DTD
 
     /**
      * Retrieves an object for enumerating the element declarations.
-     * 
-     * @return  an <code>Enumeration</code> object that returns 
-     * <code>ElementDecl</code> objects when enumerated. 
+     *
+     * @return  an <code>Enumeration</code> object that returns
+     * <code>ElementDecl</code> objects when enumerated.
      */
 	public final Enumeration elementDeclarations()
 	{
@@ -121,19 +121,19 @@ public class DTD
 	}
 
     final void addNotation(Notation no)
-    {        
+    {
         if (notations == null)
         {
             notations = new Hashtable();
         }
         notations.put(no.name, no);
     }
-    
+
 	/**
      * Retrieves the named XML notation in the DTD.
      *
 	 * @param name  The name of the notation.
-     * @return the <code>Notation</code> object; returns null if it is not 
+     * @return the <code>Notation</code> object; returns null if it is not
       * found.
 	 */
     public final Notation findNotation(Name name)
@@ -142,7 +142,7 @@ public class DTD
     }
 
 	/**
-	 *	add a <long name, short name> pair to the name space hashtable 
+	 *	add a <long name, short name> pair to the name space hashtable
 	 */
 	public final void addNameSpace(Atom as, Atom href)
 	{
@@ -174,7 +174,7 @@ public class DTD
 	}
 
     /**
-	 *	keep a list of all name spaces loaded so they are loaded twice if 
+	 *	keep a list of all name spaces loaded so they are loaded twice if
 	 *  two name spaces happen to refer to the same DTD file
 	 */
 	public final Atom findLoadedNameSpace(Atom url)
@@ -194,9 +194,9 @@ public class DTD
 		}
 		loadedNameSpaces.put(url, url);
 	}
-    
+
 	final void addID(Name name, Element e)
-    {        
+    {
         if (ids == null)
         {
             ids = new Hashtable();
@@ -213,14 +213,14 @@ public class DTD
     {
         idCheck = new IDCheck(idCheck, name, line, col, owner);
     }
-    
+
     final void checkIDs() throws ParseException
     {
         while(idCheck != null)
         {
     		if (findID(idCheck.name) == null)
             {
-                throw new ParseException("Couldn't find element with ID '" + idCheck.name.toString() + "'", 
+                throw new ParseException("Couldn't find element with ID '" + idCheck.name.toString() + "'",
                     idCheck.line, idCheck.col, idCheck.owner);
             }
             idCheck = idCheck.next;
@@ -287,7 +287,7 @@ public class DTD
      * Saves the DTD information to the given XML output stream.
      * @param o  The output stream to write to.
       * @return No return value.
-     * @exception  IOException if there are problems writing to the output 
+     * @exception  IOException if there are problems writing to the output
       * stream.
      */
     final public void save(XMLOutputStream o) throws IOException {
@@ -338,7 +338,7 @@ public class DTD
 
     /**
      * Entity storage
-     */    
+     */
     static Hashtable builtin;
     Hashtable entities;
 
@@ -349,7 +349,7 @@ public class DTD
 
     /**
      * Notation storage
-     */    
+     */
     Hashtable notations;
 
 	/**
@@ -384,18 +384,18 @@ public class DTD
 
     /**
      * Schema representation
-     */    
+     */
     Element schema = null;
 
     static Atom nameXML = Atom.create("XML");
-		
+
 	static
     {
         builtin = new Hashtable();
         String n = "apos";
         builtin.put("apos", new Entity(Name.create(n), false, 39));
         n = "quot";
-        builtin.put(n, new Entity(Name.create(n), false, 34));  
+        builtin.put(n, new Entity(Name.create(n), false, 34));
         n = "amp";
         builtin.put(n, new Entity(Name.create(n), false, 38));
         n = "lt";
@@ -424,4 +424,3 @@ class IDCheck
         this.owner = owner;
     }
 }
-
