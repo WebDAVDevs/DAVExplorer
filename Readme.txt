@@ -1,5 +1,10 @@
-Changes in version 0.72-dev:
+Changes for version 0.73-dev:
 - Makefile for HTTPClient now works with JSSE installed as "bundled" extension.
+- Fixed handling of EOF for whitespace after the final tag (interoperability
+  bug with Adobe InScope).
+- Changed the parser code to allow tag names starting with a digit
+  (interoperability problem with Microsoft SharePoint).
+- Removed whitespace in the created XML for lockowner and keepalive properties.
 
 Changes for version 0.72:
 - Support for operation through proxy servers
