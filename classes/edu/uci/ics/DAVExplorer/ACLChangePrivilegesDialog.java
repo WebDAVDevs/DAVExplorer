@@ -19,6 +19,7 @@
 package edu.uci.ics.DAVExplorer;
 
 import java.awt.Color;
+import java.awt.Cursor;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
 import java.awt.event.ActionEvent;
@@ -67,12 +68,13 @@ implements ActionListener, ChangeListener, ListSelectionListener, WebDAVCompleti
 
     protected void init( String resource, String hostname, Vector current )
     {
+        GlobalData.getGlobalData().setCursor( Cursor.getPredefinedCursor( Cursor.WAIT_CURSOR ) );
         this.hostname = hostname;
         this.resource = resource;
         if( current == null )
             this.current = new Vector();
         else
-            this.current = current;
+            this.current = new Vector( current );
         privileges = new Vector();
         setTitle("Edit Privileges");
         ((Main)GlobalData.getGlobalData().getMainFrame()).addWebDAVCompletionListener(this);
@@ -107,6 +109,7 @@ implements ActionListener, ChangeListener, ListSelectionListener, WebDAVCompleti
                     close( true );
                 }
             });
+        GlobalData.getGlobalData().resetCursor();
     }
 
 
@@ -143,7 +146,7 @@ implements ActionListener, ChangeListener, ListSelectionListener, WebDAVCompleti
         {
             close( true );
         }
-        else if( e.getActionCommand().equals("->") )
+        else if( e.getActionCommand().equals("=>") )
         {
             DefaultListModel privModel = (DefaultListModel)privList.getModel();
             DefaultListModel curModel = (DefaultListModel)curList.getModel();
@@ -157,7 +160,7 @@ implements ActionListener, ChangeListener, ListSelectionListener, WebDAVCompleti
                 setChanged( true );
             }
         }
-        else if( e.getActionCommand().equals("<-") )
+        else if( e.getActionCommand().equals("<=") )
         {
             DefaultListModel privModel = (DefaultListModel)privList.getModel();
             DefaultListModel curModel = (DefaultListModel)curList.getModel();
@@ -230,17 +233,11 @@ implements ActionListener, ChangeListener, ListSelectionListener, WebDAVCompleti
         DefaultListModel model = new DefaultListModel();
         for( int i=0; i<privileges.size(); i++ )
         {
-            model.addElement( privileges.get(i) );
+            if( !current.contains( privileges.get(i) ) )
+                    model.addElement( privileges.get(i) );
         }
         privList = new JList( model );
-        for( int i=0; i<privList.getComponentCount(); i++ )
-        {
-            if( current.contains( privList.getComponent(i)) )
-            {
-                privList.remove(i);
-                i--;
-            }
-        }
+        privList.setFixedCellWidth(200);    // wild guess
         JScrollPane privScroll = new JScrollPane();
         privScroll.setViewportView( privList );
         privList.addListSelectionListener( this );
@@ -250,7 +247,7 @@ implements ActionListener, ChangeListener, ListSelectionListener, WebDAVCompleti
             model.addElement( current.get(i) );
         }
         curList = new JList( model ); 
-        curList.setModel( new DefaultListModel() );
+        curList.setFixedCellWidth(200);    // wild guess
         JScrollPane curScroll = new JScrollPane();
         curScroll.setViewportView( curList );
         curList.addListSelectionListener( this );
@@ -286,17 +283,16 @@ implements ActionListener, ChangeListener, ListSelectionListener, WebDAVCompleti
         gridbag.setConstraints( privScroll, c );
         panel.add( privScroll );
 
-        rightButton = new JButton("->");
+        rightButton = new JButton("=>");
         rightButton.addActionListener(this);
         rightButton.setMnemonic( KeyEvent.VK_GREATER );
         rightButton.setEnabled( false );
-        leftButton  = new JButton("<-");
+        leftButton  = new JButton("<=");
         leftButton.addActionListener(this);
         leftButton.setMnemonic( KeyEvent.VK_LESS );
         leftButton.setEnabled( false );
         JPanel arrowPanel = new JPanel();
         GridBagLayout arrowGridbag = new GridBagLayout();
-        //arrowPanel.setLayout( new GridLayout( 2, 1 ) );
         arrowPanel.setLayout( arrowGridbag );
         c.gridx = 0;
         c.gridwidth = GridBagConstraints.REMAINDER;

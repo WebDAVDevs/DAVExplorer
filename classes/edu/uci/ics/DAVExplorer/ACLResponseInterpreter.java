@@ -478,10 +478,11 @@ public class ACLResponseInterpreter extends DeltaVResponseInterpreter
             slashpos = Resource.lastIndexOf( '/', Resource.length()-2 );
         else
             slashpos = Resource.lastIndexOf( '/', Resource.length() );
-        String base = Resource.substring( slashpos + 1 );
+        String base = Resource.substring( slashpos );
         if( !base.endsWith("/") )
             base += "/";
 
+        String href = null;
         Element curProp = null;
         Element rootElem = skipElements( xml_doc, token );
         if( rootElem != null )
@@ -493,6 +494,8 @@ public class ACLResponseInterpreter extends DeltaVResponseInterpreter
                 Name currentTag = current.getTagName();
                 if( currentTag != null )
                 {
+                    if( currentTag.getName().equals( WebDAVXML.ELEM_HREF ) )
+                        href = getHref( enumTree, current );
                     if( currentTag.getName().equals( WebDAVXML.ELEM_PROP ) )
                         curProp = current;
                     if( currentTag.getName().equals( WebDAVProp.PROP_RESOURCETYPE ) )
@@ -500,7 +503,10 @@ public class ACLResponseInterpreter extends DeltaVResponseInterpreter
                         // we only care about resources that are principal types
                         if( getResourceType( current ) == RESOURCETYPE_PRINCIPAL )
                         {
-                            principalNames.add( base + getDisplayName( curProp ) );
+                            String[] names = new String[2];
+                            names[0] = href;
+                            names[1] = base + getDisplayName( curProp );
+                            principalNames.add( names );
                         }
                     }
                 }

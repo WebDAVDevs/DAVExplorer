@@ -34,7 +34,6 @@
 package edu.uci.ics.DAVExplorer;
 
 import java.awt.Color;
-import java.awt.Rectangle;
 import java.awt.GridBagLayout;
 import java.awt.GridBagConstraints;
 import java.awt.event.ActionEvent;

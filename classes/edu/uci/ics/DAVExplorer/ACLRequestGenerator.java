@@ -222,7 +222,7 @@ public class ACLRequestGenerator extends DeltaVRequestGenerator
     }
 
 
-    public synchronized boolean GenerateACL( ACLPrincipal[] principals )
+    public synchronized boolean GenerateACL( Vector nodes )
     {
         if( GlobalData.getGlobalData().getDebugRequest() )
         {
@@ -251,45 +251,45 @@ public class ACLRequestGenerator extends DeltaVRequestGenerator
 
         Element topElem = WebDAVXML.createElement( ACLXML.ELEM_ACL, Element.ELEMENT, null, asgen );
         topElem.addChild( WebDAVXML.elemNewline, null );
-        for( int p = 0; p < principals.length; p++ )
+        for( int p = 0; p < nodes.size(); p++ )
         {
+            ACLNode node = (ACLNode)nodes.get( p );
             Element ace = WebDAVXML.createElement( ACLXML.ELEM_ACE, Element.ELEMENT, topElem, asgen );
             // set principal
             Element princ = WebDAVXML.createElement( ACLXML.ELEM_PRINCIPAL, Element.ELEMENT, ace, asgen );
             Element princHref = WebDAVXML.createElement( WebDAVXML.ELEM_HREF, Element.ELEMENT, princ, asgen );
             Element princVal = WebDAVXML.createElement( null, Element.PCDATA, princ, asgen );
-            princVal.setText( principals[p].getPrincipal() );
+            princVal.setText( node.getPrincipal()[1] );
             // keep on same line without whitespace
             addChild( princHref, princVal, 0, 0, false, false );
             addChild( princ, princHref, 3, 0, true, true );
             addChild( ace, princ, 2, 0, true, true );
 
-            Vector grant = principals[p].getGrant();
-            Vector deny = principals[p].getDeny();
             // set grant privileges
-            if( grant.size() > 0 )
+            Vector privileges = node.getPrivileges();
+            if( node.getGrant() )
             {
                 Element grantEl = WebDAVXML.createElement( ACLXML.ELEM_GRANT, Element.ELEMENT, ace, asgen );
-                for( int g = 0; g < grant.size(); g++ )
+                for( int g = 0; g < privileges.size(); g++ )
                 {
                     Element priv = WebDAVXML.createElement( ACLXML.ELEM_PRIVILEGE, Element.ELEMENT, grantEl, asgen );
-                    Element privVal = WebDAVXML.createElement( (String)grant.get(g), Element.ELEMENT, priv, asgen );
+                    Element privVal = WebDAVXML.createElement( (String)privileges.get(g), Element.ELEMENT, priv, asgen );
                     // keep on same line without whitespace
                     addChild( priv, privVal, 0, 0, false, false );
                     addChild( grantEl, priv, 3, 0, true, true );
                 }
                 addChild( ace, grantEl, 2, 0, true, true );
             }
-            else if( deny.size() > 0 )
+            else
             {
                 // set deny privileges
                 // can't have both grant and deny in the same ace element (see
                 // pp 45-46 in RFC 3744)
                 Element denyEl = WebDAVXML.createElement( ACLXML.ELEM_DENY, Element.ELEMENT, ace, asgen );
-                for( int d = 0; d < grant.size(); d++ )
+                for( int d = 0; d < privileges.size(); d++ )
                 {
                     Element priv = WebDAVXML.createElement( ACLXML.ELEM_PRIVILEGE, Element.ELEMENT, denyEl, asgen );
-                    Element privVal = WebDAVXML.createElement( (String)deny.get(d), Element.ELEMENT, priv, asgen );
+                    Element privVal = WebDAVXML.createElement( (String)privileges.get(d), Element.ELEMENT, priv, asgen );
                     // keep on same line without whitespace
                     addChild( priv, privVal, 0, 0, false, false );
                     addChild( denyEl, priv, 3, 0, true, true );

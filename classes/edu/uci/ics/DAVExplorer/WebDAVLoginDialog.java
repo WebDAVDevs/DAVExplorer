@@ -69,7 +69,6 @@ import javax.swing.JButton;
 import java.util.Vector;
 import java.awt.Color;
 import java.awt.Cursor;
-import java.awt.Rectangle;
 import java.awt.GridBagLayout;
 import java.awt.GridBagConstraints;
 import java.awt.event.ActionEvent;

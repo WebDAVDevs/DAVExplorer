@@ -19,9 +19,10 @@
 package edu.uci.ics.DAVExplorer;
 
 import java.awt.Color;
+import java.awt.Cursor;
+import java.awt.Component;
 import java.awt.GridBagLayout;
 import java.awt.GridBagConstraints;
-import java.awt.Rectangle;
 import java.awt.Dimension;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
@@ -40,6 +41,7 @@ import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JTabbedPane;
 import javax.swing.JComboBox;
+import javax.swing.DefaultListCellRenderer;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import javax.swing.event.ListSelectionEvent;
@@ -97,15 +99,19 @@ public class ACLAddDialog extends JDialog
      */
     protected void init( String resource, String hostname, ACLNode node )
     {
+        GlobalData.getGlobalData().setCursor( Cursor.getPredefinedCursor( Cursor.WAIT_CURSOR ) );
         this.hostname = hostname;
         this.resource = resource;
         if( node != null )
         {
             setTitle("Edit ACL");
             addACL = false;
-            principal = node.getPrincipal();
+            // make copies
+            principal = new String[2];
+            principal[0] = new String( node.getPrincipal()[0] );
+            principal[1] = new String( node.getPrincipal()[1] );
             principalType = node.getPrincipalType();
-            privileges = node.getPrivileges();
+            privileges = new Vector( node.getPrivileges() );
             grant = node.getGrant();
             this.node = node;
         }
@@ -156,6 +162,7 @@ public class ACLAddDialog extends JDialog
                     close( true );
                 }
             });
+        GlobalData.getGlobalData().resetCursor();
     }
 
 
@@ -173,7 +180,7 @@ public class ACLAddDialog extends JDialog
      * 
      * @return
      */
-    public String getPrincipal()
+    public String[] getPrincipal()
     {
         return principal;
     }
@@ -242,7 +249,6 @@ public class ACLAddDialog extends JDialog
         }
         else if( e.getActionCommand().equals("Change") )
         {
-            // TODO: get privileges
             ACLChangePrivilegesDialog dlg = new ACLChangePrivilegesDialog( resource, hostname, privileges );
             if( !dlg.isCanceled() )
             {
@@ -259,7 +265,9 @@ public class ACLAddDialog extends JDialog
         {
             // handle events from principal combobox
             JComboBox cb = (JComboBox)e.getSource();
-            principal = (String)cb.getSelectedItem();
+            principal = (String[])(cb.getSelectedItem());
+            principalType = ACLNode.HREF;
+            href.setText( principal[0] );
             setChanged( true );
         }
         else if( e.getActionCommand().equals("Grant") )
@@ -363,12 +371,30 @@ public class ACLAddDialog extends JDialog
             entries.add( principal );
         }
         JComboBox combo = new JComboBox( entries );
+        combo.setRenderer( 
+            new DefaultListCellRenderer()
+            {
+                public Component getListCellRendererComponent(
+                        JList list,
+                        Object value,
+                        int index,
+                        boolean isSelected,
+                        boolean cellHasFocus)
+                    {
+                        setText( ((String[])value)[1] );
+                        setBackground(isSelected ? Color.gray : Color.lightGray);
+                        setForeground(Color.black);
+                        return this;
+                    }
+            });
+
         combo.setEditable( false );
         combo.setActionCommand( "Principal" );
         combo.addActionListener( this );
-        principal = (String)combo.getSelectedItem();
-        
-        JLabel label = new JLabel( "Principal:  " );
+        principal = (String[])combo.getSelectedItem();
+        principalType = ACLNode.HREF;
+
+        JLabel label = new JLabel( "Principal: " );
         label.setHorizontalAlignment( JLabel.RIGHT );
         GridBagLayout gridbag = new GridBagLayout();
         GridBagConstraints c = new GridBagConstraints();
@@ -381,6 +407,18 @@ public class ACLAddDialog extends JDialog
         c.gridwidth = GridBagConstraints.REMAINDER;
         gridbag.setConstraints( combo, c );
         panel.add( combo );
+        JLabel hrefLabel = new JLabel( "href: " );
+        hrefLabel.setHorizontalAlignment( JLabel.RIGHT );
+        c.gridwidth = 1;
+        c.ipady = 10;
+        c.anchor = GridBagConstraints.CENTER;
+        gridbag.setConstraints( hrefLabel, c );
+        panel.add( hrefLabel );
+        href = new JLabel( principal[0] );
+        href.setHorizontalAlignment( JLabel.LEFT );
+        c.gridwidth = GridBagConstraints.REMAINDER;
+        gridbag.setConstraints( href, c );
+        panel.add( href );
         return panel;
     }
 
@@ -494,11 +532,12 @@ public class ACLAddDialog extends JDialog
     protected JButton okButton;
     protected JButton cancelButton;
     protected JList privilegesList;
+    protected JLabel href;
     protected boolean addACL;
     protected boolean changed = false;
     protected boolean waiting;
     protected boolean canceled;
-    protected String principal;
+    protected String[] principal;
     protected int principalType;
     protected Vector privileges;
     protected boolean grant;

@@ -97,7 +97,7 @@ public class ACLModel extends AbstractTableModel
         switch( columnIndex )
         {
             case 0:
-                return node.getPrincipal();
+                return node.getPrincipal()[0];  // use the href value
             case 1:
                 Vector privs = node.getPrivileges();
                 String retval = "";
@@ -144,7 +144,7 @@ public class ACLModel extends AbstractTableModel
      * @param privileges
      * @param grant
      */
-    public void addRow( String principal, int principalType, Vector privileges, boolean grant )
+    public void addRow( String[] principal, int principalType, Vector privileges, boolean grant )
     {
         int size = rows.size();
         ACLNode node = new ACLNode( principal, principalType, privileges, grant );
@@ -267,7 +267,9 @@ public class ACLModel extends AbstractTableModel
                     Element token = (Element)enumTree.nextElement();
                     if( (token != null) && (token.getType() == Element.PCDATA || token.getType() == Element.CDATA) )
                     {
-                        node.setPrincipal( GlobalData.getGlobalData().unescape( token.getText(), "UTF-8", null ) );
+                        String[] p = new String[2];
+                        p[0] = p[1] = GlobalData.getGlobalData().unescape( token.getText(), "UTF-8", null );
+                        node.setPrincipal( p );
                         node.setPrincipalType( ACLNode.HREF );
                         break;
                     }
@@ -277,14 +279,19 @@ public class ACLModel extends AbstractTableModel
                     Element token = (Element)enumTree.nextElement();
                     while( token.getTagName() == null )
                         token = (Element)enumTree.nextElement();
-                    node.setPrincipal( token.getTagName().getName() );
+                    String[] p = new String[2];
+                    p[0] = "property";
+                    p[1] = token.getTagName().getName();
+                    node.setPrincipal( p );
                     node.setPrincipalType( ACLNode.PROPERTY );
                     break;
                 }
                 else
                 {
                     //Element token = (Element)enumTree.nextElement();
-                    node.setPrincipal( currentTag.getName() );
+                    String[] p = new String[2];
+                    p[0] = p[1] = currentTag.getName();
+                    node.setPrincipal( p );
                     node.setPrincipalType( ACLNode.GENERAL );
                     break;
                 }

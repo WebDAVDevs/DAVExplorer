@@ -1420,16 +1420,9 @@ public class WebDAVResponseInterpreter
         TreeEnumeration treeEnum = new TreeEnumeration( locktoken );
         while(treeEnum.hasMoreElements() )
         {
-            Element current = (Element)treeEnum.nextElement();
-            Name tag = current.getTagName();
-            if( (tag != null) && tag.getName().equals( WebDAVXML.ELEM_HREF ) )
-            {
-                Element token = (Element)treeEnum.nextElement();
-                if( (token != null) && (token.getType() == Element.PCDATA || token.getType() == Element.CDATA) )
-                {
-                    return GlobalData.getGlobalData().unescape( token.getText(), Charset, null );
-                }
-            }
+            String href = getHref( treeEnum );
+            if( href != null )
+                return href;
         }
         return null;
     }
@@ -1643,33 +1636,24 @@ public class WebDAVResponseInterpreter
         }
 
         TreeEnumeration treeEnum = new TreeEnumeration( el );
-        while(treeEnum.hasMoreElements() )
+        String HrefValue = getHref( treeEnum );
+        if( HrefValue != null )
         {
-            Element current = (Element)treeEnum.nextElement();
-            Name tag = current.getTagName();
-            if( tag.getName().equals( WebDAVXML.ELEM_HREF ) )
-            {
-                Element token = (Element)treeEnum.nextElement();
-                if( token.getType() == Element.PCDATA || token.getType() == Element.CDATA )
-                {
-                    String HrefValue = GlobalData.getGlobalData().unescape( token.getText(), Charset, null );
-                    // stripping https://
-                    int pos = HrefValue.indexOf( GlobalData.WebDAVPrefixSSL );
-                    if( pos >= 0 )
-                        HrefValue = HrefValue.substring( pos+GlobalData.WebDAVPrefixSSL.length() );
-                    // stripping http://
-                    pos = HrefValue.indexOf( GlobalData.WebDAVPrefix );
-                    if( pos >= 0 )
-                        HrefValue = HrefValue.substring( pos+GlobalData.WebDAVPrefix.length() );
-                    pos = HrefValue.indexOf( "/" );
-                    if( pos >= 0 )
-                        HrefValue = HrefValue.substring( pos );
-                    if (HrefValue.length() == 0)
-                        HrefValue = "/";
-                    if (HrefValue.equals(Resource))
-                        return true;
-                }
-            }
+            // stripping https://
+            int pos = HrefValue.indexOf( GlobalData.WebDAVPrefixSSL );
+            if( pos >= 0 )
+                HrefValue = HrefValue.substring( pos+GlobalData.WebDAVPrefixSSL.length() );
+            // stripping http://
+            pos = HrefValue.indexOf( GlobalData.WebDAVPrefix );
+            if( pos >= 0 )
+                HrefValue = HrefValue.substring( pos+GlobalData.WebDAVPrefix.length() );
+            pos = HrefValue.indexOf( "/" );
+            if( pos >= 0 )
+                HrefValue = HrefValue.substring( pos );
+            if (HrefValue.length() == 0)
+                HrefValue = "/";
+            if (HrefValue.equals(Resource))
+                return true;
         }
         return false;
     }
@@ -2333,7 +2317,29 @@ public class WebDAVResponseInterpreter
         }
     }
 
-    
+
+    protected String getHref( TreeEnumeration treeEnum )
+    {
+        Element current = (Element)treeEnum.nextElement();
+        return getHref( treeEnum, current );
+    }
+
+
+    protected String getHref( TreeEnumeration treeEnum, Element current )
+    {
+        Name tag = current.getTagName();
+        if( (tag != null) && tag.getName().equals( WebDAVXML.ELEM_HREF ) )
+        {
+            Element token = (Element)treeEnum.nextElement();
+            if( (token != null) && (token.getType() == Element.PCDATA || token.getType() == Element.CDATA) )
+            {
+                return GlobalData.getGlobalData().unescape( token.getText(), Charset, null );
+            }
+        }
+        return null;
+    }
+
+
     protected static WebDAVRequestGenerator generator;
     protected static byte[] stream = null;
     protected static String Method;

@@ -65,7 +65,6 @@ package edu.uci.ics.DAVExplorer;
 import java.awt.Cursor;
 import java.awt.Rectangle;
 import java.awt.Dialog;
-import java.awt.Rectangle;
 
 import javax.swing.JFrame;
 import javax.swing.JOptionPane;

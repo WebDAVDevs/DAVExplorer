@@ -20,7 +20,6 @@ package edu.uci.ics.DAVExplorer;
 
 import java.awt.Color;
 import java.awt.Point;
-import java.awt.Rectangle;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.MouseAdapter;
@@ -279,12 +278,17 @@ public class ACLDialog extends JDialog
    public void save()
    {
        //TODO: Save ACL functionality
-       //Element add = model.getModified(false);
-       //Element remove = model.getModified(true);
+       Vector ACLs = new Vector();
+       for( int i=0; i< model.getRowCount(); i++ )
+       {
+           ACLNode node = model.getRow( i );
+           if( !node.isInherited() )
+               ACLs.add( node );
+       }
        ACLRequestGenerator generator = (ACLRequestGenerator)ACLResponseInterpreter.getGenerator();
-       //generator.GeneratePropPatch( resource, add, remove, locktoken );
-       //waiting = true;
-       //generator.execute();
+       generator.GenerateACL( ACLs );
+       waiting = true;
+       generator.execute();
    }
 
 

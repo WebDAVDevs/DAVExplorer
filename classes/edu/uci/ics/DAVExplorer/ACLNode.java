@@ -45,7 +45,7 @@ public class ACLNode
      * @param inheritedHref
      * @param modified
      */
-    public ACLNode( String principal, int principalType, String[] privileges, boolean grant, String inheritedHref, boolean modified )
+    public ACLNode( String[] principal, int principalType, String[] privileges, boolean grant, String inheritedHref, boolean modified )
     {
         init( principal, principalType, privileges, grant, inheritedHref, modified );
     }
@@ -59,7 +59,7 @@ public class ACLNode
      * @param grant
      * @param inheritedHref
      */
-    public ACLNode( String principal, int principalType, String[] privileges, boolean grant, String inheritedHref )
+    public ACLNode( String[] principal, int principalType, String[] privileges, boolean grant, String inheritedHref )
     {
         init( principal, principalType, privileges, grant, inheritedHref, false );
     }
@@ -73,7 +73,7 @@ public class ACLNode
      * @param grant
      * @param modified
      */
-    public ACLNode( String principal, int principalType, String[] privileges, boolean grant, boolean modified )
+    public ACLNode( String[] principal, int principalType, String[] privileges, boolean grant, boolean modified )
     {
         init( principal, principalType, privileges, grant, null, modified );
     }
@@ -86,7 +86,7 @@ public class ACLNode
      * @param privileges
      * @param grant
      */
-    public ACLNode( String principal, int principalType, String[] privileges, boolean grant )
+    public ACLNode( String[] principal, int principalType, String[] privileges, boolean grant )
     {
         init( principal, principalType, privileges, grant, null, false );
     }
@@ -99,7 +99,7 @@ public class ACLNode
      * @param privileges
      * @param grant
      */
-    public ACLNode( String principal, int principalType, Vector privileges, boolean grant )
+    public ACLNode( String[] principal, int principalType, Vector privileges, boolean grant )
     {
         init( principal, principalType, privileges, grant, null, false );
     }
@@ -125,9 +125,11 @@ public class ACLNode
      * @param inheritedHref
      * @param modified
      */
-    protected void init( String principal, int principalType, String[] privileges, boolean grant, String inheritedHref, boolean modified )
+    protected void init( String[] principal, int principalType, String[] privileges, boolean grant, String inheritedHref, boolean modified )
     {
-        this.principal = principal;
+        this.principal = new String[2];
+        this.principal[0] = new String( principal[0] );
+        this.principal[1] = new String( principal[1] );
         this.principalType = principalType;
         setPrivileges( privileges );
         this.grant = grant;
@@ -151,7 +153,7 @@ public class ACLNode
      * @param inheritedHref
      * @param modified
      */
-    protected void init( String principal, int principalType, Vector privileges, boolean grant, String inheritedHref, boolean modified )
+    protected void init( String[] principal, int principalType, Vector privileges, boolean grant, String inheritedHref, boolean modified )
     {
         this.principal = principal;
         this.principalType = principalType;
@@ -172,7 +174,7 @@ public class ACLNode
      * 
      * @return
      */
-    public String getPrincipal()
+    public String[] getPrincipal()
     {
         return principal;
     }
@@ -182,7 +184,7 @@ public class ACLNode
      * 
      * @param principal
      */
-    public void setPrincipal( String principal )
+    public void setPrincipal( String[] principal )
     {
         this.principal = principal;
         this.modified = true;
@@ -392,7 +394,7 @@ public class ACLNode
     }
 
 
-    private String principal;
+    private String[] principal;
     private int principalType;
     private Vector privileges;
     private boolean grant;
