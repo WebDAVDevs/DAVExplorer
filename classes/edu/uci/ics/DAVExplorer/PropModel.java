@@ -50,6 +50,7 @@ import javax.swing.event.TreeExpansionEvent;
 import com.ms.xml.om.Element;
 import com.ms.xml.om.TreeEnumeration;
 import com.ms.xml.util.Name;
+import com.ms.xml.util.Atom;
 
 public class PropModel extends AbstractTableModel implements TreeTableModel
 {
@@ -409,11 +410,18 @@ public class PropModel extends AbstractTableModel implements TreeTableModel
                          * Until then, we are stuck with code like this to get the
                          * actual namespace by walking up the tree.
                          */
-                        String ns = tagname.getNameSpace().toString();
+                        String ns = null;
+                        Atom namespace = tagname.getNameSpace();
+                        if( namespace != null )
+                            ns = tagname.getNameSpace().toString();
                         Element parent = propValEl;
+                        Name name = null;
+                        if( ns != null )
+                            name = Name.create( ns, "xmlns" );
+                        else
+                            name = Name.create( "xmlns" );
                         while( parent != null )
                         {
-                            Name name = Name.create(ns, "xmlns");
                             String attr = (String)parent.getAttribute(name);
                             if( attr == null )
                                 parent = parent.getParent();
