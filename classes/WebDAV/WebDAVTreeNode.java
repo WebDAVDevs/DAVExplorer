@@ -55,6 +55,7 @@ public class WebDAVTreeNode extends DefaultMutableTreeNode {
     hasLoaded = true;
     dataNode = new DataNode(true,false,o.toString(),"WebDAV Root Node","",0,"",null);
   }
+  
   public DataNode getDataNode() {
     return dataNode;
   }
@@ -76,10 +77,15 @@ public class WebDAVTreeNode extends DefaultMutableTreeNode {
   }
 
   public int getChildCount() {
+// Yuzo: What the heck is this supposed to be doing?
      
+System.out.println("WebDAVTreeNode: getChildCount: hasLoaded ="
+	+ hasLoaded + ", interpreter.Refreshing()=" + interpreter.Refreshing());
      if ( (hasLoaded) && (interpreter.Refreshing()) ) {
+System.out.println("*PATH 1");
        Object[] full_path = getPath();
        if (full_path.length > 1) {      
+System.out.println("*PATH 1.1, full_path.length=" + full_path.length);
          removeChildren();
          dataNode = null;
          hasLoaded = false;
@@ -87,23 +93,35 @@ public class WebDAVTreeNode extends DefaultMutableTreeNode {
        }
        interpreter.ResetRefresh();
      }
-     else if (hasLoaded)
+     else if (hasLoaded){
+System.out.println("*PATH 2");
        return super.getChildCount();
+     }
 
-    if (!hasLoaded)       
-      loadChildren();
+//Yuzo: I changed the below from if (!hasLoaded)
+    if ((!hasLoaded) && (!interpreter.Refreshing()) ) {
+System.out.println("*PATH 3, getchildCount=" + super.getChildCount());
+      	loadChildren();
+    }
+    else if ((!hasLoaded) )
+    {
+        System.out.println("*PATH 4, getchildCount=" + super.getChildCount());
+      	loadChildren();
+    }
 
     return super.getChildCount();
   }
 
   protected void loadRemote(byte[] byte_xml) {
 
+System.out.println("#loadRemote called");
     Vector nodesChildren = new Vector();
     Document xml_doc = null; 
     Element multiElem = null;
     Element respElem = null;
     boolean found = false;
     String ResourceName = interpreter.getResource();
+
     if ((ResourceName.startsWith("/")) && (ResourceName.length() > 1) )
       ResourceName = ResourceName.substring(1);
 
@@ -129,7 +147,7 @@ public class WebDAVTreeNode extends DefaultMutableTreeNode {
         continue;
       if (!multiTag.getName().equals(WebDAVXML.ELEM_MULTISTATUS))
         continue;
-      found = true;
+      found = true; // case: multiTag.getName() == WebDAVXML.ELEM_MULTISTATUS
       break;
     } 
     if (found) { 
@@ -143,6 +161,8 @@ public class WebDAVTreeNode extends DefaultMutableTreeNode {
           continue;
 	parseResponse(respElem, ResourceName, nodesChildren);
       } 
+// Yuzo: added bug fix attempt
+	hasLoaded = true;
     }
     else {
       dataNode = null;
@@ -356,7 +376,7 @@ public class WebDAVTreeNode extends DefaultMutableTreeNode {
   }
   protected void loadLocal(String name, Object[] full_path) {
 
-
+System.out.println("&&loadLocal called");
      String fileName = name;
      for (int i=2;i<full_path.length;i++)
        fileName += File.separator + full_path[i];
@@ -366,6 +386,8 @@ public class WebDAVTreeNode extends DefaultMutableTreeNode {
      File f = new File(fileName);
      if ((f != null) && (f.exists()) && (f.isDirectory()) ) {
 	Vector nodesChildren = new Vector();
+// Yuzo bug fix for empty sub dir
+try{
         String[] fileList = f.list();
         int len = fileList.length;
         for (int i=0;i<len;i++) {
@@ -389,6 +411,9 @@ public class WebDAVTreeNode extends DefaultMutableTreeNode {
             nodesChildren.addElement(newNode);
           } 
 	}
+}catch( Exception e) {
+System.out.println(e);
+}
         Date fileDate = new Date(f.lastModified());
         dataNode = new DataNode(true,false,name,"Local File","",
                                             f.length(),fileDate.toLocaleString(), nodesChildren);
@@ -410,22 +435,27 @@ public class WebDAVTreeNode extends DefaultMutableTreeNode {
     for (int p=0;p<full_path.length;p++)
       System.out.println("  full_path[" + p + "] = " + full_path[p].toString());
 */
+    if( full_path == null || full_path.length <= 1 )
+        return;
+        
     String name = full_path[1].toString();
     if (name.startsWith(WebDAVPrefix)) {
       byte[] byte_xml = interpreter.getXML();
       if (byte_xml == null)  {
-	hasLoaded = false;
-	dataNode = null;
+    	hasLoaded = false;
+    	dataNode = null;
         interpreter.ResetRefresh();
-        generator.GeneratePropFind(null,"allprop","one",null,null);
         generator.setExtraInfo("index");
+        generator.GeneratePropFind(null,"allprop","one",null,null);
         generator.execute();
+        byte_xml = interpreter.getXML();
+        loadRemote(byte_xml);
         return;
       }	 
       else {
         loadRemote(byte_xml);
-	interpreter.clearStream();
-	interpreter.ResetRefresh();
+    	interpreter.clearStream();
+    	interpreter.ResetRefresh();
       }
     }    
     else {
@@ -433,40 +463,40 @@ public class WebDAVTreeNode extends DefaultMutableTreeNode {
     }
   }
 
-  public String truncateResource(String res) {
+  public String truncateResource(String res)
+  {
     int pos = res.indexOf(HTTPPrefix);
-    if (pos < 0)
-      return res;
-    String stripped = res.substring(HTTPPrefix.length());
-    pos = stripped.indexOf("/");
-    stripped = stripped.substring(pos);
-   
-
-    if (stripped.endsWith("/"))
-      stripped = stripped.substring(0,stripped.length() - 1);
-    pos = stripped.lastIndexOf("/");
     if (pos >= 0)
-      stripped = stripped.substring(pos);
-    if ((stripped.startsWith("/")) && (stripped.length() > 1))
-      stripped = stripped.substring(1);
-    if (stripped.length() == 0)
-      stripped = "/";
-    return stripped;
+        res = res.substring(HTTPPrefix.length());
+    pos = res.indexOf("/");
+    res = res.substring(pos);
+
+    if (res.endsWith("/"))
+        res = res.substring(0, res.length() - 1);
+    pos = res.lastIndexOf("/");
+    if (pos >= 0)
+        res = res.substring(pos);
+    if ((res.startsWith("/")) && (res.length() > 1))
+        res = res.substring(1);
+    if (res.length() == 0)
+        res = "/";
+    return res;
   }
+  
   public String getFullResource(String res) {
 
     int pos = res.indexOf(HTTPPrefix);
-    if (pos < 0)
-      return res;
-    res = res.substring(HTTPPrefix.length());
+    if (pos >= 0)
+        res = res.substring(HTTPPrefix.length());
     pos = res.indexOf("/");
     res = res.substring(pos);
     if (res.endsWith("/"))
-      res = res.substring(0,res.length() - 1);
+        res = res.substring(0,res.length() - 1);
     if (res.length() == 0)
-      res = "/";
+        res = "/";
     if ( (res.startsWith("/")) && (res.length() > 1) )
-      res = res.substring(1);
+        res = res.substring(1);
     return res;
   }
+
 }
