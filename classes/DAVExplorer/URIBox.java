@@ -132,7 +132,7 @@ public class URIBox extends JPanel implements ActionListener
                 {
                     ZipFile jfile = new ZipFile( jarPath );
                     icons = WebDAVClassName + "/" + IconDir + "/";
-                    ZipEntry entry = jfile.getEntry( icons );
+                    ZipEntry entry = jfile.getEntry( icons + "connect.gif" );
                     if( entry != null )
                     {
                         return icons;

@@ -487,7 +487,7 @@ public class WebDAVFileView implements ViewSelectionListener
                 {
                     ZipFile zfile = new ZipFile( jarPath );
                     icons = WebDAVClassName + "/" + IconDir + "/";
-                    ZipEntry entry = zfile.getEntry( icons );
+                    ZipEntry entry = zfile.getEntry( icons + "connect.gif" );
                     if( entry != null )
                     {
                         return icons;
