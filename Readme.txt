@@ -1,3 +1,6 @@
+Changes in version 0.72-dev:
+- Makefile for HTTPClient now works with JSSE installed as "bundled" extension.
+
 Changes for version 0.72:
 - Support for operation through proxy servers
 - Update to HTTPClient 0.3.3
