@@ -154,7 +154,7 @@ Changes for version 0.91-dev:
   This is a workaround for a bug in MS Exchange that results in corrupt
   compressed data (thanks to Frédéric Esnouf for alerting us to the problem.)
 - Added handling of ISO 8601 Date strings. This is a workaround for a bug
-  in MS Exchange, whose date strings in the <getlastmodified> uses the
+  in MS Exchange, whose date strings in the <getlastmodified> tag uses the
   ISO 8601 format instead of the RFC 2616 format required by the WebDAV
   RFC (thanks to Frédéric Esnouf for alerting us to the problem.)
 - Fixed the charset handling and unencoding of data from the server.
