@@ -43,13 +43,16 @@ import java.io.FilterInputStream;
  *
  * @version	0.3-3  06/05/2001
  * @author	Ronald Tschalär
+ * @author      Joachim Feise (dav-exp@ics.uci.edu)
+ * @date        06 February 2004
+ * Changes:     Changed class and constructor to public.
  */
-class ChunkedInputStream extends FilterInputStream
+public class ChunkedInputStream extends FilterInputStream
 {
     /**
      * @param is the input stream to dechunk
      */
-    ChunkedInputStream(InputStream is)
+    public ChunkedInputStream(InputStream is)
     {
 	super(is);
     }

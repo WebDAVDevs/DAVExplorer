@@ -44,8 +44,11 @@ import java.util.zip.GZIPInputStream;
  *
  * @version	0.3-3  06/05/2001
  * @author	Ronald Tschalär
+ * @author      Joachim Feise (dav-exp@ics.uci.edu)
+ * @date        06 February 2004
+ * Changes:     Changed class to public.
  */
-class ContentEncodingModule implements HTTPClientModule
+public class ContentEncodingModule implements HTTPClientModule
 {
     // Methods
 

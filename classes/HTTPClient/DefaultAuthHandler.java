@@ -496,6 +496,18 @@ public class DefaultAuthHandler implements AuthorizationHandler, GlobalConstants
 		}
 		params[alg] = ch_params[ch_alg];
 	    }
+        else
+        {
+            /* Set algorithm to MD5 by default if the server doesn't
+             * send any information.
+             */
+            if (alg == -1)
+            {
+                params = Util.resizeArray(params, params.length+1);
+                alg = params.length-1;
+            }
+            params[alg] = new NVPair( "algorithm", "MD5" );
+        }
 
 	    if (ch_qop != -1  ||
 		(ch_alg != -1  &&
