@@ -39,8 +39,6 @@ classes = AsGen.class \
 	  EscapeReader.class \
 	  WebDAVFileView.class \
 	  PropDialog.class \
-	  PropDialogEvent.class \
-          PropDialogListener.class \
 	  PutEvent.class \
 	  PutListener.class \
 	  TableMap.class \
