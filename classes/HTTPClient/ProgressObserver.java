@@ -22,7 +22,6 @@ package HTTPClient;
 import java.util.ArrayList;
 import java.util.List;
 
-// ************************************************************************
 /**
  * This class is a container for all registered {@link ProgressListener}.
  * If a progress event is received via {@link #fireProgressEvent(int,int,String)}
@@ -30,9 +29,11 @@ import java.util.List;
  * This class is a singleton. Please use {@link #getInstance()} to get the only
  * instance of this class.
  *
- * @author Thoralf Rickert
- * @version 0.1
+ * @author      Thoralf Rickert
+ * @author      Joachim Feise (dav-exp@ics.uci.edu)
+ * @version     0.1
  */
+
 
 public class ProgressObserver
 {
@@ -41,7 +42,6 @@ public class ProgressObserver
     protected List progressListeners = new ArrayList();
 
 
-    // *********************************************************************
     /**
      * This class is a singleton. Please use {@link #getInstance()} to get
      * the only instance of this class.
@@ -51,7 +51,6 @@ public class ProgressObserver
     }
 
 
-    // *********************************************************************
     /**
      * Returns the only instance of this class.
      */
@@ -65,7 +64,6 @@ public class ProgressObserver
     }
 
 
-    // *********************************************************************
     /**
      * Use this method to add your ProgressListener implementation to the
      * observer.
@@ -78,7 +76,6 @@ public class ProgressObserver
     }
 
 
-    // *********************************************************************
     /**
      * Returns all known ProgressListeners.
      */
@@ -88,7 +85,6 @@ public class ProgressObserver
     }
 
 
-    // *********************************************************************
     /**
      * Takes every ProgressListener and calls the method 
      * {@link ProgressListener#progressAchieved(long,long,String)} to inform

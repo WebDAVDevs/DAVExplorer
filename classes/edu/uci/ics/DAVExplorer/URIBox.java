@@ -22,7 +22,7 @@
  * Description: This class creates an extension of JPanel which creates the
  *              URI entry box on the WebDAVExplorer.  This box contains
  *              the text field in which the user enters the dav server's URI.
- * Copyright:   Copyright (c) 1998-2001 Regents of the University of California. All rights reserved.
+ * Copyright:   Copyright (c) 1998-2003 Regents of the University of California. All rights reserved.
  * @author      Undergraduate project team ICS 126B 1998
  * @date        1998
  * @author      Yuzo Kanomata, Joachim Feise (dav-exp@ics.uci.edu)
@@ -41,6 +41,10 @@
  * @date        17 March 2003
  * Changes:     Integrated Brian Johnson's applet changes.
  *              Added better error reporting.
+ * @author      Joachim Feise (dav-exp@ics.uci.edu)
+ * @date        7 April 2003
+ * Changes:     Integrated Thoralf Rickert's change to combobox.
+ *              Cleaned up.
  */
 
 package edu.uci.ics.DAVExplorer;
@@ -50,49 +54,50 @@ import java.awt.event.ActionListener;
 import java.awt.event.ActionEvent;
 import java.util.Vector;
 import javax.swing.JPanel;
-import javax.swing.JTextField;
+import javax.swing.JComboBox;
 import javax.swing.JLabel;
 import javax.swing.JButton;
-import javax.swing.JOptionPane;
 import javax.swing.ImageIcon;
 import javax.swing.SwingConstants;
+import java.awt.Dimension;
+
 
 public class URIBox extends JPanel implements ActionListener
 {
     private Vector URIBoxListener;
-    private static String jarPath = null;
-    private final static String jarExtension =".jar";
-    private final static String WebDAVClassName = "edu/uci/ics/DAVExplorer";
-    private final static String IconDir = "icons";
+    private JComboBox urlField;
+    private JLabel prefix;
+    private JButton okButton;
+
 
     public URIBox()
     {
         super();
-        //setLayout(new BorderLayout());
-
         JPanel panel = new JPanel();
 
         okButton = new JButton(GlobalData.getGlobalData().getImageIcon("connect.gif", "Connect"));
-        //okButton = new JButton(loadImageIcon("connect.gif", "Connect"));
-
         okButton.setActionCommand("Connect");
         okButton.addActionListener(this);
         okButton.setToolTipText("Connect");
 
         panel.add(okButton);
 
-        textField1 = new JTextField(30);
-        textField1.addActionListener(new EnterPressedListener());
-        label1 = new JLabel();
+        urlField = new JComboBox( new Vector(URIContainer.getInstance().getURIs()) );
+        urlField.setEditable(true);
+        Dimension d = urlField.getPreferredSize();
+        d.width = 500;  // resonable width
+        urlField.setPreferredSize(d);
+        urlField.addActionListener(new EnterPressedListener());
+        prefix = new JLabel();
         if( GlobalData.getGlobalData().getSSL() )
-            label1.setText( GlobalData.WebDAVPrefixSSL );
+            prefix.setText( GlobalData.WebDAVPrefixSSL );
         else
-            label1.setText( GlobalData.WebDAVPrefix );
-        label1.setHorizontalAlignment( SwingConstants.RIGHT );
-        label1.setForeground( Color.black );
+            prefix.setText( GlobalData.WebDAVPrefix );
+        prefix.setHorizontalAlignment( SwingConstants.RIGHT );
+        prefix.setForeground( Color.black );
 
-        panel.add(label1);
-        panel.add(textField1);
+        panel.add(prefix);
+        panel.add(urlField);
 
         add("Center", panel);
         URIBoxListener = new Vector();
@@ -103,57 +108,65 @@ public class URIBox extends JPanel implements ActionListener
         }
     }
 
-    JTextField textField1;
-    JLabel label1;
-    JButton okButton;
-
 
     private ImageIcon loadImageIcon(String filename, String description)
     {
-        try {
+        try
+        {
             return new ImageIcon(getClass().getResource("icons/" + filename),description);
-        } catch (Exception ex) {
-            errorMsg("Toolbar:\nIcon load error." );
+        }
+        catch (Exception ex)
+        {
+            GlobalData.getGlobalData().errorMsg("Toolbar:\nIcon load error." );
             return null;
         }
     }
+
 
     public void actionPerformed(ActionEvent evt)
     {
         notifyListener();
     }
 
+
     public void setText(String uri)
     {
-        textField1.setText(uri);
+        urlField.setSelectedItem(uri);
     }
+
 
     public String getText()
     {
-        return textField1.getText().trim();
+        return urlField.getSelectedItem().toString().trim();
     }
+
 
     public synchronized void addActionListener(ActionListener l)
     {
         URIBoxListener.addElement(l);
     }
 
+
     /**
      * If we are say don't include then never let it be visible,
      * otherwise have it work normally.
      * @param visible
      */
-    public void setVisible(boolean visible) {
-        if (GlobalData.getGlobalData().hideURIBox()) {
+    public void setVisible(boolean visible)
+    {
+        if (GlobalData.getGlobalData().hideURIBox())
+        {
             return;
         }
         super.setVisible(visible);
     }
 
+
     public synchronized void removeActionListener(ActionListener l)
     {
         URIBoxListener.removeElement(l);
     }
+
 
     protected void notifyListener()
     {
@@ -164,18 +177,15 @@ public class URIBox extends JPanel implements ActionListener
             v = (Vector)URIBoxListener.clone();
         }
 
-        for (int i=0; i< v.size(); i++)
+        URIContainer.getInstance().addURI(getText());
+
+        for( int i=0; i< v.size(); i++ )
         {
             WebDAVURIBoxListener client = (WebDAVURIBoxListener)v.elementAt(i);
             client.actionPerformed(evt);
         }
     }
 
-    private static void errorMsg(String str)
-    {
-        Object[] options = { "OK" };
-		JOptionPane.showOptionDialog( null, str,"Error Message", JOptionPane.DEFAULT_OPTION, JOptionPane.ERROR_MESSAGE, null, options, options[0]);
-    }
 
     class EnterPressedListener implements ActionListener
     {

@@ -18,7 +18,6 @@
 
 package HTTPClient;
 
-// ************************************************************************
 /**
  * This interface gives an application the possibility to retreive the 
  * progress state of a running HTTP Request or Response. A ProgressListener
@@ -27,30 +26,28 @@ package HTTPClient;
  * Note: Only body data will be counted. A ProgressListener will never be
  * informed about HTTP Header transfers.
  *
- * @author Thoralf Rickert
- * @version 0.1
+ * @author      Thoralf Rickert
+ * @author      Joachim Feise (dav-exp@ics.uci.edu)
+ * @version     0.1
  */
+
 
 public interface ProgressListener
 {
-
-  // *********************************************************************
-  /**
-   * Will be called if the program has transferred some data...<br>
-   * If the transfer is complete then a additional call is done, to inform
-   * all ProgressListener, that the operation is completed. You can see this
-   * because <code>writtenBytes</code> and <code>fullLength</code> have the
-   * same value...
-   * 
-   *
-   * @param writtenBytes is the number of written or read bytes from a
-   *                     Request or Response (only body data)
-   * @param fullLength   is the full length of a Request or Response 
-   *                     body. If it is -1, then the size is unknown
-   *                     (for example if the transfer encoding is
-   *                     chunked).
-   * @param method       is the HTTP method (GET, PUT, ...)
-   */
-
-  public void progressAchieved( long writtenBytes, long fullLength, String method );
+    /**
+     * Will be called if the program has transferred some data...<br>
+     * If the transfer is complete then a additional call is done, to inform
+     * all ProgressListener, that the operation is completed. You can see this
+     * because <code>writtenBytes</code> and <code>fullLength</code> have the
+     * same value...
+     *
+     * @param writtenBytes is the number of written or read bytes from a
+     *                     Request or Response (only body data)
+     * @param fullLength   is the full length of a Request or Response 
+     *                     body. If it is -1, then the size is unknown
+     *                     (for example if the transfer encoding is
+     *                     chunked).
+     * @param method       is the HTTP method (GET, PUT, ...)
+     */
+    public void progressAchieved( long writtenBytes, long fullLength, String method );
 }

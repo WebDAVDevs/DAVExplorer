@@ -39,14 +39,31 @@
  * @date        17 March 2003
  * Changes:     Integrated Brian Johnson's applet changes.
  *              Added better error reporting.
+ * @author      Joachim Feise (dav-exp@ics.uci.edu)
+ * @date        7 April 2003
+ * Changes:     Improved reading/writing of configuration entries. 
  */
 
 package edu.uci.ics.DAVExplorer;
 
 import java.awt.Cursor;
-import javax.swing.*;
+import javax.swing.JFrame;
+import javax.swing.JOptionPane;
+import javax.swing.ImageIcon;
 import java.util.StringTokenizer;
-import java.io.*;
+import java.util.Vector;
+import java.io.BufferedReader;
+import java.io.BufferedWriter;
+import java.io.InputStreamReader;
+import java.io.OutputStreamWriter;
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
+import java.io.InputStream;
+import java.io.File;
+import java.io.IOException;
+
 
 class GlobalData
 {
@@ -369,7 +386,18 @@ class GlobalData
 
     public String ReadConfigEntry( String token )
     {
-        String info = "";
+        Vector info = ReadConfigEntry( token, false );
+        if( info.size() > 0 )
+        {
+            return (String)info.get(0);
+        }
+        return "";
+    }
+
+
+    public Vector ReadConfigEntry( String token, boolean multiple )
+    {
+        Vector info = new Vector();
         String userPath = System.getProperty( "user.home" );
         if (userPath == null)
             userPath = "";
@@ -394,11 +422,12 @@ class GlobalData
                     StringTokenizer filetokens = new StringTokenizer( line, "= \t" );
                     if( (filetokens.nextToken()).equals(token) )
                     {
-                        info = filetokens.nextToken();
+                        String data = filetokens.nextToken(); 
+                        info.add( data );
                         found = true;
                     }
                 }
-                while( !found );
+                while( multiple || !found );
                 in.close();
             }
             catch (Exception fileEx)
@@ -410,6 +439,40 @@ class GlobalData
 
 
     public void WriteConfigEntry( String token, String data )
+    {
+        WriteConfigEntry( token, data, true );
+    }
+
+
+    public void WriteConfigEntry( String token, Vector data )
+    {
+        if( (data == null) || (data.size() == 0) )
+            return;
+        // this has the side effect of removing all old token entries
+        WriteConfigEntry( token, (String)data.get(0), true );
+        for( int i=1; i<data.size(); i++ )
+        {
+            // it doesn't make sense here to overwrite entries
+            WriteConfigEntry( token, (String)data.get(i), false );
+        }
+    }
+
+
+    public void WriteConfigEntry( String token, Vector data, boolean overwrite )
+    {
+        if( (data == null) || (data.size() == 0) )
+            return;
+        // this has the side effect of removing all old token entries
+        WriteConfigEntry( token, (String)data.get(0), overwrite );
+        for( int i=1; i<data.size(); i++ )
+        {
+            // it doesn't make sense here to overwrite entries
+            WriteConfigEntry( token, (String)data.get(i), false );
+        }
+    }
+
+
+    public void WriteConfigEntry( String token, String data, boolean overwrite )
     {
         String userPath = System.getProperty( "user.home" );
         if (userPath == null)
@@ -434,8 +497,9 @@ class GlobalData
                     if( line != null )
                     {
                         StringTokenizer filetokens = new StringTokenizer( line, "= \t" );
-                        if( !(filetokens.nextToken()).equals(token) )
+                        if( !overwrite || !(filetokens.nextToken()).equals(token) )
                         {
+                            // copy line to new file
                             out.write( line );
                             out.newLine();
                         }

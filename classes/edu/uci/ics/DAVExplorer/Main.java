@@ -70,7 +70,6 @@
 
 package edu.uci.ics.DAVExplorer;
 
-//import HTTPClient.AuthorizationInfo;
 import HTTPClient.DefaultAuthHandler;
 import HTTPClient.CookieModule;
 
