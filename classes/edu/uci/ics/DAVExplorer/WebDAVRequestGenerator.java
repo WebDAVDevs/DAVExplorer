@@ -261,7 +261,8 @@ public class WebDAVRequestGenerator implements Runnable
 
         if( defaultName.endsWith( "/" ) )
             defaultName = defaultName.substring( 0, defaultName.length()-1 );
-        defaultName += appendix;
+        if( appendix != null )
+            defaultName += appendix;
 
         return defaultName;
     }
