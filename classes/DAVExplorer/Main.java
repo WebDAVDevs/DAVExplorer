@@ -315,7 +315,6 @@ public class Main extends JFrame
                 String s = fileView.getOldSelectedResource();
                 WebDAVTreeNode n = fileView.getParentNode();
                 requestGenerator.setResource(s, n);
-System.out.println("RenameListner: resource =" + s + ", node =" + n + " str=" + str + ", path =" + treeView.getCurrentPath() );
 
                 requestGenerator.GenerateRename( str, treeView.getCurrentPath() );
             }
@@ -343,16 +342,12 @@ System.out.println("RenameListner: resource =" + s + ", node =" + n + " str=" + 
         public void responseFormed(WebDAVResponseEvent e)
         {
 
-	    // This call process the info from the server
-
+            // This call process the info from the server
             responseInterpreter.handleResponse(e);
 
-
-
-	// Post processing
-	// These are actions designed to take place after the 
-	// response has been loaded
-
+            // Post processing
+            // These are actions designed to take place after the
+            // response has been loaded
             String extra = e.getExtraInfo();
 
             String method = e.getMethodName();
@@ -363,7 +358,7 @@ System.out.println("RenameListner: resource =" + s + ", node =" + n + " str=" + 
                 // Skip
             }
             else if (method.equals("PUT"))
-	    {
+            {
                 // Skip
             }
             else if (extra == null)
@@ -376,7 +371,7 @@ System.out.println("RenameListner: resource =" + s + ", node =" + n + " str=" + 
                 if (tn != null)
                 {
                     tn.finishLoadChildren();
-		    
+
                 }
             }
             else if ( extra.equals("select") )
@@ -386,13 +381,13 @@ System.out.println("RenameListner: resource =" + s + ", node =" + n + " str=" + 
                 {
                     tn.finishLoadChildren();
 
-		    treeView.setSelectedNode(tn);
+                    treeView.setSelectedNode(tn);
                 }
-		
+
             }
             else if ( extra.equals("uribox") )
             {
-		WebDAVTreeNode tn = e.getNode();
+                WebDAVTreeNode tn = e.getNode();
             }
             else if ( extra.equals("copy") )
             {
@@ -418,9 +413,7 @@ System.out.println("RenameListner: resource =" + s + ", node =" + n + " str=" + 
             else if (command.equals("Write File"))
             {
                 FileDialog fd = new FileDialog(WebDAVFrame, "Write File" , FileDialog.LOAD);
-                //fd.setVisible(true);
-		fd.show();
-
+                fd.setVisible( true );
 
                 if(  ( !fd.getDirectory().equals("") ) && ( fd.getDirectory() != null ) && ( fd.getFile() != null ) )
                 {
@@ -431,25 +424,24 @@ System.out.println("RenameListner: resource =" + s + ", node =" + n + " str=" + 
                     String s = "";
 
                     WebDAVTreeNode n2 = fileView.getSelectedCollection();
-		    
-		    s = fileView.getSelected();
-		    if (s == null)
-		    {
-			s = "";
-		    }
-		    WebDAVTreeNode parent = fileView.getParentNode();
 
-		    if (n2 == null)
-		    {
+                    s = fileView.getSelected();
+                    if (s == null)
+                    {
+                        s = "";
+                    }
+                    WebDAVTreeNode parent = fileView.getParentNode();
+
+                    if (n2 == null)
+                    {
                         requestGenerator.setResource(s, parent);
                         requestGenerator.GeneratePut(fullPath, s, token , null);
-
-		    } 
-		    else 
-		    {
-               	        requestGenerator.setResource(s, n2);
+                    }
+                    else
+                    {
+                        requestGenerator.setResource(s, n2);
                         requestGenerator.GeneratePut( fullPath, s, token , parent);
-		    }
+                    }
                     requestGenerator.execute();
                 }
             }
@@ -567,14 +559,26 @@ System.out.println("RenameListner: resource =" + s + ", node =" + n + " str=" + 
                     int opt = pane.showConfirmDialog( WebDAVFrame, message, "HTTP Logging", JOptionPane.OK_CANCEL_OPTION );
                     if( opt == JOptionPane.OK_OPTION )
                     {
-                        FileDialog fd = new FileDialog( WebDAVFrame, "Select Logging File" , FileDialog.SAVE );
-                        fd.setVisible(true);
-                        if( fd.getDirectory() != null )
+                        JFileChooser fd = new JFileChooser();
+                        fd.setDialogType( JFileChooser.SAVE_DIALOG );
+                        fd.setFileSelectionMode( JFileChooser.FILES_ONLY );
+                        fd.setDialogTitle( "Select Logging File" );
+                        String os = (System.getProperty( "os.name" )).toLowerCase();
+                        String dirName = null;
+                        if( os.indexOf( "windows" ) == -1 )
+                            dirName = System.getProperty("user.home");
+                        if( dirName == null )
+                            dirName = new Character(File.separatorChar).toString();
+                        fd.setCurrentDirectory( new File(dirName) );
+                        fd.setApproveButtonMnemonic( 'U' );
+                        fd.setApproveButtonToolTipText( "Use the selected file for logging" );
+                        int val = fd.showDialog( WebDAVFrame, "Use Selected" );
+                        if( val == JFileChooser.APPROVE_OPTION)
                         {
-                            logFilename = fd.getDirectory() + fd.getFile();
+                            logFilename = fd.getSelectedFile().getAbsolutePath();
                             try
                             {
-                                File f = new File( logFilename );
+                                File f = fd.getSelectedFile();
                                 if( f.exists() )
                                     f.delete();
                                 logging = true;
@@ -619,7 +623,9 @@ System.out.println("RenameListner: resource =" + s + ", node =" + n + " str=" + 
             else if (command.equals("About DAV Explorer..."))
             {
                 JOptionPane pane = new JOptionPane( this );
-                String message = new String("DAV Explorer Version "+ VERSION + "\n\nYuzo Kanomata, Joachim Feise\n" +
+                String message = new String("DAV Explorer Version "+ VERSION + "\n" +
+                "Copyright (c) 1999 Regents of the University of California\n" +
+                "Authors: Yuzo Kanomata, Joachim Feise\n" +
                 "EMail: dav-exp@ics.uci.edu\n\n" +
                 "Based on code from the UCI WebDAV Client Group\nof the ICS126B class Winter 1998\n\n" );
                 Object [] options = { "OK" };

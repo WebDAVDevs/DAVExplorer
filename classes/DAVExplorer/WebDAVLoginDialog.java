@@ -25,14 +25,14 @@
 //On: 3/3/98
 //For ICS126B (WebDAV Project)
 /////////////////////////////////////////////////////////////////////////
-// This class causes a login dialog box to 
+// This class causes a login dialog box to
 // appear.  The purpose of this Login box is
-// to authenticate users when they attempt to 
+// to authenticate users when they attempt to
 // connect to a DAV site through the action of
 // connecting to it.
 //
 // This class DOES NOT authenticate users at this
-// time.  It is in place as a UI component which 
+// time.  It is in place as a UI component which
 // may be fully integrated in an authetication scheme
 // at some future point.
 ////////////////////////////////////////////////////////////////
@@ -67,7 +67,7 @@ import java.awt.*;
 import java.awt.event.*;
 
 
-public class WebDAVLoginDialog extends JDialog implements ActionListener
+public class WebDAVLoginDialog extends Dialog implements ActionListener
 {
 /*-----------------------------------------------------------------------
 Public methods and attributes section
@@ -78,7 +78,7 @@ Public methods and attributes section
     //Construction
     public WebDAVLoginDialog(JFrame parent, ActionListener l, String strCaption, boolean isModal)
     {
-        super(parent, strCaption, true);
+        super( parent, strCaption, isModal );
 
         Rectangle recthDimensions = getParent().getBounds();
         setBounds(recthDimensions.x + (recthDimensions.width - 350)/ 2,
@@ -90,11 +90,10 @@ Public methods and attributes section
         groupPanel.add(new JLabel("Password:"));
         txtPassword = new JPasswordField("", 40);
         groupPanel.add(txtPassword);
-        getContentPane().add(OKbutton = new JButton("OK"), BorderLayout.SOUTH);
+        add(OKbutton = new JButton("OK"), BorderLayout.SOUTH);
         OKbutton.addActionListener(this);
-        getContentPane().add(groupPanel, BorderLayout.CENTER);
+        add(groupPanel, BorderLayout.CENTER);
         pack();
-        //new Thread( this ).start();
         setVisible( true );
     }
 
@@ -109,7 +108,7 @@ Public methods and attributes section
 
     public void actionPerformed(ActionEvent e)
     {
-	if(e.getActionCommand().equals("OK"))
+    if(e.getActionCommand().equals("OK"))
         {
             String user = txtUsername.getText();
             String pass = String.valueOf( txtPassword.getPassword() );
@@ -147,7 +146,7 @@ Public methods and attributes section
     //Get the user name to be sent through the wire
     public String getUsername()
     {
-	return m_strUsername;
+    return m_strUsername;
     }
 
     //Get the user password to be sent through the wire.

@@ -55,7 +55,7 @@ import java.awt.*;
 import java.awt.event.*;
 import java.io.*;
 
-public class WebDAVLockInfo extends JDialog implements ActionListener
+public class WebDAVLockInfo extends Dialog implements ActionListener
 {
 /*-----------------------------------------------------------------------
 Public methods and attributes section
@@ -73,9 +73,8 @@ Public methods and attributes section
         super(parent, strCaption, isModal);
 
         Rectangle recthDimensions = getParent().getBounds();
-        setBounds(recthDimensions.x + (recthDimensions.width - 400)/ 2,
-             recthDimensions.y + (recthDimensions.height - 100)/2, 400, 100 );
-        //setSize( 400, 100 );
+        setBounds(recthDimensions.x,
+             recthDimensions.y + (recthDimensions.height - 70)/2, 400, 70 );
         userPath = System.getProperty( "user.home" );
         if (userPath == null)
             userPath = "";
@@ -105,9 +104,9 @@ Public methods and attributes section
            txtUsername.setText(lockInfo);
         else
            txtUsername.setText("http://");
-        getContentPane().add(OKbutton = new JButton("OK"), BorderLayout.SOUTH);
+        add(OKbutton = new JButton("OK"), BorderLayout.SOUTH);
         OKbutton.addActionListener(this);
-        getContentPane().add(groupPanel, BorderLayout.CENTER);
+        add(groupPanel, BorderLayout.CENTER);
         pack();
         setVisible( true );
     }

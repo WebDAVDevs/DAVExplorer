@@ -314,9 +314,9 @@ public class WebDAVRequestGenerator implements Runnable
             // selected tree node will actually have the
             // properties of the children of the node
             // loaded into our tree.
-	    if (Extra.equals("select")){
-		// Skip on a selection 
-	    }
+        if (Extra.equals("select")){
+        // Skip on a selection
+        }
             else if (ResourceName.equals(FullPath))
             {
                 Extra = "index";
@@ -676,13 +676,13 @@ public class WebDAVRequestGenerator implements Runnable
             Headers[0] = new NVPair("Host",HostName + ":" + Port);
     }
 
-    // Returns the parent Node , this is used to indicate which 
+    // Returns the parent Node , this is used to indicate which
     // Node is beeing writen to by WebDAVResponseInterpreter:parsePut
    // Parent in case of selection of collection in file view
-    // and the collection itself in the case of nothing selected in 
+    // and the collection itself in the case of nothing selected in
     // file view window
     public WebDAVTreeNode getPossibleParentOfSelectedCollectionNode(){
-	return parentNode;
+    return parentNode;
     }
 
     public void resetParentNode(){
@@ -694,7 +694,7 @@ public class WebDAVRequestGenerator implements Runnable
         Headers = null;
         Body = null;
 
-	parentNode = selectedCollection;
+    parentNode = selectedCollection;
 
         ResourceName = destDir;
         if (!parseResourceName())
@@ -1164,9 +1164,7 @@ public class WebDAVRequestGenerator implements Runnable
         if( pos >= 0 )
         {
             String extension = file.substring( pos+1 ).toLowerCase();
-            if( extension.equals( "txt" ) )
-                content = "text/plain";
-            else if( extension.equals( "htm" ) || extension.equals( "html" ) )
+            if( extension.equals( "htm" ) || extension.equals( "html" ) )
                 content = "text/html";
             else if( extension.equals( "gif" ) )
                 content = "image/gif";
@@ -1208,6 +1206,10 @@ public class WebDAVRequestGenerator implements Runnable
                 content = "audio/basic";
             else if( extension.equals( "vrm" ) || extension.equals( "vrml" ) )
                 content = "model/vrml";
+            else if( extension.equals( "txt" ) || extension.equals( "c" ) || extension.equals( "cc" ) || extension.equals( "cpp" ) ||
+                extension.equals( "h" ) || extension.equals( "sh" ) || extension.equals( "bat" ) || extension.equals( "ada" ) ||
+                extension.equals( "java" ) || extension.equals( "rc" ) )
+                content = "text/plain";
         }
 
         return content;
