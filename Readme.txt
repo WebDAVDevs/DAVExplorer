@@ -50,6 +50,8 @@ Alternative Usage:
 The username and password parameters are optional for security reasons.
 If they are not specified on the webpage, they are requested interactively.
 The applet code also supports the use of SSL. It has been tested with JRE 1.4.
+Since DAV Explorer accesses restricted properties, the jar file is signed by
+the DAV Explorer Team to allow the use as applet.
 
 
 2. LICENSE
@@ -70,6 +72,9 @@ To retrieve the complete source tree, check out the modules DAVExplorer,
 HTTPClient and parser. 
 This account is read-only, please submit code patches to <dav-exp@ics.uci.edu>. 
 
+If the DAV Explorer jar file is created from the source, it has to be
+signed with the jarsigner tool before it can run as applet. The jar file
+included in the binary distribution is signed by the DAV Explorer Team.
 
 4. COMMAND LINE OPTIONS
 
@@ -117,16 +122,19 @@ Thanks to everybody.
 
 6. CHANGELOG
 
-Changes for version 0.82-dev:
+Changes for version 0.82:
 - Made sure that DAV Explorer runs with JDK 1.1.x, for MacOS 9 compatibility
-- Updated to run with JDK 1.4 on Windows
+- Updated to run with JDK 1.4
 - Incorporated Karen Schuchardt's changes to improve the loading of images
 - Added the -Dlocal option to disable reading and showing the local
   directory structure.
 - Fixed the icon locator code to account for drive letters on Windows.
 - Special handling of PUT to support files > 2GB.
-- Added Translate header to better support IIS
-- Incorporated Brian Johnson's changes for applet support
+- Added Translate header to better support IIS.
+- Incorporated Brian Johnson's changes for applet support.
+- Incorporated Thoralf Rickert's progress bar and persistent URL support.
+- Lock info defaults to "DAV Explorer".
+- Added support for shared locks.
 
 Changes for version 0.81:
 - Fixed handling of default namespace in the view/modify property dialog
