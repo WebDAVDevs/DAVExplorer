@@ -53,6 +53,9 @@
  * @author      Joachim Feise (dav-exp@ics.uci.edu)
  * @date        23 September 2003
  * Changes:     Integrated the DeltaV code from the Spring 2003 ICS125 team.
+ * @author      Joachim Feise (dav-exp@ics.uci.edu)
+ * @date        15 November 2003
+ * Changes:     Changed the justification of the size and last modified fields.
  */
 
 package edu.uci.ics.DAVExplorer;
@@ -818,25 +821,31 @@ public class WebDAVFileView implements ViewSelectionListener, ActionListener
         resizeCol = table.getColumn(colNames[3]);
         resizeCol.setMinWidth(100);
 
+		// displayname
         resizeCol = table.getColumn(colNames[4]);
         resizeCol.setMinWidth(100);
 
+		// type
         resizeCol = table.getColumn(colNames[5]);
         resizeCol.setMinWidth(100);
         ren = new DefaultTableCellRenderer();
         ren.setHorizontalAlignment(JLabel.CENTER);
         resizeCol.setCellRenderer(ren);
 
+		// size
         resizeCol = table.getColumn(colNames[6]);
         resizeCol.setMinWidth(50);
         ren = new DefaultTableCellRenderer();
-        ren.setHorizontalAlignment(JLabel.CENTER);
+        ren.setHorizontalAlignment(JLabel.RIGHT);
         resizeCol.setCellRenderer(ren);
 
+		// last modified
         resizeCol = table.getColumn(colNames[7]);
         resizeCol.setMinWidth(210);
         ren = new DefaultTableCellRenderer();
-        ren.setHorizontalAlignment(JLabel.CENTER);
+        // it is bad to use left alignment when the
+        // column to the left is right-aligned
+        ren.setHorizontalAlignment(JLabel.RIGHT);
         resizeCol.setCellRenderer(ren);
     }
 
