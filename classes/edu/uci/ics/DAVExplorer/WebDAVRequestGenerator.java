@@ -294,13 +294,15 @@ public class WebDAVRequestGenerator implements Runnable
             ls = (Vector) listeners.clone();
         }
 
-        // add our own user-agent header
+        // add our own headers: user-agent and translate
         if( userAgent != null )
         {
-            NVPair[] newHeaders = new NVPair[Headers.length+1];
+            NVPair[] newHeaders = new NVPair[Headers.length+2];
             for( int i=0; i<Headers.length; i++ )
                 newHeaders[i] = Headers[i];
-            newHeaders[Headers.length] = new NVPair( "User-Agent", userAgent );
+            int pos = Headers.length;
+            newHeaders[pos++] = new NVPair( "Translate", "f" );
+            newHeaders[pos++] = new NVPair( "User-Agent", userAgent );
             Headers = newHeaders;
         }
 
