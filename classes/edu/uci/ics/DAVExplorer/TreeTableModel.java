@@ -27,9 +27,12 @@
  * Based on the JTreeTable examples provided by Sun Microsystems, Inc.:
  * http://java.sun.com/products/jfc/tsc/articles/treetable1/index.html
  * http://java.sun.com/products/jfc/tsc/articles/treetable2/index.html
+ * @author      Joachim Feise (dav-exp@ics.uci.edu)
+ * @date        1 October 2001
+ * Changes:     Change of package name
  */
 
-package DAVExplorer;
+package edu.uci.ics.DAVExplorer;
 
 import javax.swing.tree.TreeModel;
 

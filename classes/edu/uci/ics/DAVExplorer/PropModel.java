@@ -27,9 +27,12 @@
  * Based on the JTreeTable examples provided by Sun Microsystems, Inc.:
  * http://java.sun.com/products/jfc/tsc/articles/treetable1/index.html
  * http://java.sun.com/products/jfc/tsc/articles/treetable2/index.html
+ * @author      Joachim Feise (dav-exp@ics.uci.edu)
+ * @date        1 October 2001
+ * Changes:     Change of package name
  */
 
-package DAVExplorer;
+package edu.uci.ics.DAVExplorer;
 
 import java.util.Vector;
 import java.util.Enumeration;
@@ -61,25 +64,25 @@ public class PropModel extends AbstractTableModel implements TreeTableModel
     {
         this.tree = tree;
 
-    	tree.addTreeExpansionListener(new TreeExpansionListener()
+        tree.addTreeExpansionListener(new TreeExpansionListener()
         {
-    	    // Don't use fireTableRowsInserted() here;
-    	    // the selection model would get updated twice.
-    	    public void treeExpanded(TreeExpansionEvent event)
+            // Don't use fireTableRowsInserted() here;
+            // the selection model would get updated twice.
+            public void treeExpanded(TreeExpansionEvent event)
             {
-    	        fireTableDataChanged();
-    	    }
+                fireTableDataChanged();
+            }
             public void treeCollapsed(TreeExpansionEvent event)
             {
-    	        fireTableDataChanged();
-    	    }
-    	});
+                fireTableDataChanged();
+            }
+        });
     }
 
     public int getRowCount()
     {
         if( tree != null )
-        	return tree.getRowCount();
+            return tree.getRowCount();
         return 0;
     }
 
@@ -135,8 +138,8 @@ public class PropModel extends AbstractTableModel implements TreeTableModel
     {
         if( tree != null )
         {
-        	TreePath treePath = tree.getPathForRow(row);
-        	return treePath.getLastPathComponent();
+            TreePath treePath = tree.getPathForRow(row);
+            return treePath.getLastPathComponent();
          }
          return null;
     }
@@ -160,7 +163,7 @@ public class PropModel extends AbstractTableModel implements TreeTableModel
 
     public Object getValueAt(int row, int column)
     {
-    	return getValueAt(nodeForRow(row), column);
+        return getValueAt(nodeForRow(row), column);
     }
 
     public Object getValueAt( Object node, int column )

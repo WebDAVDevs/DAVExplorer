@@ -28,9 +28,12 @@
  * @author      Yuzo Kanomata, Joachim Feise (dav-exp@ics.uci.edu)
  * @date        17 March 1999
  * Changes:     Added the WebDAVTreeNode that initiated the Request.
+ * @author      Joachim Feise (dav-exp@ics.uci.edu)
+ * @date        1 October 2001
+ * Changes:     Change of package name
  */
 
-package DAVExplorer;
+package edu.uci.ics.DAVExplorer;
 
 import java.util.EventObject;
 import HTTPClient.NVPair;

@@ -25,9 +25,12 @@
  * Copyright:   Copyright (c) 1999-2001 Regents of the University of California. All rights reserved.
  * @author      Joachim Feise (dav-exp@ics.uci.edu)
  * @date        1 April 1999
+ * @author      Joachim Feise (dav-exp@ics.uci.edu)
+ * @date        1 October 2001
+ * Changes:     Change of package name
  */
 
-package DAVExplorer;
+package edu.uci.ics.DAVExplorer;
 
 import java.io.InputStream;
 import java.io.FilterInputStream;

@@ -29,9 +29,12 @@
  * @author      Joachim Feise (dav-exp@ics.uci.edu)
  * @date        2 August 2001
  * Changes:     Renamed Duplicate to Copy
+ * @author      Joachim Feise (dav-exp@ics.uci.edu)
+ * @date        1 October 2001
+ * Changes:     Change of package name
  */
 
-package DAVExplorer;
+package edu.uci.ics.DAVExplorer;
 
 import javax.swing.JPanel;
 import javax.swing.JToolBar;
@@ -59,7 +62,7 @@ public class WebDAVToolBar extends JPanel implements ActionListener
     private Vector toolbarListener;
     private static String jarPath = null;
     private static final String jarExtension =".jar";
-    private static final String WebDAVClassName = "DAVExplorer";
+    private static final String WebDAVClassName = "edu/uci/ics/DAVExplorer";
     private static final String IconDir = "icons";
 
     public WebDAVToolBar()

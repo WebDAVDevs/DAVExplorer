@@ -29,9 +29,12 @@
  * Changes:     Added support for https (SSL), moved reading of debug properties here
  * @date        29 May 2001
  * Changes:     Support for reading/writing configuration file
+ * @author      Joachim Feise (dav-exp@ics.uci.edu)
+ * @date        1 October 2001
+ * Changes:     Change of package name
  */
 
-package DAVExplorer;
+package edu.uci.ics.DAVExplorer;
 
 import java.awt.Cursor;
 import javax.swing.JOptionPane;

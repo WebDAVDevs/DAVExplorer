@@ -28,9 +28,12 @@
  * @author      Joachim Feise (dav-exp@ics.uci.edu)
  * @date        12 January 2001
  * Changes:     Added support for https (SSL)
+ * @author      Joachim Feise (dav-exp@ics.uci.edu)
+ * @date        1 October 2001
+ * Changes:     Change of package name
  */
 
-package DAVExplorer;
+package edu.uci.ics.DAVExplorer;
 
 import javax.swing.JTable;
 import javax.swing.JLabel;
@@ -72,7 +75,7 @@ public class WebDAVFileView implements ViewSelectionListener, ActionListener
 {
     private static String jarPath = null;
     private final static String jarExtension =".jar";
-    final static String WebDAVClassName = "DAVExplorer";
+    final static String WebDAVClassName = "edu/uci/ics/DAVExplorer";
     final static String WebDAVPrefix = "http://";
     final static String WebDAVPrefixSSL = "https://";
     final static String IconDir = "icons";

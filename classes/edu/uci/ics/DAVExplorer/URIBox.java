@@ -30,9 +30,12 @@
  * @author      Joachim Feise (dav-exp@ics.uci.edu)
  * @date        12 January 2001
  * Changes:     Added support for https (SSL)
+ * @author      Joachim Feise (dav-exp@ics.uci.edu)
+ * @date        1 October 2001
+ * Changes:     Change of package name
  */
 
-package DAVExplorer;
+package edu.uci.ics.DAVExplorer;
 
 import java.awt.Color;
 import java.awt.event.ActionListener;
@@ -57,7 +60,7 @@ public class URIBox extends JPanel implements ActionListener
     private Vector URIBoxListener;
     private static String jarPath = null;
     private final static String jarExtension =".jar";
-    private final static String WebDAVClassName = "DAVExplorer";
+    private final static String WebDAVClassName = "edu/uci/ics/DAVExplorer";
     private final static String IconDir = "icons";
 
     public URIBox()

@@ -29,9 +29,12 @@
  * @author      Joachim Feise (dav-exp@ics.uci.edu)
  * @date        29 September 2001
  * Changes:     Now storing the aliases in a linked list
+ * @author      Joachim Feise (dav-exp@ics.uci.edu)
+ * @date        1 October 2001
+ * Changes:     Change of package name
  */
 
-package DAVExplorer;
+package edu.uci.ics.DAVExplorer;
 
 class AsNode
 {

@@ -29,9 +29,12 @@
  * Changes:     Modified by Robert Emmery to reflect the changes in .07 spec
  * @author      Yuzo Kanomata, Joachim Feise (dav-exp@ics.uci.edu)
  * @date        17 March 1999
+ * @author      Joachim Feise (dav-exp@ics.uci.edu)
+ * @date        1 October 2001
+ * Changes:     Change of package name
  */
 
-package DAVExplorer;
+package edu.uci.ics.DAVExplorer;
 
 import com.ms.xml.util.Name;
 import com.ms.xml.om.Element;

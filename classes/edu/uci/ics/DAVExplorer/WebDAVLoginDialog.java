@@ -40,9 +40,12 @@
  * @date        29 September 2001
  * Changes:     The return key now triggers a programmatic click on the OK
  *              button.
+ * @author      Joachim Feise (dav-exp@ics.uci.edu)
+ * @date        1 October 2001
+ * Changes:     Change of package name
  */
 
-package DAVExplorer;
+package edu.uci.ics.DAVExplorer;
 
 import javax.swing.JDialog;
 import javax.swing.JFrame;

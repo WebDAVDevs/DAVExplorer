@@ -42,9 +42,12 @@
  * @author      Joachim Feise (dav-exp@ics.uci.edu)
  * @date        12 January 2001
  * Changes:     Added support for https (SSL)
+ * @author      Joachim Feise (dav-exp@ics.uci.edu)
+ * @date        1 October 2001
+ * Changes:     Change of package name
  */
 
-package DAVExplorer;
+package edu.uci.ics.DAVExplorer;
 
 import javax.swing.JTree;
 import javax.swing.JScrollPane;

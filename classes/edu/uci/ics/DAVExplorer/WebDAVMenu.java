@@ -39,9 +39,12 @@
  * @author      Joachim Feise (dav-exp@ics.uci.edu)
  * @date        29 September 2001
  * Changes:     Changed View Properties menu to reflect modify functionality
+ * @author      Joachim Feise (dav-exp@ics.uci.edu)
+ * @date        1 October 2001
+ * Changes:     Change of package name
  */
 
-package DAVExplorer;
+package edu.uci.ics.DAVExplorer;
 
 import javax.swing.JFrame;
 import javax.swing.JMenu;
