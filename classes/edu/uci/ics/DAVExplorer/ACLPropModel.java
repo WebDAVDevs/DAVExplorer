@@ -27,7 +27,6 @@
 
 package edu.uci.ics.DAVExplorer;
 
-import javax.swing.tree.TreePath;
 import com.ms.xml.om.Element;
 
 

@@ -45,7 +45,7 @@ public class ACLInheritedDialog extends PropDialog
         buttonPanel.remove(saveButton);
         pack();
         setSize( getPreferredSize() );
-        center();
+        GlobalData.getGlobalData().center( this );
         show();
     }
 }

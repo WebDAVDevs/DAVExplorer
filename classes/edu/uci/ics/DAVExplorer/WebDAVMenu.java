@@ -107,9 +107,8 @@ public class WebDAVMenu extends JMenuBar implements ActionListener
     public static final int VIEW_GROUP = 202;
     public static final int GET_SUPPORTED_PRIVILEGES = 204;
     public static final int GET_USER_PRIVILEGES = 205;
-    public static final int GET_ACL = 206;
+    public static final int VIEW_ACL = 206;
     public static final int GET_SUPPORTED_ACL = 207;
-    public static final int SET_ACL = 208;
     public static final int GET_INHERITED_ACL = 209;
     public static final int GET_PRINCIPALS = 210;
 
@@ -390,15 +389,12 @@ public class WebDAVMenu extends JMenuBar implements ActionListener
         mnu_ACLMenu.add( new WebDAVMenuItem( "View/Modify Owner", VIEW_OWNER, this ) );
         mnu_ACLMenu.add( new WebDAVMenuItem( "View/Modify Group", VIEW_GROUP, this ) );
         mnu_ACLMenu.addSeparator();
-        mnu_ACLMenu.add( new WebDAVMenuItem( "Get Supported Privileges", GET_SUPPORTED_PRIVILEGES, this ) );
         mnu_ACLMenu.add( new WebDAVMenuItem( "Get User's Privileges", GET_USER_PRIVILEGES, this ) );
         mnu_ACLMenu.addSeparator();
-        mnu_ACLMenu.add( new WebDAVMenuItem( "Get ACLs", GET_ACL, this ) );
         mnu_ACLMenu.add( new WebDAVMenuItem( "Get ACL Restrictions", GET_SUPPORTED_ACL, this ) );
-        mnu_ACLMenu.add( new WebDAVMenuItem( "Set ACLs", SET_ACL, this ) );
-        mnu_ACLMenu.addSeparator();
         mnu_ACLMenu.add( new WebDAVMenuItem( "Get Inherited ACLs", GET_INHERITED_ACL, this ) );
-        mnu_ACLMenu.add( new WebDAVMenuItem( "Get Principals", GET_PRINCIPALS, this ) );
+        mnu_ACLMenu.addSeparator();
+        mnu_ACLMenu.add( new WebDAVMenuItem( "View/Modify ACLs", VIEW_ACL, this ) );
 
         return mnu_ACLMenu;
     }

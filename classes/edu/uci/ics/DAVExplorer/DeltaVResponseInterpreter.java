@@ -86,7 +86,7 @@ public class DeltaVResponseInterpreter extends WebDAVResponseInterpreter
      * @param e WebDAVResponseEvent
      *          The event from the client library, containing the response data  
      */
-    public void handleResponse( WebDAVResponseEvent e )
+    public boolean handleResponse( WebDAVResponseEvent e )
         throws ResponseException
     {
         if( GlobalData.getGlobalData().getDebugResponse() )
@@ -132,7 +132,7 @@ public class DeltaVResponseInterpreter extends WebDAVResponseInterpreter
                 super.handleResponse(e);
         }
         catch (Exception ex)
-         {
+        {
              // Most likely an error propagated from HTTPClient
              // We get this error if the server closes the connection
              // and the method is unknown to HTTPClient.
@@ -142,7 +142,8 @@ public class DeltaVResponseInterpreter extends WebDAVResponseInterpreter
              if( debugOutput.equals( "true" ) )
                  System.out.println(ex);
              throw new ResponseException( "HTTP error" );
-         }
+        }
+        return true;
     }
 
 

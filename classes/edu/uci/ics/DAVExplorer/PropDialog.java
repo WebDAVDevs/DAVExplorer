@@ -75,7 +75,7 @@ public class PropDialog extends JDialog
         init( model, properties, resource, hostname, locktoken, changeable );
         pack();
         setSize( getPreferredSize() );
-        center();
+        GlobalData.getGlobalData().center( this );
         show();
     }
 
@@ -86,7 +86,7 @@ public class PropDialog extends JDialog
         init( model, properties, resource, hostname, locktoken, changeable );
         pack();
         setSize( getPreferredSize() );
-        center();
+        GlobalData.getGlobalData().center( this );
         show();
     }
 
@@ -158,7 +158,6 @@ public class PropDialog extends JDialog
                     cancel();
                 }
             });
-
     }
 
 
@@ -316,18 +315,6 @@ public class PropDialog extends JDialog
     {
         setVisible(false);
         dispose();
-    }
-
-
-    /**
-     *
-     */
-    protected void center()
-    {
-        Rectangle recthDimensions = getParent().getBounds();
-        Rectangle bounds = getBounds();
-        setBounds(recthDimensions.x + (recthDimensions.width-bounds.width)/2,
-             recthDimensions.y + (recthDimensions.height - bounds.height)/2, bounds.width, bounds.height );
     }
 
 

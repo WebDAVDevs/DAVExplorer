@@ -164,7 +164,7 @@ public class PropAddDialog extends JDialog implements ActionListener, DocumentLi
 
         pack();
         setSize( getPreferredSize() );
-        center();
+        GlobalData.getGlobalData().center( this );
         show();
     }
 
@@ -314,18 +314,6 @@ public class PropAddDialog extends JDialog implements ActionListener, DocumentLi
         }
         else
             okButton.setEnabled( false );
-    }
-
-
-    /**
-     *
-     */
-    protected void center()
-    {
-        Rectangle recthDimensions = getParent().getBounds();
-        Rectangle bounds = getBounds();
-        setBounds(recthDimensions.x + (recthDimensions.width-bounds.width)/2,
-             recthDimensions.y + (recthDimensions.height - bounds.height)/2, bounds.width, bounds.height );
     }
 
 

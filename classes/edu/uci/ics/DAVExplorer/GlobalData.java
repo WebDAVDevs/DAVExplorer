@@ -63,6 +63,10 @@
 package edu.uci.ics.DAVExplorer;
 
 import java.awt.Cursor;
+import java.awt.Rectangle;
+import java.awt.Dialog;
+import java.awt.Rectangle;
+
 import javax.swing.JFrame;
 import javax.swing.JOptionPane;
 import javax.swing.ImageIcon;
@@ -1084,5 +1088,18 @@ class GlobalData
         {
             System.err.println( className + "::" + methodName + " left." );
         }
+    }
+
+
+    /**
+    *
+    */
+    protected void center( Dialog dlg )
+    {
+        Rectangle recthDimensions = dlg.getParent().getBounds();
+        Rectangle bounds = dlg.getBounds();
+        dlg.setBounds( recthDimensions.x + (recthDimensions.width-bounds.width)/2,
+                   recthDimensions.y + (recthDimensions.height - bounds.height)/2,
+                   bounds.width, bounds.height );
     }
 }

@@ -32,7 +32,6 @@ package edu.uci.ics.DAVExplorer;
 
 import java.util.Enumeration;
 import java.util.Vector;
-import javax.swing.JTree;
 
 
 /**
@@ -245,7 +244,6 @@ public class PropNode
     private String tag;
     private String ns;
     private String value;
-    private JTree tree;
     private boolean modified;
     private PropNode parent;
 }

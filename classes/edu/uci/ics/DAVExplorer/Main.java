@@ -788,10 +788,12 @@ public class Main extends JFrame
          */
         public void responseFormed(WebDAVResponseEvent e)
         {
+            boolean retval = false;
+
             // This call process the info from the server
             try
             {
-                responseInterpreter.handleResponse(e);
+                retval = responseInterpreter.handleResponse(e);
             }
             catch( ResponseException ex )
             {
@@ -799,7 +801,9 @@ public class Main extends JFrame
                 fireWebDAVCompletion( responseInterpreter, false );
                 return;
             }
-            fireWebDAVCompletion( responseInterpreter, true );
+            // don't trigger completion info if there is a retry
+            if( retval )
+                fireWebDAVCompletion( responseInterpreter, true );
 
             // Post processing
             // These are actions designed to take place after the
@@ -1237,20 +1241,6 @@ public class Main extends JFrame
                     break;
                 }
                 
-                case WebDAVMenu.GET_SUPPORTED_PRIVILEGES:
-                {
-                    String s = fileView.getSelected();
-                    if( (s == null) || (s.length() == 0) )
-                    {
-                        GlobalData.getGlobalData().errorMsg( "No resource selected." );
-                        return;
-                    }
-                    WebDAVTreeNode n = fileView.getParentNode();
-                    requestGenerator.setResource( s, n );
-                    requestGenerator.GetSupportedPrivileges();
-                    break;
-                }
-                
                 case WebDAVMenu.GET_USER_PRIVILEGES:
                 {
                     String s = fileView.getSelected();
@@ -1265,7 +1255,7 @@ public class Main extends JFrame
                     break;
                 }
                 
-                case WebDAVMenu.GET_ACL:
+                case WebDAVMenu.VIEW_ACL:
                 {
                     String s = fileView.getSelected();
                     if( (s == null) || (s.length() == 0) )
@@ -1279,24 +1269,6 @@ public class Main extends JFrame
                     break;
                 }
 
-                case WebDAVMenu.SET_ACL:
-                {
-                    String s = fileView.getSelected();
-                    if( (s == null) || (s.length() == 0) )
-                    {
-                        GlobalData.getGlobalData().errorMsg( "No resource selected." );
-                        return;
-                    }
-                    // TODO: fill principal object
-                    ACLPrincipal[] principals = new ACLPrincipal[1];
-                    
-                    WebDAVTreeNode n = fileView.getParentNode();
-                    requestGenerator.setResource( s, n );
-                    if( requestGenerator.GenerateACL( principals ) )
-                        requestGenerator.execute();
-                    break;
-                }
-                
                 case WebDAVMenu.GET_SUPPORTED_ACL:
                 {
                     String s = fileView.getSelected();
@@ -1325,20 +1297,6 @@ public class Main extends JFrame
                     break;
                 }
 
-                case WebDAVMenu.GET_PRINCIPALS:
-                {
-                    String s = fileView.getSelected();
-                    if( (s == null) || (s.length() == 0) )
-                    {
-                        GlobalData.getGlobalData().errorMsg( "No resource selected." );
-                        return;
-                    }
-                    WebDAVTreeNode n = fileView.getParentNode();
-                    requestGenerator.setResource( s, n );
-                    requestGenerator.GetPrincipalCollections();
-                    break;
-                }
-                
                 case WebDAVMenu.HTTP_LOGGING:
                 {
                     boolean logging = false;

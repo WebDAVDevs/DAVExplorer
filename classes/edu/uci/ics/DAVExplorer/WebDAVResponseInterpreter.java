@@ -86,6 +86,10 @@ import com.ms.xml.util.Name;
  */
 public class WebDAVResponseInterpreter
 {
+    public static int RESOURCETYPE_NONE = 0;
+    public static int RESOURCETYPE_COLLECTION = 1;
+    
+
     /**
      * Constructor 
      */
@@ -136,7 +140,7 @@ public class WebDAVResponseInterpreter
      * 
      * @param e
      */
-    public void handleResponse(WebDAVResponseEvent e)
+    public boolean handleResponse(WebDAVResponseEvent e)
         throws ResponseException
     {
         if( GlobalData.getGlobalData().getDebugResponse() )
@@ -204,17 +208,17 @@ public class WebDAVResponseInterpreter
                 }
                 else
                     GlobalData.getGlobalData().errorMsg("DAV Interpreter:\n\n" + res.getStatusCode() + " " + res.getReasonLine());
-                return;
+                return true;
             }
             if (Method.equals("MOVE"))
             {
                 parseMove();
-                return;
+                return true;
             }
             else if (Method.equals("PROPPATCH"))
             {
                 parsePropPatch();
-                return;
+                return true;
             }
         }
         catch (Exception ex)
@@ -264,8 +268,8 @@ public class WebDAVResponseInterpreter
         else
         {
             System.out.println("unsupported method.. cannot parse");
-            return;
         }
+        return true;
     }
 
 
@@ -920,7 +924,8 @@ public class WebDAVResponseInterpreter
                     }
                     else if( currentTag.getName().equals( WebDAVProp.PROP_RESOURCETYPE ) )
                     {
-                        isColl = getResourceType( current );
+                        isColl = ( getResourceType( current ) == RESOURCETYPE_COLLECTION );
+;
                     }
                     else if( currentTag.getName().equals( WebDAVProp.PROP_GETCONTENTTYPE ) )
                     {
@@ -1035,11 +1040,11 @@ public class WebDAVResponseInterpreter
      * 
      * @return
      */
-    protected boolean getResourceType( Element resourcetype )
+    protected int getResourceType( Element resourcetype )
     {
         if( GlobalData.getGlobalData().getDebugTreeNode() )
         {
-            System.err.println( "WebDAVTreeNode::getResourceType" );
+            System.err.println( "WebDAVResponseInterpreter::getResourceType" );
         }
 
         TreeEnumeration treeEnum = new TreeEnumeration( resourcetype );
@@ -1048,9 +1053,9 @@ public class WebDAVResponseInterpreter
             Element current = (Element)treeEnum.nextElement();
             Name tag = current.getTagName();
             if( (tag != null) && tag.getName().equals( WebDAVXML.ELEM_COLLECTION ) )
-                return true;
+                return RESOURCETYPE_COLLECTION;
         }
-        return false;
+        return RESOURCETYPE_NONE;
     }
 
     

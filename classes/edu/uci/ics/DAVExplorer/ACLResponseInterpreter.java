@@ -21,7 +21,7 @@ package edu.uci.ics.DAVExplorer;
 import java.io.ByteArrayInputStream;
 import java.util.Hashtable;
 import java.util.Enumeration;
-import java.io.IOException;
+import java.util.Vector;
 
 import com.ms.xml.om.Document;
 import com.ms.xml.om.Element;
@@ -38,6 +38,8 @@ import com.ms.xml.util.Name;
 
 public class ACLResponseInterpreter extends DeltaVResponseInterpreter
 {
+    public static int RESOURCETYPE_PRINCIPAL = 2;
+
     /**
      * Constructor 
      */
@@ -64,7 +66,7 @@ public class ACLResponseInterpreter extends DeltaVResponseInterpreter
      * @param e WebDAVResponseEvent
      *          The event from the client library, containing the response data  
      */
-    public void handleResponse( WebDAVResponseEvent e )
+    public boolean handleResponse( WebDAVResponseEvent e )
         throws ResponseException
     {
         if( GlobalData.getGlobalData().getDebugResponse() )
@@ -101,7 +103,23 @@ public class ACLResponseInterpreter extends DeltaVResponseInterpreter
                 }
             }
             else
+            {
+                if( (res.getStatusCode() == 302) || (res.getStatusCode() == 301) )
+                {
+                    switch( e.getExtendedCode() )
+                    {
+                        case WebDAVResponseEvent.ACL_PRINCIPAL_NAMES:
+                            // redirect, restart the request
+                            String location = res.getHeader( "Location" );
+                            generator.setResource( location, null );
+                            ((ACLRequestGenerator)generator).GetPrincipalNames();
+                            return false;
+                        default:
+                            break;
+                    }
+                }
                 super.handleResponse(e);
+            }
         }
         catch (Exception ex)
          {
@@ -115,6 +133,7 @@ public class ACLResponseInterpreter extends DeltaVResponseInterpreter
                  System.out.println(ex);
              throw new ResponseException( "HTTP error" );
          }
+        return true;
     }
 
 
@@ -204,7 +223,7 @@ public class ACLResponseInterpreter extends DeltaVResponseInterpreter
                 handleOwner( xml_doc, false );
                 break;
 
-            case WebDAVResponseEvent.ACL_SUPPORTED_PRIVILEGES:
+            case WebDAVResponseEvent.ACL_SUPPORTED_PRIVILEGE_SET:
                 handlePrivileges( xml_doc, true );
                 break;
             case WebDAVResponseEvent.ACL_USER_PRIVILEGES:
@@ -213,8 +232,13 @@ public class ACLResponseInterpreter extends DeltaVResponseInterpreter
             case WebDAVResponseEvent.ACL:
             case WebDAVResponseEvent.SUPPORTED_ACL:
             case WebDAVResponseEvent.INHERITED_ACL:
-            case WebDAVResponseEvent.ACL_PRINCIPALS:
                 handleListACLs( xml_doc, extendedCode );
+                break;
+            case WebDAVResponseEvent.ACL_PRINCIPAL_COLLECTION_SET:
+                handlePrincipalCollectionSet( xml_doc );
+                break;
+            case WebDAVResponseEvent.ACL_PRINCIPAL_NAMES:
+                handlePrincipalNames( xml_doc );
                 break;
             default:
                 super.parsePropFind();
@@ -262,12 +286,13 @@ public class ACLResponseInterpreter extends DeltaVResponseInterpreter
                     handleMultiStatus( xml_doc );
                 break;
 
-            case WebDAVResponseEvent.ACL_SUPPORTED_PRIVILEGES:
+            case WebDAVResponseEvent.ACL_SUPPORTED_PRIVILEGE_SET:
             case WebDAVResponseEvent.ACL_USER_PRIVILEGES:
             case WebDAVResponseEvent.ACL:
             case WebDAVResponseEvent.SUPPORTED_ACL:
             case WebDAVResponseEvent.INHERITED_ACL:
-            case WebDAVResponseEvent.ACL_PRINCIPALS:
+            case WebDAVResponseEvent.ACL_PRINCIPAL_COLLECTION_SET:
+            case WebDAVResponseEvent.ACL_PRINCIPAL_NAMES:
                 break;
             default:
                 super.parsePropPatch();
@@ -337,10 +362,20 @@ public class ACLResponseInterpreter extends DeltaVResponseInterpreter
                         rootElem = skipElements( current, token );
                         if( rootElem != null )
                         {
-                            String host = HostName;
-                            if (Port != 0)
-                                host = HostName + ":" + Port;
-                            ACLPrivilegesDialog pd = new ACLPrivilegesDialog( rootElem, Resource, host, supported );
+                            if( supported )
+                            {
+                                // extract the supported privileges
+                                handleSupportedPrivileges( rootElem );
+                            }
+                            else
+                            {
+                                // show the user privileges
+                                String host = HostName;
+                                if (Port != 0)
+                                    host = HostName + ":" + Port;
+                                ACLPrivilegesDialog pd = new ACLPrivilegesDialog( rootElem, Resource, host, supported );
+                            }
+                            break;
                         }
                     }
                 }
@@ -378,7 +413,8 @@ public class ACLResponseInterpreter extends DeltaVResponseInterpreter
                             {
                                 case WebDAVResponseEvent.ACL:
                                 {
-                                    ACLListDialog pd = new ACLListDialog( rootElem, Resource, host );
+                                    //ACLListDialog pd = new ACLListDialog( rootElem, Resource, host );
+                                    ACLDialog pd = new ACLDialog( rootElem, Resource, host, null );
                                     break;
                                 }
                                 case WebDAVResponseEvent.SUPPORTED_ACL:
@@ -391,12 +427,110 @@ public class ACLResponseInterpreter extends DeltaVResponseInterpreter
                                     ACLInheritedDialog pd = new ACLInheritedDialog( rootElem, Resource, host );
                                     break;
                                 }
-                                case WebDAVResponseEvent.ACL_PRINCIPALS:
-                                {
-                                    ACLPrincipalsDialog pd = new ACLPrincipalsDialog( rootElem, Resource, host );
-                                    break;
-                                }
                             }
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+
+    protected void handlePrincipalCollectionSet( Document xml_doc )
+    {
+        String[] skiptoken = new String[1];
+        skiptoken[0] = new String( ACLXML.ELEM_PRINCIPAL_COLLECTION_SET );
+        Element rootElem = skipElements( xml_doc, skiptoken );
+        principalCollectionSet = new Vector();
+        if( rootElem != null )
+        {
+            TreeEnumeration enumTree =  new TreeEnumeration( rootElem );
+            while( enumTree.hasMoreElements() )
+            {
+                Element current = (Element)enumTree.nextElement();
+                Name currentTag = current.getTagName();
+                if( currentTag != null )
+                {
+                    if( currentTag.getName().equals( WebDAVXML.ELEM_HREF ) )
+                    {
+                        Element token = (Element)enumTree.nextElement();
+                        if( (token != null) && (token.getType() == Element.PCDATA || token.getType() == Element.CDATA) )
+                        {
+                            principalCollectionSet.add( GlobalData.getGlobalData().unescape( token.getText(), "UTF-8", null ) );
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+
+    protected void handlePrincipalNames( Document xml_doc )
+    {
+        principalNames = new Vector();
+        String[] token = new String[1];
+        token[0] = new String( WebDAVXML.ELEM_MULTISTATUS );
+
+        // get the base these principals belong to
+        // needed to disambiguate the principal names
+        int slashpos;
+        if( Resource.endsWith("/" ) )
+            slashpos = Resource.lastIndexOf( '/', Resource.length()-2 );
+        else
+            slashpos = Resource.lastIndexOf( '/', Resource.length() );
+        String base = Resource.substring( slashpos + 1 );
+        if( !base.endsWith("/") )
+            base += "/";
+
+        Element curProp = null;
+        Element rootElem = skipElements( xml_doc, token );
+        if( rootElem != null )
+        {
+            TreeEnumeration enumTree =  new TreeEnumeration( rootElem );
+            while( enumTree.hasMoreElements() )
+            {
+                Element current = (Element)enumTree.nextElement();
+                Name currentTag = current.getTagName();
+                if( currentTag != null )
+                {
+                    if( currentTag.getName().equals( WebDAVXML.ELEM_PROP ) )
+                        curProp = current;
+                    if( currentTag.getName().equals( WebDAVProp.PROP_RESOURCETYPE ) )
+                    {
+                        // we only care about resources that are principal types
+                        if( getResourceType( current ) == RESOURCETYPE_PRINCIPAL )
+                        {
+                            principalNames.add( base + getDisplayName( curProp ) );
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+
+    protected void handleSupportedPrivileges( Element rootElem )
+    {
+        supportedPrivilegeSet = new Vector();
+        if( rootElem != null )
+        {
+            TreeEnumeration enumTree =  new TreeEnumeration( rootElem );
+            while( enumTree.hasMoreElements() )
+            {
+                Element current = (Element)enumTree.nextElement();
+                Name currentTag = current.getTagName();
+                if( currentTag != null )
+                {
+                    if( currentTag.getName().equals( ACLXML.ELEM_PRIVILEGE ) )
+                    {
+                        Element token; 
+                        while( enumTree.hasMoreElements() )
+                        {
+                            token = (Element)enumTree.nextElement();
+                            if( token == null || token.getTagName() == null )
+                                continue;
+                            supportedPrivilegeSet.add( token.getTagName().getName() );
+                            break;
                         }
                     }
                 }
@@ -459,6 +593,25 @@ public class ACLResponseInterpreter extends DeltaVResponseInterpreter
         return "";
     }
 
+
+    protected int getResourceType( Element resourcetype )
+    {
+        if( GlobalData.getGlobalData().getDebugTreeNode() )
+        {
+            System.err.println( "ACLResponseInterpreter::getResourceType" );
+        }
+
+        TreeEnumeration treeEnum = new TreeEnumeration( resourcetype );
+        while(treeEnum.hasMoreElements() )
+        {
+            Element current = (Element)treeEnum.nextElement();
+            Name tag = current.getTagName();
+            if( (tag != null) && tag.getName().equals( ACLXML.ELEM_PRINCIPAL ) )
+                return RESOURCETYPE_PRINCIPAL;
+        }
+        return super.getResourceType( resourcetype );
+    }
+
     
     public boolean isACL( String resource )
     {
@@ -473,5 +626,27 @@ public class ACLResponseInterpreter extends DeltaVResponseInterpreter
     }
 
 
+    public Vector getPrincipalCollectionSet()
+    {
+        return principalCollectionSet;
+        
+    }
+
+
+    public Vector getPrincipalNames()
+    {
+        return principalNames;
+    }
+
+
+    public Vector getSupportedPrivilegeSet()
+    {
+        return supportedPrivilegeSet;
+    }
+
+
     protected Hashtable acl = new Hashtable();
+    protected Vector principalCollectionSet;
+    protected Vector principalNames;
+    protected Vector supportedPrivilegeSet;
 }

@@ -152,7 +152,7 @@ Public methods and attributes section
 
         getContentPane().add( groupPanel );
         pack();
-        center();
+        GlobalData.getGlobalData().center( this );
         setResizable( false );
         setVisible( true );
         GlobalData.getGlobalData().getMainFrame().setCursor( Cursor.getDefaultCursor() );
@@ -301,18 +301,6 @@ Protected methods and attributes section
         }
         else
             okButton.setEnabled( false );
-    }
-
-
-    /**
-     *
-     */
-    protected void center()
-    {
-        Rectangle recthDimensions = getParent().getBounds();
-        Rectangle bounds = getBounds();
-        setBounds(recthDimensions.x + (recthDimensions.width-bounds.width)/2,
-             recthDimensions.y + (recthDimensions.height - bounds.height)/2, bounds.width, bounds.height );
     }
 
 

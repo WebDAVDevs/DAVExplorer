@@ -27,23 +27,6 @@
 
 package edu.uci.ics.DAVExplorer;
 
-import java.awt.Color;
-import java.awt.Rectangle;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
-import java.awt.event.WindowAdapter;
-import java.awt.event.WindowEvent;
-import javax.swing.JDialog;
-import javax.swing.JButton;
-import javax.swing.JLabel;
-import javax.swing.JPanel;
-import javax.swing.JScrollPane;
-import javax.swing.JOptionPane;
-import javax.swing.JTree;
-import javax.swing.event.ChangeEvent;
-import javax.swing.event.ChangeListener;
-import javax.swing.event.ListSelectionEvent;
-import javax.swing.event.ListSelectionListener;
 import com.ms.xml.om.Element;
 
 
@@ -80,7 +63,7 @@ public class ACLOwnerDialog extends PropDialog
         buttonPanel.remove(deleteButton);
         pack();
         setSize( getPreferredSize() );
-        center();
+        GlobalData.getGlobalData().center( this );
         show();
     }
 

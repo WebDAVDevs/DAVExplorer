@@ -102,14 +102,14 @@ public class ACLRequestGenerator extends DeltaVRequestGenerator
     }
 
 
-    public synchronized void GetSupportedPrivileges()
+    public synchronized void GetSupportedPrivilegeSet()
     {
         if( GlobalData.getGlobalData().getDebugRequest() )
         {
             System.err.println( "ACLRequestGenerator::GetSupportedPrivileges" );
         }
 
-        extendedCode = WebDAVResponseEvent.ACL_SUPPORTED_PRIVILEGES;
+        extendedCode = WebDAVResponseEvent.ACL_SUPPORTED_PRIVILEGE_SET;
         String[] props = new String[1];
         props[0] = "supported-privilege-set";
         if( GeneratePropFind( null, "prop", "one", props, null, false ) )
@@ -194,9 +194,27 @@ public class ACLRequestGenerator extends DeltaVRequestGenerator
             System.err.println( "ACLRequestGenerator::GetPrincipalCollections" );
         }
 
-        extendedCode = WebDAVResponseEvent.ACL_PRINCIPALS;
+        extendedCode = WebDAVResponseEvent.ACL_PRINCIPAL_COLLECTION_SET;
         String[] props = new String[1];
         props[0] = "principal-collection-set";
+        if( GeneratePropFind( null, "prop", "one", props, null, false ) )
+        {
+            execute();
+        }
+    }
+
+
+    public synchronized void GetPrincipalNames()
+    {
+        if( GlobalData.getGlobalData().getDebugRequest() )
+        {
+            System.err.println( "ACLRequestGenerator::GetPrincipalNames" );
+        }
+
+        extendedCode = WebDAVResponseEvent.ACL_PRINCIPAL_NAMES;
+        String[] props = new String[2];
+        props[0] = "displayname";
+        props[1] = "resourcetype";
         if( GeneratePropFind( null, "prop", "one", props, null, false ) )
         {
             execute();

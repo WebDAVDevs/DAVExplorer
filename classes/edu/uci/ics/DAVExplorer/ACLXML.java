@@ -39,8 +39,12 @@ public class ACLXML extends DeltaVXML
     public static final String ELEM_ACL = "acl";
     public static final String ELEM_ACE = "ace";
     public static final String ELEM_PRINCIPAL = "principal";
+    public static final String ELEM_PRINCIPAL_COLLECTION_SET = "principal-collection-set";
     public static final String ELEM_GRANT = "grant";
     public static final String ELEM_DENY = "deny";
     public static final String ELEM_PRIVILEGE = "privilege";
+    public static final String ELEM_SUPPORTED_PRIVILEGE_SET = "supported-privilege-set";
+    public static final String ELEM_INHERITED = "inherited";
+    public static final String ELEM_PROPERTY = "property";
     public static final String ELEM_RESPONSEDESCRIPTION = "responsedescription";
 }

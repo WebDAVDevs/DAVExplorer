@@ -49,7 +49,7 @@ public class ACLPrivilegesDialog extends PropDialog
         buttonPanel.remove(saveButton);
         pack();
         setSize( getPreferredSize() );
-        center();
+        GlobalData.getGlobalData().center( this );
         show();
     }
 }

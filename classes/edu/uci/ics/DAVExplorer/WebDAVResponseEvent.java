@@ -67,12 +67,13 @@ public class WebDAVResponseEvent extends EventObject
     // ACLs
     public static final int ACL_OWNER = 70;
     public static final int ACL_GROUP = 71;
-    public static final int ACL_SUPPORTED_PRIVILEGES = 72;
+    public static final int ACL_SUPPORTED_PRIVILEGE_SET = 72;
     public static final int ACL_USER_PRIVILEGES = 73;
     public static final int ACL = 74;
     public static final int SUPPORTED_ACL = 75;
     public static final int INHERITED_ACL = 76;
-    public static final int ACL_PRINCIPALS = 77;
+    public static final int ACL_PRINCIPAL_COLLECTION_SET = 77;
+    public static final int ACL_PRINCIPAL_NAMES = 78;
 
     /**
      * Constructor

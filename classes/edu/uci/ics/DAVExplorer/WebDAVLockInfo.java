@@ -91,7 +91,7 @@ Public methods and attributes section
         okButton.addActionListener( this );
         add( groupPanel, BorderLayout.CENTER );
         pack();
-        center();
+        GlobalData.getGlobalData().center( this );
         setVisible( true );
     }
 
@@ -154,16 +154,6 @@ Public methods and attributes section
 /*-----------------------------------------------------------------------
 Protected methods and attributes section
 -----------------------------------------------------------------------*/
-    /**
-     * 
-     */
-    protected void center()
-    {
-        Rectangle recthDimensions = getParent().getBounds();
-        Rectangle bounds = getBounds();
-        setBounds(recthDimensions.x + (recthDimensions.width-bounds.width)/2,
-             recthDimensions.y + (recthDimensions.height - bounds.height)/2, bounds.width, bounds.height );
-    }
 
 
     protected JTextField txtLockname;
