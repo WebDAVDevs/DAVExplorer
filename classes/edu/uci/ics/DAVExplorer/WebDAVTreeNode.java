@@ -37,9 +37,17 @@
 // Version: 0.4
 // Changes by: Yuzo Kanomata and Joe Feise
 // Date: 3/17/99
-//
 // Change List:
-
+//
+// Version: 0.61
+// Changes by: Joe Feise
+// Date: 5/23/2000
+// Change List:
+//   Added check for CDATA to improve interoperability for Sharemation's server
+//   Changed the enumeration in parseResponse() to SiblingEnumeration to
+//      avoid parsing the wrong href tag (thanks to Michelle Harris for
+//      alerting us to this problem)
+//   Fixed string comparison in case of multiple <propstat> tags
 
 package DAVExplorer;
 
@@ -224,21 +232,28 @@ public class WebDAVTreeNode extends DefaultMutableTreeNode
         DataNode node = null;
         String resName = "";
         String fullName = "";
+        Element current = null;
 
-        TreeEnumeration enumTree =  new TreeEnumeration( respElem );
+        if( respElem.numElements() == 0 )
+            return;
+        SiblingEnumeration enumTree =  new SiblingEnumeration( respElem.getChild(0) );
         while( enumTree.hasMoreElements() )
         {
-            Element current = (Element)enumTree.nextElement();
+            current = (Element)enumTree.nextElement();
             Name currentTag = current.getTagName();
             if( currentTag != null )
             {
                 if( currentTag.getName().equals( WebDAVXML.ELEM_HREF ) )
                 {
-                    Element token = (Element)enumTree.nextElement();
-                    if( (token != null) && (token.getType() == Element.PCDATA) )
+                    TreeEnumeration enumHref =  new TreeEnumeration( current );
+                    while( enumHref.hasMoreElements() )
                     {
-                        resName = new String(truncateResource(token.getText()));
-                        fullName = new String(getFullResource(token.getText()));
+                        Element token = (Element)enumHref.nextElement();
+                        if( (token != null) && (token.getType() == Element.PCDATA || token.getType() == Element.CDATA) )
+                        {
+                            resName = new String(truncateResource(token.getText()));
+                            fullName = new String(getFullResource(token.getText()));
+                        }
                     }
                 }
                 else if( currentTag.getName().equals( WebDAVXML.ELEM_PROPSTAT ) )
@@ -251,7 +266,7 @@ public class WebDAVTreeNode extends DefaultMutableTreeNode
                         else
                         {
                             // update node values as necessary
-                            if( curnode.getDisplay()!="" )
+                            if( curnode.getDisplay().length() != 0 )
                                 node.setDisplay( curnode.getDisplay() );    // overwrite any old value
                             if( curnode.isLocked() && !node.isLocked() )
                             {
@@ -259,11 +274,11 @@ public class WebDAVTreeNode extends DefaultMutableTreeNode
                             }
                             if( curnode.isCollection() )
                                 node.makeCollection();                      // never change back to normal node
-                            if( curnode.getType()!="" )
+                            if( curnode.getType().length() != 0 )
                                 node.setType( curnode.getType() );          // overwrite any old value
                             if( curnode.getSize()!=0 )
                                 node.setSize( curnode.getSize() );          // overwrite any old value
-                            if( curnode.getDate()!="" )
+                            if( curnode.getDate().length() != 0 )
                                 node.setDate( curnode.getDate() );          // overwrite any old value
                         }
                     }
@@ -658,7 +673,7 @@ public class WebDAVTreeNode extends DefaultMutableTreeNode
             if( (tag!=null) && tag.getName().equals( WebDAVXML.ELEM_HREF ) )
             {
                 Element token = (Element)treeEnum.nextElement();
-                if( (token!=null) && token.getType() == Element.PCDATA )
+                if( (token!=null) && (token.getType() == Element.PCDATA || token.getType() == Element.CDATA) )
                     return token.getText();
 			}
         }
@@ -720,7 +735,7 @@ public class WebDAVTreeNode extends DefaultMutableTreeNode
             if( (tag != null) && tag.getName().equals( WebDAVProp.PROP_DISPLAYNAME ) )
             {
                 Element token = (Element)treeEnum.nextElement();
-                if( (token != null) && token.getType() == Element.PCDATA )
+                if( (token != null) && (token.getType() == Element.PCDATA || token.getType() == Element.CDATA) )
                     return token.getText();
             }
         }
@@ -793,7 +808,7 @@ public class WebDAVTreeNode extends DefaultMutableTreeNode
         while(treeEnum.hasMoreElements() )
         {
             Element token = (Element)treeEnum.nextElement();
-            if( (token != null) && token.getType() == Element.PCDATA )
+            if( (token != null) && (token.getType() == Element.PCDATA || token.getType() == Element.CDATA) )
                 return token.getText();
         }
         return "";
@@ -810,7 +825,7 @@ public class WebDAVTreeNode extends DefaultMutableTreeNode
         while(treeEnum.hasMoreElements() )
         {
             Element token = (Element)treeEnum.nextElement();
-            if( (token != null) && token.getType() == Element.PCDATA )
+            if( (token != null) && (token.getType() == Element.PCDATA || token.getType() == Element.CDATA) )
                 return token.getText();
         }
         return "0";
@@ -827,7 +842,7 @@ public class WebDAVTreeNode extends DefaultMutableTreeNode
         while(treeEnum.hasMoreElements() )
         {
             Element token = (Element)treeEnum.nextElement();
-            if( (token != null) && token.getType() == Element.PCDATA )
+            if( (token != null) && (token.getType() == Element.PCDATA || token.getType() == Element.CDATA) )
                 return token.getText();
         }
         return "";

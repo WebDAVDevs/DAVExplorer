@@ -40,6 +40,13 @@
 // Change List:
 //  1. Fixed parseGet to save the retrieved file properly
 //  2. parseMkCol now has functionality to refresh the display
+//
+// Version: 0.61
+// Changes by: Joe Feise
+// Date: 5/23/2000
+// Change List:
+//   Added check for CDATA to improve interoperability for Sharemation's server
+//   Incorporated Eric Giguere's changes to getOwnerInfo(). Thanks!
 
 package DAVExplorer;
 
@@ -74,7 +81,6 @@ public class WebDAVResponseInterpreter
     private final static String HTTPString = "HTTP/1.1";
     private static String WebDAVEditDir = null;
     private static boolean refresh = false;
-    //private static boolean inProg = false;
     private static JFrame mainFrame;
     private static String userPathDir;
 
@@ -169,7 +175,7 @@ public class WebDAVResponseInterpreter
 			    // Reset the name we attempted to change
 			    ActionEvent ae = new ActionEvent(this, ActionEvent.ACTION_FIRST, "reset");
 			    actionListener.actionPerformed(ae);
-			    
+
 			    // Alert User of error
                             errorMsg("Rename Failed\nStatus " + res.getStatusCode() + " " + res.getReasonLine() );
 			}
@@ -197,7 +203,7 @@ public class WebDAVResponseInterpreter
 			}
 		    }
 
-		
+
 		}
                 else
                     errorMsg("DAV Interpreter:\n\n" + res.getStatusCode() + " " + res.getReasonLine());
@@ -344,10 +350,10 @@ public class WebDAVResponseInterpreter
                 fireInsertionEvent(HostName + Resource);
             }
         }
-        else if (Extra.equals("lock") || Extra.equals("unlock") 
-	   || Extra.equals("delete") || Extra.startsWith("rename:") 
-	   || Extra.equals("display") || Extra.equals("commit") 
-	   || Extra.startsWith("rename2:") || Extra.startsWith("delete2:") ) 
+        else if (Extra.equals("lock") || Extra.equals("unlock")
+	   || Extra.equals("delete") || Extra.startsWith("rename:")
+	   || Extra.equals("display") || Extra.equals("commit")
+	   || Extra.startsWith("rename2:") || Extra.startsWith("delete2:") )
         {
             // get lock information out of XML tree
             String lockToken = null;
@@ -678,13 +684,13 @@ public class WebDAVResponseInterpreter
 	}
 	else if (Extra.equals("mkcolbelow"))
 	{
-	    // Piggy Back on Put Event, 
+	    // Piggy Back on Put Event,
 	    // This reloads the node on the selected collection,
 	    // but should not change the selection.
             WebDAVTreeNode parent = generator.getPossibleParentOfSelectedCollectionNode();
             PutEvent e = new PutEvent( this, Node, parent);
 	    putListener.PutEventResponse(e);
-	    
+
 	}
     }
 
@@ -1160,7 +1166,7 @@ public class WebDAVResponseInterpreter
             if( (tag != null) && tag.getName().equals( WebDAVXML.ELEM_HREF ) )
             {
                 Element token = (Element)treeEnum.nextElement();
-                if( (token != null) && (token.getType() == Element.PCDATA) )
+                if( (token != null) && (token.getType() == Element.PCDATA || token.getType() == Element.CDATA) )
                     return token.getText();
             }
         }
@@ -1205,7 +1211,14 @@ public class WebDAVResponseInterpreter
         return "";
     }
 
-
+/**
+ * Function used to retreive the owner details on a lock.
+ * A small correction has been made in the code by Eric Giguere to get the owner name in cases where the parsers adds empty tags in the element tree (bug from the parser).
+ *
+ * @author : Joachim Feise, Eric Giguere
+ * @param ownerinfo The XML node that is at the root of the owner information
+ * @version 1.1
+ */
     private String getOwnerInfo( Element ownerinfo )
     {
         if( GlobalData.getGlobalData().getDebugResponse() )
@@ -1214,28 +1227,38 @@ public class WebDAVResponseInterpreter
         }
 
         TreeEnumeration treeEnum = new TreeEnumeration( ownerinfo );
+        Element head = null;
+        Element current = null;
+        Element href = null;
+        Name tag = null;
+
         while(treeEnum.hasMoreElements() )
         {
-            Element current = (Element)treeEnum.nextElement();
-            Name tag = current.getTagName();
-            if( (tag != null) && tag.getName().equals( WebDAVXML.ELEM_OWNER ) )
-            {
-                current = (Element)treeEnum.nextElement();
-                if( current != null )
-                {
-                    tag = current.getTagName();
-                    if( tag != null )
-					{
-                        if( tag.getName().equals( WebDAVXML.ELEM_HREF ) )
-                        {
-                            Element token = (Element)treeEnum.nextElement();
-                            if( (token != null) && token.getType() == Element.PCDATA )
-                                return token.getText();
-                        }
-					}
-                    else if( current.getType() == Element.PCDATA )
-                        return current.getText();
-                }
+            current = (Element)treeEnum.nextElement();
+            if (current!=null)
+              tag = current.getTagName();
+            else
+              tag = null;
+
+            if( (tag!=null) && (tag.getName().equals( WebDAVXML.ELEM_OWNER )) ) {
+              head = current;
+              continue;
+            }
+              // True if we did found the "owner" tag
+            if (head!=null) {
+              // Tag HREF found
+              if( (tag!=null) && (tag.getName().equals( WebDAVXML.ELEM_HREF )) ) {
+                href = current;
+                continue;
+              }
+              // No Href found but we get a PCDATA or CDATA element so return its text
+              else if ( (href==null) && (current.getType()==Element.PCDATA || current.getType() == Element.CDATA) )
+                return current.getText();
+              // Href element found on previous iteration so we return the content
+              // of its sub-element, if any
+              else if ( (href!=null) && (current.getType()==Element.PCDATA || current.getType() == Element.CDATA) ) {
+                return current.getText();
+              }
             }
         }
         return "";
@@ -1253,7 +1276,7 @@ public class WebDAVResponseInterpreter
         while(treeEnum.hasMoreElements() )
         {
             Element current = (Element)treeEnum.nextElement();
-            if( (current != null) && (current.getType() == Element.PCDATA) )
+            if( (current != null) && (current.getType() == Element.PCDATA || current.getType() == Element.CDATA) )
                 return current.getText();
         }
         return "";
@@ -1271,7 +1294,7 @@ public class WebDAVResponseInterpreter
         while(treeEnum.hasMoreElements() )
         {
             Element current = (Element)treeEnum.nextElement();
-            if( (current != null) && (current.getType() == Element.PCDATA) )
+            if( (current != null) && (current.getType() == Element.PCDATA || current.getType() == Element.CDATA) )
                 return current.getText();
         }
         return "";
@@ -1293,7 +1316,7 @@ public class WebDAVResponseInterpreter
             if( (tag != null) && tag.getName().equals( WebDAVXML.ELEM_STATUS ) )
             {
                 current = (Element)treeEnum.nextElement();
-                if( (current != null) && (current.getType() == Element.PCDATA) )
+                if( (current != null) && (current.getType() == Element.PCDATA || current.getType() == Element.CDATA) )
                 {
                     StringTokenizer text = new StringTokenizer( current.getText() );
                     if( text.countTokens() >= 2 )
@@ -1326,7 +1349,7 @@ public class WebDAVResponseInterpreter
             if( tag.getName().equals( WebDAVXML.ELEM_HREF ) )
             {
                 Element token = (Element)treeEnum.nextElement();
-                if( token.getType() == Element.PCDATA )
+                if( token.getType() == Element.PCDATA || token.getType() == Element.CDATA )
                 {
                     String HrefValue = token.getText();
                     int pos = HrefValue.indexOf( HTTPPrefix );

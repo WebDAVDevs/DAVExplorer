@@ -75,7 +75,7 @@ public class Main extends JFrame
     WebDAVMenu CommandMenu;
     Hashtable authTable;
     String authHost;
-    public final static String VERSION = "0.60";
+    public final static String VERSION = "0.61";
     public final static String UserAgent = "UCI DAV Explorer/" + VERSION;
     String writeToDir;
 
@@ -713,7 +713,7 @@ public class Main extends JFrame
             {
                 JOptionPane pane = new JOptionPane( this );
                 String message = new String("DAV Explorer Version "+ VERSION + "\n" +
-                "Copyright (c) 1999 Regents of the University of California\n" +
+                "Copyright (c) 1999-2000 Regents of the University of California\n" +
                 "Authors: Yuzo Kanomata, Joachim Feise\n" +
                 "EMail: dav-exp@ics.uci.edu\n\n" +
                 "Based on code from the UCI WebDAV Client Group\n" +
