@@ -122,6 +122,7 @@ public class Main extends JFrame
 
         // Yuzo Add the CopyEvent Listener
         responseInterpreter.addCopyResponseListener(treeView);
+        responseInterpreter.addPutListener(treeView);
 
         webdavManager = new WebDAVManager(WebDAVFrame);
         webdavManager.addResponseListener(new ResponseListener());
@@ -317,6 +318,8 @@ public class Main extends JFrame
                 String s = fileView.getOldSelectedResource();
                 WebDAVTreeNode n = fileView.getParentNode();
                 requestGenerator.setResource(s, n);
+System.out.println("RenameListner: resource =" + s + ", node =" + n + " str=" + str + ", path =" + treeView.getCurrentPath() );
+
                 requestGenerator.GenerateRename( str, treeView.getCurrentPath() );
             }
         }
@@ -342,15 +345,28 @@ public class Main extends JFrame
     {
         public void responseFormed(WebDAVResponseEvent e)
         {
+
+	    // This call process the info from the server
+
             responseInterpreter.handleResponse(e);
-            // The above loads the Response into memory
-            // The post event processing Should be below!
+
+
+
+	// Post processing
+	// These are actions designed to take place after the 
+	// response has been loaded
 
             String extra = e.getExtraInfo();
 
             String method = e.getMethodName();
+
+
             if ( method.equals("COPY") )
             {
+                // Skip
+            }
+            else if (method.equals("PUT"))
+	    {
                 // Skip
             }
             else if (extra == null)
@@ -363,10 +379,23 @@ public class Main extends JFrame
                 if (tn != null)
                 {
                     tn.finishLoadChildren();
+		    
                 }
+            }
+            else if ( extra.equals("select") )
+            {
+                WebDAVTreeNode tn = e.getNode();
+                if (tn != null)
+                {
+                    tn.finishLoadChildren();
+
+		    treeView.setSelectedNode(tn);
+                }
+		
             }
             else if ( extra.equals("uribox") )
             {
+		WebDAVTreeNode tn = e.getNode();
             }
             else if ( extra.equals("copy") )
             {
@@ -392,19 +421,38 @@ public class Main extends JFrame
             else if (command.equals("Write File"))
             {
                 FileDialog fd = new FileDialog(WebDAVFrame, "Write File" , FileDialog.LOAD);
-                fd.setVisible(true);
+                //fd.setVisible(true);
+		fd.show();
 
-                if( fd.getDirectory() != null )
+
+                if(  ( !fd.getDirectory().equals("") ) && ( fd.getDirectory() != null ) && ( fd.getFile() != null ) )
                 {
                     String fullPath = fd.getDirectory() + fd.getFile();
                     String token = treeView.getLockToken( fd.getFile() );
 
                     // Get the current Node so that we can update it later
                     String s = "";
-                    WebDAVTreeNode n = fileView.getParentNode();
-                    requestGenerator.setResource(s, n);
 
-                    requestGenerator.GeneratePut( fullPath, treeView.getCurrentPath(), token );
+                    WebDAVTreeNode n2 = fileView.getSelectedCollection();
+		    
+		    s = fileView.getSelected();
+		    if (s == null)
+		    {
+			s = "";
+		    }
+		    WebDAVTreeNode parent = fileView.getParentNode();
+
+		    if (n2 == null)
+		    {
+                        requestGenerator.setResource(s, parent);
+                        requestGenerator.GeneratePut(fullPath, s, token , null);
+
+		    } 
+		    else 
+		    {
+               	        requestGenerator.setResource(s, n2);
+                        requestGenerator.GeneratePut( fullPath, s, token , parent);
+		    }
                     requestGenerator.execute();
                 }
             }

@@ -63,7 +63,7 @@ import java.awt.event.*;
 import java.io.*;
 
 // Yuzo: This should be a Model
-public class WebDAVTreeView implements ViewSelectionListener, CopyResponseListener
+public class WebDAVTreeView implements ViewSelectionListener, CopyResponseListener, PutListener
 {
     JTree tree;
     final static String WebDAVRoot = "DAV Explorer";
@@ -162,10 +162,10 @@ public class WebDAVTreeView implements ViewSelectionListener, CopyResponseListen
             WebDAVTreeNode tn = (WebDAVTreeNode)expansionPath.getLastPathComponent();
             if(!tn.hasLoadedChildren())
             {
-                tn.loadChildren();
+                tn.loadChildren( false );
 
-                tn.setHasLoadedChildren(true);
-                treeModel.nodeStructureChanged(tn);
+                //tn.setHasLoadedChildren(true);
+                //treeModel.nodeStructureChanged(tn);
             }
             else
             {
@@ -177,6 +177,38 @@ public class WebDAVTreeView implements ViewSelectionListener, CopyResponseListen
         public void treeCollapsed( TreeExpansionEvent evt )
         {
         }
+    }
+
+
+
+    // Yuzo: added PutResponse stuff to handle put to a selected collection
+    // in the file view
+
+    // Goal here is to load the node without changing the selection
+    public void PutEventResponse(PutEvent e){
+        WebDAVTreeNode tn = e.getNode();
+
+        TreeNode path[] = tn.getPath();
+
+        String s = new String();
+        for (int i = 1; i < path.length; i++)
+        {
+            s = s + path[i] + "/";
+        }
+
+        tree.removeTreeExpansionListener(treeExpListener);
+        tree.removeTreeSelectionListener(treeSelectionListener);
+
+        //tn.removeAllChildren();
+        tn.removeChildren();
+        tn.loadChildren( false );
+
+        //treeModel.nodeStructureChanged(tn);
+        //tn.setHasLoadedChildren(true);
+
+        tree.addTreeExpansionListener(treeExpListener);
+        tree.addTreeSelectionListener(treeSelectionListener);
+	
     }
 
     //Yuzo: Added Copy ResposeListner stuff
@@ -197,14 +229,18 @@ public class WebDAVTreeView implements ViewSelectionListener, CopyResponseListen
         // then reload load it with the updated info making
         // a call to the server
 
+        //tn.removeAllChildren();
         tn.removeAllChildren();
 
         TreePath tp = new TreePath(path);
 
         // Load all the Children of this Node.
-        tn.loadChildren();
-        treeModel.nodeStructureChanged(tn);
-        tn.setHasLoadedChildren(true);
+        tn.loadChildren( false );
+
+        //treeModel.nodeStructureChanged(tn);
+	
+        //tn.setHasLoadedChildren(true);
+
 
         ViewSelectionEvent event = new ViewSelectionEvent(this, tn, tp);
         for (int i=0; i<selListeners.size();i++)
@@ -230,27 +266,29 @@ public class WebDAVTreeView implements ViewSelectionListener, CopyResponseListen
         tableSelectionChanged(e);
     }
 
-    //  This is where selection event from the table View are routed to.
+    //  This is where selection event from the TableView are routed to.
     //  The Event includes the information needed to expand/select
     //  the particular row.
     protected void tableSelectionChanged(ViewSelectionEvent e)
     {
+
         WebDAVTreeNode tn = (WebDAVTreeNode)e.getNode();
         TreePath tp = (TreePath)e.getPath();
+
 
         tree.removeTreeExpansionListener(treeExpListener);
         tree.removeTreeSelectionListener(treeSelectionListener);
 
-        Cursor c = mainFrame.getCursor(); // save original cursor
-        mainFrame.setCursor( Cursor.getPredefinedCursor( Cursor.WAIT_CURSOR ) );
-
         if(!tn.hasLoadedChildren())
         {
-            tn.loadChildren();
-
-            tn.setHasLoadedChildren(true);
-            treeModel.nodeStructureChanged(tn);
+            tn.loadChildren( true );
+            tree.addTreeExpansionListener(treeExpListener);
+            tree.addTreeSelectionListener(treeSelectionListener);
+	    return;
         }
+
+        Cursor c = mainFrame.getCursor(); // save original cursor
+        mainFrame.setCursor( Cursor.getPredefinedCursor( Cursor.WAIT_CURSOR ) );
 
         if (!tree.isExpanded(tp))
         {
@@ -258,16 +296,25 @@ public class WebDAVTreeView implements ViewSelectionListener, CopyResponseListen
         }
 
         tree.setSelectionPath(tp);
-        tree.revalidate();          // Attempt to validate the new tree
+        //tree.revalidate();          // Attempt to validate the new tree
                                     // This does not work becuase the vaildate
                                     // is invoked later.  This causes
                                     // the scrollPathToVisible not to work
         tree.makeVisible(tp);
         tree.scrollPathToVisible(tp);
-        tree.scrollPathToVisible(tp);   // Sun Bug Id 4180658  -- does not work
+        //tree.scrollPathToVisible(tp); // Sun Bug Id 4180658  -- does not work
                                         // but this second call is a "fix"
                                         // according to the bug report
         tree.treeDidChange();
+
+        ViewSelectionEvent event = 
+		new ViewSelectionEvent(this, tn, tp); 
+        for (int i=0; i<selListeners.size();i++)
+        {
+            ViewSelectionListener l = 
+		(ViewSelectionListener)selListeners.elementAt(i);
+            l.selectionChanged(event);
+        }
 
         currPath = tp;
 
@@ -296,7 +343,43 @@ public class WebDAVTreeView implements ViewSelectionListener, CopyResponseListen
         selListeners.removeElement(l);
     }
 
-    //Yuzo New Selection Listener
+
+    // This method sets the selected TreeNode to tn and sends the proper
+    // notifications out.
+    public void setSelectedNode( WebDAVTreeNode tn )
+    {
+	
+	// Could make sure of currPath by geeting it fro tn
+
+	TreePath tp = new TreePath(tn.getPath());
+
+
+        tree.removeTreeExpansionListener(treeExpListener);
+        tree.removeTreeSelectionListener(treeSelectionListener);
+
+        if (!tree.isExpanded(tp))
+        {
+            tree.expandPath(tp);
+        }
+
+        tree.setSelectionPath(tp);
+        tree.makeVisible(tp);
+        tree.scrollPathToVisible(tp);
+
+        tree.addTreeExpansionListener(treeExpListener);
+        tree.addTreeSelectionListener(treeSelectionListener);
+	
+        ViewSelectionEvent event = 
+		new ViewSelectionEvent(this, tn, tp); // check currPath
+        for (int i=0; i<selListeners.size();i++)
+        {
+            ViewSelectionListener l = 
+		(ViewSelectionListener)selListeners.elementAt(i);
+            l.selectionChanged(event);
+        }
+    }
+
+    //Yuzo New Selection Listener for tree selection
     class SelectionChangeListener implements TreeSelectionListener
     {
         // This is where we handle the tree selection event.
@@ -316,17 +399,24 @@ public class WebDAVTreeView implements ViewSelectionListener, CopyResponseListen
             if (!tn.hasLoadedChildren())
             {
                 // Load all the Children of this Node.
-                tn.loadChildren();
-                treeModel.nodeStructureChanged(tn);
-                tn.setHasLoadedChildren(true);
-            }
+                tn.loadChildren(true);
 
-            ViewSelectionEvent event = new ViewSelectionEvent(this,
-                            (WebDAVTreeNode)currPath.getLastPathComponent(), currPath);
-            for (int i=0; i<selListeners.size();i++)
-            {
-                ViewSelectionListener l = (ViewSelectionListener)selListeners.elementAt(i);
-                l.selectionChanged(event);
+		if (!tn.isLocalLoad())
+		    return;
+
+                //treeModel.nodeStructureChanged(tn);
+                //tn.setHasLoadedChildren(true);
+            }
+	    {
+		// alert the Selestion Listeners (FileView)
+            	ViewSelectionEvent event = new 
+			ViewSelectionEvent(this, tn, tp);
+            	for (int i=0; i<selListeners.size();i++)
+            	{
+               	    ViewSelectionListener l = 
+			(ViewSelectionListener)selListeners.elementAt(i);
+                    l.selectionChanged(event);
+            	}
             }
         }
     }
@@ -431,6 +521,7 @@ public class WebDAVTreeView implements ViewSelectionListener, CopyResponseListen
             // Now finish the Processing for the root.
             newNode.finishLoadChildren();
             newNode.setHasLoadedChildren(true);
+            treeModel.nodeStructureChanged(newNode);
             tree.setSelectionRow(1);
         }
 
@@ -545,9 +636,9 @@ public class WebDAVTreeView implements ViewSelectionListener, CopyResponseListen
         TreePath tp = new TreePath(path);
 
         // Load all the Children of this Node.
-        n.loadChildren();
-        treeModel.nodeStructureChanged(n);
-        n.setHasLoadedChildren(true);
+        n.loadChildren( true );
+        //treeModel.nodeStructureChanged(n);
+        //n.setHasLoadedChildren(true);
 
         ViewSelectionEvent event = new ViewSelectionEvent(this, n, tp);
         for (int i=0; i<selListeners.size();i++)

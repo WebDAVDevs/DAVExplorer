@@ -63,6 +63,7 @@ public class WebDAVTreeNode extends DefaultMutableTreeNode
     private String userAgent;
 
     protected boolean childrenLoaded = false;
+    protected boolean localLoad = false;
 
     public WebDAVTreeNode (Object o, String ua )
     {
@@ -123,6 +124,10 @@ public class WebDAVTreeNode extends DefaultMutableTreeNode
         {
             remove(0);
         }
+
+	// They forgot this
+	dataNode = null;
+	
     }
 
     public int getChildCount()
@@ -152,8 +157,10 @@ public class WebDAVTreeNode extends DefaultMutableTreeNode
         }
         catch (Exception inEx)
         {
-            dataNode = null;
-            hasLoaded = false;
+System.out.println("EXCEPTION:loadRemote, byte_array empty");
+	    System.out.println(inEx);
+            //dataNode = null;
+            //hasLoaded = false;
             interpreter.clearStream();
             return;
         }
@@ -425,24 +432,33 @@ public class WebDAVTreeNode extends DefaultMutableTreeNode
         byte[] byte_xml = interpreter.getXML();
         loadRemote(byte_xml);
         interpreter.ResetRefresh();
+
+        childrenLoaded = true;
     }
 
-    public void loadChildren()
+    public void loadChildren( boolean select )
     {
         Object[] full_path = getPath();
+
         if( full_path == null || full_path.length <= 1 )
             return;
 
         String name = full_path[1].toString();
         if (name.startsWith(WebDAVPrefix))
         {
+	    localLoad = false;
+
             byte[] byte_xml = interpreter.getXML();
             if (byte_xml == null)
             {
                 hasLoaded = false;
                 dataNode = null;
                 interpreter.ResetRefresh();
-                generator.setExtraInfo("index");
+		if (select){
+                    generator.setExtraInfo("select");
+		}else{
+                    generator.setExtraInfo("index");
+		}
 
                 String pathToResource = name;
                 for (int i=2; i < full_path.length; i++)
@@ -454,7 +470,6 @@ public class WebDAVTreeNode extends DefaultMutableTreeNode
                 generator.GeneratePropFindForNode(pathToResource,"allprop","one",null,null, true, this);
                 //generator.execute();
                 generator.run();
-
                 return;
             }
             else
@@ -485,8 +500,13 @@ public class WebDAVTreeNode extends DefaultMutableTreeNode
         }
         else
         {
+	    localLoad = true;
             loadLocal(name,full_path);
         }
+    }
+
+    public boolean isLocalLoad(){
+	return localLoad;
     }
 
     public String truncateResource(String res)

@@ -155,6 +155,7 @@ public class WebDAVManager
             ls = (Vector) Listeners.clone();
         }
 
+
         for (int i=0; i<ls.size();i++) {
             WebDAVResponseListener l = (WebDAVResponseListener) ls.elementAt(i);
             l.responseFormed(e);

@@ -80,6 +80,7 @@ public class WebDAVResponseInterpreter
 
     private WebDAVTreeNode Node;
     private static CopyResponseListener copyListener;
+    private static PutListener putListener;
 
     private boolean debugXML = false;
 
@@ -123,23 +124,31 @@ public class WebDAVResponseInterpreter
 
     public void handleResponse(WebDAVResponseEvent e)
     {
+
         res = e.getResponse();
         Method = e.getMethodName();
         Extra = e.getExtraInfo();
         HostName = e.getHost();
         Port = e.getPort();
 
+
+System.out.println(" handleResponse, method =" + Method + ", Extra=" + Extra);
         ByteArrayInputStream ar = new ByteArrayInputStream(e.getResource().getBytes());
         EscapeInputStream iStream = new EscapeInputStream( ar, true );
         DataInputStream dis = new DataInputStream( iStream );
+System.out.println("before try readLine");
         try{
             Resource = dis.readLine();
+System.out.println("readLine, Resource =" + Resource);
         } catch(Exception exc) {
+System.out.println("EXCEPTION readLine");
             System.out.println(exc);
         }
         Node = e.getNode();
+
         try
         {
+System.out.println("Status=" + res.getStatusCode());
             if (res.getStatusCode() >= 300)
             {
                 resetInProgress();
@@ -248,6 +257,7 @@ public class WebDAVResponseInterpreter
 
     public void parsePropFind()
     {
+System.out.println("parsePropFind");
         byte[] body = null;
         Document xml_doc = null;
 
@@ -409,6 +419,7 @@ public class WebDAVResponseInterpreter
             }
             else if (Extra.startsWith("rename:"))
             {
+System.out.println("parsePropFind, extra = rename");
                 int pos = Extra.indexOf(":");
                 String tmp = Extra.substring(pos + 1);
                 pos = tmp.indexOf( ":" );
@@ -422,6 +433,7 @@ public class WebDAVResponseInterpreter
                 else
                     dest = tmp;
 
+System.out.println("parsePropFind, dest=" + dest + ", dir =" + dir);
         clearStream();
         //Old
         generator.setNode(Node);
@@ -444,7 +456,7 @@ public class WebDAVResponseInterpreter
                 }
                 else
                 {
-                    generator.GeneratePut(fileName, newRes, lockToken);
+                    generator.GeneratePut(fileName, newRes, lockToken, null);
                     generator.execute();
                 }
             }
@@ -506,9 +518,15 @@ public class WebDAVResponseInterpreter
         }
         else if(Extra.equals("expand"))
         {
+        // Allow for post processing in Main ResponseListener
         }
         else if(Extra.equals("index"))
         {
+        // Allow for post processing in Main ResponseListener
+        }
+        else if(Extra.equals("select"))
+        {
+        // Allow for post processing in Main ResponseListener
         }
         else
         {
@@ -661,8 +679,21 @@ public class WebDAVResponseInterpreter
 
     // Piggy back on the Copy Response stuff
     clearStream();
-    CopyResponseEvent e = new CopyResponseEvent( this, Node);
-    copyListener.CopyEventResponse(e);
+
+    WebDAVTreeNode parent = generator.getPossibleParentOfSelectedCollectionNode();
+    if (parent != null){
+	// Need to 1. maintain the selected node on both the 
+	// the Tree View and the File View.
+	// Need to 2. reload the node to which the put has taken place.
+        //   a. what if node loaded, 
+	//   b. what if node is not loaded
+        PutEvent e = new PutEvent( this, Node, parent);
+	putListener.PutEventResponse(e);
+    }else{
+        CopyResponseEvent e = new CopyResponseEvent( this, Node);
+        copyListener.CopyEventResponse(e);
+    }
+    generator.resetParentNode();
     }
 
     public void parseDelete()
@@ -683,6 +714,13 @@ public class WebDAVResponseInterpreter
         // Add only one for now
         copyListener = l;
     }
+
+    public void addPutListener( PutListener l)
+    {
+        // Add only one for now
+        putListener = l;
+    }
+
 
     public void executeCopy()
     {

@@ -72,6 +72,7 @@ public class WebDAVRequestGenerator implements Runnable
     private static JFrame mainFrame;
 
     private WebDAVTreeNode Node = null;
+    private WebDAVTreeNode parentNode = null;
 
     private static Vector listeners = new Vector();
 
@@ -277,6 +278,7 @@ public class WebDAVRequestGenerator implements Runnable
 
     public synchronized void DiscoverLock(String method)
     {
+System.out.println("DiscoverLock, Extra=" + method);
         Extra = new String(method);
         String[] prop = new String[1];
         String[] schema = new String[1];
@@ -301,6 +303,7 @@ public class WebDAVRequestGenerator implements Runnable
 
     public synchronized void GeneratePropFind(String FullPath, String command, String Depth, String[] props, String[] schemas, boolean flagGetFilesBelow )
     {
+System.out.println("GeneratePropFind");
         Headers = null;
         Body = null;
 
@@ -313,7 +316,10 @@ public class WebDAVRequestGenerator implements Runnable
             // selected tree node will actually have the
             // properties of the children of the node
             // loaded into our tree.
-            if (ResourceName.equals(FullPath))
+	    if (Extra.equals("select")){
+		// Skip on a selection 
+	    }
+            else if (ResourceName.equals(FullPath))
             {
                 Extra = "index";
             }
@@ -353,6 +359,7 @@ public class WebDAVRequestGenerator implements Runnable
             dep = "0";
         else if (dep.equalsIgnoreCase("one"))
             dep = "1";
+
 
         Method = "PROPFIND";
         Document miniDoc = new Document();
@@ -671,11 +678,25 @@ public class WebDAVRequestGenerator implements Runnable
             Headers[0] = new NVPair("Host",HostName + ":" + Port);
     }
 
-    public synchronized void GeneratePut(String fileName, String destDir, String lockToken)
+    // Returns the parent Node , this is used to indicate which 
+    // Node is beeing writen to by WebDAVResponseInterpreter:parsePut
+   // Parent in case of selection of collection in file view
+    // and the collection itself in the case of nothing selected in 
+    // file view window
+    public WebDAVTreeNode getPossibleParentOfSelectedCollectionNode(){
+	return parentNode;
+    }
+
+    public void resetParentNode(){
+        parentNode= null;
+    }
+
+    public synchronized void GeneratePut(String fileName, String destDir, String lockToken, WebDAVTreeNode selectedCollection)
     {
         Headers = null;
         Body = null;
 
+	parentNode = selectedCollection;
 
         ResourceName = destDir;
         if (!parseResourceName())
@@ -688,6 +709,7 @@ public class WebDAVRequestGenerator implements Runnable
         int pos = dest.lastIndexOf( File.separatorChar );
         if( pos >= 0 )
             dest = dest.substring( pos + 1 );
+
         StrippedResource = StrippedResource + dest;
 
         if ( (fileName == null) || (fileName.equals("")) )
@@ -701,6 +723,7 @@ public class WebDAVRequestGenerator implements Runnable
             errorMsg("Invalid File.");
             return;
         }
+
         try
         {
             FileInputStream file_in = new FileInputStream(file);
@@ -838,6 +861,8 @@ public class WebDAVRequestGenerator implements Runnable
 
     public synchronized void GenerateRename( String Dest, String dir )
     {
+System.out.println("GenerateRename: Dest=" + Dest + ", dir=" + dir);
+
         Extra = new String(tableResource);
 
         DiscoverLock("rename:" + Dest + ":" + dir );
@@ -846,6 +871,7 @@ public class WebDAVRequestGenerator implements Runnable
 
     public synchronized void GenerateMove(String Dest, String dir, boolean Overwrite, boolean KeepAlive, String lockToken)
     {
+System.out.println("GenerateMove");
         Headers = null;
         Body = null;
         Extra = Dest;
