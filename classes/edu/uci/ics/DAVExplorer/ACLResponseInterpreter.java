@@ -28,6 +28,8 @@ import com.ms.xml.om.Element;
 import com.ms.xml.om.TreeEnumeration;
 import com.ms.xml.util.Name;
 
+import edu.uci.ics.DAVExplorer.DeltaVResponseInterpreter.GetVersionListener;
+
 /**
  * Title:       
  * Description: 
@@ -303,11 +305,55 @@ public class ACLResponseInterpreter extends DeltaVResponseInterpreter
     }
     
     
-    protected void parseACL()
+    /**
+     * Process the response to a REPORT request  
+     */
+    protected void parseReport()
     {
-        
+        if( GlobalData.getGlobalData().getDebugResponse() )
+        {
+            System.err.println( "ACLResponseInterpreter::parseReport" );
+        }
+
+        byte[] body = null;
+        Document xml_doc = null;
+
+        try
+        {
+            body = res.getData();
+            stream = body;
+            if (body == null)
+            {
+                GlobalData.getGlobalData().errorMsg("DAV Interpreter:\n\nMissing XML body in\nPROPFIND response.");
+                return;
+            }
+            ByteArrayInputStream byte_in = new ByteArrayInputStream(body);
+            xml_doc = new Document();
+            xml_doc.load( byte_in );
+        }
+        catch (Exception e)
+        {
+            GlobalData.getGlobalData().errorMsg("DAV Interpreter:\n\nError encountered \nwhile parsing PROPFIND Response.\n" + e);
+            stream = null;
+            return;
+        }
+
+        switch( extendedCode )
+        {
+            case WebDAVResponseEvent.ACL_PRINCIPAL_PROP_SET:
+                break;
+            case WebDAVResponseEvent.PRINCIPAL_MATCH:
+                break;
+            case WebDAVResponseEvent.PRINCIPAL_PROPERTY_SEARCH:
+                break;
+            case WebDAVResponseEvent.PRINCIPAL_SEARCH_PROPERTY_SET:
+                break;
+            default:
+                super.parseReport();
+        }
+        printXML( body );
     }
-    
+
 
     protected void handleOwner( Document xml_doc, boolean owner )
     {
@@ -675,7 +721,7 @@ public class ACLResponseInterpreter extends DeltaVResponseInterpreter
         return super.getResourceType( resourcetype );
     }
 
-    
+
     public boolean isACL( String resource )
     {
         Enumeration enum = acl.keys();

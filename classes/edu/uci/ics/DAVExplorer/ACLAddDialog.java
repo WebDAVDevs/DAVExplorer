@@ -516,13 +516,14 @@ public class ACLAddDialog extends JDialog
 
 
     /**
-    *
-    */
-   protected void close( boolean cancel )
-   {
-       setVisible(false);
-       canceled = cancel;
-   }
+     * 
+     * @param cancel
+     */
+    protected void close( boolean cancel )
+    {
+        setVisible(false);
+        canceled = cancel;
+    }
 
 
     protected String hostname;

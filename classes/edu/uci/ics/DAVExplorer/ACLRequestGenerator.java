@@ -250,7 +250,7 @@ public class ACLRequestGenerator extends DeltaVRequestGenerator
         if( StrippedResource == null )
             return false;
 
-        extendedCode = 0;
+        extendedCode = WebDAVResponseEvent.ACL_PRINCIPAL_PROP_SET;
         Method = "REPORT";
         Document miniDoc = new Document();
         miniDoc.setVersion("1.0");
@@ -291,7 +291,7 @@ public class ACLRequestGenerator extends DeltaVRequestGenerator
     }
 
 
-    public synchronized boolean GetPrincipalMatchReport( String[] props )
+    public synchronized boolean GetPrincipalMatchReport( Vector props )
     {
         if( GlobalData.getGlobalData().getDebugRequest() )
         {
@@ -304,7 +304,7 @@ public class ACLRequestGenerator extends DeltaVRequestGenerator
         if( StrippedResource == null )
             return false;
 
-        extendedCode = 0;
+        extendedCode = WebDAVResponseEvent.PRINCIPAL_MATCH;
         Method = "REPORT";
         Document miniDoc = new Document();
         miniDoc.setVersion("1.0");
@@ -318,11 +318,7 @@ public class ACLRequestGenerator extends DeltaVRequestGenerator
         topElem.addChild( WebDAVXML.elemNewline, null );
         Element propElem = WebDAVXML.createElement( ACLXML.ELEM_PRINCIPAL_PROPERTY, Element.ELEMENT, topElem, asgen );
         propElem.addChild( WebDAVXML.elemNewline, null );
-        for (int i=0;i<props.length;i++)
-        {
-            Element prop = WebDAVXML.createElement( props[i], Element.ELEMENT, propElem, asgen );
-            addChild( propElem, prop, 2, false );
-        }
+        addProperties( propElem, asgen, props, 1 );
         addChild( topElem, propElem, 1, true );
         miniDoc.addChild( topElem, null );
         
@@ -365,7 +361,7 @@ public class ACLRequestGenerator extends DeltaVRequestGenerator
         if( StrippedResource == null )
             return false;
 
-        extendedCode = 0;
+        extendedCode = WebDAVResponseEvent.PRINCIPAL_PROPERTY_SEARCH;
         Method = "REPORT";
         Document miniDoc = new Document();
         miniDoc.setVersion("1.0");
@@ -441,7 +437,7 @@ public class ACLRequestGenerator extends DeltaVRequestGenerator
         if( StrippedResource == null )
             return false;
 
-        extendedCode = 0;
+        extendedCode = WebDAVResponseEvent.PRINCIPAL_SEARCH_PROPERTY_SET;
         Method = "REPORT";
         Document miniDoc = new Document();
         miniDoc.setVersion("1.0");

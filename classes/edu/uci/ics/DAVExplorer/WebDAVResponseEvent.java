@@ -75,6 +75,10 @@ public class WebDAVResponseEvent extends EventObject
     public static final int ACL_PRINCIPAL_COLLECTION_SET = 77;
     public static final int ACL_PRINCIPAL_NAMES = 78;
     public static final int ACL_PROPERTY_NAMES = 79;
+    public static final int ACL_PRINCIPAL_PROP_SET = 80;
+    public static final int PRINCIPAL_MATCH = 81;
+    public static final int PRINCIPAL_PROPERTY_SEARCH = 82;
+    public static final int PRINCIPAL_SEARCH_PROPERTY_SET = 83;
 
     /**
      * Constructor
