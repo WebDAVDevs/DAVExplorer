@@ -36,7 +36,6 @@ import HTTPClient.NVPair;
 
 public class AuthDialog implements AuthorizationPrompter
 {
-
     public AuthDialog()
     {
     }
@@ -48,6 +47,31 @@ public class AuthDialog implements AuthorizationPrompter
      */
     public NVPair getUsernamePassword(AuthorizationInfo info, boolean forProxy)
     {
+		if( GlobalData.getGlobalData().isAppletMode() )
+		{
+			// as applet, we may be able to get username and pw from the initial webpage data
+			String[][] initialSites = GlobalData.getGlobalData().getInitialSites();
+			for (int i = 0; i < initialSites.length; i++)
+			{
+				String is[] = initialSites[i];
+				if( is.length == 0 )
+					continue;
+				String initialSite = initialSites[i][0];
+				if (initialSite.startsWith(GlobalData.WebDAVPrefixSSL))
+					initialSite = initialSite.substring(GlobalData.WebDAVPrefixSSL.length());
+				if (initialSite.startsWith(GlobalData.WebDAVPrefix))
+					initialSite = initialSite.substring(GlobalData.WebDAVPrefix.length());
+    
+				// check for username/pw
+				if( (initialSite.indexOf(info.getHost()) != -1) && (is.length == 3) && (i != lastIndex) )
+				{
+					lastIndex = i;
+					return new NVPair( is[1], is[2] );
+				}
+			}
+		}
+		lastIndex = -1;
+		
         WebDAVLoginDialog dlg = new WebDAVLoginDialog( "Login", info.getRealm(), info.getScheme(), true );
         if( dlg.getUsername().equals( "" ) || dlg.getUserPassword().equals( "" ) )
             return null;
@@ -58,4 +82,6 @@ public class AuthDialog implements AuthorizationPrompter
 
         return answer;
     }
+    
+    static int lastIndex = -1;
 }
