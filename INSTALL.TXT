@@ -11,8 +11,8 @@ DAV Explorer requires Java 2 (aka JDK 1.2).
 3. Retrieve all DAV Explorer source files from the DAV Explorer CVS archive, by using
    the command 'cvs -d :pserver:cvsguest@elysees.ics.uci.edu:/webdav checkout DAVExplorer'.
    Retrieve all MS Parser and HTTPClient source files and class files from the CVS archive
-   with the commands 'cvs -d :pserver:cvsguest@elysees.ics.uci.edu:/webdav checkout -r JDK_1_2 parser'
-   and 'cvs -d :pserver:cvsguest@elysees.ics.uci.edu:/webdav checkout -r JDK_1_2 HTTPClient',
+   with the commands 'cvs -d :pserver:cvsguest@elysees.ics.uci.edu:/webdav checkout parser'
+   and 'cvs -d :pserver:cvsguest@elysees.ics.uci.edu:/webdav checkout HTTPClient',
    respectively.
 
 4. Compile all Java source files with Java 2 by running make in the dav_explorer directory
