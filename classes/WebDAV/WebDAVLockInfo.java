@@ -36,7 +36,7 @@
 // Date: 3/17/99
 //
 // Change List:
-// Note: This code was not tested at this time (3/17/99) as 
+// Note: This code was not tested at this time (3/17/99) as
 // the current Apache server does not support locking.
 
 
@@ -58,7 +58,7 @@ import java.io.*;
 
 public class WebDAVLockInfo extends JDialog implements ActionListener
 {
-	
+    
 /*-----------------------------------------------------------------------
 Public methods and attributes section
 -----------------------------------------------------------------------*/
@@ -67,71 +67,51 @@ Public methods and attributes section
 
          Vector listeners = new Vector();
          static final String WebDAVClassName = "WebDAV";
-	 static final String fileName = "lockinfo.dat";
+         static final String fileName = "lockinfo.dat";
          String lockInfo;
-	 String classPath;
+         String userPath;
          String filePath;
 
-	//Construction
+    //Construction
 
         public WebDAVLockInfo(JFrame parent, String strCaption, boolean isModal)
-	{
+    {
                 super(parent, strCaption, isModal);
 
             
-                classPath = getClassPath();
-                if (classPath == null)
-  		  return;
-                File theFile = new File(classPath + fileName);
-	        if (theFile.exists())
-                  filePath = classPath + fileName;
-		if (filePath != null) {
+            userPath = System.getProperty( "user.home" );
+            if (userPath == null)
+                userPath = "";
+            else
+                userPath += File.separatorChar;
+                File theFile = new File(userPath + fileName);
+            if (theFile.exists())
+                  filePath = userPath + fileName;
+        if (filePath != null) {
                   try {
                     FileInputStream fin = new FileInputStream(filePath);
-		    BufferedReader in = new BufferedReader(new InputStreamReader(fin));
-		    lockInfo = in.readLine();
-	            in.close();
-  		  } catch (Exception fileEx) { }                               
-		}
+            BufferedReader in = new BufferedReader(new InputStreamReader(fin));
+            lockInfo = in.readLine();
+                in.close();
+          } catch (Exception fileEx) { }                               
+        }
 
 //                addListener(l);
-		JPanel groupPanel = new JPanel(new GridLayout(4,1));
+        JPanel groupPanel = new JPanel(new GridLayout(4,1));
                 groupPanel.add(new JLabel("Lock Info:"));
                 groupPanel.add(txtUsername = new JTextField(80));
-	        if (lockInfo != null)
+            if (lockInfo != null)
                   txtUsername.setText(lockInfo);
                 else
                   txtUsername.setText("http://");
                 getContentPane().add(OKbutton = new JButton("OK"), BorderLayout.SOUTH);
                 OKbutton.addActionListener(this);
                 getContentPane().add(groupPanel, BorderLayout.CENTER);
-		pack();
-		show();
-	}
-
-	//Handling the events that happen in the dialog
-
-
-  private static String getClassPath() {
-    String classPath = System.getProperty("java.class.path");
-    if (classPath == null)
-      return null;
-
-    StringTokenizer paths = new StringTokenizer(classPath,":;");
-
-    while (paths.hasMoreTokens()) {
-      String nextPath = paths.nextToken();
-      if (!nextPath.endsWith(new Character(File.separatorChar).toString()))
-        nextPath += File.separatorChar;
-      nextPath += WebDAVClassName + File.separatorChar;
-      File theFile = new File(nextPath + "icons");
-      if (theFile.exists())
-        return nextPath;
+        pack();
+        show();
     }
-    return null;
-  }
-  
 
+    //Handling the events that happen in the dialog
    public synchronized void addListener(ActionListener l) {
         listeners.addElement(l);
     }
@@ -141,32 +121,32 @@ Public methods and attributes section
     }
 
 
-	public void actionPerformed(ActionEvent e)
-	{
-		if(e.getActionCommand().equals("OK")) {
+    public void actionPerformed(ActionEvent e)
+    {
+        if(e.getActionCommand().equals("OK")) {
                   String user = txtUsername.getText();
 
                   if ( user.length() == 0  )  
-		    return;
+            return;
                   try {
-		    FileOutputStream fout = new FileOutputStream(classPath + fileName);
-		    BufferedWriter out = new BufferedWriter(new OutputStreamWriter(fout));
+            FileOutputStream fout = new FileOutputStream(classPath + fileName);
+            BufferedWriter out = new BufferedWriter(new OutputStreamWriter(fout));
                     out.write(user,0,user.length());
                     out.newLine();
-		    out.close();
+            out.close();
 
-		  } catch (Exception exc) { }
+          } catch (Exception exc) { }
 
                 }
-	  dispose();
-	}
+      dispose();
+    }
 
-	//Set the name of the user in the protected data member
+    //Set the name of the user in the protected data member
 
-	public void setUsername(String strUsername)
-	{
-		m_strUsername = strUsername;
-	}
+    public void setUsername(String strUsername)
+    {
+        m_strUsername = strUsername;
+    }
 
 
 
@@ -190,15 +170,15 @@ Private methods and attributes section
 Protected methods and attributes section
 -----------------------------------------------------------------------*/
 
-	protected String m_strUsername;
+    protected String m_strUsername;
 
-	protected String m_strUserPassword;
+    protected String m_strUserPassword;
 
-	protected JTextField txtUsername;
+    protected JTextField txtUsername;
 
-	protected JPasswordField txtPassword;
+    protected JPasswordField txtPassword;
 
-	protected JButton OKbutton;
+    protected JButton OKbutton;
 
 }
 

@@ -24,7 +24,7 @@
 // tableSelectionChanged() or treeSelectionChanged()
 //
 // Version: 0.3
-// Author:  Robert Emmery  
+// Author:  Robert Emmery
 // Date:    4/2/98
 ////////////////////////////////////////////////////////////////
 // The code has been modified to include povisions for the final
@@ -74,11 +74,11 @@ public class WebDAVRequestGenerator implements Runnable
     private WebDAVTreeNode Node = null;
 
     private static Vector listeners = new Vector();
-    
+
     private boolean debugXML = false;
 
     private String userAgent = null;
-    
+
 
     public WebDAVRequestGenerator()
     { }
@@ -93,7 +93,7 @@ public class WebDAVRequestGenerator implements Runnable
     {
         User = username;
     }
-  
+
     public void setPass(String pass)
     {
         Password = pass;
@@ -103,7 +103,7 @@ public class WebDAVRequestGenerator implements Runnable
     {
         userAgent = ua;
     }
-    
+
     public void tableSelectionChanged(ViewSelectionEvent e)
     {
         if (e.getNode() != null)
@@ -140,7 +140,7 @@ public class WebDAVRequestGenerator implements Runnable
 
     public void setNode( WebDAVTreeNode node )
     {
-	    Node = node;
+        Node = node;
     }
 
     public void treeSelectionChanged(ViewSelectionEvent e)
@@ -209,7 +209,7 @@ public class WebDAVRequestGenerator implements Runnable
             newRes = "/";
         else if( isColl )
             newRes = newRes + "/";
-            
+
         StringBufferInputStream sbis = new StringBufferInputStream( newRes );
         EscapeInputStream eis = new EscapeInputStream( sbis, false );
         DataInputStream dis = new DataInputStream( eis );
@@ -229,7 +229,7 @@ public class WebDAVRequestGenerator implements Runnable
         Thread th = new Thread(this);
         th.start();
     }
-  
+
     public void run()
     {
         if (Headers == null)
@@ -257,15 +257,15 @@ public class WebDAVRequestGenerator implements Runnable
         for (int i=0;i<ls.size();i++)
         {
             WebDAVRequestListener l = (WebDAVRequestListener) ls.elementAt(i);
-            l.requestFormed(e); 
+            l.requestFormed(e);
         }
     }
-  
+
     public synchronized void addRequestListener(WebDAVRequestListener l)
     {
-        listeners.addElement(l);  
+        listeners.addElement(l);
     }
-  
+
     public synchronized void removeRequestListener(WebDAVRequestListener l)
     {
         listeners.removeElement(l);
@@ -283,16 +283,16 @@ public class WebDAVRequestGenerator implements Runnable
         execute();
     }
 
-    public synchronized void GeneratePropFindForNode(	String FullPath, 
-							String command, 
-							String Depth, 
-							String[] props, 
-							String[] schemas, 
-							boolean flag,
-						WebDAVTreeNode n )
+    public synchronized void GeneratePropFindForNode(   String FullPath,
+                            String command,
+                            String Depth,
+                            String[] props,
+                            String[] schemas,
+                            boolean flag,
+                        WebDAVTreeNode n )
     {
-	Node = n;
-	GeneratePropFind( FullPath, command, Depth, props, schemas, flag);
+    Node = n;
+    GeneratePropFind( FullPath, command, Depth, props, schemas, flag);
     }
 
     public synchronized void GeneratePropFind(String FullPath, String command, String Depth, String[] props, String[] schemas, boolean flagGetFilesBelow )
@@ -302,13 +302,13 @@ public class WebDAVRequestGenerator implements Runnable
 
         boolean ok;
         if (flagGetFilesBelow)
-        {   // In this case, loadChildren Flags 
-    		// this boolean in order to have 
-    		// the ResourceName be set to the FullPath.
-    		// This is to ensure that Expanding a non
-    		// selected tree node will actually have the 
-    		// properties of the children of the node
-    		// loaded into our tree.
+        {   // In this case, loadChildren Flags
+            // this boolean in order to have
+            // the ResourceName be set to the FullPath.
+            // This is to ensure that Expanding a non
+            // selected tree node will actually have the
+            // properties of the children of the node
+            // loaded into our tree.
             if (ResourceName.equals(FullPath))
             {
                 Extra = "index";
@@ -426,7 +426,7 @@ public class WebDAVRequestGenerator implements Runnable
             parent.addChild( WebDAVXML.elemNewline, null );
         }
     }
-  
+
     private static boolean docContains(Document doc, Element e)
     {
         Enumeration docEnum = doc.getElements();
@@ -448,11 +448,11 @@ public class WebDAVRequestGenerator implements Runnable
                 if ( (nameTag.getName().equals(e.getTagName().getName())) &&
                     (nameTag.getNameSpace().equals(e.getTagName().getNameSpace())) )
                 return true;
-            }     
+            }
         }
         return false;
     }
-  
+
     public synchronized void GeneratePropPatch(String Host, int port, String Res, Document old_xml, Document new_xml)
     {
         // need to determine here the patches (if any)
@@ -592,7 +592,7 @@ public class WebDAVRequestGenerator implements Runnable
 
         execute();
     }
-  
+
     public synchronized void GenerateMkCol( String parentDir, String dirname )
     {
         Headers = null;
@@ -617,7 +617,7 @@ public class WebDAVRequestGenerator implements Runnable
         else
             Headers[0] = new NVPair("Host",HostName + ":" + Port);
     }
-  
+
     public synchronized void GenerateGet(String localName)
     {
         Headers = null;
@@ -638,7 +638,7 @@ public class WebDAVRequestGenerator implements Runnable
         else
             Headers[0] = new NVPair("Host",HostName + ":" + Port);
     }
-  
+
     public synchronized void GenerateDelete(String lockToken)
     {
         Headers = null;
@@ -666,7 +666,7 @@ public class WebDAVRequestGenerator implements Runnable
         else
             Headers[0] = new NVPair("Host",HostName + ":" + Port);
     }
-  
+
     public synchronized void GeneratePut(String fileName, String destDir, String lockToken)
     {
         Headers = null;
@@ -723,7 +723,7 @@ public class WebDAVRequestGenerator implements Runnable
             {
                 Headers = new NVPair[2];
             }
-            
+
             if (Port == 0 || Port == DEFAULT_PORT)
                 Headers[0] = new NVPair("Host",HostName);
             else
@@ -737,18 +737,18 @@ public class WebDAVRequestGenerator implements Runnable
             return;
         }
     }
-  
+
     public synchronized void GenerateCopy(String Dest, boolean Overwrite, boolean KeepAlive)
     {
         Headers = null;
         Body = null;
-	    Extra = "copy"; //Yuzo added
+        Extra = "copy"; //Yuzo added
 
         if (!parseResourceName())
         {
             errorMsg( "Error Generating COPY Method" );
             return;
-        }  
+        }
 
         String ow = (Overwrite) ? "T" : "F";
 
@@ -763,10 +763,10 @@ public class WebDAVRequestGenerator implements Runnable
 
         if( Port==0 || Port==DEFAULT_PORT )
             Dest = HostName + Dest;
-        else            
+        else
             Dest = HostName + ":" + Port + Dest ;
             //Dest =  HostName + ":" + Port + StrippedResource + "/" + Dest + "_copy" ;
-	
+
 
         if( !Dest.startsWith(WebDAVPrefix) )
             Dest = WebDAVPrefix + Dest;
@@ -811,7 +811,7 @@ public class WebDAVRequestGenerator implements Runnable
                 Headers[2] = new NVPair("Content-Type", "text/xml");
                 Headers[3] = new NVPair("Content-Length", new Long(Body.length).toString());
                 Headers[4] = new NVPair("Overwrite", ow);
-                
+
                 printXML( miniDoc );
             }
             catch (Exception e)
@@ -830,15 +830,15 @@ public class WebDAVRequestGenerator implements Runnable
             Headers[2] = new NVPair("Overwrite", ow);
         }
     }
-  
+
     public synchronized void GenerateRename( String Dest, String dir )
     {
         Extra = new String(tableResource);
 
         DiscoverLock("rename:" + Dest + ":" + dir );
-	
+
     }
-  
+
     public synchronized void GenerateMove(String Dest, String dir, boolean Overwrite, boolean KeepAlive, String lockToken)
     {
         Headers = null;
@@ -852,14 +852,14 @@ public class WebDAVRequestGenerator implements Runnable
             dir = "/";
         else
             dir = StrippedResource;
-	*/
+    */
 
         ResourceName = srcFile;
         if (!parseResourceName())
         {
             errorMsg( "Error Generating MOVE Method" );
             return;
-        }  
+        }
         String ow = (Overwrite) ? "T" : "F";
         if (Dest == null)
         {
@@ -868,21 +868,20 @@ public class WebDAVRequestGenerator implements Runnable
         }
 
 
-	/*
-	if( Port==0 || Port==DEFAULT_PORT )
+    /*
+    if( Port==0 || Port==DEFAULT_PORT )
             Dest = HostName + Dest;
-        else            
+        else
             Dest = HostName + ":" + Port + Dest ;
 
         if( !Dest.startsWith(WebDAVPrefix) )
             Dest = WebDAVPrefix + Dest;
-	*/
+    */
 
         Dest = dir + Dest;
-        
+
         Method = "MOVE";
         Body = null;
-	KeepAlive = false;
         if (KeepAlive)
         {
             Document miniDoc = new Document();
@@ -927,7 +926,7 @@ public class WebDAVRequestGenerator implements Runnable
                 Headers[2] = new NVPair("Content-Type", "text/xml");
                 Headers[3] = new NVPair("Content-Length", new Long(Body.length).toString());
                 Headers[4] = new NVPair("Overwrite", ow);
-                
+
                 printXML( miniDoc );
             }
             catch (Exception e)
@@ -946,7 +945,7 @@ public class WebDAVRequestGenerator implements Runnable
             Headers[2] = new NVPair("Overwrite", ow);
         }
     }
-  
+
     public synchronized void GenerateLock(String OwnerInfo, String lockToken)
     {
         Headers = null;
@@ -957,7 +956,7 @@ public class WebDAVRequestGenerator implements Runnable
         {
             errorMsg( "Error Generating LOCK Method for " + StrippedResource );
             return;
-        }  
+        }
 
         Method = "LOCK";
         Body = null;
@@ -973,7 +972,7 @@ public class WebDAVRequestGenerator implements Runnable
             AsGen asgen = new AsGen();
             WebDAVXML.createNamespace( asgen, null );
             Element lockInfoElem = WebDAVXML.createElement( WebDAVXML.ELEM_LOCK_INFO, Element.ELEMENT, null, asgen );
-      
+
             Element lockTypeElem = WebDAVXML.createElement( WebDAVXML.ELEM_LOCK_TYPE, Element.ELEMENT, lockInfoElem, asgen );
             Element scopeElem = WebDAVXML.createElement( WebDAVXML.ELEM_LOCK_SCOPE, Element.ELEMENT, lockInfoElem, asgen );
             Element ownerElem = WebDAVXML.createElement( WebDAVXML.ELEM_OWNER, Element.ELEMENT, lockInfoElem, asgen );
@@ -1043,7 +1042,7 @@ public class WebDAVRequestGenerator implements Runnable
             }
         }
     }
-  
+
     public synchronized void GenerateUnlock(String lockToken)
     {
         Headers = null;
@@ -1071,7 +1070,7 @@ public class WebDAVRequestGenerator implements Runnable
             errorMsg( "Error Generating UNLOCK\n" + e );
         }
     }
-  
+
     public synchronized void setExtraInfo(String info)
     {
         Extra = info;
@@ -1105,7 +1104,7 @@ public class WebDAVRequestGenerator implements Runnable
         Document newProp = null;
         try
         {
-            ByteArrayInputStream old_b = new ByteArrayInputStream(old_bytes);    
+            ByteArrayInputStream old_b = new ByteArrayInputStream(old_bytes);
             XMLInputStream old_in = new XMLInputStream(old_b);
             oldProp = new Document();
             oldProp.load(old_in);
@@ -1129,8 +1128,8 @@ public class WebDAVRequestGenerator implements Runnable
         Object [] options = { "OK" };
         pane.showOptionDialog(mainFrame,str, "Error Message", JOptionPane.DEFAULT_OPTION, JOptionPane.ERROR_MESSAGE, null,options, options[0]);
     }
-    
-    
+
+
     private void printXML( Document miniDoc )
     {
         String debugOutput = System.getProperty( "debug", "false" );

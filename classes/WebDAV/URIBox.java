@@ -22,9 +22,9 @@
 // This class creates an extension of JPanel which creates the
 // URI entry box on the WebDAVExplorer.  This box contains
 // the text field in which the user enters the dav server's
-// URI.  
-// 
-// 
+// URI.
+//
+//
 ////////////////////////////////////////////////////////////////
 // The code has been modified to include povisions for the final
 // WebDAV xml namespaces.  A small number of program errors have
@@ -132,7 +132,7 @@ public class URIBox extends JPanel implements ActionListener
                 {
                     ZipFile jfile = new ZipFile( jarPath );
                     icons = WebDAVClassName + "/" + IconDir + "/";
-                    ZipEntry entry = jfile.getEntry( icons );
+                    ZipEntry entry = jfile.getEntry( icons + "connect.gif" );
                     if( entry != null )
                     {
                         return icons;
@@ -162,11 +162,11 @@ public class URIBox extends JPanel implements ActionListener
                 InputStream is = file.getInputStream( entry );
                 int len = (int)entry.getSize();
                 if( len != -1 )
-		{
+        {
                     byte[] ba = new byte[len];
                     is.read( ba, 0, len );
                     return new ImageIcon( ba, description );
-		}
+        }
             }
             catch( IOException e )
             {

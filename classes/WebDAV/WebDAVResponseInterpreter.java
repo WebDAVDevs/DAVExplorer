@@ -76,7 +76,7 @@ public class WebDAVResponseInterpreter
     private static boolean refresh = false;
     private static boolean inProg = false;
     private static JFrame mainFrame;
-    private static String classPathDir;
+    private static String userPathDir;
 
     private WebDAVTreeNode Node;
     private static CopyResponseListener copyListener;
@@ -109,12 +109,16 @@ public class WebDAVResponseInterpreter
             File classDir = new File(nextPath + "icons");
             if (!classDir.exists())
                 continue;
-            classPathDir = nextPath;
             File editDir = new File(nextPath + EditDir);
             if (!editDir.exists())
                 editDir.mkdir();
             WebDAVEditDir = nextPath + EditDir;
         }
+        userPathDir = System.getProperty( "user.home" );
+        if( userPathDir == null )
+            userPathDir = "";
+        else
+            userPathDir += File.separatorChar;
     }
 
     public void handleResponse(WebDAVResponseEvent e)
@@ -145,7 +149,7 @@ public class WebDAVResponseInterpreter
         {
             System.out.println(ex);
         }
-   
+
         if (Method.equals("PROPFIND"))
             parsePropFind();
         else if (Method.equals("PROPPATCH"))
@@ -160,23 +164,23 @@ public class WebDAVResponseInterpreter
             parseDelete();
         else if (Method.equals("COPY"))
         {
-	        //Original
-            //parseCopy();   
-    	    try
-    	    {
+            //Original
+            //parseCopy();
+            try
+            {
                 if (res.getStatusCode() == 201)
                 {
-    		        executeCopy();
-    	    	}
-    	    	else
-    	    	{
-    	    	}
-    	    }
-    	    catch(Exception ex)
-    	    {
-    	        System.out.println(ex);
-    	    }
-    	}
+                    executeCopy();
+                }
+                else
+                {
+                }
+            }
+            catch(Exception ex)
+            {
+                System.out.println(ex);
+            }
+        }
         else if (Method.equals("LOCK"))
             parseLock();
         else if (Method.equals("UNLOCK"))
@@ -368,10 +372,10 @@ public class WebDAVResponseInterpreter
                 }
                 else
                     dest = tmp;
-		
-		clearStream();
-		//Old
-		generator.setNode(Node);
+
+        clearStream();
+        //Old
+        generator.setNode(Node);
                 generator.GenerateMove(dest, dir, false, true, lockToken);
                 generator.execute();
             }
@@ -441,7 +445,7 @@ public class WebDAVResponseInterpreter
                         }
                     }
                 }
-                
+
                 prop_out = byte_prop.toByteArray();
                 String host = HostName;
                 if (Port > 0)
@@ -453,9 +457,9 @@ public class WebDAVResponseInterpreter
         else if(Extra.equals("expand"))
         {
         }
-	    else if(Extra.equals("index"))
-	    {
-	    }
+        else if(Extra.equals("index"))
+        {
+        }
         else
         {
             //  "refresh"
@@ -466,7 +470,7 @@ public class WebDAVResponseInterpreter
 
     public String getLockInfo()
     {
-        File lockFile = new File(classPathDir + lockInfoFilename);
+        File lockFile = new File(userPathDir + lockInfoFilename);
         if (!lockFile.exists())
             return new String("");
         String lockInfo = null;
@@ -509,14 +513,14 @@ public class WebDAVResponseInterpreter
 
     public void parseMkCol()
     {
-	//old
+    //old
         // inform the user
         //setRefresh();
         //fireInsertionEvent(null);
 
-    	clearStream();
-    	CopyResponseEvent e = new CopyResponseEvent( this, Node);
-    	copyListener.CopyEventResponse(e);
+        clearStream();
+        CopyResponseEvent e = new CopyResponseEvent( this, Node);
+        copyListener.CopyEventResponse(e);
     }
 
     public void parseGet()
@@ -600,41 +604,41 @@ public class WebDAVResponseInterpreter
 
     public void parsePut()
     {
-	//Old
+    //Old
         // inform the user
         //setRefresh();
         //fireInsertionEvent(null);
-	
-	// Piggy back on the Copy Response stuff
-	clearStream();
-	CopyResponseEvent e = new CopyResponseEvent( this, Node);
-	copyListener.CopyEventResponse(e);
+
+    // Piggy back on the Copy Response stuff
+    clearStream();
+    CopyResponseEvent e = new CopyResponseEvent( this, Node);
+    copyListener.CopyEventResponse(e);
     }
 
     public void parseDelete()
     {
-	//Old
+    //Old
         // inform the user
         //setRefresh();
         //fireInsertionEvent(null);
 
-    	// Piggy back on the Copy Response stuff
-    	clearStream();
-    	CopyResponseEvent e = new CopyResponseEvent( this, Node);
-    	copyListener.CopyEventResponse(e);
+        // Piggy back on the Copy Response stuff
+        clearStream();
+        CopyResponseEvent e = new CopyResponseEvent( this, Node);
+        copyListener.CopyEventResponse(e);
     }
 
     public void addCopyResponseListener( CopyResponseListener l)
     {
-    	// Add only one for now
-    	copyListener = l;
+        // Add only one for now
+        copyListener = l;
     }
 
     public void executeCopy()
     {
-    	CopyResponseEvent e = new CopyResponseEvent( this, Node);
-    	
-    	copyListener.CopyEventResponse(e);
+        CopyResponseEvent e = new CopyResponseEvent( this, Node);
+
+        copyListener.CopyEventResponse(e);
     }
 
     public void parseCopy()
@@ -655,12 +659,12 @@ public class WebDAVResponseInterpreter
         }
         catch( Exception e )
         {
-	    System.out.println(e);
+        System.out.println(e);
         }
-	
-    	clearStream();
-    	CopyResponseEvent e = new CopyResponseEvent( this, Node);
-    	copyListener.CopyEventResponse(e);
+
+        clearStream();
+        CopyResponseEvent e = new CopyResponseEvent( this, Node);
+        copyListener.CopyEventResponse(e);
     }
 
     public void parseLock()
@@ -1031,7 +1035,7 @@ public class WebDAVResponseInterpreter
         Element rootElem = (Element)xml_doc.getRoot();
         return skipElements( rootElem, token );
     }
-    
+
     private Element skipElements( Element rootElem, String[] token )
     {
         int index = 0;

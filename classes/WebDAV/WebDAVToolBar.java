@@ -130,7 +130,7 @@ public class WebDAVToolBar extends JPanel implements ActionListener
                 {
                     ZipFile zfile = new ZipFile( jarPath );
                     icons = WebDAVClassName + "/" + IconDir + "/";
-                    ZipEntry entry = zfile.getEntry( icons  );
+                    ZipEntry entry = zfile.getEntry( icons +"connect.gif" );
                     if( entry != null )
                     {
                         return icons;
@@ -160,11 +160,11 @@ public class WebDAVToolBar extends JPanel implements ActionListener
                 InputStream is = file.getInputStream( entry );
                 int len = (int)entry.getSize();
                 if( len != -1 )
-		{
+        {
                     byte[] ba = new byte[len];
                     is.read( ba, 0, len );
                     return new ImageIcon( ba, description );
-		}
+        }
             }
             catch( IOException e )
             {
@@ -205,7 +205,7 @@ public class WebDAVToolBar extends JPanel implements ActionListener
             client.actionPerformed(evt);
         }
     }
-    
+
     private static void errorMsg(String str)
     {
         JOptionPane pane = new JOptionPane();
