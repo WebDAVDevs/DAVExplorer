@@ -52,6 +52,9 @@ This account is read-only, please submit code patches to <dav-exp@ics.uci.edu>.
 
 DAV Explorer accepts the following command line options:
 
+-Dhelp, -Dhelp=yes
+  Prints a list of all options.
+  
 -Ddebug=option
   where option is one of:
   all          all function traces are enabled
