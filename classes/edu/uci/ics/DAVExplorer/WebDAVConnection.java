@@ -114,11 +114,12 @@ public class WebDAVConnection extends HTTPConnection
     public HTTPResponse Put( String filename, String source, NVPair[] headers )
         throws IOException, ModuleException
     {
-        HttpOutputStream out = new HttpOutputStream();
-        HTTPResponse response = Put( filename, out, headers );
-
         File file = new File( source );
         long fileSize = file.length();
+
+        HttpOutputStream out = new HttpOutputStream( fileSize );
+        HTTPResponse response = Put( filename, out, headers );
+
         FileInputStream file_in = new FileInputStream( file );
         byte[] b = new byte[1048576];
         long off = 0;
