@@ -47,25 +47,25 @@ public class XMLInputStream extends InputStream
 
     /**
      * Builds the XMLInputStream.
-	 * This constructor is intended to be called on Windows to speed up input
-	 * speed. The decoding is done by IXMLStream
-	 *
-	 * Note:
-	 * This constructor relies on CXMLStream class in xmlurlstream.dll. If
-	 * xmlurlstream.dll or xmlurlstream.tlb is not properly registered on the
-	 * system, or the encoding of the input stream cannot be handled,
-	 * this constructor throws an IOException
+     * This constructor is intended to be called on Windows to speed up input
+     * speed. The decoding is done by IXMLStream
+     *
+     * Note:
+     * This constructor relies on CXMLStream class in xmlurlstream.dll. If
+     * xmlurlstream.dll or xmlurlstream.tlb is not properly registered on the
+     * system, or the encoding of the input stream cannot be handled,
+     * this constructor throws an IOException
      */
     public XMLInputStream(URL url) throws IOException
     {
         try
-		{
-			Class clazz = Class.forName("com.ms.xml.xmlstream.XMLStream");
+        {
+            Class clazz = Class.forName("com.ms.xml.xmlstream.XMLStream");
             xmlis = (XMLStreamReader)clazz.newInstance();
             intEncoding = xmlis.open(url.toString());
         }
-		catch (Throwable e)
-		{
+        catch (Throwable e)
+        {
             throw new IOException("Error opening input stream for \"" +
                     url.toString() + "\": " + e.toString());
         }
@@ -97,7 +97,7 @@ public class XMLInputStream extends InputStream
     {
         String version = System.getProperty("java.version");
         jdk11 = version.equals("1.1") ? true : false;
-        // Joachim Feise (jfeise@ics.uci.edu), 25 March 1999:
+        // Joachim Feise (dav-exp@ics.uci.edu), 25 March 1999:
         // assume that JDK1.2 and later also support JDK 1.1 features
         // Updated 26 February 2001: check for all JDKs > 1.1
         if( jdk11==false )
@@ -166,8 +166,11 @@ public class XMLInputStream extends InputStream
             {
                 // UTF-8, ISO 646, ASCII, some part of ISO 8859, Shift-JIS, EUC,
                 // or any other encoding that ensures that ASCII has normal positions
-                readState = ASCII_POP;
-                encoding  = "ASCII";
+                // Joachim Feise (dav-exp@ics.uci.edu), 1 November 2001:
+                // Not assuming ASCII anymore, instead going with the default of UTF-8
+                //readState = ASCII_POP;
+                //encoding  = "ASCII";
+                setDefault = true;
             }
             else if( c1 == 0x00 && c2 == 0x00 && c3 == 0x00 && c4 == 0x3C )
             {
@@ -247,22 +250,22 @@ public class XMLInputStream extends InputStream
         if( setDefault )
         {
             try
-			{
+            {
                 if (! jdk11)
                     throw new IOException("Readers not supported in JDK 1.0");
                 // guess that the <?xml encoding=...?> tag will be read in
                 // less that 4096 bytes.
                 if (! in.markSupported())
-				{
+                {
                     in = new BufferedInputStream(in);
                 }
                 in.mark(4096);
-                insr      = new InputStreamReader( in, "UTF8" );
+                insr      = new InputStreamReader( in, "UTF-8" );
                 readState = INPUTSR_POP;
                 encoding  = "UTF-8";
             }
-			catch( IOException e2 )
-			{
+            catch( IOException e2 )
+            {
                 // If there is an exception we can
                 // just continue and treat file like ASCII text.
                 readState = ASCII_POP;
@@ -274,7 +277,7 @@ public class XMLInputStream extends InputStream
     private void push(char next)
     {
         if (index == 3)
-		{
+        {
             System.exit(0);
         }
         this.next[++index] = next;
@@ -300,7 +303,7 @@ public class XMLInputStream extends InputStream
                     len = xmlis.read(buffer, SIZE);
                 }
                 catch (Exception e)
-				{
+                {
 //                    System.out.println("Unexpected error: " + e.toString());
                     return -1;
                 }
@@ -344,11 +347,11 @@ public class XMLInputStream extends InputStream
                 }
             case INPUTSR_POP:
                 if (index >= 0)
-				{
+                {
                     return next[index--];
                 }
-				else
-				{
+                else
+                {
                     readState = INPUTSR;
                     return read();
                 }
@@ -357,11 +360,11 @@ public class XMLInputStream extends InputStream
                     int b1, b2;
 
                     if (index >= 0)
-					{
+                    {
                         b1 = next[index--];
                     }
-					else
-					{
+                    else
+                    {
                         readState = UCS2;
                         b1 = in.read();
                     }
@@ -370,11 +373,11 @@ public class XMLInputStream extends InputStream
                         return -1;
 
                     if (index >= 0)
-					{
+                    {
                         b2 = next[index--];
                     }
-					else
-					{
+                    else
+                    {
                         readState = UCS2;
                         b2 = in.read();
                     }
@@ -384,11 +387,11 @@ public class XMLInputStream extends InputStream
             case ASCII_POP:
             default:
                 if (index >= 0)
-				{
+                {
                     return next[index--];
                 }
-				else
-				{
+                else
+                {
                     readState = ASCII;
                     return in.read();
                 }
@@ -437,7 +440,7 @@ public class XMLInputStream extends InputStream
         }
         else if( encoding.equalsIgnoreCase( "UTF-8" ) )
         {
-            encvm = "UTF8";
+            encvm = "UTF-8";
             newEncoding = INTUTF8;
         }
         else
@@ -472,20 +475,20 @@ public class XMLInputStream extends InputStream
             insr = null;
             readState = ASCII_POP;
         }
-		else
-		{
+        else
+        {
             if (jdk11) {
                 if (pos != -1)
                 {
-                    in.reset();     // This fixes a nasty bug in that InputStreamReaders
-                    in.skip(pos+1);   // now buffer their input.
+//                    in.reset();     // This fixes a nasty bug in that InputStreamReaders
+//                    in.skip(pos+1);   // now buffer their input.
                 }
                 insr = new InputStreamReader( in, encvm );
                 readState = INPUTSR;
                 this.encoding = encoding;
             }
-			else
-			{
+            else
+            {
                throw new IOException( encvm + " is not supported by your Java Virtual Machine." +
                     "  Try installing the latest VM from http://www.microsoft.com/java/download.htm");
             }
@@ -543,7 +546,7 @@ public class XMLInputStream extends InputStream
      * We remember the current position in the input stream so that
      * we can re-scan input after doing a reset() when setEncoding
      * is called.  We have to do a mark()/reset() on setEncoding because
-     * the first UTF8 InputStreamReader may buffer the input !
+     * the first UTF-8 InputStreamReader may buffer the input !
      */
     private int pos = 0;
 
