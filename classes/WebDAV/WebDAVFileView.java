@@ -144,7 +144,8 @@ public class WebDAVFileView
             
             public  boolean isCellEditable(int row, int col)
             {
-                return (col == 2);   
+                // only allow edit of name
+                return (col == 2);
             }
             
             public void setValueAt(Object value, int row, int column)
@@ -230,6 +231,11 @@ public class WebDAVFileView
     {
         table.setValueAt(selectedResource, selectedRow,2);
         update();
+    }
+    
+    public String getName()
+    {
+        return selectedResource;
     }
     
     public void setLock()
@@ -492,8 +498,6 @@ public class WebDAVFileView
 
     public void handlePress(MouseEvent e)
     {
-//    mousePressed = true;  
-
         Point cursorPoint = new Point(e.getX(),e.getY());
         pressRow = table.rowAtPoint(cursorPoint); 
     }
@@ -543,7 +547,6 @@ public class WebDAVFileView
             try
             {
                 locked = (Boolean) table.getValueAt(row,col);
-                //System.out.println("locked is: " + locked);
             }
             catch (Exception exc)
             {
@@ -598,8 +601,11 @@ public class WebDAVFileView
                     boolean isColl = new Boolean(table.getValueAt(selRow,0).toString()).booleanValue();
                     if (isColl)
                     {
-                        if (parentPath.startsWith(WebDAVPrefix))
-                            selResource += "/";
+                        if (parentPath.startsWith(WebDAVPrefix) || selResource.startsWith(WebDAVPrefix) )
+                        {
+                            if( !selResource.endsWith( "/" ) )
+                                selResource += "/";
+                        }
                         else
                             selResource += new Character(File.separatorChar).toString();
                     }

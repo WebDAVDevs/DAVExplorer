@@ -78,6 +78,9 @@ public class WebDAVResponseInterpreter
     private static JFrame mainFrame;
     private static String classPathDir;
 
+    private boolean debugXML = false;
+    
+    
     public WebDAVResponseInterpreter()
     { }
 
@@ -203,16 +206,18 @@ public class WebDAVResponseInterpreter
                 newProp.addChild(WebDAVXML.elemNewline,null);
                 for (int t=0;t<tabs + 1;t++)
                     newProp.addChild(WebDAVXML.elemDSpace,null);
-                saveProps(newProp, propEl, ++tabs);
+                saveProps( newProp, propEl, tabs+1 );
             }
         }
     }
 
     public void parsePropFind()
     {
+        byte[] body = null;
+        Document xml_doc = null;
         try
         {
-            byte[] body = res.getData(); 
+            body = res.getData();
             stream = body;
             if (body == null)
             {
@@ -220,355 +225,220 @@ public class WebDAVResponseInterpreter
                 return;
             }
             ByteArrayInputStream byte_in = new ByteArrayInputStream(body);
-            Document xml_doc = new Document();
-            xml_doc.load(byte_in);
+            EscapeInputStream iStream = new EscapeInputStream( byte_in, true );
+            xml_doc = new Document();
+            xml_doc.load( iStream );
+        }
+        catch (Exception e)
+        {
+            errorMsg("WebDAV Interpreter:\n\nError encountered \nwhile parsing PROPFIND Response.\n" + e);
+                            stream = null;
+            return;
+        }
 
-            printXML( body );
-            
-            if (Extra.equals("uribox"))
+        printXML( body );
+        
+        if (Extra.equals("uribox"))
+        {
+            if( Port > 0 )
             {
-                if( Port > 0 )
-                {
-                    fireInsertionEvent(HostName + ":" + Port + Resource);
-                }
-                else
-                {
-                    fireInsertionEvent(HostName + Resource);
-                }
-            }
-            else if (Extra.equals("lock") || Extra.equals("unlock") || Extra.equals("delete") || Extra.startsWith("rename:") || Extra.equals("display")
-               || Extra.equals("commit") )
-            {
-                String lockToken = null;
-                String ownerInfo = "";
-                String lockType = "";
-                String lockScope = "";
-                String lockTimeout = "";
-                String lockDepth = "";
-
-                Element rootElem = (Element) xml_doc.getRoot();
-                Enumeration enumRoot = rootElem.getElements();
-                while (enumRoot.hasMoreElements())
-                {
-                    Element respElem = (Element) enumRoot.nextElement();
-                    Name respTag = respElem.getTagName();
-                    if (respTag == null)
-                        continue;
-                    if (!respTag.getName().equals(WebDAVXML.ELEM_RESPONSE))
-                        continue;
-                    Enumeration enumResp = respElem.getElements();
-                    while (enumResp.hasMoreElements())
-                    {
-                        Element e = (Element) enumResp.nextElement();
-                        Name propstatTag = e.getTagName();
-                        if (propstatTag == null)
-                            continue;
-                        if (!propstatTag.getName().equals(WebDAVXML.ELEM_PROPSTAT))
-                            continue;
-                        Enumeration propEnum = e.getElements();
-                        while (propEnum.hasMoreElements())
-                        {
-                            Element propElem = (Element) propEnum.nextElement();
-                            Name propTag = propElem.getTagName();
-                            if (propTag == null)
-                                continue;
-                            if (!propTag.getName().equals(WebDAVXML.ELEM_PROP))
-                                continue;
-                            Enumeration propNameEnum = propElem.getElements();
-                            while (propNameEnum.hasMoreElements())
-                            {
-                                Element propEl = (Element) propNameEnum.nextElement();
-                                Name propNam = propEl.getTagName();
-                                if (propNam == null)
-                                    continue;
-                                if (!propNam.getName().equals(WebDAVProp.PROP_LOCKDISCOVERY))
-                                    continue;
-                                Enumeration lockEnum = propEl.getElements();
-                                while (lockEnum.hasMoreElements())
-                                {
-                                    Element activeEl = (Element) lockEnum.nextElement();
-                                    Name activeTag = activeEl.getTagName();
-                                    if (activeTag == null)
-                                        continue;
-                                    if (!activeTag.getName().equals(WebDAVXML.ELEM_ACTIVE_LOCK))
-                                        continue;
-                                    Enumeration activeEnum = activeEl.getElements();
-                                    while (activeEnum.hasMoreElements())
-                                    {
-                                        Element tokenEl = (Element) activeEnum.nextElement();
-                                        Name tokenTag = tokenEl.getTagName();
-                                        if (tokenTag == null)
-                                            continue;
-                                        if (tokenTag.getName().equals(WebDAVXML.ELEM_LOCK_TOKEN))
-                                        {                    
-                                            Enumeration tokenEnum = tokenEl.getElements();
-                                            while (tokenEnum.hasMoreElements())
-                                            {
-                                                Element hrefEl = (Element) tokenEnum.nextElement();
-                                                Name hrefTag = hrefEl.getTagName();
-                                                if (hrefTag == null)
-                                                    continue;
-                                                if (!hrefTag.getName().equals(WebDAVXML.ELEM_HREF))
-                                                    continue;
-                                                Enumeration hrefEnum = hrefEl.getElements();
-                                                while (hrefEnum.hasMoreElements())
-                                                {
-                                                    Element el = (Element) hrefEnum.nextElement();
-                                                    if (el.getType() != Element.PCDATA)
-                                                        continue;
-                                                    lockToken = el.getText();
-                                                    //System.out.println("lockToken set to" + lockToken);
-                                                    break;
-                                                }
-                                            }
-                                        } // locktocken
-                                        else if (tokenTag.getName().equals(WebDAVXML.ELEM_LOCK_TYPE))
-                                        {
-                                            Enumeration tokenEnum = tokenEl.getElements();
-                                            while (tokenEnum.hasMoreElements())
-                                            {
-                                                Element val = (Element) tokenEnum.nextElement();
-                                                Name valTag = val.getTagName();
-                                                if (valTag == null)
-                                                    continue;
-                                                lockType = valTag.getName();
-                                                break;
-                                            }
-                                        } // locktype
-                                        else if (tokenTag.getName().equals(WebDAVXML.ELEM_LOCK_SCOPE))
-                                        {                    
-                                            Enumeration tokenEnum = tokenEl.getElements();
-                                            while (tokenEnum.hasMoreElements())
-                                            {
-                                                Element val = (Element) tokenEnum.nextElement();
-                                                Name valTag = val.getTagName();
-                                                if (valTag == null)
-                                                    continue;
-                                                lockScope = valTag.getName();
-                                                break;
-                                            }
-                                        } // lockscope
-                                        else if (tokenTag.getName().equals(WebDAVXML.ELEM_OWNER))
-                                        {                    
-                                            Enumeration tokenEnum = tokenEl.getElements();
-                                            while (tokenEnum.hasMoreElements())
-                                            {
-                                                Element hrefEl = (Element) tokenEnum.nextElement();
-                                                if (hrefEl.getType() == Element.PCDATA)
-                                                {
-                                                    ownerInfo = hrefEl.getText();
-                                                    break;
-                                                }  
-                                                Name hrefTag = hrefEl.getTagName();
-                                                if (hrefTag == null)
-                                                    continue;
-                                                if (!hrefTag.getName().equals(WebDAVXML.ELEM_HREF))
-                                                    continue;
-                                                Enumeration hrefEnum = hrefEl.getElements();
-                                                while (hrefEnum.hasMoreElements())
-                                                {
-                                                    Element el = (Element) hrefEnum.nextElement();
-                                                    if (el.getType() != Element.PCDATA)
-                                                        continue;
-                                                    ownerInfo = el.getText();
-                                                    break;
-                                                }
-                                            }
-                                        } // owner
-                                        else if (tokenTag.getName().equals(WebDAVXML.ELEM_TIMEOUT))
-                                        {                    
-                                            Enumeration tokenEnum = tokenEl.getElements();
-                                            while (tokenEnum.hasMoreElements())
-                                            {
-                                                Element val = (Element) tokenEnum.nextElement();
-                                                if (val.getType() != Element.PCDATA)
-                                                    continue;
-                                                lockTimeout = val.getText();
-                                                break;
-                                            }
-                                        } // timeout
-                                        else if (tokenTag.getName().equals(WebDAVXML.ELEM_LOCK_DEPTH))
-                                        {                    
-                                            Enumeration tokenEnum = tokenEl.getElements();
-                                            while (tokenEnum.hasMoreElements())
-                                            {
-                                                Element val = (Element) tokenEnum.nextElement();
-                                                if (val.getType() != Element.PCDATA)
-                                                    continue;
-                                                lockDepth = val.getText();
-                                                break;
-                                            }
-                                        } // timeout
-                                    } // while elements in activelock
-                                } // while elements in lockdiscovery
-                            }
-                        }
-                    }
-                }
-
-                if (lockToken != null)
-                {
-                    lockToken.trim();
-                    int pos = lockToken.indexOf("opaque");
-                    lockToken = lockToken.substring(pos);
-                }
-                if (Extra.equals("lock"))
-                {
-                    String lockInfo = getLockInfo();
-                    generator.GenerateLock(lockInfo,lockToken);
-                    generator.execute();
-                }
-                else if (Extra.equals("unlock"))
-                {
-                    if (lockToken != null)
-                    {
-                        generator.GenerateUnlock(lockToken);
-                        generator.execute();
-                    }
-                }
-                else if (Extra.equals("delete"))
-                {
-                    generator.GenerateDelete(lockToken);
-                    generator.execute();
-                }
-                else if (Extra.startsWith("rename:"))
-                {
-                    int pos = Extra.indexOf(":");
-                    String dest = Extra.substring(pos + 1);
-                    generator.GenerateMove(dest, false, true, lockToken);
-                    generator.execute();
-                }
-                else if (Extra.equals("display"))
-                {
-                    if (lockToken != null)
-                        displayLock(lockType, lockScope, lockDepth, lockToken, lockTimeout, ownerInfo);
-                    else
-                    {
-                        setRefresh();
-                        fireInsertionEvent(null);          
-                    }
-                }
-                else if (Extra.equals("commit"))
-                {
-                    String newRes = Resource.substring(1);
-                    String fileName =  WebDAVEditDir + File.separatorChar + newRes;
-                    File theFile = new File(fileName);
-                    if (!theFile.exists())
-                    {
-                        errorMsg("File not found!\n");
-                        return;
-                    }
-                    else
-                    {
-                        generator.GeneratePut(fileName, newRes, lockToken);
-                        generator.execute();
-                    }
-                }
-            }
-            else if (Extra.equals("properties"))
-            {
-                Document ppatchDoc = new Document();
-                Enumeration docEnum = xml_doc.getElements(); 
-                while (docEnum.hasMoreElements())
-                {
-                    Element nameEl = (Element) docEnum.nextElement();
-                    if (nameEl.getType() == Element.ELEMENT)
-                        break;
-                    ppatchDoc.addChild(nameEl,null);
-                }
-                //System.out.println("getting properties for " + Resource);
-                Element root = xml_doc.getRoot();
-                if (root == null)
-                    return;
-                Enumeration enumRoot = root.getElements();
-                while (enumRoot.hasMoreElements())
-                {
-                    Element responseElem = (Element) enumRoot.nextElement();
-                    Name resptag = responseElem.getTagName();
-                    if (resptag == null)
-                        continue;
-                    if (!resptag.getName().equals(WebDAVXML.ELEM_RESPONSE))
-                        continue;
-
-                    Enumeration enumResp = responseElem.getElements();
-                    while (enumResp.hasMoreElements())
-                    {
-                        Element e = (Element) enumResp.nextElement();
-                        Name hrefTag = e.getTagName();
-                        if (hrefTag == null)
-                            continue;
-                        if (!hrefTag.getName().equals(WebDAVXML.ELEM_HREF))
-	                        continue;
-                        Enumeration hrefEnum = e.getElements();
-                        while (hrefEnum.hasMoreElements())
-                        {
-                            Element valEl = (Element) hrefEnum.nextElement(); 
-                            if (valEl.getType() != Element.PCDATA)
-		                        continue;
-                            String HrefValue = valEl.getText();
-                            HrefValue = HrefValue.substring(HTTPPrefix.length());
-                            int pos = HrefValue.indexOf("/");
-                            HrefValue = HrefValue.substring(pos);
-                            if (HrefValue.endsWith("/"))
-                                HrefValue = HrefValue.substring(0,HrefValue.length()-1);
-                            if (HrefValue.length() == 0)
-                                HrefValue = "/";
-	                        if (!HrefValue.equals(Resource))
-    		                    continue;
-                            while (enumResp.hasMoreElements())
-                            {
-                                Element propstatElem = (Element) enumResp.nextElement();
-                                Name propstatTag = propstatElem.getTagName();
-                                if (propstatTag == null)
-		                            continue;
-                                if (!propstatTag.getName().equals(WebDAVXML.ELEM_PROPSTAT))
-                                    continue;
-                                Enumeration enumProp = propstatElem.getElements();
-                                while (enumProp.hasMoreElements())
-                                {
-                                    Element propElem = (Element) enumProp.nextElement();
-                                    Name propTag = propElem.getTagName();
-                                    if (propTag == null)
-                                        continue;
-                                    if (!propTag.getName().equals(WebDAVXML.ELEM_PROP))
-                                        continue;
-                                    AsGen alias = new AsGen();
-                                    Element outProp = WebDAVXML.createElement( WebDAVXML.ELEM_PROP, Element.ELEMENT, null, alias );
-                                    outProp.addChild(WebDAVXML.elemNewline,null); 
-                                    Enumeration propValEnum = propElem.getElements();
-                                    while (propValEnum.hasMoreElements())
-                                    {
-                                        Element propValEl = (Element) propValEnum.nextElement();
-                                        if (propValEl.getType() != Element.ELEMENT)
-			                                continue;
-		                                saveProps(outProp,propValEl,0);
-		                            }
-                                    ByteArrayOutputStream byte_prop = new ByteArrayOutputStream();
-                                    XMLOutputStream  xml_prop = new XMLOutputStream(byte_prop);
-                                    ppatchDoc.save(xml_prop);
-                                    outProp.save(xml_prop);
-                                    byte[] prop_out = byte_prop.toByteArray();
-                                    String host = HostName;
-                                    if (Port > 0)
-                                        host = HostName + ":" + Port;
-                                    PropDialog pd = new PropDialog(Resource,host,new String(prop_out));
-                                    pd.addPropDialogListener(new propDialogListener());
-                                } 
-                            }  
-                        }
-                    }          
-                }
+                fireInsertionEvent(HostName + ":" + Port + Resource);
             }
             else
             {
-                //  "refresh"
-                setRefresh();
-                fireInsertionEvent(null);
+                fireInsertionEvent(HostName + Resource);
             }
-        } catch (Exception e)
+        }
+        else if (Extra.equals("lock") || Extra.equals("unlock") || Extra.equals("delete") || Extra.startsWith("rename:") || Extra.equals("display")
+           || Extra.equals("commit") )
         {
-            errorMsg("WebDAV Interpreter:\n\nError encountered \nwhile parsing PROPFIND Response.\n" + e);
-                            stream = null; }
+            // get lock information out of XML tree
+            String lockToken = null;
+            String ownerInfo = "";
+            String lockType = "";
+            String lockScope = "";
+            String lockTimeout = "";
+            String lockDepth = "";
+
+            String[] token = new String[5];
+            token[0] = new String( WebDAVXML.ELEM_RESPONSE );
+            token[1] = new String( WebDAVXML.ELEM_PROPSTAT );
+            token[2] = new String( WebDAVXML.ELEM_PROP );
+            token[3] = new String( WebDAVProp.PROP_LOCKDISCOVERY );
+            token[4] = new String( WebDAVXML.ELEM_ACTIVE_LOCK );
+
+            Element rootElem = skipElements( xml_doc, token );
+            if( rootElem != null )
+            {
+                TreeEnumeration enumTree =  new TreeEnumeration( rootElem );
+                while( enumTree.hasMoreElements() )
+                {
+                    Element current = (Element)enumTree.nextElement();
+                    Name currentTag = current.getTagName();
+                    if( currentTag != null )
+                    {
+                        if( currentTag.getName().equals( WebDAVXML.ELEM_LOCK_TOKEN ) )
+                        {
+                            lockToken = getLockToken( current );
+                        }
+                        else if( currentTag.getName().equals( WebDAVXML.ELEM_LOCK_TYPE ) )
+                        {
+                            lockType = getLockType( current );
+                        }
+                        else if( currentTag.getName().equals( WebDAVXML.ELEM_LOCK_SCOPE ) )
+                        {
+                            lockScope = getLockScope( current );
+                        }
+                        else if( currentTag.getName().equals( WebDAVXML.ELEM_OWNER ) )
+                        {
+                            ownerInfo = getOwnerInfo( current );
+                        }
+                        else if( currentTag.getName().equals( WebDAVXML.ELEM_TIMEOUT ) )
+                        {
+                            lockTimeout = getLockTimeout( current );
+                        }
+                        else if( currentTag.getName().equals( WebDAVXML.ELEM_LOCK_DEPTH ) )
+                        {
+                            lockDepth = getLockDepth( current );
+                        }
+                    }
+                }
+            }                
+            if (lockToken != null)
+            {
+                lockToken.trim();
+                int pos = lockToken.indexOf("opaque");
+                lockToken = lockToken.substring(pos);
+            }
+            if (Extra.equals("lock"))
+            {
+                String lockInfo = getLockInfo();
+                generator.GenerateLock(lockInfo,lockToken);
+                generator.execute();
+            }
+            else if (Extra.equals("unlock"))
+            {
+                if (lockToken != null)
+                {
+                    generator.GenerateUnlock(lockToken);
+                    generator.execute();
+                }
+            }
+            else if (Extra.equals("delete"))
+            {
+                generator.GenerateDelete(lockToken);
+                generator.execute();
+            }
+            else if (Extra.startsWith("rename:"))
+            {
+                int pos = Extra.indexOf(":");
+                String tmp = Extra.substring(pos + 1);
+                pos = tmp.indexOf( ":" );
+                String dest = null;
+                String dir = null;
+                if( pos >= 0 )
+                {
+                    dest = tmp.substring( 0, pos );
+                    dir = tmp.substring( pos + 1 );
+                }
+                else
+                    dest = tmp;
+                generator.GenerateMove(dest, dir, false, true, lockToken);
+                generator.execute();
+            }
+            else if (Extra.equals("display"))
+            {
+                displayLock(lockType, lockScope, lockDepth, lockToken, lockTimeout, ownerInfo);
+            }
+            else if (Extra.equals("commit"))
+            {
+                String newRes = Resource.substring(1);
+                String fileName =  WebDAVEditDir + File.separatorChar + newRes;
+                File theFile = new File(fileName);
+                if (!theFile.exists())
+                {
+                    errorMsg("File not found!\n");
+                    return;
+                }
+                else
+                {
+                    generator.GeneratePut(fileName, newRes, lockToken);
+                    generator.execute();
+                }
+            }
+        }
+        else if (Extra.equals("properties"))
+        {
+            Document ppatchDoc = new Document();
+            Enumeration docEnum = xml_doc.getElements(); 
+            while (docEnum.hasMoreElements())
+            {
+                Element nameEl = (Element) docEnum.nextElement();
+                if (nameEl.getType() == Element.ELEMENT)
+                    break;
+                ppatchDoc.addChild(nameEl,null);
+            }
+
+            String[] token = new String[4];
+            token[0] = new String( WebDAVXML.ELEM_RESPONSE );
+            token[1] = new String( WebDAVXML.ELEM_HREF );
+            token[2] = new String( WebDAVXML.ELEM_PROPSTAT );
+            token[3] = new String( WebDAVXML.ELEM_PROP );
+            Element rootElem = skipElements( xml_doc, token );
+            if( rootElem != null )
+            {
+                TreeEnumeration enumTree =  new TreeEnumeration( rootElem );
+                while( enumTree.hasMoreElements() )
+                {
+                    Element current = (Element)enumTree.nextElement();
+                    Name currentTag = current.getTagName();
+                    if( currentTag != null )
+                    {
+                        ByteArrayOutputStream byte_prop = new ByteArrayOutputStream();
+                        XMLOutputStream  xml_prop = new XMLOutputStream(byte_prop);
+                        byte[] prop_out = null;
+                        try
+                        {
+                            ppatchDoc.save(xml_prop);
+
+                            // create a tree of all property tags, nicely formatted
+                            AsGen alias = new AsGen();
+                            Element outProp = WebDAVXML.createElement( WebDAVXML.ELEM_PROP, Element.ELEMENT, null, alias );
+                            outProp.addChild(WebDAVXML.elemNewline,null); 
+                            Enumeration propValEnum = current.getElements();
+                            while (propValEnum.hasMoreElements())
+                            {
+                                Element propValEl = (Element) propValEnum.nextElement();
+                                if (propValEl.getType() != Element.ELEMENT)
+                                    continue;
+                                saveProps(outProp,propValEl,0);
+                            }
+                            outProp.save(xml_prop);
+
+                            prop_out = byte_prop.toByteArray();
+                        }
+                        catch( Exception e )
+                        {
+                            errorMsg("WebDAV Interpreter:\n\nError encountered \nwhile parsing PROPFIND Response.\n" + e);
+                                            stream = null;
+                            return;
+                        }
+                        String host = HostName;
+                        if (Port > 0)
+                            host = HostName + ":" + Port;
+                        PropDialog pd = new PropDialog(Resource,host,new String(prop_out), false);
+                        pd.addPropDialogListener(new propDialogListener());
+                        break;
+                    }
+                }
+            }
+        }
+        else
+        {
+            //  "refresh"
+            setRefresh();
+            fireInsertionEvent(null);
+        }
     }
 
     public String getLockInfo()
@@ -725,28 +595,76 @@ public class WebDAVResponseInterpreter
         {
             if (res.getStatusCode() >= 300)
             {    
-                fireMoveUpdate(Extra);
                 errorMsg("WebDAV Interpreter:\n\n" + res.getStatusCode() + " " + res.getReasonLine());
-                return;
             }
-            else
-                fireMoveUpdate(null);
         }
-        catch (Exception e)
+        catch( Exception e )
         {
-            fireMoveUpdate(Extra);
         }
+        setRefresh();
+        fireInsertionEvent(null);
     }
   
     public void parseLock()
     {
-        fireLockEvent("true");
+        byte[] body = null;
+        Document xml_doc = null;
+        try
+        {
+            body = res.getData();
+            stream = body;
+            if (body == null)
+            {
+                errorMsg("WebDAV Interpreter:\n\nMissing XML body in\nLOCK response.");
+                return;
+            }
+            ByteArrayInputStream byte_in = new ByteArrayInputStream(body);
+            EscapeInputStream iStream = new EscapeInputStream( byte_in, true );
+            xml_doc = new Document();
+            xml_doc.load( iStream );
+        }
+        catch (Exception e)
+        {
+            errorMsg("WebDAV Interpreter:\n\nError encountered \nwhile parsing LOCK Response.\n" + e);
+                            stream = null;
+            return;
+        }
+        
+        printXML( body );
+
+        String lockToken = null;
+        String[] token = new String[2];
+        token[0] = new String( WebDAVProp.PROP_LOCKDISCOVERY );
+        token[1] = new String( WebDAVXML.ELEM_ACTIVE_LOCK );
+
+        Element rootElem = skipElements( xml_doc, token );
+        if( rootElem != null )
+        {
+            TreeEnumeration enumTree =  new TreeEnumeration( rootElem );
+            while( enumTree.hasMoreElements() )
+            {
+                Element current = (Element)enumTree.nextElement();
+                Name currentTag = current.getTagName();
+                if( currentTag != null )
+                {
+                    if( currentTag.getName().equals( WebDAVXML.ELEM_LOCK_TOKEN ) )
+                    {
+                        lockToken = getLockToken( current );
+                        lockToken.trim();
+                        int pos = lockToken.indexOf("opaque");
+                        lockToken = lockToken.substring(pos);
+                        break;
+                    }
+                }
+            }
+        }
+        fireLockEvent( 0, lockToken );
     }
   
     public void parseUnlock()
     {
         // inform the user
-        fireLockEvent("false");
+        fireLockEvent( 1, null );
     }
   
     public void clearStream()
@@ -821,7 +739,7 @@ public class WebDAVResponseInterpreter
         }
     }
   
-    public void fireLockEvent(String str)
+    public void fireLockEvent(int id, String str)
     {
         Vector ls;
 
@@ -829,7 +747,7 @@ public class WebDAVResponseInterpreter
         {
             ls = (Vector) lockListeners.clone();
         }
-        ActionEvent e = new ActionEvent(this,0,str);
+        ActionEvent e = new ActionEvent( this, id, str );
         for (int i=0;i<ls.size();i++)
         {
             ActionListener l = (ActionListener) ls.elementAt(i);
@@ -922,10 +840,166 @@ public class WebDAVResponseInterpreter
         pane.showOptionDialog(mainFrame,str, "Lock Information", JOptionPane.DEFAULT_OPTION, JOptionPane.INFORMATION_MESSAGE, null,options, options[0]);
     }
 
+
+    private String getLockToken( Element locktoken )
+    {
+        TreeEnumeration treeEnum = new TreeEnumeration( locktoken );
+        while(treeEnum.hasMoreElements() )
+        {
+            Element current = (Element)treeEnum.nextElement();
+            Name tag = current.getTagName();
+            if( tag.getName().equals( WebDAVXML.ELEM_HREF ) )
+            {
+                Element token = (Element)treeEnum.nextElement();
+                if( token.getType() == Element.PCDATA )
+                    return token.getText();
+            }
+        }
+        return null;
+    }
+    
+
+    private String getLockType( Element locktype )
+    {
+        TreeEnumeration treeEnum = new TreeEnumeration( locktype );
+        while(treeEnum.hasMoreElements() )
+        {
+            Element current = (Element)treeEnum.nextElement();
+            Name tag = current.getTagName();
+            if( (tag != null) && !tag.getName().equals( WebDAVXML.ELEM_LOCK_TYPE ) )
+                return tag.getName();
+        }
+        return null;
+    }
+    
+
+    private String getLockScope( Element lockscope )
+    {
+        TreeEnumeration treeEnum = new TreeEnumeration( lockscope );
+        while(treeEnum.hasMoreElements() )
+        {
+            Element current = (Element)treeEnum.nextElement();
+            Name tag = current.getTagName();
+            if( (tag != null) && !tag.getName().equals( WebDAVXML.ELEM_LOCK_SCOPE ) )
+                return tag.getName();
+        }
+        return null;
+    }
+    
+
+    private String getOwnerInfo( Element ownerinfo )
+    {
+        TreeEnumeration treeEnum = new TreeEnumeration( ownerinfo );
+        while(treeEnum.hasMoreElements() )
+        {
+            Element current = (Element)treeEnum.nextElement();
+            Name tag = current.getTagName();
+            if( tag.getName().equals( WebDAVXML.ELEM_HREF ) )
+            {
+                Element token = (Element)treeEnum.nextElement();
+                if( token.getType() == Element.PCDATA )
+                    return token.getText();
+            }
+        }
+        return null;
+    }
+    
+
+    private String getLockTimeout( Element locktimeout )
+    {
+        TreeEnumeration treeEnum = new TreeEnumeration( locktimeout );
+        while(treeEnum.hasMoreElements() )
+        {
+            Element current = (Element)treeEnum.nextElement();
+            if( current.getType() == Element.PCDATA )
+                return current.getText();
+        }
+        return null;
+    }
+    
+
+    private String getLockDepth( Element lockdepth )
+    {
+        TreeEnumeration treeEnum = new TreeEnumeration( lockdepth );
+        while(treeEnum.hasMoreElements() )
+        {
+            Element current = (Element)treeEnum.nextElement();
+            if( current.getType() == Element.PCDATA )
+                return current.getText();
+        }
+        return null;
+    }
+    
+
+    private boolean checkHrefValue( Element el )
+    {
+        TreeEnumeration treeEnum = new TreeEnumeration( el );
+        while(treeEnum.hasMoreElements() )
+        {
+            Element current = (Element)treeEnum.nextElement();
+            Name tag = current.getTagName();
+            if( tag.getName().equals( WebDAVXML.ELEM_HREF ) )
+            {
+                Element token = (Element)treeEnum.nextElement();
+                if( token.getType() == Element.PCDATA )
+                {
+                    String HrefValue = token.getText();
+                    System.out.println();
+                    System.out.println( "checkHrefValue: " + HrefValue );
+                    int pos = HrefValue.indexOf( HTTPPrefix );
+                    if( pos >= 0 )
+                        HrefValue = HrefValue.substring( pos+HTTPPrefix.length() );
+                    pos = HrefValue.indexOf( "/" );
+                    if( pos >= 0 )
+                        HrefValue = HrefValue.substring( pos );
+                    if (HrefValue.length() == 0)
+                        HrefValue = "/";
+                    if (HrefValue.equals(Resource))
+                        return true;
+                }
+            }
+        }
+        return false;
+    }
+
+    private Element skipElements( Document xml_doc, String[] token )
+    {
+        int index = 0;
+        Element rootElem = (Element)xml_doc.getRoot();
+        TreeEnumeration enumTree =  new TreeEnumeration( rootElem );
+        while( enumTree.hasMoreElements() )
+        {
+            Element current = (Element)enumTree.nextElement();
+            Name currentTag = current.getTagName();
+            if( index >= 0 )
+            {
+                if( (currentTag != null) && (currentTag.getName().equals( token[index] )) )
+                {
+                    if( currentTag.getName().equals( WebDAVXML.ELEM_HREF ) )
+                    {
+                        if( !checkHrefValue( current ) )
+                            break;
+                    }
+                    else
+                    {
+                        // we only care about the subtree from this point on
+                        // NOTE: do not get the href subtree, since the href tree
+                        // is a sibling to the tree we need
+                        enumTree = new TreeEnumeration( current );
+                    }
+                    index++;
+                }
+                if( index >= token.length )
+                    return current;
+            }
+        }
+        return null;
+    }
+    
     private void printXML( byte[] body )
     {
         String debugOutput = System.getProperty( "debug", "false" );
-        if( debugOutput.equals( "true" ) )
+        if( debugOutput.equals( "true" ) || debugXML )
         {
             System.out.println("Received xml:");
             XMLOutputStream out = new XMLOutputStream(System.out);

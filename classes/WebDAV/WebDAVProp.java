@@ -58,6 +58,7 @@ public class WebDAVProp
 
 	public static final String DAV_SCHEMA	= new String("DAV:");
 // JF: TODO: set namespace
+/*
         public static final Name PROP_CREATIONDATE = Name.create("creationdate");
         public static final Name PROP_DISPLAYNAME = Name.create("displayname");
         public static final Name PROP_GETCONTENTLANGUAGE = Name.create("getcontentlanguage");
@@ -69,21 +70,33 @@ public class WebDAVProp
         public static final Name PROP_RESOURCETYPE = Name.create("resourcetype");
         public static final Name PROP_SOURCE = Name.create("source");
         public static final Name PROP_SUPPORTEDLOCK = Name.create("supportedlock");
+*/        
+        public static final String PROP_CREATIONDATE = "creationdate";
+        public static final String PROP_DISPLAYNAME = "displayname";
+        public static final String PROP_GETCONTENTLANGUAGE = "getcontentlanguage";
+        public static final String PROP_GETCONTENTLENGTH = "getcontentlength";
+        public static final String PROP_GETCONTENTTYPE = "getcontenttype";
+        public static final String PROP_GETETAG = "getetag";
+        public static final String PROP_GETLASTMODIFIED = "getlastmodified";
+        public static final String PROP_LOCKDISCOVERY = "lockdiscovery";
+        public static final String PROP_RESOURCETYPE = "resourcetype";
+        public static final String PROP_SOURCE = "source";
+        public static final String PROP_SUPPORTEDLOCK = "supportedlock";
 
 	public static Enumeration getDavProps() {
 	  Vector prop_list = new Vector();
 
-	  prop_list.addElement(PROP_CREATIONDATE);
-	  prop_list.addElement(PROP_DISPLAYNAME);
-	  prop_list.addElement(PROP_GETCONTENTLANGUAGE);
-	  prop_list.addElement(PROP_GETCONTENTLENGTH);
-	  prop_list.addElement(PROP_GETCONTENTTYPE);
-	  prop_list.addElement(PROP_GETETAG);
-	  prop_list.addElement(PROP_GETLASTMODIFIED);
-	  prop_list.addElement(PROP_LOCKDISCOVERY);
-	  prop_list.addElement(PROP_RESOURCETYPE);
-	  prop_list.addElement(PROP_SOURCE);
-	  prop_list.addElement(PROP_SUPPORTEDLOCK);
+	  prop_list.addElement( Name.create( PROP_CREATIONDATE ) );
+	  prop_list.addElement( Name.create( PROP_DISPLAYNAME ) );
+	  prop_list.addElement( Name.create( PROP_GETCONTENTLANGUAGE ) );
+	  prop_list.addElement( Name.create( PROP_GETCONTENTLENGTH ) );
+	  prop_list.addElement( Name.create( PROP_GETCONTENTTYPE ) );
+	  prop_list.addElement( Name.create( PROP_GETETAG ) );
+	  prop_list.addElement( Name.create( PROP_GETLASTMODIFIED ) );
+	  prop_list.addElement( Name.create( PROP_LOCKDISCOVERY ) );
+	  prop_list.addElement( Name.create( PROP_RESOURCETYPE ) );
+	  prop_list.addElement( Name.create( PROP_SOURCE ) );
+	  prop_list.addElement( Name.create( PROP_SUPPORTEDLOCK ) );
 
 	  return (prop_list.elements());
 	}

@@ -45,98 +45,107 @@ import java.util.*;
 import com.sun.java.swing.text.*;
 import com.sun.java.swing.*;
 
-public class WebDAVToolBar extends JPanel implements ActionListener {
-
+public class WebDAVToolBar extends JPanel implements ActionListener
+{
     private JToolBar toolbar;
     private Vector toolbarListener;
     private static final String WebDAVClassName = "WebDAV";
     private static final String IconDir = "icons";
 
-    public WebDAVToolBar() {
+    public WebDAVToolBar()
+    {
         super();
         setBorder(BorderFactory.createEtchedBorder());
-	setLayout(new BorderLayout());            
-	toolbar = new JToolBar();
-	   
+        setLayout(new BorderLayout());
+        toolbar = new JToolBar();
+
         add(createToolbar());
-	toolbarListener = new Vector();
+        toolbarListener = new Vector();
     }
 
-    public void addTool(JToolBar tb, String name) {
-	    
+    public void addTool( JToolBar tb, String name, String description )
+    {
         String iconPath = getIconPath();
         if (iconPath == null)
-          System.exit(0);
-  
+            System.exit(0);
+
         JButton b = new JButton(loadImageIcon(iconPath + File.separatorChar + name + ".gif", name));
-	b.setActionCommand(name);
-	b.addActionListener(this);
-	b.setToolTipText(name);
-	b.setMargin(new Insets(1,1,1,1));
-	tb.add(b);
-    }
-    
-    private Component createToolbar() {
-    addTool(toolbar, "open");
-	addTool(toolbar, "save");
-	addTool(toolbar, "copy");
-	addTool(toolbar, "delete");
-	toolbar.addSeparator();
-//        addTool(toolbar, "connect");
-	addTool(toolbar, "lock");
-	addTool(toolbar, "unlock");
-	addTool(toolbar, "launch");
-	addTool(toolbar, "propfind");
-	return toolbar;
+        b.setActionCommand( description );
+        b.addActionListener(this);
+        b.setToolTipText( description );
+        b.setMargin(new Insets(1,1,1,1));
+        tb.add(b);
     }
 
-    private static String getIconPath() {
-      String classPath = System.getProperty("java.class.path");
-      if (classPath == null)
+    private Component createToolbar()
+    {
+        addTool( toolbar, "open", "Get File" );
+        addTool( toolbar, "save", "Write File" );
+        addTool( toolbar, "copy", "Duplicate" );
+        addTool( toolbar, "delete", "Delete" );
+//        addTool( toolbar, "delete", "Create Folder" );
+        toolbar.addSeparator();
+        addTool( toolbar, "lock", "Lock" );
+        addTool( toolbar, "unlock", "Unlock" );
+//        addTool( toolbar, "launch", "View Lock Properties" );
+        addTool( toolbar, "propfind", "View Properties" );
+//        addTool( toolbar, "launch", "Refresh" );
+        return toolbar;
+    }
+
+    private static String getIconPath()
+    {
+        String classPath = System.getProperty("java.class.path");
+        if (classPath == null)
+            return null;
+
+        StringTokenizer paths = new StringTokenizer(classPath,":;");
+        while (paths.hasMoreTokens())
+        {
+            String nextPath = paths.nextToken();
+            if (!nextPath.endsWith(new Character(File.separatorChar).toString()))
+                nextPath += File.separatorChar;
+            nextPath += WebDAVClassName + File.separatorChar + IconDir;
+            File iconDirFile = new File(nextPath);
+            if (iconDirFile.exists())
+                return nextPath;
+        }
         return null;
-
-      StringTokenizer paths = new StringTokenizer(classPath,":;");
-      while (paths.hasMoreTokens()) {
-        String nextPath = paths.nextToken();
-        if (!nextPath.endsWith(new Character(File.separatorChar).toString()))
-          nextPath += File.separatorChar;
-        nextPath += WebDAVClassName + File.separatorChar + IconDir;
-        File iconDirFile = new File(nextPath);
-        if (iconDirFile.exists())
-          return nextPath;
-      }
-      return null;
     }
-    private ImageIcon loadImageIcon(String filename, String description) {
+
+    private ImageIcon loadImageIcon(String filename, String description)
+    {
         return new ImageIcon(filename, description);
     }
 
-    public synchronized void addActionListener(ActionListener l) {
+    public synchronized void addActionListener(ActionListener l)
+    {
         toolbarListener.addElement(l);
     }
 
-    public synchronized void removeActionListener(ActionListener l) {
-	toolbarListener.removeElement(l);
+    public synchronized void removeActionListener(ActionListener l)
+    {
+        toolbarListener.removeElement(l);
     }
 
-    public void actionPerformed(ActionEvent evt) {
-    	notifyListener(evt);
-    } 
-    
-    protected void notifyListener(ActionEvent e) {
-    
-    ActionEvent evt = new ActionEvent(this, ActionEvent.ACTION_PERFORMED, e.getActionCommand());
- 	Vector v;
-        synchronized(this) {
-	    v = (Vector)toolbarListener.clone();
-	}
+    public void actionPerformed(ActionEvent evt)
+    {
+        notifyListener(evt);
+    }
 
-	for (int i=0; i< v.size(); i++) {
-	    WebDAVToolBarListener client = (WebDAVToolBarListener)v.elementAt(i);
-	    client.actionPerformed(evt);
- 	}
+    protected void notifyListener(ActionEvent e)
+    {
+        ActionEvent evt = new ActionEvent(this, ActionEvent.ACTION_PERFORMED, e.getActionCommand());
+        Vector v;
+        synchronized(this)
+        {
+            v = (Vector)toolbarListener.clone();
+        }
 
-	
-    }     
-    
+        for (int i=0; i< v.size(); i++)
+        {
+            ActionListener client = (ActionListener)v.elementAt(i);
+            client.actionPerformed(evt);
+        }
+    }
 }

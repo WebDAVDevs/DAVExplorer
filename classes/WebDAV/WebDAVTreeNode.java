@@ -62,12 +62,11 @@ public class WebDAVTreeNode extends DefaultMutableTreeNode {
   protected static WebDAVResponseInterpreter interpreter = new WebDAVResponseInterpreter();
   public WebDAVTreeNode (Object o) {
     super(o);
-//    System.out.println("child " + o.toString() + " created..");
   }
   public WebDAVTreeNode (Object o, boolean isRoot) {
     super(o);
     hasLoaded = true;
-    dataNode = new DataNode(true,false,o.toString(),"WebDAV Root Node","",0,"",null);
+    dataNode = new DataNode(true,false,null, o.toString(),"WebDAV Root Node","",0,"",null);
   }
   
   public DataNode getDataNode() {
@@ -129,7 +128,8 @@ public class WebDAVTreeNode extends DefaultMutableTreeNode {
 
     try {
       ByteArrayInputStream byte_in = new ByteArrayInputStream(byte_xml);
-      XMLInputStream xml_in = new XMLInputStream(byte_in);
+      EscapeInputStream iStream = new EscapeInputStream( byte_in, true );
+      XMLInputStream xml_in = new XMLInputStream( iStream );
       xml_doc = new Document();
       xml_doc.load(xml_in);
     }
@@ -232,6 +232,7 @@ public class WebDAVTreeNode extends DefaultMutableTreeNode {
       boolean isColl, isLocked, done;
       int leftToFind;
       String  resDisplay, resType, resLength, resDate;
+      String lockToken = null;
       isColl = false;
       isLocked = false;
       resDisplay = new String("");
@@ -248,7 +249,7 @@ public class WebDAVTreeNode extends DefaultMutableTreeNode {
             Name prop = propTypeElem.getTagName();
             if (prop == null)
               continue;
-            if (prop.getName().equals(WebDAVProp.PROP_DISPLAYNAME.getName())) {
+            if (prop.getName().equals(WebDAVProp.PROP_DISPLAYNAME)) {
               Enumeration valEnum = propTypeElem.getElements();
               while (valEnum.hasMoreElements()) {
                 Element value = (Element) valEnum.nextElement();
@@ -259,14 +260,42 @@ public class WebDAVTreeNode extends DefaultMutableTreeNode {
 	        break;
               }
             }
-            else if (prop.getName().equals(WebDAVProp.PROP_LOCKDISCOVERY.getName())) {
+            else if (prop.getName().equals(WebDAVProp.PROP_LOCKDISCOVERY)) {
               Enumeration valEnum = propTypeElem.getElements();
-	      if (valEnum.hasMoreElements()) {
-		isLocked = true;
-	      }
+	        if (valEnum.hasMoreElements())
+	        {
+                String[] token = new String[1];
+                token[0] = new String( WebDAVXML.ELEM_ACTIVE_LOCK );
+                int index = 0;
+                TreeEnumeration enumTree =  new TreeEnumeration( propTypeElem );
+                while( enumTree.hasMoreElements() )
+                {
+                    Element current = (Element)enumTree.nextElement();
+                    Name currentTag = current.getTagName();
+                    if( index >= 0 )
+                    {
+                        if( (currentTag != null) && (currentTag.getName().equals( token[index] )) )
+                        {
+                            // we only care about the subtree from this point on
+                            enumTree = new TreeEnumeration( current );
+                            index++;
+                        }
+                        if( index >= token.length )
+                            index = -1;
+                    }
+                    else if( currentTag != null )
+                    {
+                        if( currentTag.getName().equals( WebDAVXML.ELEM_LOCK_TOKEN ) )
+                        {
+                            lockToken = getLockToken( current );
+                        }
+                    }
+                }
+		        isLocked = true;
+	        }
               leftToFind--;
             }
-            else if (prop.getName().equals(WebDAVProp.PROP_RESOURCETYPE.getName())) {
+            else if (prop.getName().equals(WebDAVProp.PROP_RESOURCETYPE)) {
               Enumeration valEnum = propTypeElem.getElements();
               while (valEnum.hasMoreElements()) {
                 Element value = (Element) valEnum.nextElement();
@@ -279,7 +308,7 @@ public class WebDAVTreeNode extends DefaultMutableTreeNode {
               }              
               leftToFind--;
             }
-            else if (prop.getName().equals(WebDAVProp.PROP_GETCONTENTTYPE.getName())) {
+            else if (prop.getName().equals(WebDAVProp.PROP_GETCONTENTTYPE)) {
               Enumeration valEnum = propTypeElem.getElements();
               while (valEnum.hasMoreElements()) {
                 Element value = (Element) valEnum.nextElement();
@@ -290,7 +319,7 @@ public class WebDAVTreeNode extends DefaultMutableTreeNode {
 		break;
               }
             }
-            else if (prop.getName().equals(WebDAVProp.PROP_GETCONTENTLENGTH.getName())) {
+            else if (prop.getName().equals(WebDAVProp.PROP_GETCONTENTLENGTH)) {
               Enumeration valEnum = propTypeElem.getElements();
               while (valEnum.hasMoreElements()) {
                 Element value = (Element) valEnum.nextElement();
@@ -301,7 +330,7 @@ public class WebDAVTreeNode extends DefaultMutableTreeNode {
                 break;
               }
 	    }
-            else if (prop.getName().equals(WebDAVProp.PROP_GETLASTMODIFIED.getName())) {
+            else if (prop.getName().equals(WebDAVProp.PROP_GETLASTMODIFIED)) {
               Enumeration valEnum = propTypeElem.getElements();
               while (valEnum.hasMoreElements()) {
                 Element value = (Element) valEnum.nextElement();
@@ -324,19 +353,6 @@ public class WebDAVTreeNode extends DefaultMutableTreeNode {
 	  System.out.println(parseEx);
           return;
 	}
-      /*      
-	System.out.println("--------------------------");
-        System.out.println("isColl: " + isColl);
-        System.out.println("isLocked: " + isLocked);
-        System.out.println("resName: " + resName);
-        System.out.println("resDisplay: " + resDisplay);
-        System.out.println("resType: " + resType);
-        System.out.println("size: " + size);
-        System.out.println("resDate: " + resDate);
-        System.out.println("ResourceName: " + ResourceName);
-        System.out.println("fullName: " + fullName);
-        System.out.println("++++++++++++++++++++++++++++++++");
-	*/
         if (resName.equals(""))
           return;
 
@@ -348,13 +364,13 @@ public class WebDAVTreeNode extends DefaultMutableTreeNode {
         int pathLen = getPath().length;
         String hostName = resName;
         if (pathLen == 2)
-          hostName = WebDAVPrefix + interpreter.getHost() + ResourceName;
-        dataNode = new DataNode(isColl,isLocked,hostName, resDisplay, resType, size, resDate, null);
-//        System.out.println("this data node created.");
+          hostName = WebDAVPrefix + interpreter.getHost() + "/" + ResourceName;
+        dataNode = new DataNode(isColl,isLocked, lockToken, hostName, resDisplay, resType, size, resDate, null);
       }
       else {
         DataNode newNode = new DataNode(isColl,
                                           isLocked,
+                                          lockToken,
                                           resName,
                                           resDisplay,
                                           resType,
@@ -365,11 +381,9 @@ public class WebDAVTreeNode extends DefaultMutableTreeNode {
             WebDAVTreeNode childNode = new WebDAVTreeNode(resName);
             childNode.setDataNode(newNode);
             insert(childNode,0);
-//            System.out.println("inserting collection: " + resName);
         }
         else {
             nodesChildren.addElement(newNode);
-//            System.out.println("inserting non-collection: " + resName);
         }
       }
   }
@@ -394,6 +408,7 @@ try{
 	  Date newDate = new Date(aFile.lastModified());
           DataNode newNode = new DataNode(isDir,
                                     false,
+                                    null,
                                     fileList[i],
                                     "Local File",
                                     "",
@@ -413,7 +428,7 @@ try{
 System.out.println(e);
 }
         Date fileDate = new Date(f.lastModified());
-        dataNode = new DataNode(true,false,name,"Local File","",
+        dataNode = new DataNode(true,false,null, name,"Local File","",
                                             f.length(),fileDate.toLocaleString(), nodesChildren);
      }
      else {
@@ -428,11 +443,6 @@ System.out.println(e);
   protected void loadChildren() {
 
     Object[] full_path = getPath();
-/*
-    System.out.println("loadChildren: getPath() = ");
-    for (int p=0;p<full_path.length;p++)
-      System.out.println("  full_path[" + p + "] = " + full_path[p].toString());
-*/
     if( full_path == null || full_path.length <= 1 )
         return;
         
@@ -497,4 +507,20 @@ System.out.println(e);
     return res;
   }
 
+    private String getLockToken( Element locktoken )
+    {
+        TreeEnumeration treeEnum = new TreeEnumeration( locktoken );
+        while(treeEnum.hasMoreElements() )
+        {
+            Element current = (Element)treeEnum.nextElement();
+            Name tag = current.getTagName();
+            if( tag.getName().equals( WebDAVXML.ELEM_HREF ) )
+            {
+                Element token = (Element)treeEnum.nextElement();
+                if( token.getType() == Element.PCDATA )
+                    return token.getText();
+            }
+        }
+        return null;
+    }
 }

@@ -67,6 +67,7 @@ public class Main extends JFrame
     Hashtable authTable;
     String authHost;
     public final static String VERSION = "0.4";
+    public final static String UserAgent = "UCI DAV Explorer/" + VERSION;
 
     public Main(String frameName)
     {
@@ -88,18 +89,20 @@ public class Main extends JFrame
         CommandMenu = new WebDAVMenu();
         setJMenuBar(CommandMenu);
 
+        MenuListener_Gen menuListener = new MenuListener_Gen();
         WebDAVToolBar toolbar = new WebDAVToolBar();
-        toolbar.addActionListener(new ToolBarListener_Gen());
+        toolbar.addActionListener( menuListener );
         URIBox uribox = new URIBox();
         uribox.addActionListener(new URIBoxListener_Gen());
 
-        CommandMenu.addWebDAVMenuListener(new MenuListener_Gen());
+        CommandMenu.addWebDAVMenuListener( menuListener );
         fileView.addViewSelectionListener(new TableSelectListener_Gen());
         fileView.addViewSelectionListener(new TableSelectListener_Tree());
 
         treeView.addViewSelectionListener(new TreeSelectListener_Gen());
         treeView.addViewSelectionListener(new TreeSelectListener_Table());
         requestGenerator = new WebDAVRequestGenerator(WebDAVFrame);
+        requestGenerator.setUserAgent( UserAgent );
         fileView.addRenameListener(new RenameListener());
         fileView.addDisplayLockListener(new DisplayLockListener());
         responseInterpreter = new WebDAVResponseInterpreter(WebDAVFrame);
@@ -185,50 +188,6 @@ public class Main extends JFrame
         Main mFrame = new Main("WebDAV Explorer");
     }
 
-    class ToolBarListener_Gen implements WebDAVToolBarListener
-    {
-        public void actionPerformed(ActionEvent e)
-        {
-            String cmd = e.getActionCommand();
-            if (cmd.equals("open"))
-            {
-                requestGenerator.GenerateGet("view");
-                requestGenerator.execute();
-            }
-            else if (cmd.equals("save"))
-            {
-                requestGenerator.GenerateGet("save");
-                requestGenerator.execute();
-            }
-            else if (cmd.equals("copy"))
-            {
-            }
-            else if (cmd.equals("delete"))
-            {
-                requestGenerator.DiscoverLock("delete");
-            }
-            else if (cmd.equals("lock"))
-            {
-                requestGenerator.DiscoverLock("lock");
-            }
-            else if (cmd.equals("unlock"))
-            {
-                requestGenerator.DiscoverLock("unlock");
-            }
-            else if (cmd.equals("launch"))
-            {
-                requestGenerator.GenerateGet("edit");
-                requestGenerator.execute();
-            }
-            else if (cmd.equals("propfind"))
-            {
-                requestGenerator.setExtraInfo("index");
-                requestGenerator.GeneratePropFind(null,"allprop","one",null,null);
-                requestGenerator.execute();
-            }
-        }
-    }
-
     class LoginDialogListener implements ActionListener
     {
         public void actionPerformed(ActionEvent e)
@@ -280,7 +239,9 @@ public class Main extends JFrame
             if (str == null)
                 fileView.update();
             else
+            {
                 fileView.resetName();
+            }
         }
     }
 
@@ -312,11 +273,17 @@ public class Main extends JFrame
     {
         public void actionPerformed(ActionEvent e)
         {
-            String str = e.getActionCommand();
-            if (str.equals("true"))
+            String token = e.getActionCommand();
+            if ( e.getID() == 0 )
+            {
                 fileView.setLock();
+                treeView.setLock( fileView.getName(), token );
+            }
             else
+            {
                 fileView.resetLock();
+                treeView.resetLock( fileView.getName() );
+            }
         }
     }
 
@@ -334,7 +301,7 @@ public class Main extends JFrame
         {
             String str = e.getActionCommand();
             if (str != null)
-                requestGenerator.GenerateRename(str);
+                requestGenerator.GenerateRename( str, treeView.getCurrentPath() );
         }
     }
 
@@ -362,45 +329,34 @@ public class Main extends JFrame
         }
     }
 
-    class MenuListener_Gen implements WebDAVMenuListener
+    class MenuListener_Gen implements ActionListener
     {
         public void actionPerformed(ActionEvent e)
         {
             String command = e.getActionCommand();
             if (command.equals("Exit"))
                 System.exit(0);
-            if (command.equals("View"))
+                
+            else if (command.equals("Get File"))
             {
-                requestGenerator.GenerateGet("view");
-                requestGenerator.execute();
+                saveAsDocument();
             }
-            else if (command.equals("Save"))
+            else if (command.equals("Write File"))
             {
-                requestGenerator.GenerateGet("save");
-                requestGenerator.execute();
-            }
-            else if (command.equals("Save As..."))
-            {
-                requestGenerator.GenerateGet("saveas");
-                requestGenerator.execute();
-            }
-            else if (command.equals("Export File..."))
-            {
-                FileDialog fd = new FileDialog(WebDAVFrame, "Export File (Upload)" , FileDialog.LOAD);
+                FileDialog fd = new FileDialog(WebDAVFrame, "Write File" , FileDialog.LOAD);
                 fd.setVisible(true);
-                String fullPath = fd.getDirectory() + File.separatorChar + fd.getFile();
-                requestGenerator.GeneratePut(fullPath, treeView.getCurrentPath(), null);
+                String fullPath = fd.getDirectory() + fd.getFile();
+                String token = treeView.getLockToken( fd.getFile() );
+                requestGenerator.GeneratePut( fullPath, treeView.getCurrentPath(), token );
                 requestGenerator.execute();
             }
             else if (command.equals("Lock"))
             {
-                // shouldn't have to send the string. Let generator fetch the info
-                // from a file
-                requestGenerator.DiscoverLock("lock");
+                lockDocument();
             }
             else if (command.equals("Unlock"))
             {
-                requestGenerator.DiscoverLock("unlock");
+                unlockDocument();
             }
             else if (command.equals("Duplicate"))
             {
@@ -409,7 +365,7 @@ public class Main extends JFrame
             }
             else if (command.equals("Delete"))
             {
-                requestGenerator.DiscoverLock("delete");
+                deleteDocument();
             }
             else if (command.equals("Create Folder"))
             {
@@ -422,29 +378,6 @@ public class Main extends JFrame
                     requestGenerator.execute();
                 }
             }
-            else if (command.equals("Edit Resource"))
-            {
-                requestGenerator.GenerateGet("edit");
-                requestGenerator.execute();
-            }
-            else if (command.equals("Commit Changes"))
-            {
-                requestGenerator.DiscoverLock("commit");
-            }
-            else if (command.equals("View Properties"))
-            {
-                requestGenerator.setExtraInfo("properties");
-                requestGenerator.GeneratePropFind(null,"allprop","zero",null,null);
-                requestGenerator.execute();
-            }
-            else if (command.equals("Refresh"))
-            {
-                responseInterpreter.setRefresh();
-                treeView.refresh();
-            }
-            else if (command.equals("View Extensions"))
-            {
-            }
             else if (command.equals("Clear Auth Buffer"))
             {
                 authTable.clear();
@@ -452,6 +385,19 @@ public class Main extends JFrame
             else if (command.equals("Lock Info..."))
             {
                 WebDAVLockInfo lockInfo = new WebDAVLockInfo(WebDAVFrame, "Lock Info", true);
+            }
+            else if (command.equals("View Properties"))
+            {
+                viewProperties();
+            }
+            else if (command.equals("View Lock Properties"))
+            {
+                requestGenerator.DiscoverLock("display");
+            }
+            else if (command.equals("Refresh"))
+            {
+                responseInterpreter.setRefresh();
+                treeView.refresh();
             }
             else if (command.equals("About WebDAV..."))
             {
@@ -463,6 +409,51 @@ public class Main extends JFrame
             }
         }
     }
+
+    protected void viewDocument()
+    {
+        requestGenerator.GenerateGet("view");
+        requestGenerator.execute();
+    }
+
+    protected void saveDocument()
+    {
+        requestGenerator.GenerateGet("save");
+        requestGenerator.execute();
+    }
+    
+    protected void saveAsDocument()
+    {
+        requestGenerator.GenerateGet("saveas");
+        requestGenerator.execute();
+    }
+    
+    protected void deleteDocument()
+    {
+        JOptionPane pane = new JOptionPane();
+        String str = new String("Are you sure?");
+        int opt = pane.showConfirmDialog(null,str,"Delete File",JOptionPane.YES_NO_OPTION);
+        if (opt == JOptionPane.YES_OPTION)
+            requestGenerator.DiscoverLock("delete");
+    }
+
+    protected void lockDocument()
+    {
+        requestGenerator.DiscoverLock("lock");
+    }
+    
+    protected void unlockDocument()
+    {
+        requestGenerator.DiscoverLock("unlock");
+    }
+
+    protected void viewProperties()
+    {
+        requestGenerator.setExtraInfo("properties");
+        requestGenerator.GeneratePropFind(null,"allprop","zero",null,null);
+        requestGenerator.execute();
+    }
+
     
     private String selectName( String title, String prompt )
     {

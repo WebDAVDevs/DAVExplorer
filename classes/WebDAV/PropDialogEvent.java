@@ -19,33 +19,39 @@
 
 package WebDAV;
 
-
 public class PropDialogEvent extends java.util.EventObject
 {
-        protected String data;
-        protected String initialData;
-        protected String HostName;
-        protected String ResourceName;
+    protected String data;
+    protected String initialData;
+    protected String HostName;
+    protected String ResourceName;
 
-        public PropDialogEvent(Object source, String host, String resource, String initial, String new_data)
-        {
-           super(source);
-           ResourceName = resource;
-           HostName = host;
-           data = new_data;
-           initialData = initial;
-        }
-        public String getHost() {
-          return HostName;
-        }
-        public String getResource() {
-          return ResourceName;
-        }
-        public String getData()
-        {
-            return data;
-        }
-        public String getInitialData() {
-          return initialData;
-        }
+    public PropDialogEvent(Object source, String host, String resource, String initial, String new_data)
+    {
+        super(source);
+        ResourceName = resource;
+        HostName = host;
+        data = new_data;
+        initialData = initial;
+    }
+    
+    public String getHost()
+    {
+        return HostName;
+    }
+    
+    public String getResource()
+    {
+        return ResourceName;
+    }
+    
+    public String getData()
+    {
+        return data;
+    }
+    
+    public String getInitialData()
+    {
+        return initialData;
+    }
 }

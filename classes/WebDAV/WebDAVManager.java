@@ -43,7 +43,6 @@
 // Change List:
 
 
-
 package WebDAV;
 
 import java.io.*;
@@ -56,7 +55,7 @@ import com.sun.java.swing.*;
 public class WebDAVManager {
 
   public HTTPResponse Response;
-  private WebDAVConnection Con ;
+  private WebDAVConnection Con;
   private String HostName = null;
   private int Port;
   private String MethodName;
@@ -120,7 +119,7 @@ public class WebDAVManager {
   public WebDAVResponseEvent GenerateWebDAVResponse(HTTPResponse Response) {
 
       WebDAVResponseEvent e = new WebDAVResponseEvent(this,HostName, Port, ResourceName,MethodName,Response,ExtraInfo);
-      return e; 
+      return e;
   }
 
   public void fireResponse(WebDAVResponseEvent e) {

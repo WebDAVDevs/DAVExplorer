@@ -94,61 +94,14 @@ public class WebDAVTreeView
         startDirName = System.getProperty("user.home");
         if (startDirName == null){
             startDirName = new Character(File.separatorChar).toString();
-	}
+    	}
 
-// The items below have been removed because they interfered with the 
-// tree selection events.  They would cause a secondary tree selection
-// event in the cases where the X and Y position of the clicked mouse
-// would move over another directory when the screen was redrawn after 
-// an initial tree selection.
-//
-// We're interested in single clicks
-//        MouseListener ml = new MouseAdapter()
-//        {
-//            public void mouseClicked(MouseEvent e)
-//            {
-//                int selRow = tree.getRowForLocation(e.getX(), e.getY());
-//                TreePath selPath = tree.getPathForLocation(e.getX(), e.getY());
-//                if(selRow != -1)
-//                {
-//                    if(e.getClickCount() == 1)
-//                    {
-//                        handleSingleClick(selPath);
-//                    }
-//                    else if(e.getClickCount() == 2)
-//                    {
-//                        handleDoubleClick(selPath);
-//                    }
-//                }
-//            }
-//            
-//            public void mouseExited(MouseEvent e)
-//            {
-//            }
-//        };
     }
   
-//    public void handleSingleClick(TreePath selPath)
-//    {
-//        // Select the clicked item.
-//
-//        if ( (selPath != null) && (!tree.isPathSelected(selPath)) )
-//        {
-//            selectionModel.setSelectionPath(selPath);
-//        }
-//    }
-//
-//    public void handleDoubleClick(TreePath selPath)
-//    {
-//        // Nothing to do here.
-//    }
-
-
     public JScrollPane getScrollPane()
     {
         // We package the whole TreeView inside a Scroll Pane, returned
         // by this function.
-
         JScrollPane sp = new JScrollPane();
         sp.getViewport().add(tree); 
         sp.setPreferredSize(new Dimension(240,400));
@@ -161,7 +114,6 @@ public class WebDAVTreeView
     //  This is where selection event from the table View are routed to.
     //  The Event includes the information needed to expand/select
     //  the particular row. 
-
         Object item = e.getNode();
         if (item == null)  
             return; 
@@ -182,7 +134,6 @@ public class WebDAVTreeView
     public void refresh()
     {
         // Make sure the directory structure is current.
-
         int row = tree.getRowForPath(currPath);
         tree.clearSelection();
         tree.setSelectionRow(row);
@@ -191,7 +142,6 @@ public class WebDAVTreeView
     public synchronized void addViewSelectionListener(ViewSelectionListener l)
     {
         // Register a listener 
-
         selListeners.addElement(l);
     }
 
@@ -204,7 +154,6 @@ public class WebDAVTreeView
     {
         // This is where we handle the tree selection event. 
         // We send the event to all the registered listeners.
-
         public void valueChanged(TreeSelectionEvent e)
         {
             Vector ls;
@@ -242,7 +191,6 @@ public class WebDAVTreeView
     {
         // For initialization purposes. 
         // This function is called when the client starts.
-
         if (startDirName != null)
         addRowToRoot(startDirName,true);
     }
@@ -341,5 +289,79 @@ public class WebDAVTreeView
     public String getCurrentPath()
     {
         return constructPath( currPath );
+    }
+
+    public String getLockToken( String curFile )
+    {
+        currNode = (WebDAVTreeNode) currPath.getLastPathComponent();
+        DataNode node = ((WebDAVTreeNode)currNode).getDataNode();
+        return getLockToken( node, curFile );
+    }
+    
+    public void setLock( String curFile, String token )
+    {
+        currNode = (WebDAVTreeNode) currPath.getLastPathComponent();
+        DataNode node = ((WebDAVTreeNode)currNode).getDataNode();
+        node = getCurrentDataNode( node, curFile );
+        if( node != null )
+        {
+            node.lock( token );
+        }
+    }
+    
+    public void resetLock( String curFile )
+    {
+        currNode = (WebDAVTreeNode) currPath.getLastPathComponent();
+        DataNode node = ((WebDAVTreeNode)currNode).getDataNode();
+        node = getCurrentDataNode( node, curFile );
+        if( node != null )
+        {
+            node.unlock();
+        }
+    }
+    
+
+    private String getLockToken( DataNode node, String curFile )
+    {
+        if( node == null )
+            return null;
+            
+        if( node.isCollection() )
+        {
+            if( node.getSubNodes() == null )
+                return null;
+            for( Enumeration e = node.getSubNodes().elements(); e.hasMoreElements(); )
+            {
+                DataNode current = (DataNode)e.nextElement();
+                String token = getLockToken( current, curFile );
+                if( token != null )
+                    return token;
+            }
+        }
+        else if( node.getName().equals( curFile ) )
+            return node.getLockToken();
+        return null;
+    }
+
+    private DataNode getCurrentDataNode( DataNode node, String curFile )
+    {
+        if( node == null )
+            return null;
+            
+        if( node.isCollection() )
+        {
+            if( node.getSubNodes() == null )
+                return null;
+            for( Enumeration e = node.getSubNodes().elements(); e.hasMoreElements(); )
+            {
+                DataNode current = (DataNode)e.nextElement();
+                DataNode curNode = getCurrentDataNode( current, curFile );
+                if( curNode != null )
+                    return curNode;
+            }
+        }
+        else if( node.getName().equals( curFile ) )
+            return node;
+        return null;
     }
 }

@@ -23,4 +23,3 @@ public interface PropDialogListener extends java.util.EventListener
 {
     void propDialog(PropDialogEvent evt);
 }
-
