@@ -361,7 +361,6 @@ public class WebDAVResponseInterpreter
                 return;
             }
             ByteArrayInputStream byte_in = new ByteArrayInputStream(body);
-            //EscapeInputStream iStream = new EscapeInputStream( byte_in, true );
             xml_doc = new Document();
             xml_doc.load( byte_in );
         }
@@ -923,7 +922,6 @@ public class WebDAVResponseInterpreter
                 return;
             }
             ByteArrayInputStream byte_in = new ByteArrayInputStream(body);
-            //EscapeInputStream iStream = new EscapeInputStream( byte_in, true );
             xml_doc = new Document();
             xml_doc.load( byte_in );
         }
