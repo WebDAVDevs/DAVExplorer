@@ -127,7 +127,16 @@ public class WebDAVResponseInterpreter
         Extra = e.getExtraInfo();
         HostName = e.getHost();
         Port = e.getPort();
-        Resource = e.getResource();
+
+	ByteArrayInputStream ar = new ByteArrayInputStream(e.getResource().getBytes());
+        EscapeInputStream iStream = new EscapeInputStream( ar, true );
+	DataInputStream dis = new DataInputStream( iStream );
+	try{
+            Resource = dis.readLine();
+	} catch(Exception exc) {
+	    System.out.println(exc);
+	}
+
         Node = e.getNode();
         try
         {
