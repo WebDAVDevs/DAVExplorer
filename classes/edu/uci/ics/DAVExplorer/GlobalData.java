@@ -47,6 +47,8 @@ import java.io.InputStreamReader;
 import java.io.OutputStreamWriter;
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
+import java.io.ByteArrayInputStream;
+import java.io.IOException;
 
 class GlobalData
 {
@@ -175,6 +177,62 @@ class GlobalData
     {
         if( mainFrame != null && origCursor != null )
             mainFrame.setCursor( origCursor );
+    }
+
+    public String unescape( String text, String encoding, boolean href )
+    {
+        ByteArrayInputStream byte_in = new ByteArrayInputStream( text.getBytes() );
+        EscapeInputStream iStream = new EscapeInputStream( byte_in, true );
+        try
+        {
+            InputStreamReader isr = null;
+            if( (encoding==null) || (encoding.length()==0) )
+                isr = new InputStreamReader( iStream, "UTF-8" );
+            else
+                isr = new InputStreamReader( iStream, encoding );
+
+            BufferedReader br = new BufferedReader( isr );
+            return br.readLine();
+        }
+        catch( IOException e )
+        {
+            if( href )
+            {
+                // the <href> tag doesn't necessarily need to be encoded in
+                // the specified encoding
+                try
+                {
+                    byte_in.reset();
+                    iStream.reset();
+                    InputStreamReader isr = new InputStreamReader( iStream );
+                    BufferedReader br = new BufferedReader( isr );
+                    return br.readLine();
+                }
+                catch( IOException e2 )
+                {
+                    GlobalData.getGlobalData().errorMsg("String unescaping error: \n" + e);
+                }
+            }
+            else
+            {
+                // the text may already be in UTF-8, so all we need is to unescape
+                // this is a rather bad hack, but since we don't have control over
+                // what kind of data the server sends...
+                try
+                {
+                    byte_in = new ByteArrayInputStream( text.getBytes("UTF-8") );
+                    iStream = new EscapeInputStream( byte_in, true );
+                    InputStreamReader isr = new InputStreamReader( iStream, "UTF-8" );
+                    BufferedReader br = new BufferedReader( isr );
+                    return br.readLine();
+                }
+                catch( IOException e2 )
+                {
+                    GlobalData.getGlobalData().errorMsg("String unescaping error: \n" + e);
+                }
+            }
+        }
+        return "";
     }
 
     public boolean doSSL()

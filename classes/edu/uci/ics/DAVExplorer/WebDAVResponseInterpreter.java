@@ -51,12 +51,8 @@ import java.util.Vector;
 import java.util.Enumeration;
 import java.util.StringTokenizer;
 import java.io.File;
-//import java.io.StringReader;
-import java.io.BufferedReader;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
-//import java.io.DataInputStream;
-import java.io.InputStreamReader;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import HTTPClient.HTTPResponse;
@@ -125,7 +121,7 @@ public class WebDAVResponseInterpreter
 
         // get the resource name, and unescape it
         // TODO: get encoding
-        Resource = unescape( e.getResource(), null );
+        Resource = GlobalData.getGlobalData().unescape( e.getResource(), null, true );
         Node = e.getNode();
 
         try
@@ -1164,7 +1160,7 @@ public class WebDAVResponseInterpreter
                 if( (token != null) && (token.getType() == Element.PCDATA || token.getType() == Element.CDATA) )
                 {
                     // TODO: get encoding
-                    return unescape( token.getText(), null );
+                    return GlobalData.getGlobalData().unescape( token.getText(), null, false );
                 }
             }
         }
@@ -1260,7 +1256,7 @@ public class WebDAVResponseInterpreter
                 else if ( (href!=null) && (current.getType()==Element.PCDATA || current.getType() == Element.CDATA) )
                 {
                     // TODO: get encoding
-                    return unescape( current.getText(), null );
+                    return GlobalData.getGlobalData().unescape( current.getText(), null, true );
                 }
             }
         }
@@ -1355,7 +1351,7 @@ public class WebDAVResponseInterpreter
                 if( token.getType() == Element.PCDATA || token.getType() == Element.CDATA )
                 {
                     // TODO: get encoding
-                    String HrefValue = unescape( token.getText(), null );
+                    String HrefValue = GlobalData.getGlobalData().unescape( token.getText(), null, true );
                     // stripping https://
                     int pos = HrefValue.indexOf( HTTPSPrefix );
                     if( pos >= 0 )
@@ -1468,30 +1464,6 @@ public class WebDAVResponseInterpreter
                 }
             }
         }
-    }
-
-
-    private String unescape( String text, String encoding )
-    {
-        text += "\n";
-        ByteArrayInputStream byte_in = new ByteArrayInputStream( text.getBytes() );
-        EscapeInputStream iStream = new EscapeInputStream( byte_in, true );
-        try
-        {
-            InputStreamReader isr = null;
-            if( (encoding==null) || (encoding.length()==0) )
-                isr = new InputStreamReader( iStream, "UTF-8" );
-            else
-                isr = new InputStreamReader( iStream, encoding );
-
-            BufferedReader br = new BufferedReader( isr );
-            return br.readLine();
-        }
-        catch( IOException e )
-        {
-            GlobalData.getGlobalData().errorMsg("Data unescaping error: \n" + e);
-        }
-        return "";
     }
 
     private void printXML( byte[] body )

@@ -47,17 +47,11 @@ import java.util.Date;
 import java.util.Vector;
 import java.io.File;
 import java.io.ByteArrayInputStream;
-//import java.io.DataInputStream;
-import java.io.BufferedReader;
-import java.io.InputStreamReader;
-//import java.io.StringReader;
-import java.io.IOException;
 import java.text.DateFormat;
 import com.ms.xml.om.Element;
 import com.ms.xml.om.Document;
 import com.ms.xml.om.TreeEnumeration;
 import com.ms.xml.om.SiblingEnumeration;
-import com.ms.xml.util.XMLInputStream;
 import com.ms.xml.util.Name;
 
 public class WebDAVTreeNode extends DefaultMutableTreeNode
@@ -74,7 +68,7 @@ public class WebDAVTreeNode extends DefaultMutableTreeNode
     protected boolean childrenLoaded = false;
     protected boolean localLoad = false;
 
-    public WebDAVTreeNode (Object o, String ua )
+    public WebDAVTreeNode( Object o, String ua )
     {
         super(o);
         userAgent = ua;
@@ -82,14 +76,14 @@ public class WebDAVTreeNode extends DefaultMutableTreeNode
         hasLoaded = true;
     }
 
-    public WebDAVTreeNode (Object o, boolean isRoot, String ua )
+    public WebDAVTreeNode( Object o, boolean isRoot, String ua )
     {
         super(o);
         userAgent = ua;
         generator.setUserAgent( ua );
         hasLoaded = true;
         childrenLoaded = true;
-        dataNode = new DataNode(true,false,null, o.toString(),"DAV Root Node","",0,"",null);
+        dataNode = new DataNode( true, false, null, o.toString(), "DAV Root Node", "", 0, "", null );
     }
 
     public void setUserAgent( String ua )
@@ -103,7 +97,7 @@ public class WebDAVTreeNode extends DefaultMutableTreeNode
         return dataNode;
     }
 
-    public void setDataNode(DataNode newNode)
+    public void setDataNode( DataNode newNode )
     {
         dataNode = newNode;
     }
@@ -113,19 +107,16 @@ public class WebDAVTreeNode extends DefaultMutableTreeNode
         return false;
     }
 
-
-// Yuzo
     public boolean hasLoadedChildren()
     {
         return childrenLoaded;
     }
 
-    public void setHasLoadedChildren( boolean b)
+    public void setHasLoadedChildren( boolean b )
     {
         childrenLoaded = b;
     }
 
-// Yuzo Note They did this function wrong
     public void removeChildren()
     {
         if( GlobalData.getGlobalData().getDebugTreeNode() )
@@ -134,13 +125,12 @@ public class WebDAVTreeNode extends DefaultMutableTreeNode
         }
 
         int count = super.getChildCount();
-        for (int c=0;c<count;c++)
+        for( int c=0; c<count; c++ )
         {
             remove(0);
         }
 
         dataNode = null;
-
     }
 
     public int getChildCount()
@@ -148,7 +138,7 @@ public class WebDAVTreeNode extends DefaultMutableTreeNode
         return super.getChildCount();
     }
 
-    protected void loadRemote(byte[] byte_xml)
+    protected void loadRemote( byte[] byte_xml )
     {
         if( GlobalData.getGlobalData().getDebugTreeNode() )
         {
@@ -162,24 +152,18 @@ public class WebDAVTreeNode extends DefaultMutableTreeNode
         boolean found = false;
         String ResourceName = interpreter.getResource();
 
-        if ((ResourceName.startsWith("/")) && (ResourceName.length() > 1) )
+        if( (ResourceName.startsWith("/")) && (ResourceName.length() > 1) )
             ResourceName = ResourceName.substring(1);
 
         try
         {
-            ByteArrayInputStream byte_in = new ByteArrayInputStream(byte_xml);
-            //EscapeInputStream iStream = new EscapeInputStream( byte_in, true );
-            //XMLInputStream xml_in = new XMLInputStream( byte_in );
+            ByteArrayInputStream byte_in = new ByteArrayInputStream( byte_xml );
             xml_doc = new Document();
-            xml_doc.load(byte_in);
+            xml_doc.load( byte_in );
         }
-        catch (Exception inEx)
+        catch( Exception e )
         {
-            System.out.println("EXCEPTION:loadRemote, byte_array empty");
-            System.out.println(inEx);
-            System.out.println(inEx.getMessage());
-            //dataNode = null;
-            //hasLoaded = false;
+            System.out.println("Exception: loadRemote: " + e );
             interpreter.clearStream();
             return;
         }
@@ -217,11 +201,10 @@ public class WebDAVTreeNode extends DefaultMutableTreeNode
             dataNode.setSubNodes(nodesChildren);
             hasLoaded = true;
         }
-//        hasLoaded = true;
     }
 
 
-    protected void parseResponse(Element respElem, String ResourceName, Vector nodesChildren)
+    protected void parseResponse( Element respElem, String ResourceName, Vector nodesChildren )
     {
         if( GlobalData.getGlobalData().getDebugTreeNode() )
         {
@@ -263,8 +246,8 @@ public class WebDAVTreeNode extends DefaultMutableTreeNode
                             //fullName += new String(getFullResource(token.getText()));
 
                             // TODO: get encoding
-                            resName = new String( truncateResource(unescape(token.getText(), null, true)) );
-                            fullName = new String( getFullResource(unescape(token.getText(), null, true)) );
+                            resName = new String( truncateResource(GlobalData.getGlobalData().unescape(token.getText(), null, true)) );
+                            fullName = new String( getFullResource(GlobalData.getGlobalData().unescape(token.getText(), null, true)) );
                         }
                     }
                 }
@@ -422,10 +405,9 @@ public class WebDAVTreeNode extends DefaultMutableTreeNode
         {
             size = Long.parseLong(resLength);
         }
-        catch (Exception parseEx)
+        catch( Exception e )
         {
-            System.out.println(parseEx);
-            return null;
+            // ignore error, use default value
         }
         DataNode newNode = new DataNode(isColl, isLocked, lockToken, resName,
                                         resDisplay, resType, size, resDate,null);
@@ -466,16 +448,12 @@ public class WebDAVTreeNode extends DefaultMutableTreeNode
                     File aFile = new File( newFile );
                     boolean isDir = aFile.isDirectory();
                     Date newDate = new Date(aFile.lastModified());
-                    DataNode newNode = new DataNode(isDir,
-                                            false,
-                                            null,
-                                            fileList[i],
-                                            "Local File",
-                                            "",
-                                            aFile.length(),
-                                            DateFormat.getDateTimeInstance().format( newDate ), null);
+                    DataNode newNode = new DataNode( isDir, false, null, fileList[i],
+                                                     "Local File", "", aFile.length(),
+                                                     DateFormat.getDateTimeInstance().format(newDate),
+                                                     null);
 
-                    if (isDir)
+                    if( isDir )
                     {
                         WebDAVTreeNode childNode = new WebDAVTreeNode( newNode.getName(), userAgent );
                         childNode.setDataNode(newNode);
@@ -487,13 +465,14 @@ public class WebDAVTreeNode extends DefaultMutableTreeNode
                     }
                 }
             }
-            catch( Exception e)
+            catch( Exception e )
             {
                 System.out.println(e);
             }
             Date fileDate = new Date(f.lastModified());
-            dataNode = new DataNode(true, false, null, name, "Local File", "",
-                                    f.length(), DateFormat.getDateTimeInstance().format( fileDate ), nodesChildren);
+            dataNode = new DataNode( true, false, null, name, "Local File", "", f.length(),
+                                     DateFormat.getDateTimeInstance().format(fileDate),
+                                     nodesChildren );
         }
         else {
             hasLoaded = false;
@@ -504,8 +483,7 @@ public class WebDAVTreeNode extends DefaultMutableTreeNode
     }
 
 
-    // This finishes the Load Children when a call is made to a
-    // DAV server
+    // This finishes the Load Children when a call is made to a DAV server
     public void finishLoadChildren()
     {
         byte[] byte_xml = interpreter.getXML();
@@ -556,7 +534,7 @@ public class WebDAVTreeNode extends DefaultMutableTreeNode
 
                 generator.setResource(pathToResource, null);
 
-                // 1999-June-08, Joachim Feise (jfeise@ics.uci.edu):
+                // 1999-June-08, Joachim Feise (dav-exp@ics.uci.edu):
                 // workaround for IBM's DAV4J, which does not handle propfind properly
                 // with the prop tag. To use the workaround, run DAV Explorer with
                 // 'java -jar -Dpropfind=allprop DAVExplorer.jar'
@@ -566,10 +544,10 @@ public class WebDAVTreeNode extends DefaultMutableTreeNode
                     if( generator.GeneratePropFindForNode( pathToResource, "allprop", "one", null, null, true, this ) )
                     {
                         generator.execute();
-                }
+                    }
                 }
                 else
-            {
+                {
                     String[] props = new String[6];
                     props[0] = "displayname";
                     props[1] = "resourcetype";
@@ -580,8 +558,8 @@ public class WebDAVTreeNode extends DefaultMutableTreeNode
                     if( generator.GeneratePropFindForNode( pathToResource, "prop", "one", props, null, true, this ) )
                     {
                         generator.execute();
+                    }
                 }
-        }
                 return;
             }
             else
@@ -613,14 +591,14 @@ public class WebDAVTreeNode extends DefaultMutableTreeNode
                 if( doAllProp != null )
                 {
                     if( doAllProp.equalsIgnoreCase("allprop") )
-            {
+                    {
                         if( generator.GeneratePropFindForNode( pathToResource, "allprop", "one", null, null, true, this ) )
                         {
                             generator.execute();
-                    }
+                        }
                     }
                     else
-            {
+                    {
                         String[] props = new String[6];
                         props[0] = "displayname";
                         props[1] = "resourcetype";
@@ -631,9 +609,9 @@ public class WebDAVTreeNode extends DefaultMutableTreeNode
                         if( generator.GeneratePropFindForNode( pathToResource, "prop", "one", props, null, true, this ) )
                         {
                             generator.execute();
+                        }
                     }
-            }
-        }
+                }
             }
         }
         else
@@ -719,7 +697,7 @@ public class WebDAVTreeNode extends DefaultMutableTreeNode
                 if( (token!=null) && (token.getType() == Element.PCDATA || token.getType() == Element.CDATA) )
                 {
                     // TODO: get encoding
-                    return unescape( token.getText(), null, false );
+                    return GlobalData.getGlobalData().unescape( token.getText(), null, false );
                 }
             }
         }
@@ -784,7 +762,7 @@ public class WebDAVTreeNode extends DefaultMutableTreeNode
                 if( (token != null) && (token.getType() == Element.PCDATA || token.getType() == Element.CDATA) )
                 {
                     // TODO: get encoding
-                    return unescape( token.getText(), null, false );
+                    return GlobalData.getGlobalData().unescape( token.getText(), null, false );
                 }
             }
         }
@@ -860,7 +838,7 @@ public class WebDAVTreeNode extends DefaultMutableTreeNode
             if( (token != null) && (token.getType() == Element.PCDATA || token.getType() == Element.CDATA) )
             {
                 // TODO: get encoding
-                return unescape( token.getText(), null, false );
+                return GlobalData.getGlobalData().unescape( token.getText(), null, false );
             }
         }
         return "";
@@ -880,7 +858,7 @@ public class WebDAVTreeNode extends DefaultMutableTreeNode
             if( (token != null) && (token.getType() == Element.PCDATA || token.getType() == Element.CDATA) )
             {
                 // TODO: get encoding
-                return unescape( token.getText(), null, false );
+                return GlobalData.getGlobalData().unescape( token.getText(), null, false );
             }
         }
         return "0";
@@ -900,64 +878,7 @@ public class WebDAVTreeNode extends DefaultMutableTreeNode
             if( (token != null) && (token.getType() == Element.PCDATA || token.getType() == Element.CDATA) )
             {
                 // TODO: get encoding
-                return unescape( token.getText(), null, false );
-            }
-        }
-        return "";
-    }
-
-    private String unescape( String text, String encoding, boolean href )
-    {
-        //text += "\n";
-        ByteArrayInputStream byte_in = new ByteArrayInputStream( text.getBytes() );
-        EscapeInputStream iStream = new EscapeInputStream( byte_in, true );
-        try
-        {
-            InputStreamReader isr = null;
-            if( (encoding==null) || (encoding.length()==0) )
-                isr = new InputStreamReader( iStream, "UTF-8" );
-            else
-                isr = new InputStreamReader( iStream, encoding );
-
-            BufferedReader br = new BufferedReader( isr );
-            return br.readLine();
-        }
-        catch( IOException e )
-        {
-            if( href )
-            {
-                // the <href> tag doesn't necessarily need to be encoded in
-                // the specified encoding
-                try
-                {
-                    byte_in.reset();
-                    iStream.reset();
-                    InputStreamReader isr = new InputStreamReader( iStream );
-                    BufferedReader br = new BufferedReader( isr );
-                    return br.readLine();
-                }
-                catch( IOException e2 )
-                {
-                    GlobalData.getGlobalData().errorMsg("String unescaping error: \n" + e);
-                }
-            }
-            else
-            {
-                // the text may already be in UTF-8, so all we need is to unescape
-                // this is a rather bad hack, but since we don't have control over
-                // what kind of data the server sends...
-                try
-                {
-                    byte_in = new ByteArrayInputStream( text.getBytes("UTF-8") );
-                    iStream = new EscapeInputStream( byte_in, true );
-                    InputStreamReader isr = new InputStreamReader( iStream, "UTF-8" );
-                    BufferedReader br = new BufferedReader( isr );
-                    return br.readLine();
-                }
-                catch( IOException e2 )
-                {
-                    GlobalData.getGlobalData().errorMsg("String unescaping error: \n" + e);
-                }
+                return GlobalData.getGlobalData().unescape( token.getText(), null, false );
             }
         }
         return "";
