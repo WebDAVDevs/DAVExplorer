@@ -67,10 +67,10 @@ DAV Explorer accepts the following command line options:
 -Dpropfind=allprop
   This option results in using the <allprop> tag in PROPFIND. It is a useful
   
--Dssl=true 
+-DSSL=yes
   This option enables the use of SSL.
   
--DSharePoint=true 
+-DSharePoint=yes
   This option enables a workaround for a bug in Microsoft's SharePoint
   server which allows tags to start with a digit.
   
@@ -95,6 +95,7 @@ Changes for version 0.81:
 - Improved the logging of chunked data.
 - Now allowing untrusted certificates by presenting a choice to the user.
 - Fixed problems with modifying nested properties.
+- Unified option selection to yes/no.
 
 Changes for version 0.80:
 - Makefile for HTTPClient now works with JSSE installed as "bundled"

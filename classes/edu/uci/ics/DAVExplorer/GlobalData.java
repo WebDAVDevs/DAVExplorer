@@ -354,9 +354,15 @@ class GlobalData
                 else if( doLog.equalsIgnoreCase( "fileview" ) )
                     setDebugFileView( true );
             }
-            String doSSL = System.getProperty( "ssl", "false" );
-            if( doSSL.equalsIgnoreCase( "true" ) )
+            String doSSL = System.getProperty( "ssl", "no" );
+            if( doSSL.equalsIgnoreCase( "yes" ) || doSSL.equalsIgnoreCase( "true" ) )
                 ssl = true;
+            else
+            {
+                doSSL = System.getProperty( "SSL", "no" );
+                if( doSSL.equalsIgnoreCase( "yes" ) || doSSL.equalsIgnoreCase( "true" ) )
+                    ssl = true;
+            }
         }
 
         debugRequest |= debugAll;

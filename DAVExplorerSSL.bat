@@ -1,2 +1,2 @@
 @echo off
-java -jar -Dssl=true DAVExplorer.jar
+java -jar -DSSL=yes DAVExplorer.jar

@@ -659,10 +659,10 @@ public class WebDAVRequestGenerator implements Runnable
                 // workaround for Apache 1.3.x on non-default port
                 // Apache returns a 500 error on the first try
                 String apache = System.getProperty( "Apache", "no" );
-                if( apache.equalsIgnoreCase("no") )
-                    Headers[0] = new NVPair( "Host", HostName + ":" + Port );
-                else
+                if( apache.equalsIgnoreCase("yes") || apache.equalsIgnoreCase( "true" ) )
                     Headers[0] = new NVPair( "Host", HostName );
+                else
+                    Headers[0] = new NVPair( "Host", HostName + ":" + Port );
             }
             Headers[1] = new NVPair( "Content-Type", "text/xml" );
             Headers[2] = new NVPair( "Content-Length", new Long(Body.length).toString() );

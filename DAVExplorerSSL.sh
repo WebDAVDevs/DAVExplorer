@@ -1,2 +1,2 @@
 #! /bin/sh
-java -jar -Dssl=true DAVExplorer.jar
+java -jar -DSSL=yes DAVExplorer.jar
