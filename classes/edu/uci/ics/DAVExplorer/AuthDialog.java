@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 1999-2001 Regents of the University of California.
+ * Copyright (c) 2001 Regents of the University of California.
  * All rights reserved.
  *
  * This software was developed at the University of California, Irvine.
@@ -15,6 +15,14 @@
  * THIS SOFTWARE IS PROVIDED ``AS IS'' AND WITHOUT ANY EXPRESS OR
  * IMPLIED WARRANTIES, INCLUDING, WITHOUT LIMITATION, THE IMPLIED
  * WARRANTIES OF MERCHANTIBILITY AND FITNESS FOR A PARTICULAR PURPOSE.
+ */
+
+/**
+ * Title:       Authentication Dialog
+ * Description: Wrapper around the login dialog
+ * Copyright:   Copyright (c) 2001 Regents of the University of California. All rights reserved.
+ * @author      Joachim Feise (dav-exp@ics.uci.edu)
+ * @date        31 July 2001
  */
 
 package DAVExplorer;

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 1999-2001 Regents of the University of California.
+ * Copyright (c) 1998-2001 Regents of the University of California.
  * All rights reserved.
  *
  * This software was developed at the University of California, Irvine.
@@ -17,35 +17,23 @@
  * WARRANTIES OF MERCHANTIBILITY AND FITNESS FOR A PARTICULAR PURPOSE.
  */
 
-/* Simple list of all DAV: properties
-   listed in section 12 of .07 spec
-
-*/
-// This code was originally written by an undergraduate project
-// team at UCI.
-//
-////////////////////////////////////////////////////////////////
-// The code has been modified to include povisions for the final
-// WebDAV xml namespaces.  A small number of program errors have
-// been corrected.
-//
-// Please use the following contact:
-//
-// dav-exp@ics.uci.edu
-//
-// Version: 0.4
-// Changes by: Yuzo Kanomata and Joe Feise
-// Date: 3/17/99
-//
-// Change List:
-
-
+/**
+ * Title:       WebDAV Properties
+ * Description: Simple list of all DAV: properties
+ *              listed in section 12 of .07 spec
+ * Copyright:   Copyright (c) 1998-2001 Regents of the University of California. All rights reserved.
+ * @author      Undergraduate project team ICS 126B 1998
+ * @date        1998
+ * @author      Yuzo Kanomata, Joachim Feise (dav-exp@ics.uci.edu)
+ * @date        17 March 1999
+ */
 
 package DAVExplorer;
 
 
-import java.util.*;
-import com.ms.xml.util.*;
+import java.util.Vector;
+import java.util.Enumeration;
+import com.ms.xml.util.Name;
 
 public class WebDAVProp
 {

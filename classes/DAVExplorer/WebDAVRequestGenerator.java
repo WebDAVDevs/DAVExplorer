@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 1999-2001 Regents of the University of California.
+ * Copyright (c) 1998-2001 Regents of the University of California.
  * All rights reserved.
  *
  * This software was developed at the University of California, Irvine.
@@ -17,43 +17,41 @@
  * WARRANTIES OF MERCHANTIBILITY AND FITNESS FOR A PARTICULAR PURPOSE.
  */
 
-// This is where all of the requests are formed. The class contains
-// static information needed to form all WebDAV requests. When GUI
-// sends an event indicating that another resource has been
-// selected it is properly handled by either
-// tableSelectionChanged() or treeSelectionChanged()
-//
-// Version: 0.3
-// Author:  Robert Emmery
-// Date:    4/2/98
-////////////////////////////////////////////////////////////////
-// The code has been modified to include povisions for the final
-// WebDAV xml namespaces.  A small number of program errors have
-// been corrected.
-//
-// Please use the following contact:
-//
-// dav-exp@ics.uci.edu
-//
-// Version: 0.4
-// Changes by: Yuzo Kanomata and Joe Feise
-// Date: 3/17/99
-//
-// Change List:
-//
-// Date: 2001-Jan-12
-// Joe Feise: Added support for https (SSL)
+/**
+ * Title:       WebDAVRequest Generator
+ * Description: This is where all of the requests are formed. The class contains
+ *              static information needed to form all WebDAV requests. When GUI
+ *              sends an event indicating that another resource has been
+ *              selected it is properly handled by either
+ *              tableSelectionChanged() or treeSelectionChanged()
+ * Copyright:   Copyright (c) 1998-2001 Regents of the University of California. All rights reserved.
+ * @author      Robert Emmery
+ * @date        2 April 1998
+ * @author      Yuzo Kanomata, Joachim Feise (dav-exp@ics.uci.edu)
+ * @date        17 March 1999
+ * Changes:     Added the WebDAVTreeNode that initiated the Request.
+ * @author      Joachim Feise (dav-exp@ics.uci.edu)
+ * @date        12 January 2001
+ * Changes:     Added support for https (SSL)
+ */
 
 package DAVExplorer;
 
-import HTTPClient.*;
-import java.util.*;
-import java.io.*;
-import javax.swing.*;
-import javax.swing.tree.*;
-import com.ms.xml.om.*;
-import com.ms.xml.parser.*;
-import com.ms.xml.util.*;
+import java.util.Vector;
+import java.util.Enumeration;
+import java.util.StringTokenizer;
+import java.io.StringReader;
+import java.io.BufferedReader;
+import java.io.FileInputStream;
+import java.io.DataInputStream;
+import java.io.ByteArrayOutputStream;
+import java.io.File;
+import java.io.IOException;
+import HTTPClient.NVPair;
+import com.ms.xml.om.Element;
+import com.ms.xml.om.Document;
+import com.ms.xml.util.XMLOutputStream;
+import com.ms.xml.util.Name;
 
 public class WebDAVRequestGenerator implements Runnable
 {

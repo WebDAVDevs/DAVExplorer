@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 1999-2001 Regents of the University of California.
+ * Copyright (c) 1998-2001 Regents of the University of California.
  * All rights reserved.
  *
  * This software was developed at the University of California, Irvine.
@@ -17,53 +17,54 @@
  * WARRANTIES OF MERCHANTIBILITY AND FITNESS FOR A PARTICULAR PURPOSE.
  */
 
-//        This class is part of the GUI module for the WebDAV
-//        Client. It provides the user with a Windows Explorer
-//        like interface.
-//
-//        Version:    0.3
-//        Author:     Robert Emmery
-//        Date:       4/2/98
-////////////////////////////////////////////////////////////////
-// The code has been modified to include povisions for the final
-// WebDAV xml namespaces.  A small number of program errors have
-// been corrected.
-//
-// Please use the following contact:
-//
-// dav-exp@ics.uci.edu
-//
-// Version: 0.4
-// Changes by: Yuzo Kanomata and Joe Feise
-// Date: 3/17/99
-//
-// Change List:
-// 1. method fireSelectionEvent() has been renames to initTree()
-//    This more acurately describes its purpose and function.
-// 2. The MouseListener section of code which includes the methods
-//    handleSingleClick and handleDoubleClick have been commented out.
-//    This code is redundent to the functionality of tree selection,
-//    and caused a side effect tree selection event to be caused
-//    when the X,Y portion of the cursor was repositioned on a
-//    repaint by the display.
-// 3. In class SelectionChangeListener, in method
-//    valueChanged(TreeSelectionEvent e), the Cursor is changed
-//    to the WAIT_CURSOR while the the Event of a Tree Selection
-//    are being processed by the various Listeners.
-//
-// Date: 2001-Jan-12
-// Joe Feise: Added support for https (SSL)
+/**
+ * Title:       WebDAV Treeview
+ * Description: This class is part of the GUI module for the WebDAV
+ *              Client. It provides the user with a Windows Explorer
+ *              like interface.
+ * Copyright:   Copyright (c) 1998-2001 Regents of the University of California. All rights reserved.
+ * @author      Robert Emmery
+ * @date        2 April 1998
+ * @author      Yuzo Kanomata, Joachim Feise (dav-exp@ics.uci.edu)
+ * @date        17 March 1999
+ * Changes:     method fireSelectionEvent() has been renames to initTree()
+ *              This more acurately describes its purpose and function.
+ *              The MouseListener section of code which includes the methods
+ *              handleSingleClick and handleDoubleClick have been commented out.
+ *              This code is redundent to the functionality of tree selection,
+ *              and caused a side effect tree selection event to be caused
+ *              when the X,Y portion of the cursor was repositioned on a
+ *              repaint by the display.
+ *              In class SelectionChangeListener, in method
+ *              valueChanged(TreeSelectionEvent e), the Cursor is changed
+ *              to the WAIT_CURSOR while the the Event of a Tree Selection
+ *              are being processed by the various Listeners.
+ * @author      Joachim Feise (dav-exp@ics.uci.edu)
+ * @date        12 January 2001
+ * Changes:     Added support for https (SSL)
+ */
 
 package DAVExplorer;
 
-import javax.swing.*;
-import javax.swing.tree.*;
-import javax.swing.event.*;
-
-import java.util.*;
-import java.awt.*;
-import java.awt.event.*;
-import java.io.*;
+import javax.swing.JTree;
+import javax.swing.JScrollPane;
+import javax.swing.tree.DefaultMutableTreeNode;
+import javax.swing.tree.DefaultTreeModel;
+import javax.swing.tree.TreePath;
+import javax.swing.tree.TreeNode;
+import javax.swing.tree.TreeSelectionModel;
+import javax.swing.tree.DefaultTreeSelectionModel;
+import javax.swing.event.TreeSelectionEvent;
+import javax.swing.event.TreeSelectionListener;
+import javax.swing.event.TreeExpansionEvent;
+import javax.swing.event.TreeExpansionListener;
+import javax.swing.event.TreeModelEvent;
+import javax.swing.event.TreeModelListener;
+import java.awt.Dimension;
+import java.awt.Cursor;
+import java.io.File;
+import java.util.Vector;
+import java.util.Enumeration;
 
 // Yuzo: This should be a Model
 public class WebDAVTreeView implements ViewSelectionListener, CopyResponseListener, PutListener

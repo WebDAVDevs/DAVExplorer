@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 1999-2001 Regents of the University of California.
+ * Copyright (c) 1998-2001 Regents of the University of California.
  * All rights reserved.
  *
  * This software was developed at the University of California, Irvine.
@@ -16,9 +16,19 @@
  * IMPLIED WARRANTIES, INCLUDING, WITHOUT LIMITATION, THE IMPLIED
  * WARRANTIES OF MERCHANTIBILITY AND FITNESS FOR A PARTICULAR PURPOSE.
  */
+
+/**
+ * Title:       Table Map
+ * Description: Table model for main viewer
+ * Copyright:   Copyright (c) 1998-2001 Regents of the University of California. All rights reserved.
+ * @author      Undergraduate project team ICS 126B 1998
+ * @date        1998
+ */
+
 package DAVExplorer;
 
-import javax.swing.table.*;
+import javax.swing.table.AbstractTableModel;
+import javax.swing.table.TableModel;
 import javax.swing.event.TableModelListener;
 import javax.swing.event.TableModelEvent;
 
@@ -39,7 +49,6 @@ public class TableMap extends AbstractTableModel implements TableModelListener
 
     // By default, Implement TableModel by forwarding all messages
     // to the model.
-
     public Object getValueAt(int aRow, int aColumn)
     {
         return model.getValueAt(aRow, aColumn);
@@ -74,9 +83,10 @@ public class TableMap extends AbstractTableModel implements TableModelListener
     {
          return model.isCellEditable(row, column);
     }
-//
-// Implementation of the TableModelListener interface,
-//
+
+    //
+    // Implementation of the TableModelListener interface,
+    //
 
     // By default forward all events to all the listeners.
     public void tableChanged(TableModelEvent e)

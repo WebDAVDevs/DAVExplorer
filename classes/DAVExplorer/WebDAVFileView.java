@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 1999-2001 Regents of the University of California.
+ * Copyright (c) 1998-2001 Regents of the University of California.
  * All rights reserved.
  *
  * This software was developed at the University of California, Irvine.
@@ -17,46 +17,56 @@
  * WARRANTIES OF MERCHANTIBILITY AND FITNESS FOR A PARTICULAR PURPOSE.
  */
 
-//
-//  This class is part of the client's GUI.
-//  It relies on JFC 1.1
-//
-//  Version: 0.3
-//  Author:  Robert Emmery
-//  Date:    4/2/98
-////////////////////////////////////////////////////////////////
-// The code has been modified to include povisions for the final
-// WebDAV xml namespaces.  A small number of program errors have
-// been corrected.
-//
-// Please use the following contact:
-//
-// dav-exp@ics.uci.edu
-//
-// Version: 0.4
-// Changes by: Yuzo Kanomata and Joe Feise
-// Date: 3/17/99
-//
-// Change List:
-// Date: 2001-Jan-12
-// Joe Feise: Added support for https (SSL), removed grid in table
-
+/**
+ * Title:       WebDAVFileView
+ * Description: This class is part of the client's GUI.
+ * Copyright:   Copyright (c) 1998-2001 Regents of the University of California. All rights reserved.
+ * @author      Robert Emmery (dav-exp@ics.uci.edu)
+ * @date        2 April 1998
+ * @author      Yuzo Kanomata, Joachim Feise (dav-exp@ics.uci.edu)
+ * @date        17 March 1999
+ * @author      Joachim Feise (dav-exp@ics.uci.edu)
+ * @date        12 January 2001
+ * Changes:     Added support for https (SSL)
+ */
 
 package DAVExplorer;
 
-import javax.swing.*;
-import javax.swing.table.*;
-import javax.swing.tree.*;
-import javax.swing.event.*;
-import javax.swing.border.*;
-
+import javax.swing.JTable;
+import javax.swing.JLabel;
+import javax.swing.JScrollPane;
+import javax.swing.JOptionPane;
+import javax.swing.DefaultListSelectionModel;
+import javax.swing.ListSelectionModel;
+import javax.swing.ImageIcon;
+import javax.swing.table.TableModel;
+import javax.swing.table.AbstractTableModel;
+import javax.swing.table.TableColumn;
+import javax.swing.table.DefaultTableCellRenderer;
+import javax.swing.tree.TreePath;
+import javax.swing.event.ListSelectionEvent;
+import javax.swing.event.ListSelectionListener;
+import javax.swing.event.TableModelEvent;
+import javax.swing.border.BevelBorder;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
-import java.awt.*;
-import java.awt.event.*;
-import java.util.*;
-import java.util.zip.*;
-import java.io.*;
+import java.awt.Color;
+import java.awt.Dimension;
+import java.awt.Cursor;
+import java.awt.Point;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+import java.awt.event.MouseAdapter;
+import java.awt.event.MouseEvent;
+import java.awt.event.MouseListener;
+import java.util.Vector;
+import java.util.Enumeration;
+import java.util.StringTokenizer;
+import java.util.zip.ZipFile;
+import java.util.zip.ZipEntry;
+import java.io.File;
+import java.io.IOException;
+import java.io.InputStream;
 
 public class WebDAVFileView implements ViewSelectionListener, ActionListener
 {

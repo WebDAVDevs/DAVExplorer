@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 1999-2001 Regents of the University of California.
+ * Copyright (c) 1998-2001 Regents of the University of California.
  * All rights reserved.
  *
  * This software was developed at the University of California, Irvine.
@@ -16,46 +16,40 @@
  * IMPLIED WARRANTIES, INCLUDING, WITHOUT LIMITATION, THE IMPLIED
  * WARRANTIES OF MERCHANTIBILITY AND FITNESS FOR A PARTICULAR PURPOSE.
  */
-// This code was originally written by an undergraduate project
-// team at UCI.
-//
-// This class creates an event object which carries the path
-// and node to the recieving listener.
-//
-////////////////////////////////////////////////////////////////
-// The code has been modified to include povisions for the final
-// WebDAV xml namespaces.  A small number of program errors have
-// been corrected.
-//
-// Please use the following contact:
-//
-// dav-exp@ics.uci.edu
-//
-// Version: 0.4
-// Changes by: Yuzo Kanomata and Joe Feise
-// Date: 3/17/99
-//
-// Change List:
-// Note: This code was not tested at this time (3/17/99) as
-// the current Apache server does not support locking.
-//
-// Date: 2001-Jan-12
-// Joe Feise: Added support for https (SSL)
+
+/**
+ * Title:       WebDAVLockInfo
+ * Description: Dialog to enter the lock owner info
+ * Copyright:   Copyright (c) 1998-2001 Regents of the University of California. All rights reserved.
+ * @author      Robert Emmery (dav-exp@ics.uci.edu)
+ * @date        2 April 1998
+ * @author      Yuzo Kanomata, Joachim Feise (dav-exp@ics.uci.edu)
+ * @date        17 March 1999
+ * Changes:     Note: This code was not tested at this time (3/17/99) as
+ *              the current Apache server does not support locking.
+ * @author      Joachim Feise (dav-exp@ics.uci.edu)
+ * @date        12 January 2001
+ * Changes:     Added support for https (SSL)
+ */
 
 package DAVExplorer;
 
 import javax.swing.JDialog;
 import javax.swing.JFrame;
-import javax.swing.JDialog.*;
 import javax.swing.JPanel;
 import javax.swing.JLabel;
 import javax.swing.JTextField;
 import javax.swing.JPasswordField;
 import javax.swing.JButton;
-import java.util.*;
-import java.awt.*;
-import java.awt.event.*;
-import java.io.*;
+import java.util.Vector;
+import java.awt.Dialog;
+import java.awt.GridLayout;
+import java.awt.GridBagLayout;
+import java.awt.BorderLayout;
+import java.awt.Rectangle;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+
 
 public class WebDAVLockInfo extends Dialog implements ActionListener
 {

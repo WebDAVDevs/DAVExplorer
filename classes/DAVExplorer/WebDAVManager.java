@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 1999-2001 Regents of the University of California.
+ * Copyright (c) 1998-2001 Regents of the University of California.
  * All rights reserved.
  *
  * This software was developed at the University of California, Irvine.
@@ -17,43 +17,34 @@
  * WARRANTIES OF MERCHANTIBILITY AND FITNESS FOR A PARTICULAR PURPOSE.
  */
 
-//
-// This is the WebDAV method wrapper class. It is implemented as
-// a bean, which listens for a request event. Once the event
-// occurs, appropriate Method from the WebDAV class library is
-// called.
-//
-// Version: 0.2
-// Author:  Robert Emmery
-// Date:    3/25/98
-///////////////////////////////////////////////////////////////////////
-////////////////////////////////////////////////////////////////
-// The code has been modified to include povisions for the final
-// WebDAV xml namespaces.  A small number of program errors have
-// been corrected.
-//
-// Please use the following contact:
-//
-// dav-exp@ics.uci.edu
-//
-// Version: 0.41
-// Changes by: Yuzo Kanomata and Joe Feise
-// Date: 4/14/99
-//
-// Change List:
-//   Added notification for IO exceptions during connect
-//
-// Date: 2001-Jan-12
-// Joe Feise: Added support for https (SSL)
+/**
+ * Title:       Login Dialog
+ * Description: This is the WebDAV method wrapper class. It is implemented as
+ *              a bean, which listens for a request event. Once the event
+ *              occurs, appropriate Method from the WebDAV class library is
+ *              called.
+ * Copyright:   Copyright (c) 1998-2001 Regents of the University of California. All rights reserved.
+ * @author      Robert Emmery (dav-exp@ics.uci.edu)
+ * @date        25 March 1998
+ * @author      Yuzo Kanomata, Joachim Feise (dav-exp@ics.uci.edu)
+ * @date        14 April 1999
+ * Changes:     Added notification for IO exceptions during connect
+ * @author      Joachim Feise (dav-exp@ics.uci.edu)
+ * @date        12 January 2001
+ * Changes:     Added support for https (SSL)
+ */
 
 package DAVExplorer;
 
-import java.io.*;
+import java.io.IOException;
 import java.net.SocketException;
-import HTTPClient.*;
-import java.util.*;
-import java.awt.event.*;
-import javax.swing.*;
+import HTTPClient.HTTPConnection;
+import HTTPClient.HTTPResponse;
+import HTTPClient.NVPair;
+import HTTPClient.ModuleException;
+import java.util.Vector;
+import java.util.StringTokenizer;
+
 
 public class WebDAVManager
 {

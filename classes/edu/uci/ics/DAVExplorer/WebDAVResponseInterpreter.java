@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 1999-2001 Regents of the University of California.
+ * Copyright (c) 1998-2001 Regents of the University of California.
  * All rights reserved.
  *
  * This software was developed at the University of California, Irvine.
@@ -17,51 +17,49 @@
  * WARRANTIES OF MERCHANTIBILITY AND FITNESS FOR A PARTICULAR PURPOSE.
  */
 
-// This is the interpreter module that parses WebDAV responses.
-// Some of the methods are not parsed, and the functions are left
-// empty intentinally.
-//
-// Version: 0.3
-// Author:  Robert Emmery
-// Date:    4/2/98
-////////////////////////////////////////////////////////////////
-// The code has been modified to include povisions for the final
-// WebDAV xml namespaces.  A small number of program errors have
-// been corrected.
-//
-// Please use the following contact:
-//
-// dav-exp@ics.uci.edu
-//
-// Version: 0.4
-// Changes by: Yuzo Kanomata and Joe Feise
-// Date: 3/17/99
-//
-// Change List:
-//  1. Fixed parseGet to save the retrieved file properly
-//  2. parseMkCol now has functionality to refresh the display
-//
-// Version: 0.61
-// Changes by: Joe Feise
-// Date: 5/23/2000
-// Change List:
-//   Added check for CDATA to improve interoperability for Sharemation's server
-//   Incorporated Eric Giguere's changes to getOwnerInfo(). Thanks!
-//
-// Date: 2001-Jan-12
-// Joe Feise: Added support for https (SSL)
+/**
+ * Title:       WebDAVResponse Interpreter
+ * Description: This is the interpreter module that parses WebDAV responses.
+ *              Some of the methods are not parsed, and the functions are left
+ *              empty intentinally.
+ * Copyright:   Copyright (c) 1998-2001 Regents of the University of California. All rights reserved.
+ * @author      Robert Emmery
+ * @date        2 April 1998
+ * @author      Yuzo Kanomata, Joachim Feise (dav-exp@ics.uci.edu)
+ * @date        17 March 1999
+ * Changes:     Fixed parseGet to save the retrieved file properly
+ *              parseMkCol now has functionality to refresh the display
+ * @author      Joachim Feise (dav-exp@ics.uci.edu), Eric Giguere
+ * @date        23 May 2000
+ * Changes:     Added check for CDATA to improve interoperability for Sharemation's server
+ *              Incorporated Eric Giguere's changes to getOwnerInfo(). Thanks!
+ * @author      Joachim Feise (dav-exp@ics.uci.edu)
+ * @date        12 January 2001
+ * Changes:     Added support for https (SSL)
+ */
 
 package DAVExplorer;
 
-import HTTPClient.*;
-import java.util.*;
-import java.awt.*;
-import java.io.*;
-import java.awt.event.*;
-import javax.swing.*;
-import com.ms.xml.om.*;
-import com.ms.xml.parser.*;
-import com.ms.xml.util.*;
+import javax.swing.JOptionPane;
+import java.awt.FileDialog;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+import java.util.Vector;
+import java.util.Enumeration;
+import java.util.StringTokenizer;
+import java.io.File;
+import java.io.StringReader;
+import java.io.BufferedReader;
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
+import java.io.FileOutputStream;
+import HTTPClient.HTTPResponse;
+import com.ms.xml.om.Element;
+import com.ms.xml.om.ElementImpl;
+import com.ms.xml.om.Document;
+import com.ms.xml.om.TreeEnumeration;
+import com.ms.xml.util.XMLOutputStream;
+import com.ms.xml.util.Name;
 
 public class WebDAVResponseInterpreter
 {

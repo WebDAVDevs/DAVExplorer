@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 1999-2001 Regents of the University of California.
+ * Copyright (c) 1998-2001 Regents of the University of California.
  * All rights reserved.
  *
  * This software was developed at the University of California, Irvine.
@@ -16,35 +16,42 @@
  * IMPLIED WARRANTIES, INCLUDING, WITHOUT LIMITATION, THE IMPLIED
  * WARRANTIES OF MERCHANTIBILITY AND FITNESS FOR A PARTICULAR PURPOSE.
  */
-// This code was originally written by an undergraduate project
-// team at UCI.
-//
-////////////////////////////////////////////////////////////////
-// The code has been modified to include povisions for the final
-// WebDAV xml namespaces.  A small number of program errors have
-// been corrected.
-//
-// Please use the following contact:
-//
-// dav-exp@ics.uci.edu
-//
-// Version: 0.4
-// Date: 3/17/99
-// Changes by: Yuzo Kanomata and Joe Feise
-//
-// Date: 2001-Aug-2
-//  1. Renamed Duplicate to Copy
+
+/**
+ * Title:       WebDAV Toolbae
+ * Description: Implements the main toolbar
+ * Copyright:   Copyright (c) 1998-2001 Regents of the University of California. All rights reserved.
+ * @author      Undergraduate project team ICS 126B 1998
+ * @date        1998
+ * @author      Yuzo Kanomata, Joachim Feise (dav-exp@ics.uci.edu)
+ * @date        17 March 1999
+ * Changes:     Loading the icons from the jar file
+ * @author      Joachim Feise (dav-exp@ics.uci.edu)
+ * @date        2 August 2001
+ * Changes:     Renamed Duplicate to Copy
+ */
 
 package DAVExplorer;
 
-import java.awt.*;
-import java.awt.event.*;
-import java.io.*;
-import java.util.*;
-import java.util.zip.*;
+import javax.swing.JPanel;
+import javax.swing.JToolBar;
+import javax.swing.JButton;
+import javax.swing.JOptionPane;
+import javax.swing.ImageIcon;
+import javax.swing.BorderFactory;
+import java.awt.Component;
+import java.awt.BorderLayout;
+import java.awt.Insets;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+import java.io.File;
+import java.io.InputStream;
+import java.io.IOException;
+import java.util.Vector;
+import java.util.StringTokenizer;
+import java.util.zip.ZipFile;
+import java.util.zip.ZipEntry;
 
-import javax.swing.text.*;
-import javax.swing.*;
 
 public class WebDAVToolBar extends JPanel implements ActionListener
 {

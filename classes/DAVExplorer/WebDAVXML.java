@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 1999-2001 Regents of the University of California.
+ * Copyright (c) 1997-2001 Regents of the University of California.
  * All rights reserved.
  *
  * This software was developed at the University of California, Irvine.
@@ -17,35 +17,19 @@
  * WARRANTIES OF MERCHANTIBILITY AND FITNESS FOR A PARTICULAR PURPOSE.
  */
 
-/*
-Authors: Marc Eaddy, Jonathan Shapiro, Shao Rong
-*/
-
-
-/*  Modified by Robert Emmery to reflect the changes in .07 spec
-
-            02/26/98
-*/
-// This code was originally written by an undergraduate project
-// team at UCI.
-//
-////////////////////////////////////////////////////////////////
-// The code has been modified to include povisions for the final
-// WebDAV xml namespaces.  A small number of program errors have
-// been corrected.
-//
-// Please use the following contact:
-//
-// dav-exp@ics.uci.edu
-//
-// Version: 0.4
-// Changes by: Yuzo Kanomata and Joe Feise
-// Date: 3/17/99
-//
-// Change List:
-//
-
-
+/**
+ * Title:       WebDAVURIBox Listener
+ * Description: Define the Generic DAV XML Elements from section 12 of the WebDAV spec
+ * <draft-ietf-webdav-protocol-05>
+ * Copyright:   Copyright (c) 1997-2001 Regents of the University of California. All rights reserved.
+ * @author      Marc Eaddy, Jonathan Shapiro, Shao Rong
+ * @date        23 November 1997
+ * @author      Robert Emmery
+ * @date        26 February 1998
+ * Changes:     Modified by Robert Emmery to reflect the changes in .07 spec
+ * @author      Yuzo Kanomata, Joachim Feise (dav-exp@ics.uci.edu)
+ * @date        17 March 1999
+ */
 
 package DAVExplorer;
 

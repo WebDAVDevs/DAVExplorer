@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 1999-2001 Regents of the University of California.
+ * Copyright (c) 1998-2001 Regents of the University of California.
  * All rights reserved.
  *
  * This software was developed at the University of California, Irvine.
@@ -17,52 +17,39 @@
  * WARRANTIES OF MERCHANTIBILITY AND FITNESS FOR A PARTICULAR PURPOSE.
  */
 
-// This is the class containing the main() function, which merely
-// instantiates the Main JFrame.
-// The Main class creates the user interface and adds the appropriate
-// listeners.
-//
-// Version: 0.3.1
-// Author:  Robert Emmery
-// Date:    4/2/98
-////////////////////////////////////////////////////////////////
-// The code has been modified to include povisions for the final
-// WebDAV xml namespaces.  A small number of program errors have
-// been corrected.
-//
-// Please use the following contact:
-//
-// dav-exp@ics.uci.edu
-//
-// Version: 0.4
-// Changes by: Yuzo Kanomata and Joe Feise
-// Date: 3/17/99
-//
-// Change List:
-// 1. Changed treeView.fireSelectionEvent(); to treeView.initTree();
-//    This is the same function, but with a better name.
-// 2. Added Create Folder functionality
-// 3. Added filename selection for export file
-//
-// Version: 0.5
-// Changes by: Joe Feise
-// Date: 12/3/99
-//
-// Change List:
-// Removed the authentication dialog and listener, since authentication is now handled
-// as AuthenticationHandler in HTTPClient
-//
-// Version: 0.6
-// Changes by: Joe Feise
-// Date: 2000-June-20
-// Change List:
-// Better reporting in case the connection is closed
-//
-// Date: 2001-Jan-12
-// Joe Feise: Added support for https (SSL), moved properties loading to GlobalData
-//
-// Date: 2001-Aug-2
-// Using HTTPClient authentication module
+/**
+ * Title:       Main
+ * Description: This is the class containing the main() function, which merely
+ *              instantiates the Main JFrame.
+ *              The Main class creates the user interface and adds the appropriate
+ *              listeners.
+ * Copyright:   Copyright (c) 1998-2001 Regents of the University of California. All rights reserved.
+ * @author      Robert Emmery (dav-exp@ics.uci.edu)
+ * @date        2 April 1998
+ * @author      Yuzo Kanomata, Joachim Feise (dav-exp@ics.uci.edu)
+ * @date        17 March 1999
+ * Changes:     Changed treeView.fireSelectionEvent(); to treeView.initTree();
+ *              This is the same function, but with a better name.
+ *              Added Create Folder functionality.
+ *              Added filename selection for export file
+ * @author      Joachim Feise (dav-exp@ics.uci.edu)
+ * @date        3 December 1999
+ * Changes:     Removed the authentication dialog and listener, since authentication
+ *              is now handled as AuthenticationHandler in HTTPClient
+ * @author      Joachim Feise (dav-exp@ics.uci.edu)
+ * @date        20 June 2000
+ * Changes:     Better reporting in case the connection is closed
+ * @author      Joachim Feise (dav-exp@ics.uci.edu)
+ * @date        12 January 2001
+ * Changes:     Added support for https (SSL), moved properties loading to GlobalData
+ * @author      Joachim Feise (dav-exp@ics.uci.edu)
+ * @date        2 August 2001
+ * Changes:     Using HTTPClient authentication module
+ * @author      Joachim Feise (dav-exp@ics.uci.edu)
+ * @date        29 September 2001
+ * Changes:     Now sending Options request at initial connection to check for
+ *              DAV support on the server. Only then the Propfind is sent.
+ */
 
 
 package DAVExplorer;
@@ -71,13 +58,23 @@ import HTTPClient.AuthorizationInfo;
 import HTTPClient.DefaultAuthHandler;
 import HTTPClient.CookieModule;
 
-import javax.swing.*;
-import javax.swing.event.*;
+import javax.swing.JFrame;
+import javax.swing.JScrollPane;
+import javax.swing.JSplitPane;
+import javax.swing.JPanel;
+import javax.swing.JOptionPane;
+import javax.swing.JFileChooser;
+import javax.swing.event.EventListenerList;
 import javax.swing.text.Keymap;
-import java.awt.*;
-import java.awt.event.*;
-import java.util.*;
-import java.io.*;
+import java.awt.GridBagLayout;
+import java.awt.GridBagConstraints;
+import java.awt.FileDialog;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+import java.awt.event.WindowAdapter;
+import java.awt.event.WindowEvent;
+import java.util.Hashtable;
+import java.io.File;
 
 public class Main extends JFrame
 {

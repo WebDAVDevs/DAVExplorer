@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 1999-2001 Regents of the University of California.
+ * Copyright (c) 1998-2001 Regents of the University of California.
  * All rights reserved.
  *
  * This software was developed at the University of California, Irvine.
@@ -16,42 +16,41 @@
  * IMPLIED WARRANTIES, INCLUDING, WITHOUT LIMITATION, THE IMPLIED
  * WARRANTIES OF MERCHANTIBILITY AND FITNESS FOR A PARTICULAR PURPOSE.
  */
-////////////////////////////////////////////////////////////////
-// The code has been modified to include povisions for the final
-// WebDAV xml namespaces.  A small number of program errors have
-// been corrected.
-//
-// Please use the following contact:
-//
-// dav-exp@ics.uci.edu
-//
-// Version: 0.4
-// Changes by: Yuzo Kanomata and Joe Feise
-//
-// Change List:
-// Date: 3/17/99
-//  1. Added Create Folder menu
-//  2. Added enable/disable functionality to menu entries
-//
-// Date: 3/31/99
-//  1. Changed Application menu to View menu
-//  2. Consolidated view functionality in View menu
-//  3. Added lock info view
-//
-// Date: 2001-Aug-2
-//  1. Added Move menu entry
-//  2. Renamed Duplicate to Copy
+
+/**
+ * Title:       WebDAVMenu
+ * Description: Main menu class
+ * Copyright:   Copyright (c) 1998-2001 Regents of the University of California. All rights reserved.
+ * @author      Undergraduate project team ICS 126B 1998
+ * @date        1998
+ * @author      Yuzo Kanomata, Joachim Feise (dav-exp@ics.uci.edu)
+ * @date        17 March 1999
+ * Changes:     Added Create Folder menu
+ *              Added enable/disable functionality to menu entries
+ * @author      Yuzo Kanomata, Joachim Feise (dav-exp@ics.uci.edu)
+ * @date        31 March 1999
+ * Changes:     Changed Application menu to View menu
+ *              Consolidated view functionality in View menu
+ *              Added lock info view
+ * @author      Joachim Feise (dav-exp@ics.uci.edu)
+ * @date        2 August 2001
+ * Changes:     Added Move menu entry
+ *              Renamed Duplicate to Copy
+ * @author      Joachim Feise (dav-exp@ics.uci.edu)
+ * @date        29 September 2001
+ * Changes:     Changed View Properties menu to reflect modify functionality
+ */
 
 package DAVExplorer;
 
-import java.awt.event.*;
-import java.util.*;
-import java.awt.*;
 import javax.swing.JFrame;
 import javax.swing.JMenu;
 import javax.swing.JMenuItem;
 import javax.swing.JCheckBoxMenuItem;
 import javax.swing.JMenuBar;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+import java.util.Vector;
 
 /*--------------------------------------------------------
 This class creates the menus to be used in the application
@@ -210,7 +209,7 @@ public class WebDAVMenu extends JMenuBar implements ActionListener
 
         mnu_ViewMenu.add(new WebDAVMenuItem( "View Lock Properties", this, true ));
         mnu_ViewMenu.addSeparator();
-        mnu_ViewMenu.add(new WebDAVMenuItem( "View Properties", this, true ));
+        mnu_ViewMenu.add(new WebDAVMenuItem( "View/Modify Properties", this, true ));
         mnu_ViewMenu.addSeparator();
         mnu_ViewMenu.add(new WebDAVMenuItem( "Refresh",this, true ));
 

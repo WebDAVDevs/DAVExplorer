@@ -17,28 +17,33 @@
  * WARRANTIES OF MERCHANTIBILITY AND FITNESS FOR A PARTICULAR PURPOSE.
  */
 
-// Changelog
-//
-// Date: 2001-Jan-9
-// Joe Feise: Added support for https (SSL), moved reading of debug
-// properties here
+/**
+ * Title:       GlobalData
+ * Description: This singleton class defines various global data structures
+ *              and functions useful everywhere
+ * Copyright:   Copyright (c) 1999-2001 Regents of the University of California. All rights reserved.
+ * @author      Joachim Feise (dav-exp@ics.uci.edu)
+ * @date        1999
+ * @author      Joachim Feise (dav-exp@ics.uci.edu)
+ * @date        9 January 2001
+ * Changes:     Added support for https (SSL), moved reading of debug properties here
+ * @date        29 May 2001
+ * Changes:     Support for reading/writing configuration file
+ */
 
 package DAVExplorer;
 
 import java.awt.Cursor;
 import javax.swing.JOptionPane;
 import javax.swing.JFrame;
-import java.util.*;
-import java.io.*;
-
-/**
- * This singleton class defines various global data structures
- * and functions useful everywhere
- *
- * @version 0.3  9 January 2001
- * @author  Joachim Feise
- * @since   V0.1
- */
+import java.util.StringTokenizer;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
+import java.io.InputStreamReader;
+import java.io.OutputStreamWriter;
+import java.io.BufferedReader;
+import java.io.BufferedWriter;
 
 class GlobalData
 {
@@ -301,4 +306,3 @@ class GlobalData
 
     }
 }
-

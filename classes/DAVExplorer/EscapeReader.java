@@ -17,23 +17,21 @@
  * WARRANTIES OF MERCHANTIBILITY AND FITNESS FOR A PARTICULAR PURPOSE.
  */
 
-// This class is a filterreader that converts escaped characters to
-// their normal equivalents, or escapes special characters, respectively,
-// depending on the direction of the conversion.
-//
-// Version: 0.5
-// Author:  Joachim Feise
-// Date:    4/29/99
-////////////////////////////////////////////////////////////////
-//
-// Please use the following contact:
-//
-// dav-exp@ics.uci.edu
-//
+/**
+ * Title:       EscapeInputReader
+ * Description: This class is a filterreader that converts escaped characters to
+ *              their normal equivalents, or escapes special characters, respectively,
+ *              depending on the direction of the conversion.
+ * Copyright:   Copyright (c) 1999-2001 Regents of the University of California. All rights reserved.
+ * @author      Joachim Feise (dav-exp@ics.uci.edu)
+ * @date        29 April 1999
+ */
 
 package DAVExplorer;
 
-import java.io.*;
+import java.io.Reader;
+import java.io.FilterReader;
+import java.io.IOException;
 
 public class EscapeReader
     extends FilterReader

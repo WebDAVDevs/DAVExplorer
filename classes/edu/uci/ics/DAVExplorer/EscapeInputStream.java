@@ -17,23 +17,21 @@
  * WARRANTIES OF MERCHANTIBILITY AND FITNESS FOR A PARTICULAR PURPOSE.
  */
 
-// This class is a filterstream that converts escaped characters to
-// their normal equivalents, or escapes special characters, respectively,
-// depending on the direction of the conversion.
-//
-// Version: 0.4
-// Author:  Joachim Feise
-// Date:    4/1/99
-////////////////////////////////////////////////////////////////
-//
-// Please use the following contact:
-//
-// dav-exp@ics.uci.edu
-//
+/**
+ * Title:       EscapeInputStream
+ * Description: This class is a filterstream that converts escaped characters to
+ *              their normal equivalents, or escapes special characters, respectively,
+ *              depending on the direction of the conversion.
+ * Copyright:   Copyright (c) 1999-2001 Regents of the University of California. All rights reserved.
+ * @author      Joachim Feise (dav-exp@ics.uci.edu)
+ * @date        1 April 1999
+ */
 
 package DAVExplorer;
 
-import java.io.*;
+import java.io.InputStream;
+import java.io.FilterInputStream;
+import java.io.IOException;
 
 public class EscapeInputStream
     extends FilterInputStream

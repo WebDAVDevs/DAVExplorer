@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 1999-2001 Regents of the University of California.
+ * Copyright (c) 2001 Regents of the University of California.
  * All rights reserved.
  *
  * This software was developed at the University of California, Irvine.
@@ -17,20 +17,31 @@
  * WARRANTIES OF MERCHANTIBILITY AND FITNESS FOR A PARTICULAR PURPOSE.
  */
 
+/**
+ * Title:       WebDAV Proxy Info Dialog
+ * Description: Dialog for entering the URL of a Proxy server to use
+ * Copyright:   Copyright (c) 2001 Regents of the University of California. All rights reserved.
+ * @author      Joachim Feise (dav-exp@ics.uci.edu)
+ * @date        22 May 2001
+ */
+
 package DAVExplorer;
 
 import javax.swing.JDialog;
 import javax.swing.JFrame;
-import javax.swing.JDialog.*;
 import javax.swing.JPanel;
 import javax.swing.JLabel;
 import javax.swing.JTextField;
 import javax.swing.JPasswordField;
 import javax.swing.JButton;
-import java.util.*;
-import java.awt.*;
-import java.awt.event.*;
-import java.io.*;
+import java.util.Vector;
+import java.awt.Dialog;
+import java.awt.GridLayout;
+import java.awt.BorderLayout;
+import java.awt.Rectangle;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+
 
 public class WebDAVProxyInfo extends Dialog implements ActionListener
 {

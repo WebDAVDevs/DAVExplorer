@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 1999-2001 Regents of the University of California.
+ * Copyright (c) 1998-2001 Regents of the University of California.
  * All rights reserved.
  *
  * This software was developed at the University of California, Irvine.
@@ -17,62 +17,47 @@
  * WARRANTIES OF MERCHANTIBILITY AND FITNESS FOR A PARTICULAR PURPOSE.
  */
 
-/////////////////////////////////////////////////////////////////////////
-//This is the class that will display a dialog box prompting the user
-//for authentication information.
-//
-//Written by: Gerair D. Balian (Elite 5)
-//On: 3/3/98
-//For ICS126B (WebDAV Project)
-/////////////////////////////////////////////////////////////////////////
-// This class causes a login dialog box to
-// appear.  The purpose of this Login box is
-// to authenticate users when they attempt to
-// connect to a DAV site through the action of
-// connecting to it.
-//
-// This class DOES NOT authenticate users at this
-// time.  It is in place as a UI component which
-// may be fully integrated in an authetication scheme
-// at some future point.
-////////////////////////////////////////////////////////////////
-// The code has been modified to include povisions for the final
-// WebDAV xml namespaces.  A small number of program errors have
-// been corrected.
-//
-// Please use the following contact:
-//
-// dav-exp@ics.uci.edu
-//
-// Version: 0.4
-// Changes by: Yuzo Kanomata and Joe Feise
-// Date: 3/17/99
-//
-// Change List:
-// Note: No authenication check is executed in the Action Listener
-// when "okay" is clicked.
-//
-// Version: 0.5
-// Changes by: Joe Feise
-// Date: 12/3/99
-//
-// Change List:
-// Now invoked from Authentication handler in HTTPClient
-// when "okay" is clicked.
+/**
+ * Title:       Login Dialog
+ * Description: This class causes a login dialog box to appear.  The purpose
+ *              of this Login box is to authenticate users when they attempt to
+ *              connect to a DAV site through the action of connecting to it.
+ *              This class DOES NOT authenticate users at this time. It is in
+ *              place as a UI component which may be fully integrated in an
+ *              authentication scheme at some future point.
+ * Copyright:   Copyright (c) 1998-2001 Regents of the University of California. All rights reserved.
+ * @author      Gerair D. Balian (dav-exp@ics.uci.edu)
+ * @date        3 March 1998
+ * @author      Yuzo Kanomata, Joachim Feise (dav-exp@ics.uci.edu)
+ * @date        17 March 1999
+ * Changes:     Note: No authenication check is executed in the Action Listener
+ *              when "okay" is clicked.
+ * @author      Joachim Feise (dav-exp@ics.uci.edu)
+ * @date        3 December 1999
+ * Changes:     Now invoked from Authentication handler in HTTPClient
+ *              when "OK" is clicked.
+ * @author      Joachim Feise (dav-exp@ics.uci.edu)
+ * @date        29 September 2001
+ * Changes:     The return key now triggers a programmatic click on the OK
+ *              button.
+ */
 
 package DAVExplorer;
 
 import javax.swing.JDialog;
 import javax.swing.JFrame;
-import javax.swing.JDialog.*;
 import javax.swing.JPanel;
 import javax.swing.JLabel;
 import javax.swing.JTextField;
 import javax.swing.JPasswordField;
 import javax.swing.JButton;
-import java.util.*;
-import java.awt.*;
-import java.awt.event.*;
+import java.util.Vector;
+import java.awt.Color;
+import java.awt.Rectangle;
+import java.awt.GridBagLayout;
+import java.awt.GridBagConstraints;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 
 
 public class WebDAVLoginDialog extends JDialog implements ActionListener

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 1999-2001 Regents of the University of California.
+ * Copyright (c) 1998-2001 Regents of the University of California.
  * All rights reserved.
  *
  * This software was developed at the University of California, Irvine.
@@ -17,15 +17,23 @@
  * WARRANTIES OF MERCHANTIBILITY AND FITNESS FOR A PARTICULAR PURPOSE.
  */
 
+/**
+ * Title:       Table Sorter
+ * Description: Class to sort the entries in the main viewer
+ * Copyright:   Copyright (c) 1998-2001 Regents of the University of California. All rights reserved.
+ * @author      Undergraduate project team ICS 126B 1998
+ * @date        1998
+ */
+
 package DAVExplorer;
 
-import java.util.*;
+import java.util.Vector;
+import java.util.Date;
 
 import javax.swing.table.TableModel;
 import javax.swing.event.TableModelEvent;
 
 // Imports for picking up mouse events from the JTable.
-
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.awt.event.InputEvent;

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 1999-2001 Regents of the University of California.
+ * Copyright (c) 1998-2001 Regents of the University of California.
  * All rights reserved.
  *
  * This software was developed at the University of California, Irvine.
@@ -17,35 +17,28 @@
  * WARRANTIES OF MERCHANTIBILITY AND FITNESS FOR A PARTICULAR PURPOSE.
  */
 
-// WebDAV Method class library.
-// We simply use the HTTPClient's extension method for
-// sending all the requests.
-//
-// Version: 0.1
-// Author:  Robert Emmery
-// Date:    1/20/98
-////////////////////////////////////////////////////////////////
-// The code has been modified to include povisions for the final
-// WebDAV xml namespaces.  A small number of program errors have
-// been corrected.
-//
-// Please use the following contact:
-//
-// dav-exp@ics.uci.edu
-//
-// Version: 0.4
-// Changes by: Yuzo Kanomata and Joe Feise
-// Date: 3/17/99
-//
-// Change List:
-//
-// Date: 2001-Jan-12
-// Joe Feise: Added support for https (SSL)
+/**
+ * Title:       WebDAVConnection
+ * Description: WebDAV Method class library.
+ *              We simply use the HTTPClient's extension method for
+ *              sending all the requests.
+ * Copyright:   Copyright (c) 1998-2001 Regents of the University of California. All rights reserved.
+ * @author      Robert Emmery (dav-exp@ics.uci.edu)
+ * @date        2 April 1998
+ * @author      Yuzo Kanomata, Joachim Feise (dav-exp@ics.uci.edu)
+ * @date        17 March 1999
+ * @author      Joachim Feise (dav-exp@ics.uci.edu)
+ * @date        12 January 2001
+ * Changes:     Added support for https (SSL)
+ */
 
 package DAVExplorer;
 
-import HTTPClient.*;
-import java.io.*;
+import HTTPClient.HTTPConnection;
+import HTTPClient.HTTPResponse;
+import HTTPClient.NVPair;
+import HTTPClient.ModuleException;
+import java.io.IOException;
 
 public class WebDAVConnection extends HTTPConnection
 {

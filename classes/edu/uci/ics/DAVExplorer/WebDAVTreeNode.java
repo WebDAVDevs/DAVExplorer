@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 1999-2001 Regents of the University of California.
+ * Copyright (c) 1998-2001 Regents of the University of California.
  * All rights reserved.
  *
  * This software was developed at the University of California, Irvine.
@@ -17,51 +17,40 @@
  * WARRANTIES OF MERCHANTIBILITY AND FITNESS FOR A PARTICULAR PURPOSE.
  */
 
-// This is where we handle tree loading.
-// Each time a folder is double clicked, getChildCount()
-// will be called. This will in turn either form PROPFIND
-// or itterate a local directory.
-//
-//  Version: 0.3
-//  Author:  Robert Emmery
-//  Date:    4/2/98
-////////////////////////////////////////////////////////////////
-// The code has been modified to include povisions for the final
-// WebDAV xml namespaces.  A small number of program errors have
-// been corrected.
-//
-// Please use the following contact:
-//
-// dav-exp@ics.uci.edu
-//
-// Version: 0.4
-// Changes by: Yuzo Kanomata and Joe Feise
-// Date: 3/17/99
-// Change List:
-//
-// Version: 0.61
-// Changes by: Joe Feise
-// Date: 5/23/2000
-// Change List:
-//   Added check for CDATA to improve interoperability for Sharemation's server
-//   Changed the enumeration in parseResponse() to SiblingEnumeration to
-//      avoid parsing the wrong href tag (thanks to Michelle Harris for
-//      alerting us to this problem)
-//   Fixed string comparison in case of multiple <propstat> tags
-//
-// Date: 2001-Jan-12
-// Joe Feise: Added support for https (SSL)
+/**
+ * Title:       WebDAV Tree Node
+ * Description: Implementation of the nodes for the navigation tree
+ * Copyright:   Copyright (c) 1998-2001 Regents of the University of California. All rights reserved.
+ * @author      Robert Emmery
+ * @date        2 April 1998
+ * @author      Yuzo Kanomata, Joachim Feise (dav-exp@ics.uci.edu)
+ * @date        17 March 1999
+ * @author      Joachim Feise (dav-exp@ics.uci.edu)
+ * @date        23 May 2000
+ * Changes:     Added check for CDATA to improve interoperability for Sharemation's server
+ *              Changed the enumeration in parseResponse() to SiblingEnumeration to
+ *              avoid parsing the wrong href tag (thanks to Michelle Harris for
+ *              alerting us to this problem)
+ *              Fixed string comparison in case of multiple <propstat> tags
+ * @author      Joachim Feise (dav-exp@ics.uci.edu)
+ * @date        12 January 2001
+ * Changes:     Added support for https (SSL)
+ */
 
 package DAVExplorer;
 
 import javax.swing.tree.DefaultMutableTreeNode;
-import java.util.*;
-import java.io.*;
+import java.util.Date;
+import java.util.Vector;
+import java.io.File;
+import java.io.ByteArrayInputStream;
 import java.text.DateFormat;
-
-import com.ms.xml.om.*;
-import com.ms.xml.parser.*;
-import com.ms.xml.util.*;
+import com.ms.xml.om.Element;
+import com.ms.xml.om.Document;
+import com.ms.xml.om.TreeEnumeration;
+import com.ms.xml.om.SiblingEnumeration;
+import com.ms.xml.util.XMLInputStream;
+import com.ms.xml.util.Name;
 
 public class WebDAVTreeNode extends DefaultMutableTreeNode
 {
