@@ -95,11 +95,11 @@ public class PropModel extends AbstractTableModel implements TreeTableModel
             return getModified( root, null );
     }
 
-    public void addNode( PropNode parentNode, PropNode node )
+    public void addNode( PropNode parentNode, PropNode node, boolean root )
     {
         parentNode.addChild( node );
         Object[] pathToRoot = null;
-        if( tree.isSelectionEmpty() )
+        if( root )
         {
             pathToRoot = new Object[1];
             pathToRoot[0] = getRoot();

@@ -647,7 +647,16 @@ public class WebDAVRequestGenerator implements Runnable
             if (Port == 0 || Port == DEFAULT_PORT)
                 Headers[0] = new NVPair("Host", HostName);
             else
-                Headers[0] = new NVPair("Host", HostName + ":" + Port);
+            {
+                // 2001-Oct-29 jfeise (dav-exp@ics.uci.edu):
+                // workaround for Apache 1.3.x on non-default port
+                // Apache returns a 500 error on the first try
+                String apache = System.getProperty( "Apache", "no" );
+                if( apache.equalsIgnoreCase("no") )
+                    Headers[0] = new NVPair("Host", HostName + ":" + Port);
+                else
+                    Headers[0] = new NVPair("Host", HostName);
+            }
             Headers[1] = new NVPair("Content-Type", "text/xml");
             Headers[2] = new NVPair("Content-Length", new Long(Body.length).toString());
 

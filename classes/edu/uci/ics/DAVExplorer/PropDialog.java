@@ -202,7 +202,7 @@ public class PropDialog extends JDialog
                 parentNode = (PropNode)model.getRoot();
             else
                 parentNode = (PropNode)path.getLastPathComponent();
-            model.addNode( parentNode, newNode );
+            model.addNode( parentNode, newNode, add.isAddToRoot() );
             setChanged( true );
         }
     }
