@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2001 Regents of the University of California.
+ * Copyright (c) 2001, 2004 Regents of the University of California.
  * All rights reserved.
  *
  * This software was developed at the University of California, Irvine.
@@ -26,6 +26,9 @@
  * @author      Joachim Feise (dav-exp@ics.uci.edu)
  * @date        1 October 2001
  * Changes:     Change of package name
+ * @author      Joachim Feise (dav-exp@ics.uci.edu)
+ * @date        14 January 2004
+ * Changes:     Fixed using webpage-provided username/password for applet usage
  */
 
 package edu.uci.ics.DAVExplorer;
