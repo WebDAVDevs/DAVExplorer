@@ -410,16 +410,30 @@ public class Main extends JFrame
             else if (command.equals("Lock"))
             {
                 String s = fileView.getSelected();
-                WebDAVTreeNode n = fileView.getParentNode();
-                requestGenerator.setResource(s, n);
-                lockDocument();
+                if( s == null )
+                {
+                    errorMsg( "No file selected." );
+                }
+                else
+                {
+                    WebDAVTreeNode n = fileView.getParentNode();
+                    requestGenerator.setResource(s, n);
+                    lockDocument();
+                }
             }
             else if (command.equals("Unlock"))
             {
                 String s = fileView.getSelected();
-                WebDAVTreeNode n = fileView.getParentNode();
-                requestGenerator.setResource(s, n);
-                unlockDocument();
+                if( s == null )
+                {
+                    errorMsg( "No file selected." );
+                }
+                else
+                {
+                    WebDAVTreeNode n = fileView.getParentNode();
+                    requestGenerator.setResource(s, n);
+                    unlockDocument();
+                }
             }
             else if (command.equals("Duplicate"))
             {
@@ -427,28 +441,43 @@ public class Main extends JFrame
                 // we get a string if something is selected in the
                 // FileView.
                 String s = fileView.getSelected();
-                WebDAVTreeNode n = fileView.getParentNode();
+                if( s == null )
+                {
+                    errorMsg( "No file selected." );
+                }
+                else
+                {
+                    WebDAVTreeNode n = fileView.getParentNode();
 
-                // This sets the resource name to s and the node to n
-                // This is neccessary so that n is passed to
-                // response interpretor, whc then routes a
-                // message to the Tree Model.
-                // This will then call for a rebuild of the Model at the
-                // Parent node n.
+                    // This sets the resource name to s and the node to n
+                    // This is neccessary so that n is passed to
+                    // response interpretor, whc then routes a
+                    // message to the Tree Model.
+                    // This will then call for a rebuild of the Model at the
+                    // Parent node n.
 
-                requestGenerator.setResource(s, n);
+                    requestGenerator.setResource(s, n);
 
-                requestGenerator.GenerateCopy( null, true, true );
-                requestGenerator.execute();
+                    requestGenerator.GenerateCopy( null, true, true );
+                    requestGenerator.execute();
+                }
             }
             else if (command.equals("Delete"))
             {
-                deleteDocument();
+                String s = fileView.getSelected();
+                if( s == null )
+                {
+                    errorMsg( "No file selected." );
+                }
+                else
+                {
+                    deleteDocument( treeView.isCollection( s ) );
+                }
             }
-            else if (command.equals("Create Folder"))
+            else if (command.equals("Create Collection"))
             {
-                String prompt = new String( "Enter directory name:" );
-                String title = new String( "Directory Name" );
+                String prompt = new String( "Enter collection name:" );
+                String title = new String( "Create Collection" );
                 String dirname = selectName( title, prompt );
                 if( dirname != null )
                 {
@@ -511,10 +540,17 @@ public class Main extends JFrame
             {
                 // Yuzo test to stop repeat
                 String s = fileView.getSelected();
-                WebDAVTreeNode n = fileView.getParentNode();
-                requestGenerator.setResource(s, n);
+                if( s == null )
+                {
+                    errorMsg( "No file selected." );
+                }
+                else
+                {
+                    WebDAVTreeNode n = fileView.getParentNode();
+                    requestGenerator.setResource(s, n);
 
-                requestGenerator.DiscoverLock("display");
+                    requestGenerator.DiscoverLock("display");
+                }
             }
             else if (command.equals("Refresh"))
             {
@@ -539,38 +575,52 @@ public class Main extends JFrame
         requestGenerator.execute();
     }
 
-    protected void saveDocument()
-    {
-    /*
-        String s = fileView.getSelected();
-        WebDAVTreeNode n = fileView.getParentNode();
-        requestGenerator.setResource(s, n);
-    */
-
-        requestGenerator.GenerateGet("save");
-        requestGenerator.execute();
-    }
-
     protected void saveAsDocument()
     {
         String s = fileView.getSelected();
-        WebDAVTreeNode n = fileView.getParentNode();
-        requestGenerator.setResource(s, n);
-        requestGenerator.GenerateGet("saveas");
-        requestGenerator.execute();
+        if( s == null )
+        {
+            errorMsg( "No file selected." );
+        }
+        else
+        {
+            WebDAVTreeNode n = fileView.getParentNode();
+            requestGenerator.setResource(s, n);
+            requestGenerator.GenerateGet("saveas");
+            requestGenerator.execute();
+        }
     }
 
-    protected void deleteDocument()
+    protected void deleteDocument( boolean collection )
     {
-        JOptionPane pane = new JOptionPane();
-        String str = new String("Are you sure?");
-        int opt = pane.showConfirmDialog( WebDAVFrame, str,"Delete File",JOptionPane.YES_NO_OPTION);
-        if (opt == JOptionPane.YES_OPTION){
         String s = fileView.getSelected();
-        WebDAVTreeNode n = fileView.getParentNode();
-        requestGenerator.setResource(s, n);
-            requestGenerator.DiscoverLock("delete");
-    }
+        if( s == null )
+        {
+            errorMsg( "No file selected." );
+        }
+        else
+        {
+            JOptionPane pane = new JOptionPane();
+            String str = null;
+            String title = null;
+            if( collection )
+            {
+                title = "Delete Collection";
+                str = "Delete the collection and all its contents:\nAre you sure?";
+            }
+            else
+            {
+                title = "Delete File";
+                str = "Delete: Are you sure?";
+            }
+            int opt = pane.showConfirmDialog( WebDAVFrame, str, title, JOptionPane.YES_NO_OPTION );
+            if (opt == JOptionPane.YES_OPTION)
+            {
+                WebDAVTreeNode n = fileView.getParentNode();
+                requestGenerator.setResource(s, n);
+                requestGenerator.DiscoverLock("delete");
+            }
+        }
     }
 
     protected void lockDocument()
@@ -585,11 +635,18 @@ public class Main extends JFrame
 
     protected void viewProperties()
     {
-    String s = fileView.getSelected();
-    requestGenerator.setResource(s, null);
-        requestGenerator.setExtraInfo("properties");
-        requestGenerator.GeneratePropFind(null,"allprop","zero",null,null,false);
-        requestGenerator.execute();
+        String s = fileView.getSelected();
+        if( s == null )
+        {
+            errorMsg( "No file selected." );
+        }
+        else
+        {
+            requestGenerator.setResource(s, null);
+            requestGenerator.setExtraInfo("properties");
+            requestGenerator.GeneratePropFind(null,"allprop","zero",null,null,false);
+            requestGenerator.execute();
+        }
     }
 
 
@@ -600,5 +657,10 @@ public class Main extends JFrame
         return ret;
     }
 
-
+    public void errorMsg(String str)
+    {
+        JOptionPane pane = new JOptionPane();
+        Object [] options = { "OK" };
+        pane.showOptionDialog( WebDAVFrame, str, "Error Message", JOptionPane.DEFAULT_OPTION, JOptionPane.ERROR_MESSAGE, null,options, options[0]);
+    }
 }

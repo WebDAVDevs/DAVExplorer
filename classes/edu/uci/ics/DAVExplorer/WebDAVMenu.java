@@ -66,23 +66,23 @@ public class WebDAVMenu extends JMenuBar implements ActionListener
     class WebDAVMenuItem extends JMenuItem
     {
         public WebDAVMenuItem( String strMenuTag, ActionListener aL, boolean enabled )
-	{
-      	    super( strMenuTag );
-	    addActionListener( aL );
-	    setEnabled( enabled );
-	}
+    {
+            super( strMenuTag );
+        addActionListener( aL );
+        setEnabled( enabled );
+    }
     }
 
     class WebDAVCheckBoxMenuItem extends JCheckBoxMenuItem
     {
         public WebDAVCheckBoxMenuItem( String strMenuTag, ActionListener aL, boolean enabled )
-	{
-       	    super( strMenuTag );
-	    addActionListener( aL );
-	    setEnabled( enabled );
-	}
+    {
+            super( strMenuTag );
+        addActionListener( aL );
+        setEnabled( enabled );
     }
-	
+    }
+
     /*--------------------------------------------------------
     Public attributes section
     --------------------------------------------------------*/
@@ -97,10 +97,10 @@ public class WebDAVMenu extends JMenuBar implements ActionListener
     public WebDAVMenu()
     {
         this.add(generateFileMenu());
-       	this.add(generateEditMenu());
-       	this.add(generateViewMenu());
-       	this.add(generateHelpMenu());
-       	menuListeners = new Vector();
+        this.add(generateEditMenu());
+        this.add(generateViewMenu());
+        this.add(generateHelpMenu());
+        menuListeners = new Vector();
     }
 
     /*
@@ -120,13 +120,13 @@ public class WebDAVMenu extends JMenuBar implements ActionListener
             l.actionPerformed(Event);
         }
     }
-	
+
     /*
     Add new menu event listeners to the vector
     */
     public synchronized void addWebDAVMenuListener(ActionListener MenuListener)
     {
-       	menuListeners.addElement(MenuListener);
+        menuListeners.addElement(MenuListener);
     }
 
     /*
@@ -134,19 +134,19 @@ public class WebDAVMenu extends JMenuBar implements ActionListener
     */
     public synchronized void removeWebDAVMenuListener(ActionListener MenuListener)
     {
-       	menuListeners.removeElement(MenuListener);
+        menuListeners.removeElement(MenuListener);
     }
 
     public void setLogging( boolean newState )
     {
         logging.setState( newState );
     }
-    
+
     public boolean getLogging()
     {
         return logging.getState();
     }
-    
+
     /*--------------------------------------------------------
     Protected attributes section
     --------------------------------------------------------*/
@@ -173,7 +173,7 @@ public class WebDAVMenu extends JMenuBar implements ActionListener
         mnu_FileMenu.add(new WebDAVMenuItem( "Duplicate", this, true ));
         mnu_FileMenu.add(new WebDAVMenuItem( "Delete", this, true ));
         mnu_FileMenu.addSeparator();
-        mnu_FileMenu.add(new WebDAVMenuItem( "Create Folder", this, true ));
+        mnu_FileMenu.add(new WebDAVMenuItem( "Create Collection", this, true ));
         mnu_FileMenu.addSeparator();
         mnu_FileMenu.add(new WebDAVMenuItem( "Exit", this, true ));
 
@@ -223,6 +223,6 @@ public class WebDAVMenu extends JMenuBar implements ActionListener
 
         return mnu_HelpMenu;
     }
-	
+
     private WebDAVCheckBoxMenuItem logging;
 }

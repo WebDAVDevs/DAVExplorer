@@ -124,6 +124,9 @@ public class WebDAVRequestGenerator implements Runnable
     //SetResourceName to the value
     public void setResource(String name, WebDAVTreeNode node)
     {
+        if( name == null )
+            return;
+
         tableResource = name;
         if (Path.length() == 0)
         {
