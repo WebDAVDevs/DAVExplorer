@@ -677,7 +677,9 @@ public class Main extends JFrame
                 "Copyright (c) 1999 Regents of the University of California\n" +
                 "Authors: Yuzo Kanomata, Joachim Feise\n" +
                 "EMail: dav-exp@ics.uci.edu\n\n" +
-                "Based on code from the UCI WebDAV Client Group\nof the ICS126B class Winter 1998\n\n" );
+                "Based on code from the UCI WebDAV Client Group\n" +
+                "of the ICS126B class Winter 1998:\n" +
+                "Gerair Balian, Mirza Baig, Robert Emmery, Thai Le, Tu Le\n");
                 Object [] options = { "OK" };
                 pane.showOptionDialog(WebDAVFrame, message, "About DAV Explorer", JOptionPane.DEFAULT_OPTION, JOptionPane.INFORMATION_MESSAGE, null, options, options[0]);
             }
