@@ -844,7 +844,15 @@ public class Main extends JFrame
             JOptionPane pane = new JOptionPane();
             String str = null;
             String title = null;
-            String defaultName = requestGenerator.getDefaultName( null );
+            String defaultName = null;
+            if( treeView.isRemote( s ) )
+            {
+                WebDAVTreeNode n = fileView.getParentNode();
+                requestGenerator.setResource(s, n);
+                defaultName = requestGenerator.getDefaultName( null );
+            }
+            else
+                defaultName = s;
             if( collection )
             {
                 title = "Delete Collection";
@@ -865,14 +873,14 @@ public class Main extends JFrame
                     //requestGenerator.DiscoverLock("delete");
                     requestGenerator.setExtraInfo("delete");
                     boolean retval = false;
-            if( fileView.isSelectedLocked() ){
-            retval = requestGenerator.GenerateDelete(fileView.getSelectedLockToken());
-            } else {
-                        retval = requestGenerator.GenerateDelete(null);
+                    if( fileView.isSelectedLocked() ){
+                    retval = requestGenerator.GenerateDelete(fileView.getSelectedLockToken());
+                    } else {
+                                retval = requestGenerator.GenerateDelete(null);
+                            }
+                            if( retval ){
+                                requestGenerator.execute();
                     }
-                    if( retval ){
-                        requestGenerator.execute();
-            }
                 }
                 else
                 {
