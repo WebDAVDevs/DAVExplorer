@@ -263,8 +263,8 @@ public class WebDAVTreeNode extends DefaultMutableTreeNode
                             //fullName += new String(getFullResource(token.getText()));
 
                             // TODO: get encoding
-                            resName = new String( truncateResource(unescape(token.getText(), null)) );
-                            fullName = new String( getFullResource(unescape(token.getText(), null)) );
+                            resName = new String( truncateResource(unescape(token.getText(), null, true)) );
+                            fullName = new String( getFullResource(unescape(token.getText(), null, true)) );
                         }
                     }
                 }
@@ -719,7 +719,7 @@ public class WebDAVTreeNode extends DefaultMutableTreeNode
                 if( (token!=null) && (token.getType() == Element.PCDATA || token.getType() == Element.CDATA) )
                 {
                     // TODO: get encoding
-                    return unescape( token.getText(), null );
+                    return unescape( token.getText(), null, false );
                 }
             }
         }
@@ -894,7 +894,7 @@ public class WebDAVTreeNode extends DefaultMutableTreeNode
         return "";
     }
 
-    private String unescape( String text, String encoding )
+    private String unescape( String text, String encoding, boolean href )
     {
         text += "\n";
         ByteArrayInputStream byte_in = new ByteArrayInputStream( text.getBytes() );
@@ -912,7 +912,25 @@ public class WebDAVTreeNode extends DefaultMutableTreeNode
         }
         catch( IOException e )
         {
-            GlobalData.getGlobalData().errorMsg("String unescaping error: \n" + e);
+            if( href )
+            {
+                // the <href> tag doesn't necessarily need to be encoded in
+                // the specified encoding
+                try
+                {
+                    byte_in.reset();
+                    iStream.reset();
+                    InputStreamReader isr = new InputStreamReader( iStream );
+                    BufferedReader br = new BufferedReader( isr );
+                    return br.readLine();
+                }
+                catch( IOException e2 )
+                {
+                    GlobalData.getGlobalData().errorMsg("String unescaping error: \n" + e);
+                }
+            }
+            else
+                GlobalData.getGlobalData().errorMsg("String unescaping error: \n" + e);
         }
         return "";
     }

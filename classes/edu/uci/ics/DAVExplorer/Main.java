@@ -739,7 +739,7 @@ public class Main extends JFrame
                 CommandMenu.setLogging( logging );
                 webdavManager.setLogging( logging, logFilename );
             }
-            else if (command.equals("View Properties"))
+            else if (command.equals("View/Modify Properties"))
             {
                 viewProperties();
             }

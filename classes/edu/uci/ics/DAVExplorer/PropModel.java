@@ -208,7 +208,7 @@ public class PropModel extends AbstractTableModel implements TreeTableModel
     public boolean isNodeRemovable( Object node )
     {
         // removal of DAV properties not allowed
-        if(((PropNode)node).getNamespace().equals("DAV:"))
+        if( (((PropNode)node).getNamespace()==null) || ((PropNode)node).getNamespace().equals("DAV:") )
             return false;
         return true;
     }
