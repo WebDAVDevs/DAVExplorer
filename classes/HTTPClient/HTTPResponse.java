@@ -800,7 +800,7 @@ public class HTTPResponse implements HTTPClientModuleConstants, GlobalConstants
 	    init(response);
     // 2001-May-23: dav-exp@ics.uci.edu  added logging
     else if( logging )
-        doBodyLogging(response.cd_type);
+        getBodyData();
 
 	if (handle_trailers)
 	    invokeTrailerHandlers(false);
@@ -831,7 +831,7 @@ public class HTTPResponse implements HTTPClientModuleConstants, GlobalConstants
 
     // 2001-May-23: dav-exp@ics.uci.edu  added logging
     if( logging )
-        doBodyLogging(resp.cd_type);
+        getBodyData();
     }
 
 
@@ -1010,33 +1010,14 @@ public class HTTPResponse implements HTTPClientModuleConstants, GlobalConstants
     }
 
 
-    // 2001-May-23: dav-exp@ics.uci.edu  added logging
-    private void doBodyLogging(int cd_type)
+    // 06 February 2004: Joachim Feise (dav-exp@ics.uci.edu) 
+    private void getBodyData()
     {
         if( Data == null )
         {
             try
             {
-        	    if( cd_type != CD_CHUNKED )
-                {
-                    getData();  // required so we can log the data
-                }
-            }
-            catch( Exception e )
-            {
-            }
-        }
-        if (Data != null )
-        {
-            try
-            {
-                // encoded body is logged elsewhere
-        	    if( cd_type != CD_CHUNKED )
-                {
-                    FileOutputStream fos = new FileOutputStream( logFilename, true );
-                    fos.write( Data );
-                    fos.close();
-                }
+                getData();  // required so we can log the data
             }
             catch( Exception e )
             {

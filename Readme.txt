@@ -122,6 +122,11 @@ DAV Explorer accepts the following command line options:
   This option prevents showing the local directory structure in the
   main DAV Explorer window.
 
+-Dcompress=no
+  This option prevents DAV Explorer from accepting compressed data.
+  This is a workaround for a bug in MS Exchange that results in corrupt
+  compressed data.
+
 
 5. Contributors
 The file contributors.txt contains a list of all contributors.
@@ -137,6 +142,10 @@ Changes for version 0.91-dev:
 - Added workaround for Documentum Modified-Date bug (their date strings
   are localized, which violates RFC2616) (thanks to Holger Spalt for
   alerting us to the problem.)
+- Integrated John Barton's refactoring changes and drop support.
+- Added the -Dcompress option to disable accepting compressed data.
+  This is a workaround for a bug in MS Exchange that results in corrupt
+  compressed data (thanks to Frédéric for alerting us to the problem.)
 
 Changes for version 0.90:
 - Bug fix in HTTPClient for PUT with Stream and Digest authentication.

@@ -291,6 +291,9 @@ class StreamDemultiplexor implements GlobalConstants
 
 		    case CD_CLOSE:
 			rcvd = Stream.read(b, off, len);
+            // 06 February 2004: Joachim Feise (dav-exp@ics.uci.edu): added logging
+            if( logging && rcvd != -1 )
+                logData( b, off, rcvd );
 			if (rcvd == -1)
 			    close(resph);
 			break;
@@ -303,6 +306,9 @@ class StreamDemultiplexor implements GlobalConstants
 			rcvd = Stream.read(b, off, len);
 			if (rcvd == -1)
 			    throw new EOFException("Premature EOF encountered");
+            // 06 February 2004: Joachim Feise (dav-exp@ics.uci.edu): added logging
+            if( logging )
+                logData( b, off, rcvd );
 
 			if (resph.stream.count+rcvd == cl)
 			    close(resph);
@@ -350,6 +356,9 @@ class StreamDemultiplexor implements GlobalConstants
 			rcvd = Stream.read(b, off, len);
 			if (rcvd == -1)
 			    throw new EOFException("Premature EOF encountered");
+            // 06 February 2004: Joachim Feise (dav-exp@ics.uci.edu): added logging
+            if( logging )
+                logData( b, off, rcvd );
 
 			int ovf = Stream.pastEnd(endbndry, end_cmp);
 			if (ovf != -1)

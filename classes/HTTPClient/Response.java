@@ -609,20 +609,6 @@ public final class Response implements RoResponse, GlobalConstants, Cloneable
 	    inp_stream.close();
 	}
 
-    // 2001-May-23: dav-exp@ics.uci.edu  added logging
-    if( logging )
-    {
-        try
-        {
-            FileOutputStream fos = new FileOutputStream( logFilename, true );
-            fos.write( Data );
-            fos.close();
-        }
-        catch( IOException e )
-        {
-        }
-    }
-
 	return Data;
     }
 
@@ -1417,24 +1403,6 @@ public final class Response implements RoResponse, GlobalConstants, Cloneable
 	    catch (IOException ioe)
 		{ }
 	}
-
-    // 2001-May-23: dav-exp@ics.uci.edu  added logging
-    if( logging )
-    {
-        try
-        {
-            // encoded body is logged elsewhere
-    	    if (getHeader("Transfer-Encoding") == null)
-            {
-                FileOutputStream fos = new FileOutputStream( logFilename, true );
-                fos.write( Data );
-                fos.close();
-            }
-        }
-        catch( IOException e )
-        {
-        }
-    }
     }
 
 
