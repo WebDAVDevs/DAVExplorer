@@ -36,6 +36,10 @@
  * @author      Joachim Feise (dav-exp@ics.uci.edu)
  * @date        27 April 2003
  * Changes:     Allowing empty lock info.
+ * @author      Joachim Feise (dav-exp@ics.uci.edu)
+ * @date        10 November 2003
+ * Changes:     The return key now triggers a programmatic click on the OK
+ *              button.
  */
 
 package edu.uci.ics.DAVExplorer;
@@ -62,45 +66,64 @@ Public methods and attributes section
     Vector listeners = new Vector();
 
     //Construction
-    public WebDAVLockInfo(JFrame parent, String strCaption, boolean isModal)
+    public WebDAVLockInfo( JFrame parent, String strCaption, boolean isModal )
     {
-        super(parent, strCaption, isModal);
+        super( parent, strCaption, isModal );
 
-        JPanel groupPanel = new JPanel(new GridLayout( 2, 1 ));
-        groupPanel.add(new JLabel("Lock Info:"));
-        groupPanel.add(txtUsername = new JTextField(40));
-        txtUsername.setText( GlobalData.getGlobalData().ReadConfigEntry("lockinfo") );
-        add(OKbutton = new JButton("OK"), BorderLayout.SOUTH);
-        OKbutton.addActionListener(this);
-        add(groupPanel, BorderLayout.CENTER);
+        JPanel groupPanel = new JPanel( new GridLayout( 2, 1 ) );
+        groupPanel.add( new JLabel( "Lock Info:" ) );
+        groupPanel.add( txtLockname = new JTextField( 40 ) );
+        txtLockname.setText( GlobalData.getGlobalData().ReadConfigEntry( "lockinfo" ) );
+        txtLockname.addActionListener( this );
+        add( okButton = new JButton( "OK" ), BorderLayout.SOUTH );
+        okButton.addActionListener( this );
+        add( groupPanel, BorderLayout.CENTER );
         pack();
         center();
         setVisible( true );
     }
 
 
-    public synchronized void addListener(ActionListener l)
+    public synchronized void addListener( ActionListener l )
     {
-        listeners.addElement(l);
+        listeners.addElement( l );
     }
 
 
-    public synchronized void removeListener(ActionListener l)
+    public synchronized void removeListener( ActionListener l )
     {
-        listeners.removeElement(l);
+        listeners.removeElement( l );
     }
 
 
-    public void actionPerformed(ActionEvent e)
+    public void actionPerformed( ActionEvent e )
     {
-        if(e.getActionCommand().equals("OK"))
+        if( e.getActionCommand().equals( "OK" ) )
         {
-            String user = txtUsername.getText();
+            String lockinfo = txtLockname.getText();
             // note: empty lockinfo is allowed, defaults to "DAV Explorer"
-            GlobalData.getGlobalData().WriteConfigEntry( "lockinfo", user );
+            GlobalData.getGlobalData().WriteConfigEntry( "lockinfo", lockinfo );
+            setVisible( false );
+            dispose();
         }
-        setVisible( false );
-        dispose();
+        else
+        {
+            /*
+             * Simulate click on default button
+             * JTextFields intercept the return button
+             * Ideally, this would be modified by code like this:
+             * static {
+             *   JTextField f = new JTextField();
+             *   KeyStroke enter = KeyStroke.getKeyStroke(KeyEvent.VK_ENTER, 0);
+             *   Keymap map = f.getKeymap();
+             *   map.removeKeyStrokeBinding(enter);
+             * }
+             * However, this changes the keymap for *all* JTextFields, and we
+             * need the original mapping for the URI box
+             */
+            if ( okButton.isEnabled() )
+                okButton.doClick();
+        }
     }
 
 
@@ -116,6 +139,6 @@ Protected methods and attributes section
     }
 
 
-    protected JTextField txtUsername;
-    protected JButton OKbutton;
+    protected JTextField txtLockname;
+    protected JButton okButton;
 }

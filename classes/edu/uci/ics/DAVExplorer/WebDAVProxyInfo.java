@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2001 Regents of the University of California.
+ * Copyright (c) 2001-2003 Regents of the University of California.
  * All rights reserved.
  *
  * This software was developed at the University of California, Irvine.
@@ -20,12 +20,16 @@
 /**
  * Title:       WebDAV Proxy Info Dialog
  * Description: Dialog for entering the URL of a Proxy server to use
- * Copyright:   Copyright (c) 2001 Regents of the University of California. All rights reserved.
+ * Copyright:   Copyright (c) 2001-2003 Regents of the University of California. All rights reserved.
  * @author      Joachim Feise (dav-exp@ics.uci.edu)
  * @date        22 May 2001
  * @author      Joachim Feise (dav-exp@ics.uci.edu)
  * @date        1 October 2001
  * Changes:     Change of package name
+ * @author      Joachim Feise (dav-exp@ics.uci.edu)
+ * @date        10 November 2003
+ * Changes:     The return key now triggers a programmatic click on the OK
+ *              button.
  */
 
 package edu.uci.ics.DAVExplorer;
@@ -52,42 +56,60 @@ Public methods and attributes section
     Vector listeners = new Vector();
 
     //Construction
-    public WebDAVProxyInfo(JFrame parent, String strCaption, boolean isModal)
+    public WebDAVProxyInfo( JFrame parent, String strCaption, boolean isModal )
     {
-        super(parent, strCaption, isModal);
+        super( parent, strCaption, isModal );
 
-        JPanel groupPanel = new JPanel(new GridLayout( 2, 1 ));
-        groupPanel.add(new JLabel("Proxy Info:"));
-        groupPanel.add(txtUsername = new JTextField(40));
-        txtUsername.setText( GlobalData.getGlobalData().ReadConfigEntry("proxy") );
-        add(OKbutton = new JButton("OK"), BorderLayout.SOUTH);
-        OKbutton.addActionListener(this);
-        add(groupPanel, BorderLayout.CENTER);
+        JPanel groupPanel = new JPanel( new GridLayout( 2, 1 ) );
+        groupPanel.add( new JLabel( "Proxy Info:" ) );
+        groupPanel.add( txtProxyname = new JTextField( 40 ) );
+        txtProxyname.setText( GlobalData.getGlobalData().ReadConfigEntry( "proxy" ) );
+        txtProxyname.addActionListener( this );
+        add( okButton = new JButton( "OK" ), BorderLayout.SOUTH );
+        okButton.addActionListener( this );
+        add( groupPanel, BorderLayout.CENTER );
         pack();
         center();
         setVisible( true );
     }
 
-    public synchronized void addListener(ActionListener l)
+    public synchronized void addListener( ActionListener l )
     {
-        listeners.addElement(l);
+        listeners.addElement( l );
     }
 
-    public synchronized void removeListener(ActionListener l)
+    public synchronized void removeListener( ActionListener l )
     {
-        listeners.removeElement(l);
+        listeners.removeElement( l );
     }
 
-    public void actionPerformed(ActionEvent e)
+    public void actionPerformed( ActionEvent e )
     {
-        if(e.getActionCommand().equals("OK"))
+        if( e.getActionCommand().equals( "OK" ) )
         {
-            String user = txtUsername.getText();
-
-            GlobalData.getGlobalData().WriteConfigEntry( "proxy", user );
+            String proxy = txtProxyname.getText();
+            GlobalData.getGlobalData().WriteConfigEntry( "proxy", proxy );
+            setVisible( false );
+            dispose();
         }
-        setVisible( false );
-        dispose();
+        else
+        {
+            /*
+             * Simulate click on default button
+             * JTextFields intercept the return button
+             * Ideally, this would be modified by code like this:
+             * static {
+             *   JTextField f = new JTextField();
+             *   KeyStroke enter = KeyStroke.getKeyStroke(KeyEvent.VK_ENTER, 0);
+             *   Keymap map = f.getKeymap();
+             *   map.removeKeyStrokeBinding(enter);
+             * }
+             * However, this changes the keymap for *all* JTextFields, and we
+             * need the original mapping for the URI box
+             */
+            if ( okButton.isEnabled() )
+                okButton.doClick();
+        }
     }
 
 /*-----------------------------------------------------------------------
@@ -101,10 +123,11 @@ Protected methods and attributes section
     {
         Rectangle recthDimensions = getParent().getBounds();
         Rectangle bounds = getBounds();
-        setBounds(recthDimensions.x + (recthDimensions.width-bounds.width)/2,
-             recthDimensions.y + (recthDimensions.height - bounds.height)/2, bounds.width, bounds.height );
+        setBounds( recthDimensions.x + (recthDimensions.width-bounds.width)/2,
+                   recthDimensions.y + (recthDimensions.height - bounds.height)/2,
+                   bounds.width, bounds.height );
     }
 
-    protected JTextField txtUsername;
-    protected JButton OKbutton;
+    protected JTextField txtProxyname;
+    protected JButton okButton;
 }
