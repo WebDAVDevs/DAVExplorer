@@ -1315,7 +1315,7 @@ public class Main extends JFrame
                         GlobalData.getGlobalData().errorMsg( "No resource selected." );
                         return;
                     }
-                    ACLReportPropertiesDialog dlg = new ACLReportPropertiesDialog( s );
+                    ACLReportPropertiesDialog dlg = new ACLReportPropertiesDialog( s, true );
                     if( !dlg.isCanceled() )
                     {
                         Vector props = dlg.getSelected(); 
@@ -1336,14 +1336,15 @@ public class Main extends JFrame
                         GlobalData.getGlobalData().errorMsg( "No resource selected." );
                         return;
                     }
-                    ACLReportSearchPropertyDialog dlg = new ACLReportSearchPropertyDialog( s );
+                    ACLReportSearchPropertyDialog dlg = new ACLReportSearchPropertyDialog( s, false );
                     if( !dlg.isCanceled() )
                     {
                         Vector criteria = dlg.getSearchCriteria(); 
-                        Vector props = dlg.getSelected(); 
+                        Vector props = dlg.getSelected();
+                        boolean self = dlg.isSelf();
                         WebDAVTreeNode n = fileView.getParentNode();
                         requestGenerator.setResource( s, n );
-                        if( requestGenerator.GetPrincipalMatchReport( criteria, props ) )
+                        if( requestGenerator.GetPrincipalMatchReport( criteria, props, self ) )
                             requestGenerator.execute();
                     }
                     break;
@@ -1358,7 +1359,7 @@ public class Main extends JFrame
                         GlobalData.getGlobalData().errorMsg( "No resource selected." );
                         return;
                     }
-                    ACLReportSearchPropertyDialog dlg = new ACLReportSearchPropertyDialog( s );
+                    ACLReportSearchPropertyDialog dlg = new ACLReportSearchPropertyDialog( s, true );
                     if( !dlg.isCanceled() )
                     {
                         Vector criteria = dlg.getSearchCriteria(); 

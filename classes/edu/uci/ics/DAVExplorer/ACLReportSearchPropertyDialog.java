@@ -21,6 +21,8 @@ package edu.uci.ics.DAVExplorer;
 import java.awt.Color;
 import java.awt.Cursor;
 import java.awt.BorderLayout;
+import java.awt.GridBagConstraints;
+import java.awt.GridBagLayout;
 import java.awt.Dimension;
 import java.awt.event.ActionEvent;
 import java.awt.event.KeyEvent;
@@ -29,6 +31,7 @@ import java.awt.event.WindowEvent;
 import java.util.Vector;
 
 import javax.swing.JButton;
+import javax.swing.JCheckBox;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
@@ -49,11 +52,11 @@ public class ACLReportSearchPropertyDialog extends ACLReportPropertiesDialog
      * Constructor
      * 
      * @param resource
+     *      the resource the privileges are applied to
      */
     public ACLReportSearchPropertyDialog( String resource )
     {
-        super( resource, "Select Search Criteria" );
-        this.match = true;
+        super( resource, "Select Search Criteria", true );
     }
 
 
@@ -61,12 +64,13 @@ public class ACLReportSearchPropertyDialog extends ACLReportPropertiesDialog
      * Constructor
      * 
      * @param resource
+     *      the resource the privileges are applied to
      * @param match
+     *      true if showing the match edit box, false if showing the self checkbox
      */
     public ACLReportSearchPropertyDialog( String resource, boolean match )
     {
-        super( resource, "Select Search Criteria" );
-        this.match = match;
+        super( resource, "Select Search Criteria", match );
     }
 
 
@@ -76,10 +80,26 @@ public class ACLReportSearchPropertyDialog extends ACLReportPropertiesDialog
      * @param resource
      * @param node
      */
-    protected void init( String resource, String hostname, Vector reserved, String title )
+    /**
+     * Creates the dialog panel
+     * 
+     * @param resource
+     *      the resource the privileges are applied to
+     * @param hostname
+     *      the server name
+     * @param reserved
+     *      unused
+     * @param title
+     *      the dialog title
+     * @param match
+     *      true if showing the match edit box, false if showing the self checkbox
+     */
+    protected void init( String resource, String hostname, Vector reserved, String title, boolean match )
     {
         GlobalData.getGlobalData().setCursor( Cursor.getPredefinedCursor( Cursor.WAIT_CURSOR ) );
         this.resource = resource;
+        this.match = match;
+        this.self = !match;
         available = new Vector();
         selected = new Vector();
         setTitle( title );
@@ -140,13 +160,32 @@ public class ACLReportSearchPropertyDialog extends ACLReportPropertiesDialog
         panel.setLayout( new BorderLayout() );
         panel.add( label, BorderLayout.NORTH );
 
-        propTable = new JTable( new ACLPropertySearchModel() );
+        propTable = new JTable( new ACLPropertySearchModel( match ) );
         propTable.getSelectionModel().addListSelectionListener(this);
         propTable.setPreferredScrollableViewportSize( new Dimension( 400, 100 ) );
         JScrollPane scrollpane = new JScrollPane();
         scrollpane.setViewportView( propTable );
-        panel.add( scrollpane, BorderLayout.CENTER );
-
+        if( self )
+        {
+            JPanel subPanel = new JPanel( false );
+            GridBagLayout gridbag = new GridBagLayout();
+            GridBagConstraints c = new GridBagConstraints();
+            subPanel.setLayout( gridbag );
+            c.fill = GridBagConstraints.BOTH;
+            c.weighty = 5.0;
+            c.gridwidth = GridBagConstraints.REMAINDER;
+            gridbag.setConstraints( scrollpane, c );
+            subPanel.add( scrollpane );
+            selfBox = new JCheckBox( "Self" );
+            selfBox.addActionListener( this );
+            selfBox.setMnemonic( KeyEvent.VK_S );
+            c.weighty = 1.0;
+            gridbag.setConstraints( selfBox, c );
+            subPanel.add( selfBox );
+            panel.add( subPanel, BorderLayout.CENTER );
+        }
+        else
+            panel.add( scrollpane, BorderLayout.CENTER );
         addButton = new JButton("Add");
         addButton.addActionListener(this);
         addButton.setMnemonic( KeyEvent.VK_A );
@@ -176,10 +215,13 @@ public class ACLReportSearchPropertyDialog extends ACLReportPropertiesDialog
      * 
      * @param enable
      */
-    public void setChanged( boolean enable )
+    public void setChanged()
     {
-        changed = enable;
-        okButton.setEnabled( (((ACLPropertySearchModel)propTable.getModel()).getRealRowCount()>0) && changed );
+        changed = true;
+        boolean okEnable = (((ACLPropertySearchModel)propTable.getModel()).getRealRowCount()>0) && changed;
+        if( self )
+            okEnable |= selfBox.isSelected();
+        okButton.setEnabled( okEnable );
     }
 
 
@@ -195,7 +237,7 @@ public class ACLReportSearchPropertyDialog extends ACLReportPropertiesDialog
             if( !dlg.isCanceled() )
             {
                 ((ACLPropertySearchModel)propTable.getModel()).addRow( dlg.getSelected(), dlg.getMatch() );
-                setChanged( true );
+                setChanged();
             }
         }
         else if( e.getActionCommand().equals("Delete") )
@@ -203,7 +245,20 @@ public class ACLReportSearchPropertyDialog extends ACLReportPropertiesDialog
             int pos = propTable.getSelectedRow();
             ((ACLPropertySearchModel)propTable.getModel()).removeRow( pos );
             deleteButton.setEnabled( false );
-            setChanged( true );
+            setChanged();
+        }
+        else if( e.getActionCommand().equals("Self") )
+        {
+            addButton.setEnabled( !selfBox.isSelected() );
+            propTable.setEnabled( !selfBox.isSelected() );
+            if( selfBox.isSelected() )
+                deleteButton.setEnabled( false );
+            else
+            {
+                if( ((ACLPropertySearchModel)propTable.getModel()).getRealRowCount() > 0 )
+                    deleteButton.setEnabled( true );
+            }
+            setChanged();
         }
         else
             super.actionPerformed( e );
@@ -240,8 +295,18 @@ public class ACLReportSearchPropertyDialog extends ACLReportPropertiesDialog
     }
 
 
+    public boolean isSelf()
+    {
+        if( self )
+            return selfBox.isSelected();
+        return false;
+    }
+
+
     protected JTable propTable;
     protected JButton addButton;
     protected JButton deleteButton;
+    protected JCheckBox selfBox;
     protected boolean match;
+    protected boolean self;
 }

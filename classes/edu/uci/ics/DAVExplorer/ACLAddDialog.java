@@ -281,7 +281,7 @@ public class ACLAddDialog extends JDialog
         }
         else if( e.getActionCommand().equals("Change") )
         {
-            ACLChangePrivilegesDialog dlg = new ACLChangePrivilegesDialog( resource, hostname, privileges );
+            ACLChangePrivilegesDialog dlg = new ACLChangePrivilegesDialog( resource, hostname, privileges, true );
             if( !dlg.isCanceled() )
             {
                 privileges = dlg.getSelected();

@@ -60,11 +60,13 @@ implements ActionListener, ChangeListener, ListSelectionListener, WebDAVCompleti
      *      the server name
      * @param selected
      *      a vector of already selected privileges
+     * @param flag
+     *      a general-purpose flag, useful for derived classes
      */
-    public ACLChangePrivilegesDialog( String resource, String hostname, Vector selected )
+    public ACLChangePrivilegesDialog( String resource, String hostname, Vector selected, boolean flag )
     {
         super( GlobalData.getGlobalData().getMainFrame(), true );
-        init( resource, hostname, selected, "Edit Privileges" );
+        init( resource, hostname, selected, "Edit Privileges", flag );
         pack();
         setSize( getPreferredSize() );
         GlobalData.getGlobalData().center( this );
@@ -83,11 +85,13 @@ implements ActionListener, ChangeListener, ListSelectionListener, WebDAVCompleti
      *      a vector of already selected privileges
      * @param title
      *      the dialog title
+     * @param flag
+     *      a general-purpose flag, useful for derived classes
      */
-    public ACLChangePrivilegesDialog( String resource, String hostname, Vector selected, String title )
+    public ACLChangePrivilegesDialog( String resource, String hostname, Vector selected, String title, boolean flag )
     {
         super( GlobalData.getGlobalData().getMainFrame(), true );
-        init( resource, hostname, selected, title );
+        init( resource, hostname, selected, title, flag );
         pack();
         setSize( getPreferredSize() );
         GlobalData.getGlobalData().center( this );
@@ -106,8 +110,10 @@ implements ActionListener, ChangeListener, ListSelectionListener, WebDAVCompleti
      *      a vector of already selected privileges
      * @param title
      *      the dialog title
+     * @param flag
+     *      a general-purpose flag, useful for derived classes
      */
-    protected void init( String resource, String hostname, Vector selected, String title )
+    protected void init( String resource, String hostname, Vector selected, String title, boolean flag )
     {
         GlobalData.getGlobalData().setCursor( Cursor.getPredefinedCursor( Cursor.WAIT_CURSOR ) );
         this.hostname = hostname;

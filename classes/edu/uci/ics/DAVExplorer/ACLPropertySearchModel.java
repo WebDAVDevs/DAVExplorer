@@ -37,6 +37,17 @@ public class ACLPropertySearchModel extends AbstractTableModel
     public ACLPropertySearchModel()
     {
         super();
+        this.match = true;
+    }
+
+
+    /**
+     * Constructor 
+     */
+    public ACLPropertySearchModel( boolean match )
+    {
+        super();
+        this.match = match;
     }
 
 
@@ -67,7 +78,7 @@ public class ACLPropertySearchModel extends AbstractTableModel
      */
     public int getColumnCount()
     {
-        return 2;
+        return match ? 2 : 1;
     }
 
 
@@ -172,4 +183,5 @@ public class ACLPropertySearchModel extends AbstractTableModel
     protected Class[] types = { String.class, String.class };
 
     protected Vector rows = new Vector();
+    protected boolean match;
 }

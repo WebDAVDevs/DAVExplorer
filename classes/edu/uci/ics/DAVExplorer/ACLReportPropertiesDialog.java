@@ -37,17 +37,17 @@ import javax.swing.JPanel;
  */
 public class ACLReportPropertiesDialog extends ACLChangePrivilegesDialog
 {
-
     /**
      * Constructor
      * 
      * @param resource
-     * @param hostname
-     * @param current
+     *      the resource the privileges are applied to
+     * @param flag
+     *      a general-purpose flag, useful for derived classes
      */
-    public ACLReportPropertiesDialog( String resource )
+    public ACLReportPropertiesDialog( String resource, boolean flag )
     {
-        super( resource, null, null, "Select Properties" );
+        super( resource, null, null, "Select Properties", flag );
     }
 
 
@@ -55,11 +55,15 @@ public class ACLReportPropertiesDialog extends ACLChangePrivilegesDialog
      * Constructor
      * 
      * @param resource
+     *      the resource the privileges are applied to
      * @param title
+     *      the dialog title
+     * @param flag
+     *      a general-purpose flag, useful for derived classes
      */
-    public ACLReportPropertiesDialog( String resource, String title )
+    public ACLReportPropertiesDialog( String resource, String title, boolean flag )
     {
-        super( resource, null, null, title );
+        super( resource, null, null, title, flag );
     }
 
 

@@ -53,6 +53,7 @@ public class ACLXML extends DeltaVXML
     public static final String ELEM_PRINCIPAL_PROPERTY_SEARCH = "principal-property-search";
     public static final String ELEM_PROPERTY_SEARCH = "property-search";
     public static final String ELEM_MATCH = "match";
+    public static final String ELEM_SELF = "self";
     public static final String ELEM_PRINCIPAL_SEARCH_PROPERTY = "principal-search-property";
     public static final String ELEM_PRINCIPAL_SEARCH_PROPERTY_SET = "principal-search-property-set";
 }

@@ -352,7 +352,7 @@ public class ACLRequestGenerator extends DeltaVRequestGenerator
      * @param props
      * @return
      */
-    public synchronized boolean GetPrincipalMatchReport( Vector criteria, Vector props )
+    public synchronized boolean GetPrincipalMatchReport( Vector criteria, Vector props, boolean self )
     {
         if( GlobalData.getGlobalData().getDebugRequest() )
         {
@@ -377,13 +377,19 @@ public class ACLRequestGenerator extends DeltaVRequestGenerator
 
         Element topElem = WebDAVXML.createElement( ACLXML.ELEM_PRINCIPAL_MATCH, Element.ELEMENT, null, asgen );
         topElem.addChild( WebDAVXML.elemNewline, null );
-        Element propElem = WebDAVXML.createElement( ACLXML.ELEM_PRINCIPAL_PROPERTY, Element.ELEMENT, topElem, asgen );
-        propElem.addChild( WebDAVXML.elemNewline, null );
-        for( int i=0; i<criteria.size(); i++ )
+        Element propElem;
+        if( self )
+            propElem = WebDAVXML.createElement( ACLXML.ELEM_SELF, Element.ELEMENT, topElem, asgen );
+        else
         {
-            ACLPropertySearchNode node = (ACLPropertySearchNode)criteria.get( i );
-            Vector searchProps = node.getProperties();
-            addProperties( propElem, asgen, searchProps, 1, false );
+            propElem = WebDAVXML.createElement( ACLXML.ELEM_PRINCIPAL_PROPERTY, Element.ELEMENT, topElem, asgen );
+            propElem.addChild( WebDAVXML.elemNewline, null );
+            for( int i=0; i<criteria.size(); i++ )
+            {
+                ACLPropertySearchNode node = (ACLPropertySearchNode)criteria.get( i );
+                Vector searchProps = node.getProperties();
+                addProperties( propElem, asgen, searchProps, 1, false );
+            }
         }
         addChild( topElem, propElem, 1, false );
         if( props != null && props.size() > 0 )
