@@ -2462,6 +2462,7 @@ public class HTTPConnection
 	try
 	{
 	    HTTPResponse resp = new HTTPResponse(gen_mod_insts(), Timeout, req);
+            resp.setLogging( logging, logFilename );
 	    handleRequest(req, resp, null, true);
 	    return resp;
 	}
@@ -2972,9 +2973,12 @@ public class HTTPConnection
 		// Note: this does not do a read on the socket.
 
 		if (resp == null)
+                {
 		    resp = new Response(req, (Proxy_Host != null &&
 					     Protocol != HTTPS),
 					input_demux);
+                    resp.setLogging( logging, logFilename );
+                }
 	    }
 	    catch (IOException ioe)
 	    {

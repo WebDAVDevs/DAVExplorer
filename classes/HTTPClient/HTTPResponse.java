@@ -725,7 +725,7 @@ public class HTTPResponse implements GlobalConstants, HTTPClientModuleConstants
 	this.inp_stream    = resp.inp_stream;
 	this.Data          = resp.Data;
 	initialized        = true;
-        setLogging( resp );
+        //setLogging( resp );
 
         // ????????? jfeise
         if( logging )
