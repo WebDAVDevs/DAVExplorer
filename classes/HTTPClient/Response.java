@@ -1,5 +1,5 @@
 /*
- * @(#)Response.java					0.3-1 10/02/1999
+ * @(#)Response.java                    0.3-1 10/02/1999
  *
  *  This file is part of the HTTPClient package
  *  Copyright (C) 1996-1999  Ronald Tschalär
@@ -48,8 +48,8 @@ import java.util.NoSuchElementException;
  * modules. When all modules have handled the response then the HTTPResponse
  * fills in its fields with the data from this class.
  *
- * @version	0.3-1  10/02/1999
- * @author	Ronald Tschalär
+ * @version 0.3-1  10/02/1999
+ * @author  Ronald Tschalär
  */
 
 public final class Response implements RoResponse, GlobalConstants
@@ -127,10 +127,10 @@ public final class Response implements RoResponse, GlobalConstants
     /** should this response be handled further? */
             boolean      final_resp = false;
 
-    private boolean       logging = false;
-    private String        logFilename = null;
-    private static String inboundHeader = "\r\n========= Inbound Message Header =========\r\n";
-    private static String inboundBody   = "\r\n========= Inbound Message Body =========\r\n";
+    private static boolean logging = false;
+    private static String  logFilename = null;
+    private static String  inboundHeader = "\r\n========= Inbound Message Header =========\r\n";
+    private static String  inboundBody   = "\r\n========= Inbound Message Body =========\r\n";
 
     // Constructors
 
@@ -138,19 +138,19 @@ public final class Response implements RoResponse, GlobalConstants
      * Creates a new Response and registers it with the stream-demultiplexor.
      */
     Response(Request request, boolean used_proxy,
-	     StreamDemultiplexor stream_handler)
-	    throws IOException
+         StreamDemultiplexor stream_handler)
+        throws IOException
     {
-	this.connection     = request.getConnection();
-	this.method         = request.getMethod();
-	this.resource       = request.getRequestURI();
-	this.used_proxy     = used_proxy;
-	this.stream_handler = stream_handler;
-	sent_entity         = (request.getData() != null) ? true : false;
+    this.connection     = request.getConnection();
+    this.method         = request.getMethod();
+    this.resource       = request.getRequestURI();
+    this.used_proxy     = used_proxy;
+    this.stream_handler = stream_handler;
+    sent_entity         = (request.getData() != null) ? true : false;
 
-	stream_handler.register(this, request);
-	resp_inp_stream     = stream_handler.getStream(this);
-	inp_stream          = resp_inp_stream;
+    stream_handler.register(this, request);
+    resp_inp_stream     = stream_handler.getStream(this);
+    inp_stream          = resp_inp_stream;
     }
 
 
@@ -165,13 +165,13 @@ public final class Response implements RoResponse, GlobalConstants
      */
     Response(Request request, InputStream is) throws IOException
     {
-	this.connection = request.getConnection();
-	this.method     = request.getMethod();
-	this.resource   = request.getRequestURI();
-	used_proxy      = false;
-	stream_handler  = null;
-	sent_entity     = (request.getData() != null) ? true : false;
-	inp_stream      = is;
+    this.connection = request.getConnection();
+    this.method     = request.getMethod();
+    this.resource   = request.getRequestURI();
+    used_proxy      = false;
+    stream_handler  = null;
+    sent_entity     = (request.getData() != null) ? true : false;
+    inp_stream      = is;
     }
 
 
@@ -193,26 +193,28 @@ public final class Response implements RoResponse, GlobalConstants
      * @param cont_len the length of the data in the InputStream
      */
     public Response(String version, int status, String reason, NVPair[] headers,
-		    byte[] data, InputStream is, int cont_len)
+            byte[] data, InputStream is, int cont_len)
     {
-	this.Version    = version;
-	this.StatusCode = status;
-	this.ReasonLine = reason;
-	if (headers != null)
-	    for (int idx=0; idx<headers.length; idx++)
-		setHeader(headers[idx].getName(), headers[idx].getValue());
-	if (data != null)
-	    this.Data   = data;
-	else if (is == null)
-	    this.Data   = new byte[0];
-	else
-	{
-	    this.inp_stream = is;
-	    ContentLength   = cont_len;
-	}
+    this.Version    = version;
+    this.StatusCode = status;
+    this.ReasonLine = reason;
+    if (headers != null)
+        for (int idx=0; idx<headers.length; idx++)
+        setHeader(headers[idx].getName(), headers[idx].getValue());
+    if (data != null)
+    {
+        this.Data   = data;
+    }
+    else if (is == null)
+        this.Data   = new byte[0];
+    else
+    {
+        this.inp_stream = is;
+        ContentLength   = cont_len;
+    }
 
-	got_headers  = true;
-	got_trailers = true;
+    got_headers  = true;
+    got_trailers = true;
     }
 
 
@@ -232,8 +234,8 @@ public final class Response implements RoResponse, GlobalConstants
      */
     public final int getStatusCode()  throws IOException
     {
-	if (!got_headers)  getHeaders(true);
-	return StatusCode;
+    if (!got_headers)  getHeaders(true);
+    return StatusCode;
     }
 
     /**
@@ -243,8 +245,8 @@ public final class Response implements RoResponse, GlobalConstants
      */
     public final String getReasonLine()  throws IOException
     {
-	if (!got_headers)  getHeaders(true);
-	return ReasonLine;
+    if (!got_headers)  getHeaders(true);
+    return ReasonLine;
     }
 
     /**
@@ -254,8 +256,8 @@ public final class Response implements RoResponse, GlobalConstants
      */
     public final String getVersion()  throws IOException
     {
-	if (!got_headers)  getHeaders(true);
-	return Version;
+    if (!got_headers)  getHeaders(true);
+    return Version;
     }
 
     /**
@@ -265,8 +267,8 @@ public final class Response implements RoResponse, GlobalConstants
      */
     int getContinue()  throws IOException
     {
-	getHeaders(false);
-	return StatusCode;
+    getHeaders(false);
+    return StatusCode;
     }
 
     /**
@@ -279,8 +281,8 @@ public final class Response implements RoResponse, GlobalConstants
      */
     public final URI getEffectiveURI()  throws IOException
     {
-	if (!got_headers)  getHeaders(true);
-	return EffectiveURI;
+    if (!got_headers)  getHeaders(true);
+    return EffectiveURI;
     }
 
     /**
@@ -288,7 +290,7 @@ public final class Response implements RoResponse, GlobalConstants
      */
     public void setEffectiveURI(URI final_uri)
     {
-	EffectiveURI = final_uri;
+    EffectiveURI = final_uri;
     }
 
     /**
@@ -302,7 +304,7 @@ public final class Response implements RoResponse, GlobalConstants
      */
     public final URL getEffectiveURL()  throws IOException
     {
-	return getEffectiveURI().toURL();
+    return getEffectiveURI().toURL();
     }
 
     /**
@@ -313,10 +315,10 @@ public final class Response implements RoResponse, GlobalConstants
      */
     public void setEffectiveURL(URL final_url)
     {
-	try
-	    { setEffectiveURI(new URI(final_url)); }
-	catch (ParseException pe)
-	    { throw new Error(pe.toString()); }		// shouldn't happen
+    try
+        { setEffectiveURI(new URI(final_url)); }
+    catch (ParseException pe)
+        { throw new Error(pe.toString()); }     // shouldn't happen
     }
 
     /**
@@ -328,8 +330,8 @@ public final class Response implements RoResponse, GlobalConstants
      */
     public String getHeader(String hdr)  throws IOException
     {
-	if (!got_headers)  getHeaders(true);
-	return (String) Headers.get(hdr.trim());
+    if (!got_headers)  getHeaders(true);
+    return (String) Headers.get(hdr.trim());
     }
 
     /**
@@ -343,9 +345,9 @@ public final class Response implements RoResponse, GlobalConstants
      * @exception IOException if any exception occurs on the socket.
      */
     public int getHeaderAsInt(String hdr)
-		throws IOException, NumberFormatException
+        throws IOException, NumberFormatException
     {
-	return Integer.parseInt(getHeader(hdr));
+    return Integer.parseInt(getHeader(hdr));
     }
 
     /**
@@ -353,7 +355,7 @@ public final class Response implements RoResponse, GlobalConstants
      * date; if this fails it is parsed as a long representing the number
      * of seconds since 12:00 AM, Jan 1st, 1970. If this also fails an
      * IllegalArgumentException is thrown.
-     * 
+     *
      * <P>Note: When sending dates use Util.httpDate().
      *
      * @param  hdr the header name.
@@ -363,31 +365,31 @@ public final class Response implements RoResponse, GlobalConstants
      *            as a date or time.
      */
     public Date getHeaderAsDate(String hdr)
-		throws IOException, IllegalArgumentException
+        throws IOException, IllegalArgumentException
     {
-	String raw_date = getHeader(hdr);
-	if (raw_date == null)  return null;
+    String raw_date = getHeader(hdr);
+    if (raw_date == null)  return null;
 
-	// asctime() format is missing an explicit GMT specifier
-	if (raw_date.toUpperCase().indexOf("GMT") == -1)
-	    raw_date += " GMT";
+    // asctime() format is missing an explicit GMT specifier
+    if (raw_date.toUpperCase().indexOf("GMT") == -1)
+        raw_date += " GMT";
 
-	Date date;
+    Date date;
 
-	try
-	    { date = new Date(raw_date); }
-	catch (IllegalArgumentException iae)
-	{
-	    long time;
-	    try
-		{ time = Long.parseLong(raw_date); }
-	    catch (NumberFormatException nfe)
-		{ throw iae; }
-	    if (time < 0)  time = 0;
-	    date = new Date(time * 1000L);
-	}
+    try
+        { date = new Date(raw_date); }
+    catch (IllegalArgumentException iae)
+    {
+        long time;
+        try
+        { time = Long.parseLong(raw_date); }
+        catch (NumberFormatException nfe)
+        { throw iae; }
+        if (time < 0)  time = 0;
+        date = new Date(time * 1000L);
+    }
 
-	return date;
+    return date;
     }
 
 
@@ -403,7 +405,7 @@ public final class Response implements RoResponse, GlobalConstants
      */
     public void setHeader(String header, String value)
     {
-	Headers.put(header.trim(), value.trim());
+    Headers.put(header.trim(), value.trim());
     }
 
 
@@ -416,7 +418,7 @@ public final class Response implements RoResponse, GlobalConstants
      */
     public void deleteHeader(String header)
     {
-	Headers.remove(header.trim());
+    Headers.remove(header.trim());
     }
 
 
@@ -431,8 +433,8 @@ public final class Response implements RoResponse, GlobalConstants
      */
     public String getTrailer(String trailer)  throws IOException
     {
-	if (!got_trailers)  getTrailers();
-	return (String) Trailers.get(trailer.trim());
+    if (!got_trailers)  getTrailers();
+    return (String) Trailers.get(trailer.trim());
     }
 
 
@@ -447,9 +449,9 @@ public final class Response implements RoResponse, GlobalConstants
      * @exception IOException if any exception occurs on the socket.
      */
     public int getTrailerAsInt(String trailer)
-		throws IOException, NumberFormatException
+        throws IOException, NumberFormatException
     {
-	return Integer.parseInt(getTrailer(trailer));
+    return Integer.parseInt(getTrailer(trailer));
     }
 
 
@@ -470,32 +472,32 @@ public final class Response implements RoResponse, GlobalConstants
      *            as a date or time.
      */
     public Date getTrailerAsDate(String trailer)
-		throws IOException, IllegalArgumentException
+        throws IOException, IllegalArgumentException
     {
-	String raw_date = getTrailer(trailer);
-	if (raw_date == null) return null;
+    String raw_date = getTrailer(trailer);
+    if (raw_date == null) return null;
 
-	// asctime() format is missing an explicit GMT specifier
-	if (raw_date.toUpperCase().indexOf("GMT") == -1)
-	    raw_date += " GMT";
+    // asctime() format is missing an explicit GMT specifier
+    if (raw_date.toUpperCase().indexOf("GMT") == -1)
+        raw_date += " GMT";
 
-	Date   date;
+    Date   date;
 
-	try
-	    { date = new Date(raw_date); }
-	catch (IllegalArgumentException iae)
-	{
-	    // some servers erroneously send a number, so let's try that
-	    long time;
-	    try
-		{ time = Long.parseLong(raw_date); }
-	    catch (NumberFormatException nfe)
-		{ throw iae; }	// give up
-	    if (time < 0)  time = 0;
-	    date = new Date(time * 1000L);
-	}
+    try
+        { date = new Date(raw_date); }
+    catch (IllegalArgumentException iae)
+    {
+        // some servers erroneously send a number, so let's try that
+        long time;
+        try
+        { time = Long.parseLong(raw_date); }
+        catch (NumberFormatException nfe)
+        { throw iae; }  // give up
+        if (time < 0)  time = 0;
+        date = new Date(time * 1000L);
+    }
 
-	return date;
+    return date;
     }
 
 
@@ -511,7 +513,7 @@ public final class Response implements RoResponse, GlobalConstants
      */
     public void setTrailer(String trailer, String value)
     {
-	Trailers.put(trailer.trim(), value.trim());
+    Trailers.put(trailer.trim(), value.trim());
     }
 
 
@@ -524,7 +526,7 @@ public final class Response implements RoResponse, GlobalConstants
      */
     public void deleteTrailer(String trailer)
     {
-	Trailers.remove(trailer.trim());
+    Trailers.remove(trailer.trim());
     }
 
 
@@ -540,35 +542,49 @@ public final class Response implements RoResponse, GlobalConstants
      * @return an array containing the data (body) returned. If no data
      *         was returned then it's set to a zero-length array.
      * @exception IOException If any io exception occured while reading
-     *			      the data
+     *                the data
      */
     public synchronized byte[] getData()  throws IOException
     {
-	if (!got_headers)  getHeaders(true);
+    if (!got_headers)  getHeaders(true);
 
-	if (Data == null)
-	{
-	    try
-		{ readResponseData(inp_stream); }
-	    catch (InterruptedIOException ie)		// don't intercept
-		{ throw ie; }
-	    catch (IOException ioe)
-	    {
-		if (DebugResp)
-		{
-		    System.err.print("Resp:  (" + inp_stream.hashCode() +
-				     ") (" + Thread.currentThread() + ")");
-		    ioe.printStackTrace();
-		}
+    if (Data == null)
+    {
+        try
+        { readResponseData(inp_stream); }
+        catch (InterruptedIOException ie)       // don't intercept
+        { throw ie; }
+        catch (IOException ioe)
+        {
+        if (DebugResp)
+        {
+            System.err.print("Resp:  (" + inp_stream.hashCode() +
+                     ") (" + Thread.currentThread() + ")");
+            ioe.printStackTrace();
+        }
 
-		try { inp_stream.close(); } catch (Exception e) { }
-		throw ioe;
-	    }
+        try { inp_stream.close(); } catch (Exception e) { }
+        throw ioe;
+        }
 
-	    inp_stream.close();
-	}
+        inp_stream.close();
+    }
 
-	return Data;
+    if( logging )
+    {
+        try
+        {
+            FileOutputStream fos = new FileOutputStream( logFilename, true );
+            fos.write( inboundBody.getBytes() );
+            fos.write( Data );
+            fos.close();
+        }
+        catch( IOException e )
+        {
+        }
+    }
+
+    return Data;
     }
 
     /**
@@ -582,12 +598,12 @@ public final class Response implements RoResponse, GlobalConstants
      */
     public synchronized InputStream getInputStream()  throws IOException
     {
-	if (!got_headers)  getHeaders(true);
+    if (!got_headers)  getHeaders(true);
 
-	if (Data == null)
-	    return inp_stream;
-	else
-	    return new ByteArrayInputStream(Data);
+    if (Data == null)
+        return inp_stream;
+    else
+        return new ByteArrayInputStream(Data);
     }
 
     /**
@@ -602,9 +618,9 @@ public final class Response implements RoResponse, GlobalConstants
      */
     public synchronized boolean hasEntity()  throws IOException
     {
-	if (!got_headers)  getHeaders(true);
+    if (!got_headers)  getHeaders(true);
 
-	return (cd_type != CD_0);
+    return (cd_type != CD_0);
     }
 
 
@@ -618,224 +634,224 @@ public final class Response implements RoResponse, GlobalConstants
      */
     private synchronized void getHeaders(boolean skip_cont)  throws IOException
     {
-	if (got_headers)  return;
-	if (exception != null)
-	    throw (IOException) exception.fillInStackTrace();
+    if (got_headers)  return;
+    if (exception != null)
+        throw (IOException) exception.fillInStackTrace();
 
-	reading_headers = true;
-	try
-	{
-	    do
-	    {
-		Headers.clear();	// clear any headers from 100 Continue
-		String headers = readResponseHeaders(inp_stream);
-		parseResponseHeaders(headers);
-	    } while ((StatusCode == 100  &&  skip_cont)  ||	// Continue
-		     (StatusCode > 101  &&  StatusCode < 200));	// Unknown
-	}
-	catch (IOException ioe)
-	{
-	    if (!(ioe instanceof InterruptedIOException))
-		exception = ioe;
-	    if (ioe instanceof ProtocolException)	// thrown internally
-	    {
-		cd_type = CD_CLOSE;
-		if (stream_handler != null)
-		    stream_handler.markForClose(this);
-	    }
-	    throw ioe;
-	}
-	finally
-	    { reading_headers = false; }
-	if (StatusCode == 100) return;
+    reading_headers = true;
+    try
+    {
+        do
+        {
+        Headers.clear();    // clear any headers from 100 Continue
+        String headers = readResponseHeaders(inp_stream);
+        parseResponseHeaders(headers);
+        } while ((StatusCode == 100  &&  skip_cont)  || // Continue
+             (StatusCode > 101  &&  StatusCode < 200)); // Unknown
+    }
+    catch (IOException ioe)
+    {
+        if (!(ioe instanceof InterruptedIOException))
+        exception = ioe;
+        if (ioe instanceof ProtocolException)   // thrown internally
+        {
+        cd_type = CD_CLOSE;
+        if (stream_handler != null)
+            stream_handler.markForClose(this);
+        }
+        throw ioe;
+    }
+    finally
+        { reading_headers = false; }
+    if (StatusCode == 100) return;
 
-	got_headers = true;
-
-
-	// parse the Transfer-Encoding header
-
-	boolean te_chunked = false, te_is_identity = true, ct_mpbr = false;
-	Vector  te_hdr = null;
-	try
-	    { te_hdr = Util.parseHeader(getHeader("Transfer-Encoding")); }
-	catch (ParseException pe)
-	    { }
-	if (te_hdr != null)
-	{
-	    te_chunked = ((HttpHeaderElement) te_hdr.lastElement()).getName().
-			 equalsIgnoreCase("chunked");
-	    for (int idx=0; idx<te_hdr.size(); idx++)
-		if (((HttpHeaderElement) te_hdr.elementAt(idx)).getName().
-		    equalsIgnoreCase("identity"))
-		    te_hdr.removeElementAt(idx--);
-		else
-		    te_is_identity = false;
-	}
+    got_headers = true;
 
 
-	// parse Content-Type header
+    // parse the Transfer-Encoding header
 
-	try
-	{
-	    String hdr;
-	    if ((hdr = getHeader("Content-Type")) != null)
-	    {
-		Vector phdr = Util.parseHeader(hdr);
-		ct_mpbr = phdr.contains(new HttpHeaderElement("multipart/byteranges"))  ||
-			  phdr.contains(new HttpHeaderElement("multipart/x-byteranges"));
-	    }
-	}
-	catch (ParseException pe)
-	    { }
-
-
-	// now determine content-delimiter
-
-	if (method.equals("HEAD")  ||  ContentLength == 0  ||
-	    StatusCode < 200  ||
-	    StatusCode == 204  ||  StatusCode == 205  || StatusCode == 304)
-	{
-	    Data = new byte[0];		// we will not receive any more data
-	    cd_type = CD_0;
-	    inp_stream.close();
-	}
-	else if (te_chunked)
-	{
-	    cd_type = CD_CHUNKED;
-
-	    te_hdr.removeElementAt(te_hdr.size()-1);
-	    if (te_hdr.size() > 0)
-		setHeader("Transfer-Encoding", Util.assembleHeader(te_hdr));
-	    else
-		deleteHeader("Transfer-Encoding");
-	}
-	else if (ContentLength != -1  &&  te_is_identity)
-	    cd_type = CD_CONTLEN;
-	else if (ct_mpbr  &&  te_is_identity)
-	    cd_type = CD_MP_BR;
-	else
-	{
-	    cd_type = CD_CLOSE;
-	    if (stream_handler != null)
-		stream_handler.markForClose(this);
-
-	    if (Version.equals("HTTP/0.9"))
-	    {
-		inp_stream =
-			new SequenceInputStream(new ByteArrayInputStream(Data),
-						inp_stream);
-		Data = null;
-	    }
-	}
-
-	if (cd_type != CD_CONTLEN)
-	{
-	    deleteHeader("Content-Length");
-	    if (cd_type != CD_0)
-		ContentLength = -1;
-	}
-
-	if (DebugResp)
-	{
-	    System.err.println("Resp:  Response entity delimiter: " +
-		(cd_type == CD_0       ? "No Entity"      :
-		 cd_type == CD_CLOSE   ? "Close"          :
-		 cd_type == CD_CONTLEN ? "Content-Length" :
-		 cd_type == CD_CHUNKED ? "Chunked"        :
-		 cd_type == CD_MP_BR   ? "Multipart"      :
-		 "???" ) + " (" + inp_stream.hashCode() + ") (" +
-		 Thread.currentThread() + ")");
-	}
-
-	// special handling if this is the first response received
-	if (isFirstResponse)
-	{
-	    if (!connection.handleFirstRequest(req, this))
-	    {
-		// got a buggy server - need to redo the request
-		Response resp;
-		try
-		    { resp = connection.sendRequest(req, timeout); }
-		catch (ModuleException me)
-		    { throw new IOException(me.toString()); }
-		resp.getVersion();
-
-		this.StatusCode    = resp.StatusCode;
-		this.ReasonLine    = resp.ReasonLine;
-		this.Version       = resp.Version;
-		this.EffectiveURI  = resp.EffectiveURI;
-		this.ContentLength = resp.ContentLength;
-		this.Headers       = resp.Headers;
-		this.inp_stream    = resp.inp_stream;
-		this.Data          = resp.Data;
-
-		req = null;
-	    }
-	}
+    boolean te_chunked = false, te_is_identity = true, ct_mpbr = false;
+    Vector  te_hdr = null;
+    try
+        { te_hdr = Util.parseHeader(getHeader("Transfer-Encoding")); }
+    catch (ParseException pe)
+        { }
+    if (te_hdr != null)
+    {
+        te_chunked = ((HttpHeaderElement) te_hdr.lastElement()).getName().
+             equalsIgnoreCase("chunked");
+        for (int idx=0; idx<te_hdr.size(); idx++)
+        if (((HttpHeaderElement) te_hdr.elementAt(idx)).getName().
+            equalsIgnoreCase("identity"))
+            te_hdr.removeElementAt(idx--);
+        else
+            te_is_identity = false;
+    }
 
 
-	// remove erroneous connection tokens
+    // parse Content-Type header
 
-	if (connection.ServerProtocolVersion >= HTTP_1_1)
-	    deleteHeader("Proxy-Connection");
-	else					// HTTP/1.0
-	{
-	    if (connection.getProxyHost() != null)
-		deleteHeader("Connection");
-	    else
-		deleteHeader("Proxy-Connection");
+    try
+    {
+        String hdr;
+        if ((hdr = getHeader("Content-Type")) != null)
+        {
+        Vector phdr = Util.parseHeader(hdr);
+        ct_mpbr = phdr.contains(new HttpHeaderElement("multipart/byteranges"))  ||
+              phdr.contains(new HttpHeaderElement("multipart/x-byteranges"));
+        }
+    }
+    catch (ParseException pe)
+        { }
 
-	    Vector pco;
-	    try
-		{ pco = Util.parseHeader(getHeader("Connection")); }
-	    catch (ParseException pe)
-		{ pco = null; }
 
-	    if (pco != null)
-	    {
-		for (int idx=0; idx<pco.size(); idx++)
-		{
-		    String name =
-			    ((HttpHeaderElement) pco.elementAt(idx)).getName();
-		    if (!name.equalsIgnoreCase("keep-alive"))
-		    {
-			pco.removeElementAt(idx);
-			deleteHeader(name);
-			idx--;
-		    }
-		}
+    // now determine content-delimiter
 
-		if (pco.size() > 0)
-		    setHeader("Connection", Util.assembleHeader(pco));
-		else
-		    deleteHeader("Connection");
-	    }
+    if (method.equals("HEAD")  ||  ContentLength == 0  ||
+        StatusCode < 200  ||
+        StatusCode == 204  ||  StatusCode == 205  || StatusCode == 304)
+    {
+        Data = new byte[0];     // we will not receive any more data
+        cd_type = CD_0;
+        inp_stream.close();
+    }
+    else if (te_chunked)
+    {
+        cd_type = CD_CHUNKED;
 
-	    try
-		{ pco = Util.parseHeader(getHeader("Proxy-Connection")); }
-	    catch (ParseException pe)
-		{ pco = null; }
+        te_hdr.removeElementAt(te_hdr.size()-1);
+        if (te_hdr.size() > 0)
+        setHeader("Transfer-Encoding", Util.assembleHeader(te_hdr));
+        else
+        deleteHeader("Transfer-Encoding");
+    }
+    else if (ContentLength != -1  &&  te_is_identity)
+        cd_type = CD_CONTLEN;
+    else if (ct_mpbr  &&  te_is_identity)
+        cd_type = CD_MP_BR;
+    else
+    {
+        cd_type = CD_CLOSE;
+        if (stream_handler != null)
+        stream_handler.markForClose(this);
 
-	    if (pco != null)
-	    {
-		for (int idx=0; idx<pco.size(); idx++)
-		{
-		    String name =
-			    ((HttpHeaderElement) pco.elementAt(idx)).getName();
-		    if (!name.equalsIgnoreCase("keep-alive"))
-		    {
-			pco.removeElementAt(idx);
-			deleteHeader(name);
-			idx--;
-		    }
-		}
+        if (Version.equals("HTTP/0.9"))
+        {
+        inp_stream =
+            new SequenceInputStream(new ByteArrayInputStream(Data),
+                        inp_stream);
+        Data = null;
+        }
+    }
 
-		if (pco.size() > 0)
-		    setHeader("Proxy-Connection", Util.assembleHeader(pco));
-		else
-		    deleteHeader("Proxy-Connection");
-	    }
-	}
+    if (cd_type != CD_CONTLEN)
+    {
+        deleteHeader("Content-Length");
+        if (cd_type != CD_0)
+        ContentLength = -1;
+    }
+
+    if (DebugResp)
+    {
+        System.err.println("Resp:  Response entity delimiter: " +
+        (cd_type == CD_0       ? "No Entity"      :
+         cd_type == CD_CLOSE   ? "Close"          :
+         cd_type == CD_CONTLEN ? "Content-Length" :
+         cd_type == CD_CHUNKED ? "Chunked"        :
+         cd_type == CD_MP_BR   ? "Multipart"      :
+         "???" ) + " (" + inp_stream.hashCode() + ") (" +
+         Thread.currentThread() + ")");
+    }
+
+    // special handling if this is the first response received
+    if (isFirstResponse)
+    {
+        if (!connection.handleFirstRequest(req, this))
+        {
+        // got a buggy server - need to redo the request
+        Response resp;
+        try
+            { resp = connection.sendRequest(req, timeout); }
+        catch (ModuleException me)
+            { throw new IOException(me.toString()); }
+        resp.getVersion();
+
+        this.StatusCode    = resp.StatusCode;
+        this.ReasonLine    = resp.ReasonLine;
+        this.Version       = resp.Version;
+        this.EffectiveURI  = resp.EffectiveURI;
+        this.ContentLength = resp.ContentLength;
+        this.Headers       = resp.Headers;
+        this.inp_stream    = resp.inp_stream;
+        this.Data          = resp.Data;
+
+        req = null;
+        }
+    }
+
+
+    // remove erroneous connection tokens
+
+    if (connection.ServerProtocolVersion >= HTTP_1_1)
+        deleteHeader("Proxy-Connection");
+    else                    // HTTP/1.0
+    {
+        if (connection.getProxyHost() != null)
+        deleteHeader("Connection");
+        else
+        deleteHeader("Proxy-Connection");
+
+        Vector pco;
+        try
+        { pco = Util.parseHeader(getHeader("Connection")); }
+        catch (ParseException pe)
+        { pco = null; }
+
+        if (pco != null)
+        {
+        for (int idx=0; idx<pco.size(); idx++)
+        {
+            String name =
+                ((HttpHeaderElement) pco.elementAt(idx)).getName();
+            if (!name.equalsIgnoreCase("keep-alive"))
+            {
+            pco.removeElementAt(idx);
+            deleteHeader(name);
+            idx--;
+            }
+        }
+
+        if (pco.size() > 0)
+            setHeader("Connection", Util.assembleHeader(pco));
+        else
+            deleteHeader("Connection");
+        }
+
+        try
+        { pco = Util.parseHeader(getHeader("Proxy-Connection")); }
+        catch (ParseException pe)
+        { pco = null; }
+
+        if (pco != null)
+        {
+        for (int idx=0; idx<pco.size(); idx++)
+        {
+            String name =
+                ((HttpHeaderElement) pco.elementAt(idx)).getName();
+            if (!name.equalsIgnoreCase("keep-alive"))
+            {
+            pco.removeElementAt(idx);
+            deleteHeader(name);
+            idx--;
+            }
+        }
+
+        if (pco.size() > 0)
+            setHeader("Proxy-Connection", Util.assembleHeader(pco));
+        else
+            deleteHeader("Proxy-Connection");
+        }
+    }
     }
 
 
@@ -861,77 +877,77 @@ public final class Response implements RoResponse, GlobalConstants
      */
     private String readResponseHeaders(InputStream inp)  throws IOException
     {
-	if (DebugResp)
-	{
-	    if (buf_pos == 0)
-		System.err.println("Resp:  Reading Response headers " +
-				    inp_stream.hashCode() + " (" +
-				    Thread.currentThread() + ")");
-	    else
-		System.err.println("Resp:  Resuming reading Response headers " +
-				    inp_stream.hashCode() + " (" +
-				    Thread.currentThread() + ")");
-	}
+    if (DebugResp)
+    {
+        if (buf_pos == 0)
+        System.err.println("Resp:  Reading Response headers " +
+                    inp_stream.hashCode() + " (" +
+                    Thread.currentThread() + ")");
+        else
+        System.err.println("Resp:  Resuming reading Response headers " +
+                    inp_stream.hashCode() + " (" +
+                    Thread.currentThread() + ")");
+    }
 
 
-	// read 7 bytes to see type of response
-	if (!reading_lines)
-	{
-	    try
-	    {
-		// Skip any leading white space to accomodate buggy responses
-		if (buf_pos == 0)
-		{
-		    int c;
-		    do
-		    {
-			if ((c = inp.read()) == -1)
-			    throw new EOFException("Encountered premature EOF "
-						   + "while reading Version");
-		    } while (Character.isSpace( (char) (c & 0xFF) )) ;
-		    buf[0] = (byte) (c & 0xFF);
-		    buf_pos = 1;
-		}
+    // read 7 bytes to see type of response
+    if (!reading_lines)
+    {
+        try
+        {
+        // Skip any leading white space to accomodate buggy responses
+        if (buf_pos == 0)
+        {
+            int c;
+            do
+            {
+            if ((c = inp.read()) == -1)
+                throw new EOFException("Encountered premature EOF "
+                           + "while reading Version");
+            } while (Character.isSpace( (char) (c & 0xFF) )) ;
+            buf[0] = (byte) (c & 0xFF);
+            buf_pos = 1;
+        }
 
-		// Now read first seven bytes (the version string)
-		while (buf_pos < buf.length)
-		{
-		    int got = inp.read(buf, buf_pos, buf.length-buf_pos);
-		    if (got == -1)
-			throw new EOFException("Encountered premature EOF " +
-						"while reading Version");
-		    buf_pos += got;
-		}
-	    }
-	    catch (EOFException eof)
-	    {
-		if (DebugResp)
-		{
-		    System.err.print("Resp:  (" + inp_stream.hashCode() + ") ("
-				     + Thread.currentThread() + ")");
-		    eof.printStackTrace();
-		}
-		throw eof;
-	    }
-	    for (int idx=0; idx<buf.length; idx++)
-		hdrs.append((char) buf[idx]);
+        // Now read first seven bytes (the version string)
+        while (buf_pos < buf.length)
+        {
+            int got = inp.read(buf, buf_pos, buf.length-buf_pos);
+            if (got == -1)
+            throw new EOFException("Encountered premature EOF " +
+                        "while reading Version");
+            buf_pos += got;
+        }
+        }
+        catch (EOFException eof)
+        {
+        if (DebugResp)
+        {
+            System.err.print("Resp:  (" + inp_stream.hashCode() + ") ("
+                     + Thread.currentThread() + ")");
+            eof.printStackTrace();
+        }
+        throw eof;
+        }
+        for (int idx=0; idx<buf.length; idx++)
+        hdrs.append((char) buf[idx]);
 
-	    reading_lines = true;
-	}
+        reading_lines = true;
+    }
 
-	if (hdrs.toString().startsWith("HTTP/")  ||		// It's x.x
-	    hdrs.toString().startsWith("HTTP "))		// NCSA bug
-	    readLines(inp);
+    if (hdrs.toString().startsWith("HTTP/")  ||     // It's x.x
+        hdrs.toString().startsWith("HTTP "))        // NCSA bug
+        readLines(inp);
 
-	// reset variables for next round
-	buf_pos = 0;
-	reading_lines = false;
-	bol     = true;
-	got_cr  = false;
+    // reset variables for next round
+    buf_pos = 0;
+    reading_lines = false;
+    bol     = true;
+    got_cr  = false;
 
-	String tmp = hdrs.toString();
-	hdrs.setLength(0);
-	return tmp;
+    String tmp = hdrs.toString();
+    hdrs.setLength(0);
+    return tmp;
     }
 
 
@@ -946,17 +962,17 @@ public final class Response implements RoResponse, GlobalConstants
      */
     void readTrailers(InputStream inp)  throws IOException
     {
-	try
-	{
-	    readLines(inp);
-	    trailers_read = true;
-	}
-	catch (IOException ioe)
-	{
-	    if (!(ioe instanceof InterruptedIOException))
-		exception = ioe;
-	    throw ioe;
-	}
+    try
+    {
+        readLines(inp);
+        trailers_read = true;
+    }
+    catch (IOException ioe)
+    {
+        if (!(ioe instanceof InterruptedIOException))
+        exception = ioe;
+        throw ioe;
+    }
     }
 
 
@@ -973,47 +989,47 @@ public final class Response implements RoResponse, GlobalConstants
      */
     private void readLines(InputStream inp)  throws IOException
     {
-	/* This loop is a merge of readLine() from DataInputStream and
-	 * the necessary header logic to merge continued lines and terminate
-	 * after an empty line. The reason this is explicit is because of
-	 * the need to handle InterruptedIOExceptions.
-	 */
-	loop: while (true)
-	{
-	    int b = inp.read();
-	    switch (b)
-	    {
-		case -1:
-		    throw new EOFException("Encountered premature EOF while reading headers:\n" + hdrs);
-		case '\r':
-		    got_cr = true;
-		    break;
-		case '\n':
-		    if (bol)  break loop;	// all headers read
-		    hdrs.append('\n');
-		    bol    = true;
-		    got_cr = false;
-		    break;
-		case ' ':
-		case '\t':
-		    if (bol)		// a continued line
-		    {
-			// replace previous \n with SP
-			hdrs.setCharAt(hdrs.length()-1, ' ');
-			bol = false;
-			break;
-		    }
-		default:
-		    if (got_cr)
-		    {
-			hdrs.append('\r');
-			got_cr = false;
-		    }
-		    hdrs.append((char) (b & 0xFF));
-		    bol = false;
-		    break;
-	    }
-	}
+    /* This loop is a merge of readLine() from DataInputStream and
+     * the necessary header logic to merge continued lines and terminate
+     * after an empty line. The reason this is explicit is because of
+     * the need to handle InterruptedIOExceptions.
+     */
+    loop: while (true)
+    {
+        int b = inp.read();
+        switch (b)
+        {
+        case -1:
+            throw new EOFException("Encountered premature EOF while reading headers:\n" + hdrs);
+        case '\r':
+            got_cr = true;
+            break;
+        case '\n':
+            if (bol)  break loop;   // all headers read
+            hdrs.append('\n');
+            bol    = true;
+            got_cr = false;
+            break;
+        case ' ':
+        case '\t':
+            if (bol)        // a continued line
+            {
+            // replace previous \n with SP
+            hdrs.setCharAt(hdrs.length()-1, ' ');
+            bol = false;
+            break;
+            }
+        default:
+            if (got_cr)
+            {
+            hdrs.append('\r');
+            got_cr = false;
+            }
+            hdrs.append((char) (b & 0xFF));
+            bol = false;
+            break;
+        }
+    }
     }
 
 
@@ -1026,122 +1042,122 @@ public final class Response implements RoResponse, GlobalConstants
      */
     private void parseResponseHeaders(String headers) throws ProtocolException
     {
-	String          sts_line = null;
-	StringTokenizer lines = new StringTokenizer(headers, "\r\n"),
-			elem;
+    String          sts_line = null;
+    StringTokenizer lines = new StringTokenizer(headers, "\r\n"),
+            elem;
 
 
-	if (DebugResp)
-	    System.err.println("Resp:  Parsing Response headers from Request "+
-				"\"" + method + " " + resource + "\":  (" +
-				inp_stream.hashCode() + ") (" +
-				Thread.currentThread() + ")\n\n"+headers);
+    if (DebugResp)
+        System.err.println("Resp:  Parsing Response headers from Request "+
+                "\"" + method + " " + resource + "\":  (" +
+                inp_stream.hashCode() + ") (" +
+                Thread.currentThread() + ")\n\n"+headers);
     if(logging)
     {
-	    try
-	    {
-		    FileOutputStream fos = new FileOutputStream( logFilename, true );
-		    fos.write( inboundHeader.getBytes() );
-		    fos.write( headers.getBytes() );
-		    fos.close();
-	    }
-	    catch( IOException e )
-	    {
-	    }
+        try
+        {
+            FileOutputStream fos = new FileOutputStream( logFilename, true );
+            fos.write( inboundHeader.getBytes() );
+            fos.write( headers.getBytes() );
+            fos.close();
+        }
+        catch( IOException e )
+        {
+        }
     }
 
 
-	// Detect and handle HTTP/0.9 responses
+    // Detect and handle HTTP/0.9 responses
 
-	if (!headers.regionMatches(true, 0, "HTTP/", 0, 5)  &&
-	    !headers.regionMatches(true, 0, "HTTP ", 0, 5))	// NCSA bug
-	{
-	    Version    = "HTTP/0.9";
-	    StatusCode = 200;
-	    ReasonLine = "OK";
+    if (!headers.regionMatches(true, 0, "HTTP/", 0, 5)  &&
+        !headers.regionMatches(true, 0, "HTTP ", 0, 5)) // NCSA bug
+    {
+        Version    = "HTTP/0.9";
+        StatusCode = 200;
+        ReasonLine = "OK";
 
-	    Data       = new byte[headers.length()];
-	    headers.getBytes(0, headers.length(), Data, 0);
+        Data       = new byte[headers.length()];
+        headers.getBytes(0, headers.length(), Data, 0);
 
-	    return;
-	}
-
-
-	// get the status line
-
-	try
-	{
-	    sts_line = lines.nextToken();
-	    elem     = new StringTokenizer(sts_line, " \t");
-
-	    Version    = elem.nextToken();
-	    StatusCode = Integer.valueOf(elem.nextToken()).intValue();
-
-	    if (Version.equalsIgnoreCase("HTTP"))	// NCSA bug
-		Version = "HTTP/1.0";
-	}
-	catch (NoSuchElementException e)
-	{
-	    throw new ProtocolException("Invalid HTTP status line received: " +
-					sts_line);
-	}
-	try
-	    { ReasonLine = elem.nextToken("").trim(); }
-	catch (NoSuchElementException e)
-	    { ReasonLine = ""; }
+        return;
+    }
 
 
-	/* If the status code shows an error and we're sending (or have sent)
-	 * an entity and it's length is delimited by a Content-length header,
-	 * then we must close the the connection (if indeed it hasn't already
-	 * been done) - RFC-2068, Section 8.2 .
-	 */
-	if (StatusCode >= 300  &&  sent_entity)
-	{
-	    if (stream_handler != null)
-		stream_handler.markForClose(this);
-	}
+    // get the status line
+
+    try
+    {
+        sts_line = lines.nextToken();
+        elem     = new StringTokenizer(sts_line, " \t");
+
+        Version    = elem.nextToken();
+        StatusCode = Integer.valueOf(elem.nextToken()).intValue();
+
+        if (Version.equalsIgnoreCase("HTTP"))   // NCSA bug
+        Version = "HTTP/1.0";
+    }
+    catch (NoSuchElementException e)
+    {
+        throw new ProtocolException("Invalid HTTP status line received: " +
+                    sts_line);
+    }
+    try
+        { ReasonLine = elem.nextToken("").trim(); }
+    catch (NoSuchElementException e)
+        { ReasonLine = ""; }
 
 
-	// get the rest of the headers
+    /* If the status code shows an error and we're sending (or have sent)
+     * an entity and it's length is delimited by a Content-length header,
+     * then we must close the the connection (if indeed it hasn't already
+     * been done) - RFC-2068, Section 8.2 .
+     */
+    if (StatusCode >= 300  &&  sent_entity)
+    {
+        if (stream_handler != null)
+        stream_handler.markForClose(this);
+    }
 
-	parseHeaderFields(lines, Headers);
+
+    // get the rest of the headers
+
+    parseHeaderFields(lines, Headers);
 
 
-	/* make sure the connection isn't closed prematurely if we have
-	 * trailer fields
-	 */
-	if (Headers.get("Trailer") != null  &&  resp_inp_stream != null)
-	    resp_inp_stream.dontTruncate();
+    /* make sure the connection isn't closed prematurely if we have
+     * trailer fields
+     */
+    if (Headers.get("Trailer") != null  &&  resp_inp_stream != null)
+        resp_inp_stream.dontTruncate();
 
-	// Mark the end of the connection if it's not to be kept alive
+    // Mark the end of the connection if it's not to be kept alive
 
-	int vers;
-	if (Version.equalsIgnoreCase("HTTP/0.9")  ||
-	    Version.equalsIgnoreCase("HTTP/1.0"))
-	    vers = 0;
-	else
-	    vers = 1;
+    int vers;
+    if (Version.equalsIgnoreCase("HTTP/0.9")  ||
+        Version.equalsIgnoreCase("HTTP/1.0"))
+        vers = 0;
+    else
+        vers = 1;
 
-	try
-	{
-	    String con = (String) Headers.get("Connection"),
-		  pcon = (String) Headers.get("Proxy-Connection");
+    try
+    {
+        String con = (String) Headers.get("Connection"),
+          pcon = (String) Headers.get("Proxy-Connection");
 
-	    // parse connection header
-	    if ((vers == 1  &&  con != null  &&  Util.hasToken(con, "close"))
-		||
-		(vers == 0  &&
-		 !((!used_proxy && con != null &&
-					Util.hasToken(con, "keep-alive"))  ||
-		   (used_proxy && pcon != null &&
-					Util.hasToken(pcon, "keep-alive")))
-		)
-	       )
-		if (stream_handler != null)
-		    stream_handler.markForClose(this);
-	}
-	catch (ParseException pe) { }
+        // parse connection header
+        if ((vers == 1  &&  con != null  &&  Util.hasToken(con, "close"))
+        ||
+        (vers == 0  &&
+         !((!used_proxy && con != null &&
+                    Util.hasToken(con, "keep-alive"))  ||
+           (used_proxy && pcon != null &&
+                    Util.hasToken(pcon, "keep-alive")))
+        )
+           )
+        if (stream_handler != null)
+            stream_handler.markForClose(this);
+    }
+    catch (ParseException pe) { }
     }
 
 
@@ -1155,39 +1171,39 @@ public final class Response implements RoResponse, GlobalConstants
      */
     private synchronized void getTrailers()  throws IOException
     {
-	if (got_trailers)  return;
-	if (exception != null)
-	    throw (IOException) exception.fillInStackTrace();
+    if (got_trailers)  return;
+    if (exception != null)
+        throw (IOException) exception.fillInStackTrace();
 
-	if (DebugResp)
-	    System.err.println("Resp:  Reading Response trailers " +
-				inp_stream.hashCode() + " (" +
-				Thread.currentThread() + ")");
+    if (DebugResp)
+        System.err.println("Resp:  Reading Response trailers " +
+                inp_stream.hashCode() + " (" +
+                Thread.currentThread() + ")");
 
-	try
-	{
-	    if (!trailers_read)
-	    {
-		if (resp_inp_stream != null)
-		    resp_inp_stream.readAll(timeout);
-	    }
+    try
+    {
+        if (!trailers_read)
+        {
+        if (resp_inp_stream != null)
+            resp_inp_stream.readAll(timeout);
+        }
 
-	    if (trailers_read)
-	    {
-		if (DebugResp)
-		    System.err.println("Resp:  Parsing Response trailers from "+
-				       "Request \"" + method + " " + resource +
-				       "\":  (" + inp_stream.hashCode() + ") ("+
-				       Thread.currentThread() + ")\n\n"+hdrs);
+        if (trailers_read)
+        {
+        if (DebugResp)
+            System.err.println("Resp:  Parsing Response trailers from "+
+                       "Request \"" + method + " " + resource +
+                       "\":  (" + inp_stream.hashCode() + ") ("+
+                       Thread.currentThread() + ")\n\n"+hdrs);
 
-		parseHeaderFields(new StringTokenizer(hdrs.toString(), "\r\n"),
-				  Trailers);
-	    }
-	}
-	finally
-	{
-	    got_trailers = true;
-	}
+        parseHeaderFields(new StringTokenizer(hdrs.toString(), "\r\n"),
+                  Trailers);
+        }
+    }
+    finally
+    {
+        got_trailers = true;
+    }
     }
 
 
@@ -1201,57 +1217,57 @@ public final class Response implements RoResponse, GlobalConstants
      *                              conform
      */
     private void parseHeaderFields(StringTokenizer lines, CIHashtable list)
-	    throws ProtocolException
+        throws ProtocolException
     {
-	while (lines.hasMoreTokens())
-	{
-	    String hdr = lines.nextToken();
-	    int    sep = hdr.indexOf(':');
+    while (lines.hasMoreTokens())
+    {
+        String hdr = lines.nextToken();
+        int    sep = hdr.indexOf(':');
 
-	    /* Once again we have to deal with broken servers and try
-	     * to wing it here. If no ':' is found, try using the first
-	     * space:
-	     */
-	    if (sep == -1)
-		sep = hdr.indexOf(' ');
-	    if (sep == -1)
-	    {
-		throw new ProtocolException("Invalid HTTP header received: " +
-					    hdr);
-	    }
+        /* Once again we have to deal with broken servers and try
+         * to wing it here. If no ':' is found, try using the first
+         * space:
+         */
+        if (sep == -1)
+        sep = hdr.indexOf(' ');
+        if (sep == -1)
+        {
+        throw new ProtocolException("Invalid HTTP header received: " +
+                        hdr);
+        }
 
-	    String hdr_name   = hdr.substring(0, sep).trim();
+        String hdr_name   = hdr.substring(0, sep).trim();
 
-	    int len = hdr.length();
-	    sep++;
-	    while (sep < len  &&  Character.isSpace(hdr.charAt(sep)))  sep++;
-	    String hdr_value = hdr.substring(sep);
+        int len = hdr.length();
+        sep++;
+        while (sep < len  &&  Character.isSpace(hdr.charAt(sep)))  sep++;
+        String hdr_value = hdr.substring(sep);
 
-	    if (hdr_name.equalsIgnoreCase("Content-length"))
-	    {
-		try
-		{
-		    ContentLength = Integer.parseInt(hdr_value);
-		    if (ContentLength < 0)
-			throw new NumberFormatException();
-		}
-		catch (NumberFormatException nfe)
-		{
-		    throw new ProtocolException("Invalid Content-length header"+
-						" received: "+hdr_value);
-		}
-		list.put(hdr_name, hdr_value);
-	    }
+        if (hdr_name.equalsIgnoreCase("Content-length"))
+        {
+        try
+        {
+            ContentLength = Integer.parseInt(hdr_value);
+            if (ContentLength < 0)
+            throw new NumberFormatException();
+        }
+        catch (NumberFormatException nfe)
+        {
+            throw new ProtocolException("Invalid Content-length header"+
+                        " received: "+hdr_value);
+        }
+        list.put(hdr_name, hdr_value);
+        }
 
-	    else
-	    {
-		String old_value  = (String) list.get(hdr_name);
-		if (old_value == null)
-		    list.put(hdr_name, hdr_value);
-		else
-		    list.put(hdr_name, old_value + ", " + hdr_value);
-	    }
-	}
+        else
+        {
+        String old_value  = (String) list.get(hdr_name);
+        if (old_value == null)
+            list.put(hdr_name, hdr_value);
+        else
+            list.put(hdr_name, old_value + ", " + hdr_value);
+        }
+    }
     }
 
 
@@ -1264,67 +1280,80 @@ public final class Response implements RoResponse, GlobalConstants
      */
     private void readResponseData(InputStream inp) throws IOException
     {
-	if (Data == null)
-	    Data = new byte[0];
+    if (Data == null)
+        Data = new byte[0];
 
 
-	// read response data
+    // read response data
 
-	int off = Data.length;
+    int off = Data.length;
 
-	try
-	{
-	    // check Content-length header in case CE-Module removed it
-	    if (getHeader("Content-Length") != null)
-	    {
-		int rcvd = 0;
-		Data = new byte[ContentLength];
+    try
+    {
+        // check Content-length header in case CE-Module removed it
+        if (getHeader("Content-Length") != null)
+        {
+        int rcvd = 0;
+        Data = new byte[ContentLength];
 
-		do
-		{
-		    off  += rcvd;
-		    rcvd  = inp.read(Data, off, ContentLength-off);
-		} while (rcvd != -1  &&  off+rcvd < ContentLength);
+        do
+        {
+            off  += rcvd;
+            rcvd  = inp.read(Data, off, ContentLength-off);
+        } while (rcvd != -1  &&  off+rcvd < ContentLength);
 
-		/* Don't do this!
-		 * If we do, then getData() won't work after a getInputStream()
-		 * because we'll never get all the expected data. Instead, let
-		 * the underlying RespInputStream throw the EOF.
-		if (rcvd == -1)	// premature EOF
-		{
-		    throw new EOFException("Encountered premature EOF while " +
-					    "reading headers: received " + off +
-					    " bytes instead of the expected " +
-					    ContentLength + " bytes");
-		}
-		*/
-	    }
-	    else
-	    {
-		int inc  = 1000,
-		    rcvd = 0;
+        /* Don't do this!
+         * If we do, then getData() won't work after a getInputStream()
+         * because we'll never get all the expected data. Instead, let
+         * the underlying RespInputStream throw the EOF.
+        if (rcvd == -1) // premature EOF
+        {
+            throw new EOFException("Encountered premature EOF while " +
+                        "reading headers: received " + off +
+                        " bytes instead of the expected " +
+                        ContentLength + " bytes");
+        }
+        */
+        }
+        else
+        {
+        int inc  = 1000,
+            rcvd = 0;
 
-		do
-		{
-		    off  += rcvd;
-		    Data  = Util.resizeArray(Data, off+inc);
-		} while ((rcvd = inp.read(Data, off, inc)) != -1);
+        do
+        {
+            off  += rcvd;
+            Data  = Util.resizeArray(Data, off+inc);
+        } while ((rcvd = inp.read(Data, off, inc)) != -1);
 
-		Data = Util.resizeArray(Data, off);
-	    }
-	}
-	catch (IOException ioe)
-	{
-	    Data = Util.resizeArray(Data, off);
-	    throw ioe;
-	}
-	finally
-	{
-	    try
-		{ inp.close(); }
-	    catch (IOException ioe)
-		{ }
-	}
+        Data = Util.resizeArray(Data, off);
+        }
+    }
+    catch (IOException ioe)
+    {
+        Data = Util.resizeArray(Data, off);
+        throw ioe;
+    }
+    finally
+    {
+        try
+        { inp.close(); }
+        catch (IOException ioe)
+        { }
+        if( logging )
+        {
+            try
+            {
+                FileOutputStream fos = new FileOutputStream( logFilename, true );
+                fos.write( inboundBody.getBytes() );
+                fos.write( Data );
+                fos.close();
+            }
+            catch( IOException e )
+            {
+            }
+        }
+    }
     }
 
 
@@ -1342,8 +1371,8 @@ public final class Response implements RoResponse, GlobalConstants
      */
     void markAsFirstResponse(Request req)
     {
-	this.req = req;
-	isFirstResponse = true;
+    this.req = req;
+    isFirstResponse = true;
     }
 
 
@@ -1354,12 +1383,12 @@ public final class Response implements RoResponse, GlobalConstants
         if( http_resp != null )
             http_resp.setLogging( logging, filename );
     }
-    
+
     public boolean getLogging()
     {
         return logging;
     }
-    
+
     public String getLogFilename()
     {
         return logFilename;

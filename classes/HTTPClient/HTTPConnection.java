@@ -298,8 +298,12 @@ public class HTTPConnection
     /** controls whether modules are allowed to interact with user */
     private boolean              AllowUI;
 
-    private boolean              logging = false;
-    private String               logFilename = null;
+    /**
+     * Joachim Feise (jfeise@ics.uci.edu)
+     *Logging extension
+     */
+    private static boolean       logging = false;
+    private static String        logFilename = null;
     private static String        outboundHeader = "\r\n========= Outgoing Message Header =========\r\n";
     private static String        outboundBody   = "\r\n========= Outgoing Message Body =========\r\n";
 
@@ -3634,11 +3638,20 @@ public class HTTPConnection
         (getPort() != URI.defaultPort(getProtocol()) ? ":" + getPort() : "");
     }
 
-
     public void setLogging( boolean logging, String filename )
     {
         this.logging = logging;
         this.logFilename = filename;
+    }
+
+    public boolean getLogging()
+    {
+        return logging;
+    }
+
+    public String getLogFilename()
+    {
+        return logFilename;
     }
 }
 
