@@ -21,7 +21,7 @@
  * Title:       GlobalData
  * Description: This singleton class defines various global data structures
  *              and functions useful everywhere
- * Copyright:   Copyright (c) 1999-2001 Regents of the University of California. All rights reserved.
+ * Copyright:   Copyright (c) 1999-2003 Regents of the University of California. All rights reserved.
  * @author      Joachim Feise (dav-exp@ics.uci.edu)
  * @date        1999
  * @author      Joachim Feise (dav-exp@ics.uci.edu)

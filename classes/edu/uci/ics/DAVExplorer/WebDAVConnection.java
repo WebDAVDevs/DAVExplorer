@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 1998-2001 Regents of the University of California.
+ * Copyright (c) 1998-2002 Regents of the University of California.
  * All rights reserved.
  *
  * This software was developed at the University of California, Irvine.
@@ -22,7 +22,7 @@
  * Description: WebDAV Method class library.
  *              We simply use the HTTPClient's extension method for
  *              sending all the requests.
- * Copyright:   Copyright (c) 1998-2001 Regents of the University of California. All rights reserved.
+ * Copyright:   Copyright (c) 1998-2002 Regents of the University of California. All rights reserved.
  * @author      Robert Emmery (dav-exp@ics.uci.edu)
  * @date        2 April 1998
  * @author      Yuzo Kanomata, Joachim Feise (dav-exp@ics.uci.edu)

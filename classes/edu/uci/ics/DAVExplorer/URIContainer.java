@@ -3,7 +3,9 @@
  * Copyright (c) 2003 Regents of the University of California.
  * All rights reserved.
  *
- * This software was developed at the University of California, Irvine.
+ * This software was developed by Th. Rickert
+ * and integrated into DAV Explorer by Joachim Feise at the University
+ * of California, Irvine.
  *
  * Redistribution and use in source and binary forms are permitted
  * provided that the above copyright notice and this paragraph are
@@ -27,6 +29,8 @@ import java.util.Vector;
  * This is a small container for URIs that are used by the user.
  * The URIs are persisted in the DAVExplorer.dat file in java.home.
  *
+ * Copyright:   Copyright (c) 2003 Thoralf Rickert
+ * Copyright:   Copyright (c) 2003 Regents of the University of California. All rights reserved.
  * @author      Thoralf Rickert
  * @author      Joachim Feise (dav-exp@ics.uci.edu)
  * @version     0.1

@@ -23,7 +23,7 @@
  *              a bean, which listens for a request event. Once the event
  *              occurs, appropriate Method from the WebDAV class library is
  *              called.
- * Copyright:   Copyright (c) 1998-2001 Regents of the University of California. All rights reserved.
+ * Copyright:   Copyright (c) 1998-2003 Regents of the University of California. All rights reserved.
  * @author      Robert Emmery (dav-exp@ics.uci.edu)
  * @date        25 March 1998
  * @author      Yuzo Kanomata, Joachim Feise (dav-exp@ics.uci.edu)

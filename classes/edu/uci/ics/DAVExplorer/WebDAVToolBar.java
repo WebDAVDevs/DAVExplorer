@@ -20,7 +20,7 @@
 /**
  * Title:       WebDAV Toolbar
  * Description: Implements the main toolbar
- * Copyright:   Copyright (c) 1998-2001 Regents of the University of California. All rights reserved.
+ * Copyright:   Copyright (c) 1998-2003 Regents of the University of California. All rights reserved.
  * @author      Undergraduate project team ICS 126B 1998
  * @date        1998
  * @author      Yuzo Kanomata, Joachim Feise (dav-exp@ics.uci.edu)
@@ -43,6 +43,9 @@
  * @author      Joachim Feise (dav-exp@ics.uci.edu)
  * @date        27 April 2003
  * Changes:     separated button name from icon name.
+ * @author      Joachim Feise (dav-exp@ics.uci.edu)
+ * @date        23 September 2003
+ * Changes:     Added DeltaV buttons.
  */
 
 package edu.uci.ics.DAVExplorer;

@@ -25,7 +25,7 @@
  *              This class DOES NOT authenticate users at this time. It is in
  *              place as a UI component which may be fully integrated in an
  *              authentication scheme at some future point.
- * Copyright:   Copyright (c) 1998-2001 Regents of the University of California. All rights reserved.
+ * Copyright:   Copyright (c) 1998-2003 Regents of the University of California. All rights reserved.
  * @author      Gerair D. Balian (dav-exp@ics.uci.edu)
  * @date        3 March 1998
  * @author      Yuzo Kanomata, Joachim Feise (dav-exp@ics.uci.edu)

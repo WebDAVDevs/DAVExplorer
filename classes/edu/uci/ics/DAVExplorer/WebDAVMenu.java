@@ -20,7 +20,7 @@
 /**
  * Title:       WebDAVMenu
  * Description: Main menu class
- * Copyright:   Copyright (c) 1998-2001 Regents of the University of California. All rights reserved.
+ * Copyright:   Copyright (c) 1998-2003 Regents of the University of California. All rights reserved.
  * @author      Undergraduate project team ICS 126B 1998
  * @date        1998
  * @author      Yuzo Kanomata, Joachim Feise (dav-exp@ics.uci.edu)

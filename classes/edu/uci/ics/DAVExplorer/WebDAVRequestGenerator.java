@@ -24,7 +24,7 @@
  *              sends an event indicating that another resource has been
  *              selected it is properly handled by either
  *              tableSelectionChanged() or treeSelectionChanged()
- * Copyright:   Copyright (c) 1998-2001 Regents of the University of California. All rights reserved.
+ * Copyright:   Copyright (c) 1998-2003 Regents of the University of California. All rights reserved.
  * @author      Robert Emmery
  * @date        2 April 1998
  * @author      Yuzo Kanomata, Joachim Feise (dav-exp@ics.uci.edu)

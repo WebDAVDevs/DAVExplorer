@@ -20,7 +20,7 @@
 /**
  * Title:       WebDAVFileView
  * Description: This class is part of the client's GUI.
- * Copyright:   Copyright (c) 1998-2002 Regents of the University of California. All rights reserved.
+ * Copyright:   Copyright (c) 1998-2003 Regents of the University of California. All rights reserved.
  * @author      Robert Emmery (dav-exp@ics.uci.edu)
  * @date        2 April 1998
  * @author      Yuzo Kanomata, Joachim Feise (dav-exp@ics.uci.edu)

@@ -16,6 +16,14 @@
  * WARRANTIES OF MERCHANTIBILITY AND FITNESS FOR A PARTICULAR PURPOSE.
  */
 
+/**
+ * Title:       Progressbar
+ * Description: Progress bar control
+ * Copyright:   Copyright (c) 2003 Th. Rickert.
+ * Copyright:   Copyright (c) 2003 Regents of the University of California. All rights reserved.
+ * @author      Th. Rickert, integrated by Joachim Feise
+ */
+
 package edu.uci.ics.DAVExplorer;
 
 import java.awt.Dimension;
