@@ -240,6 +240,9 @@ public class ACLResponseInterpreter extends DeltaVResponseInterpreter
             case WebDAVResponseEvent.ACL_PRINCIPAL_NAMES:
                 handlePrincipalNames( xml_doc );
                 break;
+            case WebDAVResponseEvent.ACL_PROPERTY_NAMES:
+                handlePropertyNames( xml_doc );
+                break;
             default:
                 super.parsePropFind();
         }
@@ -545,6 +548,60 @@ public class ACLResponseInterpreter extends DeltaVResponseInterpreter
     }
 
 
+    protected void handlePropertyNames( Document xml_doc )
+    {
+        propertyNames = new Vector();
+        String[] token = new String[2];
+        token[0] = new String( WebDAVXML.ELEM_MULTISTATUS );
+        token[1] = new String( WebDAVXML.ELEM_RESPONSE );
+
+        String href = null;
+        Element curProp = null;
+        Element rootElem = skipElements( xml_doc, token );
+        if( rootElem != null )
+        {
+            TreeEnumeration enumTree =  new TreeEnumeration( rootElem );
+            while( enumTree.hasMoreElements() )
+            {
+                Element current = (Element)enumTree.nextElement();
+                Name currentTag = current.getTagName();
+                if( currentTag != null )
+                {
+                    if( currentTag.getName().equals( WebDAVXML.ELEM_PROP ) )
+                    {
+                        parsePropertyNames( current );
+                    }
+                }
+            }
+        }
+    }
+
+
+
+    protected void parsePropertyNames( Element rootElem )
+    {
+        if( rootElem != null )
+        {
+            TreeEnumeration enumTree =  new TreeEnumeration( rootElem );
+            while( enumTree.hasMoreElements() )
+            {
+                Element current = (Element)enumTree.nextElement();
+                Name currentTag = current.getTagName();
+                if( currentTag != null )
+                {
+                    if( currentTag.getName().equals( WebDAVXML.ELEM_PROP ) )
+                        continue;
+                    String[] prop = new String[2];
+                    prop[0] = currentTag.getName();
+                    prop[1] = WebDAVProp.locateNamespace( current, currentTag );
+                    propertyNames.add( prop );
+                }
+            }
+        }
+    }
+
+
+
     protected void handleMultiStatus( Document xml_doc )
     {
         int status = 0;
@@ -651,8 +708,15 @@ public class ACLResponseInterpreter extends DeltaVResponseInterpreter
     }
 
 
+    public Vector getPropertyNames()
+    {
+        return propertyNames;
+    }
+
+
     protected Hashtable acl = new Hashtable();
     protected Vector principalCollectionSet;
     protected Vector principalNames;
     protected Vector supportedPrivilegeSet;
+    protected Vector propertyNames;
 }

@@ -95,12 +95,8 @@ public class DeltaVRequestGenerator extends WebDAVRequestGenerator
         Body = null;
 
         StrippedResource = parseResourceName(true);
-        boolean ok = (StrippedResource != null);
-
-        if (!ok)
-        {
+        if( StrippedResource == null )
             return false;
-        }
 
         Method = "VERSION-CONTROL";
         Headers = new NVPair[1];
@@ -132,12 +128,8 @@ public class DeltaVRequestGenerator extends WebDAVRequestGenerator
         Body = null;
 
         StrippedResource = parseResourceName( true );
-        boolean ok = (StrippedResource != null);
-
-        if (!ok)
-        {
-                return false;
-        }
+        if( StrippedResource == null )
+            return false;
 
         // see if we have an activity at this host
         String host;
@@ -230,12 +222,8 @@ public class DeltaVRequestGenerator extends WebDAVRequestGenerator
         Headers = null;
         Body = null;
         StrippedResource = parseResourceName( true );
-        boolean ok = (StrippedResource != null);
-
-        if (!ok)
-        {
-                return false;
-        }
+        if( StrippedResource == null )
+            return false;
 
         Method = "UNCHECKOUT";
         Headers = new NVPair[1];
@@ -265,12 +253,8 @@ public class DeltaVRequestGenerator extends WebDAVRequestGenerator
         Headers = null;
         Body = null;
         StrippedResource = parseResourceName( true );
-        boolean ok = (StrippedResource != null);
-
-        if (!ok)
-        {
-                return false;
-        }
+        if( StrippedResource == null )
+            return false;
 
         Method = "CHECKIN";
         Document miniDoc = new Document();
@@ -338,12 +322,8 @@ public class DeltaVRequestGenerator extends WebDAVRequestGenerator
         Headers = null;
         Body = null;
         StrippedResource = parseResourceName( true );
-        boolean ok = (StrippedResource != null);
-
-        if (!ok)
-        {
+        if( StrippedResource == null )
             return false;
-        }
         
         Method = "REPORT";
         Document miniDoc = new Document();
@@ -475,8 +455,7 @@ public class DeltaVRequestGenerator extends WebDAVRequestGenerator
         }
 
         StrippedResource = parseResourceName( true );
-        boolean ok = (StrippedResource != null);
-        if( !ok )
+        if( StrippedResource == null )
             return false;
 
         Headers = null;
@@ -530,8 +509,7 @@ public class DeltaVRequestGenerator extends WebDAVRequestGenerator
         }
 
         StrippedResource = parseResourceName( true );
-        boolean ok = (StrippedResource != null);
-        if( !ok )
+        if( StrippedResource == null )
             return false;
 
         Headers = null;

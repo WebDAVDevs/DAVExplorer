@@ -47,4 +47,11 @@ public class ACLXML extends DeltaVXML
     public static final String ELEM_INHERITED = "inherited";
     public static final String ELEM_PROPERTY = "property";
     public static final String ELEM_RESPONSEDESCRIPTION = "responsedescription";
+    public static final String ELEM_ACL_PRINCIPAL_PROP_SET = "acl-principal-prop-set";
+    public static final String ELEM_PRINCIPAL_MATCH = "principal-match";
+    public static final String ELEM_PRINCIPAL_PROPERTY = "principal-property";
+    public static final String ELEM_PRINCIPAL_PROPERTY_SEARCH = "principal-property-search";
+    public static final String ELEM_PROPERTY_SEARCH = "property-search";
+    public static final String ELEM_MATCH = "match";
+    public static final String ELEM_PRINCIPAL_SEARCH_PROPERTY_SET = "principal-search-property-set";
 }

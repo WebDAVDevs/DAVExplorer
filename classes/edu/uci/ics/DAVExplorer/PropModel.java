@@ -632,6 +632,7 @@ public class PropModel extends AbstractTableModel implements TreeTableModel
                         Name tagname = propValEl.getTagName();
                         if (propValEl.getType() != Element.ELEMENT)
                             continue;
+                        String ns = WebDAVProp.locateNamespace( propValEl, tagname );
                         /**
                          * Namespace Handling
                          * Unfortunately, the 1997-era Microsoft parser does not properly
@@ -640,7 +641,7 @@ public class PropModel extends AbstractTableModel implements TreeTableModel
                          * Until then, we are stuck with code like this to get the
                          * actual namespace by walking up the tree.
                          */
-                        String ns = null;
+/*                        String ns = null;
                         Atom namespace = tagname.getNameSpace();
                         if( namespace != null )
                             ns = tagname.getNameSpace().toString();
@@ -661,6 +662,7 @@ public class PropModel extends AbstractTableModel implements TreeTableModel
                                 break;
                             }
                         }
+*/                            
                         Element token = getChildElement(propValEl);
                         if( (token != null) && (token.getType() == Element.PCDATA || token.getType() == Element.CDATA) )
                         {

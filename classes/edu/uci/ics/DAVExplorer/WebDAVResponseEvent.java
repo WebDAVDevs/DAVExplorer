@@ -74,6 +74,7 @@ public class WebDAVResponseEvent extends EventObject
     public static final int INHERITED_ACL = 76;
     public static final int ACL_PRINCIPAL_COLLECTION_SET = 77;
     public static final int ACL_PRINCIPAL_NAMES = 78;
+    public static final int ACL_PROPERTY_NAMES = 79;
 
     /**
      * Constructor

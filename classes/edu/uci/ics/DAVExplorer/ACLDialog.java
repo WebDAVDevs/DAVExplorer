@@ -277,7 +277,6 @@ public class ACLDialog extends JDialog
 
    public void save()
    {
-       //TODO: Save ACL functionality
        Vector ACLs = new Vector();
        for( int i=0; i< model.getRowCount(); i++ )
        {

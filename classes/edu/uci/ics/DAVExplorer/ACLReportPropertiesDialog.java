@@ -1,0 +1,162 @@
+/*
+ * Copyright (C) 2005 Regents of the University of California.
+ * All rights reserved.
+ *
+ * This software was developed at the University of California, Irvine.
+ *
+ * Redistribution and use in source and binary forms are permitted
+ * provided that the above copyright notice and this paragraph are
+ * duplicated in all such forms and that any documentation,
+ * advertising materials, and other materials related to such
+ * distribution and use acknowledge that the software was developed
+ * by the University of California, Irvine.  The name of the
+ * University may not be used to endorse or promote products derived
+ * from this software without specific prior written permission.
+ * THIS SOFTWARE IS PROVIDED ``AS IS'' AND WITHOUT ANY EXPRESS OR
+ * IMPLIED WARRANTIES, INCLUDING, WITHOUT LIMITATION, THE IMPLIED
+ * WARRANTIES OF MERCHANTIBILITY AND FITNESS FOR A PARTICULAR PURPOSE.
+ */
+package edu.uci.ics.DAVExplorer;
+
+import java.awt.Color;
+import java.awt.Component;
+import java.awt.event.ActionEvent;
+
+import javax.swing.DefaultListCellRenderer;
+import javax.swing.DefaultListModel;
+import javax.swing.JList;
+
+/**
+ * Title:       
+ * Description: 
+ * Copyright:   Copyright (c) 2005 Regents of the University of California. All rights reserved.
+ * @author      Joachim Feise (dav-exp@ics.uci.edu)
+ * @date        
+ */
+public class ACLReportPropertiesDialog extends ACLChangePrivilegesDialog
+{
+
+    /**
+     * @param resource
+     * @param hostname
+     * @param current
+     */
+    public ACLReportPropertiesDialog( String resource )
+    {
+        super( resource, null, null, "Select Properties" );
+    }
+
+
+    protected String getPanelTitle()
+    {
+        return  "Properties";
+    }
+
+
+    /**
+     * 
+     * @param e
+     */
+    public void actionPerformed( ActionEvent e )
+    {
+        if( e.getActionCommand().equals("=>") )
+        {
+            DefaultListModel privModel = (DefaultListModel)privList.getModel();
+            DefaultListModel curModel = (DefaultListModel)curList.getModel();
+            int[] indices = privList.getSelectedIndices();
+            for( int i=indices.length-1; i>=0; i-- )
+            {
+                Object obj = privModel.getElementAt( indices[i] );
+                curModel.addElement( obj );
+                selected.add( obj );
+                privModel.remove( indices[i] );
+                setChanged( true );
+            }
+        }
+        else if( e.getActionCommand().equals("<=") )
+        {
+            DefaultListModel privModel = (DefaultListModel)privList.getModel();
+            DefaultListModel curModel = (DefaultListModel)curList.getModel();
+            int[] indices = curList.getSelectedIndices();
+            for( int i=indices.length-1; i>=0; i-- )
+            {
+                Object obj = curModel.getElementAt( indices[i] );
+                privModel.addElement( obj );
+                curModel.remove( indices[i] );
+                selected.remove( obj );
+                setChanged( true );
+            }
+        }
+        else
+            super.actionPerformed( e );
+    }
+
+
+    protected void getAvailable()
+    {
+        String prefix = "";
+        if( GlobalData.getGlobalData().getSSL() )
+        {
+            if( !resource.startsWith( GlobalData.WebDAVPrefixSSL ) )
+                prefix =  GlobalData.WebDAVPrefixSSL;
+        }
+        else
+        {
+            if( !resource.startsWith( GlobalData.WebDAVPrefix ) )
+                prefix = GlobalData.WebDAVPrefix;
+        }
+        ACLRequestGenerator generator = (ACLRequestGenerator)ACLResponseInterpreter.getGenerator();
+        generator.setResource( prefix+resource, null );
+        waiting = true;
+        generator.GetPropertyNames();
+        try
+        {
+            synchronized( this )
+            {
+                wait(30000);
+            }
+        }
+        catch( InterruptedException e )
+        {
+        }
+        if( interpreter != null && interpreter.getPropertyNames() != null )
+            available.addAll( interpreter.getPropertyNames() );
+    }
+
+
+    protected void changePanel()
+    {
+        privList.setCellRenderer(
+            new DefaultListCellRenderer()
+            {
+                public Component getListCellRendererComponent(
+                        JList list,
+                        Object value,
+                        int index,
+                        boolean isSelected,
+                        boolean cellHasFocus)
+                    {
+                        setText( ((String[])value)[0] );
+                        setBackground( isSelected ? Color.black : Color.white );
+                        setForeground( isSelected ? Color.white : Color.black );
+                        return this;
+                    }
+            });
+        curList.setCellRenderer(
+            new DefaultListCellRenderer()
+            {
+                public Component getListCellRendererComponent(
+                        JList list,
+                        Object value,
+                        int index,
+                        boolean isSelected,
+                        boolean cellHasFocus)
+                    {
+                        setText( ((String[])value)[0] );
+                        setBackground( isSelected ? Color.black : Color.white );
+                        setForeground( isSelected ? Color.white : Color.black );
+                        return this;
+                    }
+            });
+    }
+}

@@ -222,6 +222,265 @@ public class ACLRequestGenerator extends DeltaVRequestGenerator
     }
 
 
+    public synchronized void GetPropertyNames()
+    {
+        if( GlobalData.getGlobalData().getDebugRequest() )
+        {
+            System.err.println( "ACLRequestGenerator::GetPropertyNames" );
+        }
+
+        extendedCode = WebDAVResponseEvent.ACL_PROPERTY_NAMES;
+        if( GeneratePropFind( null, "propname", "0", null, null, false ) )
+        {
+            execute();
+        }
+    }
+
+
+    public synchronized boolean GetPrincipalPropSetReport( Vector props )
+    {
+        if( GlobalData.getGlobalData().getDebugRequest() )
+        {
+            System.err.println( "ACLRequestGenerator::GetPrincipalPropSetReport" );
+        }
+
+        Headers = null;
+        Body = null;
+        StrippedResource = parseResourceName( true );
+        if( StrippedResource == null )
+            return false;
+
+        extendedCode = 0;
+        Method = "REPORT";
+        Document miniDoc = new Document();
+        miniDoc.setVersion("1.0");
+        miniDoc.addChild(WebDAVXML.elemNewline,null);
+
+        AsGen asgen = WebDAVXML.findNamespace( new AsGen(), null );
+        if( asgen == null )
+            asgen = WebDAVXML.createNamespace( new AsGen(), null );
+
+        Element topElem = WebDAVXML.createElement( ACLXML.ELEM_ACL_PRINCIPAL_PROP_SET, Element.ELEMENT, null, asgen );
+        topElem.addChild( WebDAVXML.elemNewline, null );
+        addProperties( topElem, asgen, props, 1 );
+        miniDoc.addChild( topElem, null );
+        
+        ByteArrayOutputStream byte_str = new ByteArrayOutputStream();
+        XMLOutputStream xml_out = new XMLOutputStream(byte_str);
+        try
+        {
+            miniDoc.save( xml_out );
+            Body = byte_str.toByteArray();
+
+            Headers = new NVPair[2];
+            if (Port == 0 || Port == DEFAULT_PORT)
+            {
+                Headers[0] = new NVPair( "Host", HostName );
+            }
+            else
+                Headers[0] = new NVPair( "Host", HostName + ":" + Port );
+            Headers[1] = new NVPair( "Depth", "0" );
+        }
+        catch (Exception e)
+        {
+            GlobalData.getGlobalData().errorMsg( "XML generation error: \n" + e );
+            return false;
+        }
+
+        return true;
+    }
+
+
+    public synchronized boolean GetPrincipalMatchReport( String[] props )
+    {
+        if( GlobalData.getGlobalData().getDebugRequest() )
+        {
+            System.err.println( "ACLRequestGenerator::GetPrincipalMatchReport" );
+        }
+
+        Headers = null;
+        Body = null;
+        StrippedResource = parseResourceName( true );
+        if( StrippedResource == null )
+            return false;
+
+        extendedCode = 0;
+        Method = "REPORT";
+        Document miniDoc = new Document();
+        miniDoc.setVersion("1.0");
+        miniDoc.addChild(WebDAVXML.elemNewline,null);
+
+        AsGen asgen = WebDAVXML.findNamespace( new AsGen(), null );
+        if( asgen == null )
+            asgen = WebDAVXML.createNamespace( new AsGen(), null );
+
+        Element topElem = WebDAVXML.createElement( ACLXML.ELEM_PRINCIPAL_MATCH, Element.ELEMENT, null, asgen );
+        topElem.addChild( WebDAVXML.elemNewline, null );
+        Element propElem = WebDAVXML.createElement( ACLXML.ELEM_PRINCIPAL_PROPERTY, Element.ELEMENT, topElem, asgen );
+        propElem.addChild( WebDAVXML.elemNewline, null );
+        for (int i=0;i<props.length;i++)
+        {
+            Element prop = WebDAVXML.createElement( props[i], Element.ELEMENT, propElem, asgen );
+            addChild( propElem, prop, 2, false );
+        }
+        addChild( topElem, propElem, 1, true );
+        miniDoc.addChild( topElem, null );
+        
+        ByteArrayOutputStream byte_str = new ByteArrayOutputStream();
+        XMLOutputStream xml_out = new XMLOutputStream(byte_str);
+        try
+        {
+            miniDoc.save(xml_out);
+            Body = byte_str.toByteArray();
+
+            Headers = new NVPair[2];
+            if( Port == 0 || Port == DEFAULT_PORT )
+            {
+                Headers[0] = new NVPair( "Host", HostName );
+            }
+            else
+                Headers[0] = new NVPair( "Host", HostName + ":" + Port );
+            Headers[1] = new NVPair( "Depth", "0" );
+        }
+        catch (Exception e)
+        {
+            GlobalData.getGlobalData().errorMsg( "XML generation error: \n" + e );
+            return false;
+        }
+
+        return true;
+    }
+
+
+    public synchronized boolean GetPrincipalPropertySearchReport( Vector search, String[] props )
+    {
+        if( GlobalData.getGlobalData().getDebugRequest() )
+        {
+            System.err.println( "ACLRequestGenerator::GetPrincipalPropertySearchReport" );
+        }
+
+        Headers = null;
+        Body = null;
+        StrippedResource = parseResourceName( true );
+        if( StrippedResource == null )
+            return false;
+
+        extendedCode = 0;
+        Method = "REPORT";
+        Document miniDoc = new Document();
+        miniDoc.setVersion("1.0");
+        miniDoc.addChild(WebDAVXML.elemNewline,null);
+
+        AsGen asgen = WebDAVXML.findNamespace( new AsGen(), null );
+        if( asgen == null )
+            asgen = WebDAVXML.createNamespace( new AsGen(), null );
+
+        Element topElem = WebDAVXML.createElement( ACLXML.ELEM_PRINCIPAL_PROPERTY_SEARCH, Element.ELEMENT, null, asgen );
+        topElem.addChild( WebDAVXML.elemNewline, null );
+        for( int i=0; i<search.size(); i++ )
+        {
+            Element searchElem = WebDAVXML.createElement( ACLXML.ELEM_PROPERTY_SEARCH, Element.ELEMENT, topElem, asgen );
+            searchElem.addChild( WebDAVXML.elemNewline, null );
+            ACLPropertySearchNode node = (ACLPropertySearchNode)search.get( i );
+            addProperties( searchElem, asgen, (String[])node.getProperties().toArray(), 2 );
+            Element matchElem = WebDAVXML.createElement( ACLXML.ELEM_MATCH, Element.ELEMENT, searchElem, asgen );
+            addChild( searchElem, matchElem, 2, false );
+            Element matchVal = WebDAVXML.createElement( node.getMatch(), Element.ELEMENT, matchElem, asgen );
+            addChild( matchElem, matchVal, 0, false );
+            addChild( topElem, searchElem, 1, false );
+
+            if( props != null && props.length > 0 )
+            {
+                Element propElem = WebDAVXML.createElement( WebDAVXML.ELEM_PROP, Element.ELEMENT, topElem, asgen );
+                for( int j=0; j<props.length; j++ )
+                {
+                    Element prop = WebDAVXML.createElement( props[i], Element.ELEMENT, propElem, asgen );
+                    addChild( propElem, prop, 2, false );
+                }
+                addChild( topElem, propElem, 1, true );
+            }
+        }
+        miniDoc.addChild( topElem, null );
+
+        ByteArrayOutputStream byte_str = new ByteArrayOutputStream();
+        XMLOutputStream xml_out = new XMLOutputStream(byte_str);
+        try
+        {
+            miniDoc.save(xml_out);
+            Body = byte_str.toByteArray();
+
+            Headers = new NVPair[2];
+            if( Port == 0 || Port == DEFAULT_PORT )
+            {
+                Headers[0] = new NVPair( "Host", HostName );
+            }
+            else
+                Headers[0] = new NVPair( "Host", HostName + ":" + Port );
+            Headers[1] = new NVPair( "Depth", "0" );
+        }
+        catch (Exception e)
+        {
+            GlobalData.getGlobalData().errorMsg( "XML generation error: \n" + e );
+            return false;
+        }
+
+        return true;
+    }
+
+
+    public synchronized boolean GetPrincipalSearchPropertySetReport()
+    {
+        if( GlobalData.getGlobalData().getDebugRequest() )
+        {
+            System.err.println( "ACLRequestGenerator::GetPrincipalSearchPropertySetReport" );
+        }
+
+        Headers = null;
+        Body = null;
+        StrippedResource = parseResourceName( true );
+        if( StrippedResource == null )
+            return false;
+
+        extendedCode = 0;
+        Method = "REPORT";
+        Document miniDoc = new Document();
+        miniDoc.setVersion("1.0");
+        miniDoc.addChild(WebDAVXML.elemNewline,null);
+
+        AsGen asgen = WebDAVXML.findNamespace( new AsGen(), null );
+        if( asgen == null )
+            asgen = WebDAVXML.createNamespace( new AsGen(), null );
+
+        Element topElem = WebDAVXML.createElement( ACLXML.ELEM_PRINCIPAL_SEARCH_PROPERTY_SET, Element.ELEMENT, null, asgen );
+        topElem.addChild( WebDAVXML.elemNewline, null );
+        miniDoc.addChild( topElem, null );
+        
+        ByteArrayOutputStream byte_str = new ByteArrayOutputStream();
+        XMLOutputStream xml_out = new XMLOutputStream(byte_str);
+        try
+        {
+            miniDoc.save( xml_out );
+            Body = byte_str.toByteArray();
+
+            Headers = new NVPair[2];
+            if (Port == 0 || Port == DEFAULT_PORT)
+            {
+                Headers[0] = new NVPair( "Host", HostName );
+            }
+            else
+                Headers[0] = new NVPair( "Host", HostName + ":" + Port );
+            Headers[1] = new NVPair( "Depth", "0" );
+        }
+        catch (Exception e)
+        {
+            GlobalData.getGlobalData().errorMsg( "XML generation error: \n" + e );
+            return false;
+        }
+
+        return true;
+    }
+
+
     public synchronized boolean GenerateACL( Vector nodes )
     {
         if( GlobalData.getGlobalData().getDebugRequest() )
@@ -232,12 +491,8 @@ public class ACLRequestGenerator extends DeltaVRequestGenerator
         Headers = null;
         Body = null;
         StrippedResource = parseResourceName( true );
-        boolean ok = (StrippedResource != null);
-
-        if (!ok)
-        {
-                return false;
-        }
+        if( StrippedResource == null )
+            return false;
 
         extendedCode = WebDAVResponseEvent.ACL;
         Method = "ACL";
@@ -262,8 +517,8 @@ public class ACLRequestGenerator extends DeltaVRequestGenerator
             princVal.setText( node.getPrincipal()[1] );
             // keep on same line without whitespace
             addChild( princHref, princVal, 0, 0, false, false );
-            addChild( princ, princHref, 3, 0, true, true );
-            addChild( ace, princ, 2, 0, true, true );
+            addChild( princ, princHref, 3, 2, true, true );
+            addChild( ace, princ, 2, 1, true, true );
 
             // set grant privileges
             Vector privileges = node.getPrivileges();
@@ -276,9 +531,9 @@ public class ACLRequestGenerator extends DeltaVRequestGenerator
                     Element privVal = WebDAVXML.createElement( (String)privileges.get(g), Element.ELEMENT, priv, asgen );
                     // keep on same line without whitespace
                     addChild( priv, privVal, 0, 0, false, false );
-                    addChild( grantEl, priv, 3, 0, true, true );
+                    addChild( grantEl, priv, 3, 2, true, true );
                 }
-                addChild( ace, grantEl, 2, 0, true, true );
+                addChild( ace, grantEl, 2, 1, true, true );
             }
             else
             {
@@ -292,9 +547,9 @@ public class ACLRequestGenerator extends DeltaVRequestGenerator
                     Element privVal = WebDAVXML.createElement( (String)privileges.get(d), Element.ELEMENT, priv, asgen );
                     // keep on same line without whitespace
                     addChild( priv, privVal, 0, 0, false, false );
-                    addChild( denyEl, priv, 3, 0, true, true );
+                    addChild( denyEl, priv, 3, 2, true, true );
                 }
-                addChild( ace, denyEl, 2, 0, true, true );
+                addChild( ace, denyEl, 2, 1, true, true );
             }
             addChild( topElem, ace, 1, 0, false, true );
         }
@@ -323,19 +578,25 @@ public class ACLRequestGenerator extends DeltaVRequestGenerator
 
         return true;
     }
-    
 
-    
-/*    protected String prepareResource( String resource, boolean fullPath )
+
+    protected void addProperties( Element parent, AsGen DAVns, Vector props, int indent )
     {
-        String str = resource;
-        if( !fullPath )
+        Element propElem = WebDAVXML.createElement( WebDAVXML.ELEM_PROP, Element.ELEMENT, parent, DAVns );
+        propElem.addChild( WebDAVXML.elemNewline, null );
+        for( int i=0; i<props.size(); i++ )
         {
-            str = HostName;
-            if (Port > 0)
-                str += ":" + Port;
-            str += resource;
+            String[] prop = (String[])props.get( i );
+            AsGen namespace = DAVns;
+            if( prop[1] != null )
+            {
+                namespace = WebDAVXML.findNamespace( new AsGen(), prop[1] );
+                if( namespace == null )
+                    namespace = WebDAVXML.createNamespace( new AsGen(), prop[1] );
+            }
+            Element property = WebDAVXML.createElement( prop[0], Element.ELEMENT, propElem, namespace );
+            addChild( propElem, property, 2, false );
         }
-        return str;
-    }*/
+        addChild( parent, propElem, 1, false );
+    }
 }

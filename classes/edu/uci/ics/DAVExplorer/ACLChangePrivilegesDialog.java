@@ -52,13 +52,10 @@ public class ACLChangePrivilegesDialog extends JDialog
 implements ActionListener, ChangeListener, ListSelectionListener, WebDAVCompletionListener
 {
 
-    /**
-     * @throws java.awt.HeadlessException
-     */
-    public ACLChangePrivilegesDialog( String resource, String hostname, Vector current )
+    public ACLChangePrivilegesDialog( String resource, String hostname, Vector selected )
     {
         super( GlobalData.getGlobalData().getMainFrame(), true );
-        init( resource, hostname, current );
+        init( resource, hostname, selected, "Edit Privileges" );
         pack();
         setSize( getPreferredSize() );
         GlobalData.getGlobalData().center( this );
@@ -66,17 +63,28 @@ implements ActionListener, ChangeListener, ListSelectionListener, WebDAVCompleti
     }
 
 
-    protected void init( String resource, String hostname, Vector current )
+    public ACLChangePrivilegesDialog( String resource, String hostname, Vector selected, String title )
+    {
+        super( GlobalData.getGlobalData().getMainFrame(), true );
+        init( resource, hostname, selected, title );
+        pack();
+        setSize( getPreferredSize() );
+        GlobalData.getGlobalData().center( this );
+        show();
+    }
+
+
+    protected void init( String resource, String hostname, Vector selected, String title )
     {
         GlobalData.getGlobalData().setCursor( Cursor.getPredefinedCursor( Cursor.WAIT_CURSOR ) );
         this.hostname = hostname;
         this.resource = resource;
-        if( current == null )
-            this.current = new Vector();
+        if( selected == null )
+            this.selected = new Vector();
         else
-            this.current = new Vector( current );
-        privileges = new Vector();
-        setTitle("Edit Privileges");
+            this.selected = new Vector( selected );
+        available = new Vector();
+        setTitle( title );
         ((Main)GlobalData.getGlobalData().getMainFrame()).addWebDAVCompletionListener(this);
 
         JLabel label = new JLabel( this.resource, JLabel.CENTER );
@@ -155,7 +163,7 @@ implements ActionListener, ChangeListener, ListSelectionListener, WebDAVCompleti
             {
                 Object obj = privModel.getElementAt( indices[i] );
                 curModel.addElement( obj );
-                current.add( obj.toString() );
+                selected.add( obj.toString() );
                 privModel.remove( indices[i] );
                 setChanged( true );
             }
@@ -170,7 +178,7 @@ implements ActionListener, ChangeListener, ListSelectionListener, WebDAVCompleti
                 Object obj = curModel.getElementAt( indices[i] );
                 privModel.addElement( obj );
                 curModel.remove( indices[i] );
-                current.remove( obj.toString() );
+                selected.remove( obj.toString() );
                 setChanged( true );
             }
         }
@@ -220,21 +228,27 @@ implements ActionListener, ChangeListener, ListSelectionListener, WebDAVCompleti
     }
 
 
-    public Vector getCurrentPrivileges()
+    public Vector getSelected()
     {
-        return current;
+        return selected;
+    }
+
+
+    protected String getPanelTitle()
+    {
+        return  "Privileges";
     }
 
 
     protected JPanel makePanel()
     {
         JPanel panel = new JPanel(false);
-        getPrivileges();
+        getAvailable();
         DefaultListModel model = new DefaultListModel();
-        for( int i=0; i<privileges.size(); i++ )
+        for( int i=0; i<available.size(); i++ )
         {
-            if( !current.contains( privileges.get(i) ) )
-                    model.addElement( privileges.get(i) );
+            if( !selected.contains( available.get(i) ) )
+                    model.addElement( available.get(i) );
         }
         privList = new JList( model );
         privList.setFixedCellWidth(200);    // wild guess
@@ -242,9 +256,9 @@ implements ActionListener, ChangeListener, ListSelectionListener, WebDAVCompleti
         privScroll.setViewportView( privList );
         privList.addListSelectionListener( this );
         model = new DefaultListModel();
-        for( int i=0; i<current.size(); i++ )
+        for( int i=0; i<selected.size(); i++ )
         {
-            model.addElement( current.get(i) );
+            model.addElement( selected.get(i) );
         }
         curList = new JList( model ); 
         curList.setFixedCellWidth(200);    // wild guess
@@ -252,7 +266,7 @@ implements ActionListener, ChangeListener, ListSelectionListener, WebDAVCompleti
         curScroll.setViewportView( curList );
         curList.addListSelectionListener( this );
 
-        JLabel topLabel = new JLabel( "Privileges" );
+        JLabel topLabel = new JLabel( getPanelTitle() );
         topLabel.setHorizontalAlignment( JLabel.CENTER );
         GridBagLayout gridbag = new GridBagLayout();
         GridBagConstraints c = new GridBagConstraints();
@@ -269,7 +283,7 @@ implements ActionListener, ChangeListener, ListSelectionListener, WebDAVCompleti
         c.gridwidth = 1;
         gridbag.setConstraints( leftLabel, c );
         panel.add( leftLabel );
-        JLabel rightLabel = new JLabel( "Current" );
+        JLabel rightLabel = new JLabel( "Selected" );
         topLabel.setHorizontalAlignment( JLabel.CENTER );
         c.fill = GridBagConstraints.BOTH;
         c.weightx = 1.0;
@@ -313,11 +327,17 @@ implements ActionListener, ChangeListener, ListSelectionListener, WebDAVCompleti
         c.gridwidth = GridBagConstraints.REMAINDER;
         gridbag.setConstraints( curScroll, c );
         panel.add( curScroll );
+        changePanel();
         return panel;
     }
 
 
-    protected void getPrivileges()
+    protected void changePanel()
+    {
+    }
+
+
+    protected void getAvailable()
     {
         String prefix;
         if( GlobalData.getGlobalData().getSSL() )
@@ -339,7 +359,7 @@ implements ActionListener, ChangeListener, ListSelectionListener, WebDAVCompleti
         {
         }
         if( interpreter != null && interpreter.getSupportedPrivilegeSet() != null )
-            privileges.addAll( interpreter.getSupportedPrivilegeSet() );
+            available.addAll( interpreter.getSupportedPrivilegeSet() );
     }
 
 
@@ -364,8 +384,9 @@ implements ActionListener, ChangeListener, ListSelectionListener, WebDAVCompleti
     protected boolean canceled;
     protected String principal;
     protected int principalType;
-    protected Vector privileges;
-    protected Vector current;
+    protected Vector available;
+    protected Vector selected;
     protected boolean grant;
     protected ACLResponseInterpreter interpreter;
+    protected String panelTitle;
 }

@@ -252,7 +252,7 @@ public class ACLAddDialog extends JDialog
             ACLChangePrivilegesDialog dlg = new ACLChangePrivilegesDialog( resource, hostname, privileges );
             if( !dlg.isCanceled() )
             {
-                privileges = dlg.getCurrentPrivileges();
+                privileges = dlg.getSelected();
                 privilegesList.setListData( privileges );
                 setChanged( true );
             }

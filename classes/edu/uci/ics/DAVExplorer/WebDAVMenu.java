@@ -111,6 +111,10 @@ public class WebDAVMenu extends JMenuBar implements ActionListener
     public static final int GET_SUPPORTED_ACL = 207;
     public static final int GET_INHERITED_ACL = 209;
     public static final int GET_PRINCIPALS = 210;
+    public static final int ACL_PRINCIPAL_PROP_SET_REPORT = 211;
+    public static final int PRINCIPAL_MATCH_REPORT = 212;
+    public static final int PRINCIPAL_PROPERTY_SEARCH_REPORT = 213;
+    public static final int PRINCIPAL_SEARCH_PROPERTY_SET_REPORT = 214;
 
 
     /**
@@ -395,6 +399,11 @@ public class WebDAVMenu extends JMenuBar implements ActionListener
         mnu_ACLMenu.add( new WebDAVMenuItem( "Get Inherited ACLs", GET_INHERITED_ACL, this ) );
         mnu_ACLMenu.addSeparator();
         mnu_ACLMenu.add( new WebDAVMenuItem( "View/Modify ACLs", VIEW_ACL, this ) );
+        mnu_ACLMenu.addSeparator();
+        mnu_ACLMenu.add( new WebDAVMenuItem( "Principal-Property-Set Report", ACL_PRINCIPAL_PROP_SET_REPORT, this ) );
+        mnu_ACLMenu.add( new WebDAVMenuItem( "Principal-Match Report", PRINCIPAL_MATCH_REPORT, this ) );
+        mnu_ACLMenu.add( new WebDAVMenuItem( "Principal-Property-Search Report", PRINCIPAL_PROPERTY_SEARCH_REPORT, this ) );
+        mnu_ACLMenu.add( new WebDAVMenuItem( "Principal-Search-Property-Set Report", PRINCIPAL_SEARCH_PROPERTY_SET_REPORT, this ) );
 
         return mnu_ACLMenu;
     }

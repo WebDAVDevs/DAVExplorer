@@ -583,19 +583,11 @@ public class WebDAVRequestGenerator implements Runnable
         Body = null;
 
         if (FullPath != null)
-        {
             StrippedResource = parseStripped( FullPath, true );
-        }
         else
-        {
             StrippedResource = parseResourceName( true );
-        }
-        boolean ok = (StrippedResource != null);
-
-        if (!ok)
-        {
+        if( StrippedResource == null )
             return false;
-        }
 
         Method = "OPTIONS";
         Headers = new NVPair[1];
@@ -663,19 +655,12 @@ public class WebDAVRequestGenerator implements Runnable
             StrippedResource = parseResourceName( true );
         }
         else if (FullPath != null)
-        {
             StrippedResource = parseStripped( FullPath, true );
-        }
         else
-        {
             StrippedResource = parseResourceName( true );
-        }
-        ok = (StrippedResource != null);
-
-        if (!ok)
-        {
+        if( StrippedResource == null )
             return false;
-        }
+
         String com = "allprop";
         String dep = "infinity";
         if ( command.equalsIgnoreCase("prop") || command.equalsIgnoreCase("propname"))
@@ -709,14 +694,7 @@ public class WebDAVRequestGenerator implements Runnable
         }
         else
         {
-            Element propElem = WebDAVXML.createElement( WebDAVXML.ELEM_PROP, Element.ELEMENT, propFind, asgen );
-            propElem.addChild( WebDAVXML.elemNewline, null );
-            for (int i=0;i<props.length;i++)
-            {
-                Element prop = WebDAVXML.createElement( props[i], Element.ELEMENT, propElem, asgen );
-                addChild( propElem, prop, 2, false );
-            }
-            addChild( propFind, propElem, 1, true );
+            addProperties( propFind, asgen, props, 1 );
         }
         miniDoc.addChild(propFind,null);
         miniDoc.addChild(WebDAVXML.elemNewline, null);
@@ -748,6 +726,19 @@ public class WebDAVRequestGenerator implements Runnable
             return false;
         }
         return true;
+    }
+
+
+    protected void addProperties( Element parent, AsGen namespace, String[] props, int indent )
+    {
+        Element propElem = WebDAVXML.createElement( WebDAVXML.ELEM_PROP, Element.ELEMENT, parent, namespace );
+        propElem.addChild( WebDAVXML.elemNewline, null );
+        for (int i=0;i<props.length;i++)
+        {
+            Element prop = WebDAVXML.createElement( props[i], Element.ELEMENT, propElem, namespace );
+            addChild( propElem, prop, 2, false );
+        }
+        addChild( parent, propElem, 1, true );
     }
 
 
@@ -848,19 +839,11 @@ public class WebDAVRequestGenerator implements Runnable
         }
 
         if (FullPath != null)
-        {
             StrippedResource = parseStripped( FullPath, true );
-        }
         else
-        {
             StrippedResource = parseResourceName( true );
-        }
-        boolean ok = (StrippedResource != null);
-
-        if (!ok)
-        {
+        if( StrippedResource == null )
             return false;
-        }
 
         Headers = null;
         Body = null;
@@ -955,9 +938,8 @@ public class WebDAVRequestGenerator implements Runnable
         ResourceName = parentDir;
         StrippedResource = parseResourceName( true );
         if( StrippedResource == null )
-        {
             return false;
-        }
+
         String dest = dirname;
         int pos = dest.lastIndexOf( File.separatorChar );
         if( pos >= 0 )
@@ -993,9 +975,7 @@ public class WebDAVRequestGenerator implements Runnable
 
         StrippedResource = parseResourceName( true );
         if( StrippedResource == null )
-        {
             return false;
-        }
 
         extendedCode = code;
         Method = "GET";
@@ -1039,9 +1019,7 @@ public class WebDAVRequestGenerator implements Runnable
 
         StrippedResource = parseResourceName( true );
         if( StrippedResource == null )
-        {
             return false;
-        }
 
         Method = "DELETE";
         Body = null;
@@ -1113,9 +1091,7 @@ public class WebDAVRequestGenerator implements Runnable
         ResourceName = destDir;
         StrippedResource = parseResourceName( true );
         if( StrippedResource == null )
-        {
             return false;
-        }
 
         // strip any directory info from the destination name
         String dest = fileName;
@@ -1197,9 +1173,7 @@ public class WebDAVRequestGenerator implements Runnable
 
         StrippedResource = parseResourceName( true );
         if( StrippedResource == null )
-        {
             return false;
-        }
 
         String ow = (Overwrite) ? "T" : "F";
 
@@ -1362,9 +1336,8 @@ public class WebDAVRequestGenerator implements Runnable
         ResourceName = srcFile;
         StrippedResource = parseResourceName( true );
         if( StrippedResource == null )
-        {
             return false;
-        }
+
         String ow = (Overwrite) ? "T" : "F";
         if (Dest == null)
         {
@@ -1480,9 +1453,7 @@ public class WebDAVRequestGenerator implements Runnable
         Body = null;
         StrippedResource = parseResourceName( true );
         if( StrippedResource == null )
-        {
             return false;
-        }
 
         Method = "LOCK";
         Body = null;
@@ -1596,9 +1567,7 @@ public class WebDAVRequestGenerator implements Runnable
 
         StrippedResource = parseResourceName( true );
         if( StrippedResource == null )
-        {
             return false;
-        }
 
         try
         {

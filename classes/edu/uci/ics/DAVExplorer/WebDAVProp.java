@@ -39,6 +39,10 @@ package edu.uci.ics.DAVExplorer;
 import java.util.Vector;
 import java.util.Enumeration;
 
+import com.ms.xml.om.Element;
+import com.ms.xml.util.Atom;
+import com.ms.xml.util.Name;
+
 
 /**
  * 
@@ -88,6 +92,46 @@ public class WebDAVProp
         prop_list.addElement( PROP_SUPPORTEDLOCK );
 
         return (prop_list.elements());
+    }
+
+
+    /**
+     * 
+     * @param parent
+     * @param tagname
+     * @return
+     * 
+     * Namespace Handling
+     * Unfortunately, the 1997-era Microsoft parser does not properly
+     * handle namespaces. It should really be replaced with a modern
+     * DOM parser.
+     * Until then, we are stuck with code like this to get the
+     * actual namespace by walking up the tree.
+     */
+    public static String locateNamespace( Element parent, Name tagname )
+    {
+        String ns = null;
+        Atom namespace = tagname.getNameSpace();
+        if( namespace != null )
+            ns = tagname.getNameSpace().toString();
+        Name name = null;
+        Element localParent = parent;
+        if( ns != null )
+            name = Name.create( ns, "xmlns" );
+        else
+            name = Name.create( "xmlns" );
+        while( localParent != null )
+        {
+            String attr = (String)localParent.getAttribute(name);
+            if( attr == null )
+                localParent = localParent.getParent();
+            else
+            {
+                ns = attr;
+                break;
+            }
+        }
+        return ns;
     }
 
 

@@ -1297,6 +1297,69 @@ public class Main extends JFrame
                     break;
                 }
 
+                case WebDAVMenu.ACL_PRINCIPAL_PROP_SET_REPORT:
+                {
+                    String s = fileView.getSelected();
+                    if( (s == null) || (s.length() == 0) )
+                    {
+                        GlobalData.getGlobalData().errorMsg( "No resource selected." );
+                        return;
+                    }
+                    ACLReportPropertiesDialog dlg = new ACLReportPropertiesDialog( s );
+                    if( !dlg.isCanceled() )
+                    {
+                        Vector props = dlg.getSelected(); 
+                        WebDAVTreeNode n = fileView.getParentNode();
+                        requestGenerator.setResource( s, n );
+                        if( requestGenerator.GetPrincipalPropSetReport( props ) )
+                            requestGenerator.execute();
+                    }
+                    break;
+                }
+                
+                case WebDAVMenu.PRINCIPAL_MATCH_REPORT:
+                {
+                    String s = fileView.getSelected();
+                    if( (s == null) || (s.length() == 0) )
+                    {
+                        GlobalData.getGlobalData().errorMsg( "No resource selected." );
+                        return;
+                    }
+                    WebDAVTreeNode n = fileView.getParentNode();
+                    requestGenerator.setResource( s, n );
+                    //requestGenerator.GetPrincipalMatchReport();
+                    break;
+                }
+                
+                case WebDAVMenu.PRINCIPAL_PROPERTY_SEARCH_REPORT:
+                {
+                    String s = fileView.getSelected();
+                    if( (s == null) || (s.length() == 0) )
+                    {
+                        GlobalData.getGlobalData().errorMsg( "No resource selected." );
+                        return;
+                    }
+                    WebDAVTreeNode n = fileView.getParentNode();
+                    requestGenerator.setResource( s, n );
+                    ///requestGenerator.GetPrincipalPropertySearchReport();
+                    break;
+                }
+                
+                case WebDAVMenu.PRINCIPAL_SEARCH_PROPERTY_SET_REPORT:
+                {
+                    String s = fileView.getSelected();
+                    if( (s == null) || (s.length() == 0) )
+                    {
+                        GlobalData.getGlobalData().errorMsg( "No resource selected." );
+                        return;
+                    }
+                    WebDAVTreeNode n = fileView.getParentNode();
+                    requestGenerator.setResource( s, n );
+                    if( requestGenerator.GetPrincipalSearchPropertySetReport() )
+                        requestGenerator.execute();
+                    break;
+                }
+                
                 case WebDAVMenu.HTTP_LOGGING:
                 {
                     boolean logging = false;
