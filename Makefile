@@ -36,7 +36,7 @@ clean::
 dist::
 	- cd $(SRC)/classes; make dist
 	- rm -f $(SRC)/DAVExplorer.jar
-	- rm -rf $(SRC)/CVS
+	- rm -rf $(SRC)/.svn
 	- tar -cf - -C .. dav_explorer | gzip -c > DAVExplorer-src.tar.gz
 
 bin-dist:	DAVExplorer DAVExplorer.jar

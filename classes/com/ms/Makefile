@@ -27,4 +27,4 @@ clean::
 
 dist::
 	- cd $(SRC)/xml; make dist
-	- rm -rf $(SRC)/CVS
+	- rm -rf $(SRC)/.svn

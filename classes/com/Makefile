@@ -27,4 +27,4 @@ clean::
 
 dist::
 	- cd $(SRC)/ms; make dist
-	- rm -rf $(SRC)/CVS
+	- rm -rf $(SRC)/.svn
