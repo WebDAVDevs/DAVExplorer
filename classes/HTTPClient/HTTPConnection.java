@@ -341,9 +341,10 @@ public class HTTPConnection implements GlobalConstants, HTTPClientModuleConstant
     private static boolean      JSSE = true;
 
     /** JSSE's socket factory */
-    // 2001-May-23: jfeise@ics.uci.edu  commented out to allow compilation without JSSE
+    // 2001-May-25: jfeise@ics.uci.edu  Modified to allow running without JSSE
     // private SSLSocketFactory     sslFactory =
 	// (SSLSocketFactory) SSLSocketFactory.getDefault();
+    private Object     sslFactory;
 
     static
     {
@@ -677,6 +678,21 @@ public class HTTPConnection implements GlobalConstants, HTTPClientModuleConstant
 	allowUI      = defaultAllowUI;
 	if (noKeepAlives)
 	    setDefaultHeaders(new NVPair[] { new NVPair("Connection", "close") });
+
+    // 2001-May-25: jfeise@ics.uci.edu  Added for our JSSE support
+    if( JSSE )
+    {
+        try
+        {
+            sslFactory = SSLSocketFactory.getDefault();
+        }
+        catch( NoClassDefFoundError e )
+        {
+            sslFactory = null;
+        }
+    }
+    else
+        sslFactory = null;
     }
 
 
@@ -1449,28 +1465,39 @@ public class HTTPConnection implements GlobalConstants, HTTPClientModuleConstant
      * Set the SSL socket factory for this connection. If not set, uses the
      * default factory.
      *
-     * 2001-May-23: jfeise@ics.uci.edu  Commented out to allow compilation
+     * 2001-May-25: jfeise@ics.uci.edu  Modified to allow compilation
      * without JSSE
      *
      * @param sslFactory the SSL socket factory
      */
-    // public void setSSLSocketFactory(SSLSocketFactory sslFactory)
-    // {
-	// this.sslFactory = sslFactory;
-    // }
+    public void setSSLSocketFactory(Object sslFactory)
+    {
+        if( JSSE )
+        {
+            try
+            {
+                if( sslFactory instanceof SSLSocketFactory )
+                    this.sslFactory = sslFactory;
+            }
+            catch( NoClassDefFoundError e )
+            {
+                // ignore
+            }
+        }
+    }
 
     /**
      * Set the current SSL socket factory for this connection.
      *
-     * 2001-May-23: jfeise@ics.uci.edu  Commented out to allow compilation
+     * 2001-May-23: jfeise@ics.uci.edu  Modified to allow compilation
      * without JSSE
      *
      * @return the current SSL socket factory
      */
-    // public SSLSocketFactory getSSLSocketFactory()
-    // {
-	// return sslFactory;
-    // }
+    public Object getSSLSocketFactory()
+    {
+        return sslFactory;
+    }
 
     /**
      * Sets the default http headers to be sent with each request. The
@@ -2953,9 +2980,20 @@ public class HTTPConnection implements GlobalConstants, HTTPClientModuleConstant
                 // 2001-May-23: jfeise@ics.uci.edu  modified for our JSSE support
                 if( JSSE )
                 {
-                    sock = ((SSLSocketFactory)SSLSocketFactory.getDefault()).createSocket(sock, Host, Port, true);
-                    checkCert(((SSLSocket)sock).getSession().getPeerCertificateChain()[0], Host);
+                    try
+                    {
+                        //sock = ((SSLSocketFactory)SSLSocketFactory.getDefault()).createSocket(sock, Host, Port, true);
+                        sock = ((SSLSocketFactory)sslFactory).createSocket(sock, Host, Port, true);
+                        checkCert(((SSLSocket)sock).getSession().getPeerCertificateChain()[0], Host);
+                    }
+                    catch( NoClassDefFoundError err )
+                    {
+                        throw new IOException( err.getMessage() );
+                    }
                 }
+                else
+                    throw new IOException( "SSL support not active" );
+
     			//sock = sslFactory.createSocket(sock, Host, Port, true);
     			//checkCert(((SSLSocket) sock).getSession().
     			//		getPeerCertificateChain()[0], Host);
