@@ -49,6 +49,9 @@ Alternative Usage:
 	   password = "password">
 </EMBED>
 The username and password parameters are optional for security reasons.
+In fact, we consider it BAD PRACTICE to provide them in clear text on a
+webpage, unless the webpage is accessible only through secure means, e.g.,
+using SSL.
 If they are not specified on the webpage, they are requested interactively.
 The applet code also supports the use of SSL. It has been tested with JRE 1.4.
 Since DAV Explorer accesses restricted properties, the jar file is signed by
