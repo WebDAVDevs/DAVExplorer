@@ -594,8 +594,18 @@ public class WebDAVResponseInterpreter
             if (Extra.equals("saveas"))
             {
                 FileDialog fd = new FileDialog(mainFrame, "Save As" , FileDialog.SAVE);
+                int pos = newRes.lastIndexOf( "/" );
+                if( pos >= 0 )
+                    newRes = newRes.substring( pos + 1 );
+                fd.setFile( newRes );
                 fd.setVisible(true);
-                fileName = fd.getDirectory() + fd.getFile();
+                String dir = fd.getDirectory();
+                if( (dir == null) || dir.equals("") )
+                    return;
+                String fname = fd.getFile();
+                if( (fname == null) || fname.equals("") )
+                    return;
+                fileName = dir + fname;
             }
             else
             {
@@ -617,9 +627,11 @@ public class WebDAVResponseInterpreter
 
             File theFile = new File(fileName);
             boolean bSave = true;
-            if (theFile.exists())
+            String os = (System.getProperty( "os.name" )).toLowerCase();
+            String dirName = null;
+
+            if( theFile.exists() && (os.indexOf("windows")==-1) )
             {
-                //if (!replaceFile(newRes))
                 if (!replaceFile(fileName))
                 {
                     bSave = false;
@@ -673,13 +685,13 @@ public class WebDAVResponseInterpreter
 
     WebDAVTreeNode parent = generator.getPossibleParentOfSelectedCollectionNode();
     if (parent != null){
-	// Need to 1. maintain the selected node on both the 
-	// the Tree View and the File View.
-	// Need to 2. reload the node to which the put has taken place.
-        //   a. what if node loaded, 
-	//   b. what if node is not loaded
+    // Need to 1. maintain the selected node on both the
+    // the Tree View and the File View.
+    // Need to 2. reload the node to which the put has taken place.
+        //   a. what if node loaded,
+    //   b. what if node is not loaded
         PutEvent e = new PutEvent( this, Node, parent);
-	putListener.PutEventResponse(e);
+    putListener.PutEventResponse(e);
     }else{
         CopyResponseEvent e = new CopyResponseEvent( this, Node);
         copyListener.CopyEventResponse(e);
