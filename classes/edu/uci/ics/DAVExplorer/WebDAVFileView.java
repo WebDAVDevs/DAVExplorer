@@ -34,6 +34,9 @@
  * @author      Joachim Feise (dav-exp@ics.uci.edu)
  * @date        2 April 2002
  * Changes:     Updated for JDK 1.4
+ * @author      Joachim Feise (dav-exp@ics.uci.edu)
+ * @date        25 June 2002
+ * Changes:     Fixed the icon locator code to account for drive letters on Windows
  */
 
 package edu.uci.ics.DAVExplorer;
@@ -728,7 +731,17 @@ public class WebDAVFileView implements ViewSelectionListener, ActionListener
             errorMsg("Fileview:\nNo Classpath set." );
             return null;
         }
-        StringTokenizer paths = new StringTokenizer(classPath,":;");
+        String os = (System.getProperty( "os.name" )).toLowerCase();
+        StringTokenizer paths;
+        if( os.indexOf( "windows" ) == -1 )
+        {
+            paths = new StringTokenizer(classPath,":");
+        }
+        else
+        {
+            // making sure that the full drive:directory/... value is retained
+            paths = new StringTokenizer(classPath,";");
+        }
 
         while (paths.hasMoreTokens())
         {
