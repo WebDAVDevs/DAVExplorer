@@ -1,8 +1,8 @@
 /*
- * @(#)URI.java						0.3-2 18/06/1999
+ * @(#)URI.java						0.3-3 06/05/2001
  *
  *  This file is part of the HTTPClient package
- *  Copyright (C) 1996-1999  Ronald Tschalär
+ *  Copyright (C) 1996-2001 Ronald Tschalär
  *
  *  This library is free software; you can redistribute it and/or
  *  modify it under the terms of the GNU Lesser General Public
@@ -24,14 +24,18 @@
  *
  *  ronald@innovation.ch
  *
+ *  The HTTPClient's home page is located at:
+ *
+ *  http://www.innovation.ch/java/HTTPClient/ 
+ *
  */
 
 package HTTPClient;
 
-
 import java.net.URL;
 import java.net.MalformedURLException;
 import java.util.BitSet;
+import java.util.Hashtable;
 
 /**
  * This class represents a generic URI, as defined in RFC-2396.
@@ -49,29 +53,148 @@ import java.util.BitSet;
  *     http URLs.
  * </UL>
  *
+ * <P>The elements are always stored in escaped form.
+ *
+ * <P>While RFC-2396 distinguishes between just two forms of URI's, those that
+ * follow the generic syntax and those that don't, this class knows about a
+ * third form, named semi-generic, used by quite a few popular schemes.
+ * Semi-generic syntax treats the path part as opaque, i.e. has the form
+ * &lt;scheme&gt;://&lt;authority&gt;/&lt;opaque&gt; . Relative URI's of this
+ * type are only resolved as far as absolute paths - relative paths do not
+ * exist.
+ *
  * <P>Ideally, java.net.URL should subclass URI.
  *
  * @see		<A HREF="http://www.ics.uci.edu/pub/ietf/uri/rfc2396.txt">rfc-2396</A>
- * @version	0.3-2  18/06/1999
+ * @version	0.3-3  06/05/2001
  * @author	Ronald Tschalär
  * @since	V0.3-1
  */
-
 public class URI
 {
+    /**
+     * If true, then the parser will resolve certain URI's in backwards
+     * compatible (but technically incorrect) manner. Example:
+     *
+     *<PRE>
+     * base   = http://a/b/c/d;p?q
+     * rel    = http:g
+     * result = http:g		(correct)
+     * result = http://a/b/c/g	(backwards compatible)
+     *</PRE>
+     *
+     * See rfc-2396, section 5.2, step 3, second paragraph.
+     */
+    public static final boolean ENABLE_BACKWARDS_COMPATIBILITY = true;
+
+    protected static final Hashtable defaultPorts          = new Hashtable();
+    protected static final Hashtable usesGenericSyntax     = new Hashtable();
+    protected static final Hashtable usesSemiGenericSyntax = new Hashtable();
+
     /* various character classes as defined in the draft */
-    protected static BitSet alphanumChar;
-    protected static BitSet markChar;
-    protected static BitSet reservedChar;
-    protected static BitSet unreservedChar;
-    protected static BitSet uricChar;
-    protected static BitSet pcharChar;
-    protected static BitSet userinfoChar;
-    protected static BitSet schemeChar;
-    protected static BitSet reg_nameChar;
+    protected static final BitSet alphanumChar;
+    protected static final BitSet markChar;
+    protected static final BitSet reservedChar;
+    protected static final BitSet unreservedChar;
+    protected static final BitSet uricChar;
+    protected static final BitSet pcharChar;
+    protected static final BitSet userinfoChar;
+    protected static final BitSet schemeChar;
+    protected static final BitSet hostChar;
+    protected static final BitSet opaqueChar;
+    protected static final BitSet reg_nameChar;
+
+    /* These are not directly in the spec, but used for escaping and
+     * unescaping parts
+     */
+
+    /** list of characters which must not be unescaped when unescaping a scheme */
+    public static final BitSet resvdSchemeChar;
+    /** list of characters which must not be unescaped when unescaping a userinfo */
+    public static final BitSet resvdUIChar;
+    /** list of characters which must not be unescaped when unescaping a host */
+    public static final BitSet resvdHostChar;
+    /** list of characters which must not be unescaped when unescaping a path */
+    public static final BitSet resvdPathChar;
+    /** list of characters which must not be unescaped when unescaping a query string */
+    public static final BitSet resvdQueryChar;
+    /** list of characters which must not be escaped when escaping a path */
+    public static final BitSet escpdPathChar;
+    /** list of characters which must not be escaped when escaping a query string */
+    public static final BitSet escpdQueryChar;
+    /** list of characters which must not be escaped when escaping a fragment identifier */
+    public static final BitSet escpdFragChar;
 
     static
     {
+	defaultPorts.put("http",      new Integer(80));
+	defaultPorts.put("shttp",     new Integer(80));
+	defaultPorts.put("http-ng",   new Integer(80));
+	defaultPorts.put("coffee",    new Integer(80));
+	defaultPorts.put("https",     new Integer(443));
+	defaultPorts.put("ftp",       new Integer(21));
+	defaultPorts.put("telnet",    new Integer(23));
+	defaultPorts.put("nntp",      new Integer(119));
+	defaultPorts.put("news",      new Integer(119));
+	defaultPorts.put("snews",     new Integer(563));
+	defaultPorts.put("hnews",     new Integer(80));
+	defaultPorts.put("smtp",      new Integer(25));
+	defaultPorts.put("gopher",    new Integer(70));
+	defaultPorts.put("wais",      new Integer(210));
+	defaultPorts.put("whois",     new Integer(43));
+	defaultPorts.put("whois++",   new Integer(63));
+	defaultPorts.put("rwhois",    new Integer(4321));
+	defaultPorts.put("imap",      new Integer(143));
+	defaultPorts.put("pop",       new Integer(110));
+	defaultPorts.put("prospero",  new Integer(1525));
+	defaultPorts.put("irc",       new Integer(194));
+	defaultPorts.put("ldap",      new Integer(389));
+	defaultPorts.put("nfs",       new Integer(2049));
+	defaultPorts.put("z39.50r",   new Integer(210));
+	defaultPorts.put("z39.50s",   new Integer(210));
+	defaultPorts.put("vemmi",     new Integer(575));
+	defaultPorts.put("videotex",  new Integer(516));
+	defaultPorts.put("cmp",       new Integer(829));
+
+	usesGenericSyntax.put("http", Boolean.TRUE);
+	usesGenericSyntax.put("https", Boolean.TRUE);
+	usesGenericSyntax.put("shttp", Boolean.TRUE);
+	usesGenericSyntax.put("coffee", Boolean.TRUE);
+	usesGenericSyntax.put("ftp", Boolean.TRUE);
+	usesGenericSyntax.put("file", Boolean.TRUE);
+	usesGenericSyntax.put("nntp", Boolean.TRUE);
+	usesGenericSyntax.put("news", Boolean.TRUE);
+	usesGenericSyntax.put("snews", Boolean.TRUE);
+	usesGenericSyntax.put("hnews", Boolean.TRUE);
+	usesGenericSyntax.put("imap", Boolean.TRUE);
+	usesGenericSyntax.put("wais", Boolean.TRUE);
+	usesGenericSyntax.put("nfs", Boolean.TRUE);
+	usesGenericSyntax.put("sip", Boolean.TRUE);
+	usesGenericSyntax.put("sips", Boolean.TRUE);
+	usesGenericSyntax.put("sipt", Boolean.TRUE);
+	usesGenericSyntax.put("sipu", Boolean.TRUE);
+	/* Note: schemes which definitely don't use the generic-URI syntax
+	 * and must therefore never appear in the above list:
+	 * "urn", "mailto", "sdp", "service", "tv", "gsm-sms", "tel", "fax",
+	 * "modem", "eid", "cid", "mid", "data", "ldap"
+	 */
+
+	usesSemiGenericSyntax.put("ldap", Boolean.TRUE);
+	usesSemiGenericSyntax.put("irc", Boolean.TRUE);
+	usesSemiGenericSyntax.put("gopher", Boolean.TRUE);
+	usesSemiGenericSyntax.put("videotex", Boolean.TRUE);
+	usesSemiGenericSyntax.put("rwhois", Boolean.TRUE);
+	usesSemiGenericSyntax.put("whois++", Boolean.TRUE);
+	usesSemiGenericSyntax.put("smtp", Boolean.TRUE);
+	usesSemiGenericSyntax.put("telnet", Boolean.TRUE);
+	usesSemiGenericSyntax.put("prospero", Boolean.TRUE);
+	usesSemiGenericSyntax.put("pop", Boolean.TRUE);
+	usesSemiGenericSyntax.put("vemmi", Boolean.TRUE);
+	usesSemiGenericSyntax.put("z39.50r", Boolean.TRUE);
+	usesSemiGenericSyntax.put("z39.50s", Boolean.TRUE);
+	usesSemiGenericSyntax.put("stream", Boolean.TRUE);
+	usesSemiGenericSyntax.put("cmp", Boolean.TRUE);
+
 	alphanumChar = new BitSet(128);
 	for (int ch='0'; ch<='9'; ch++)  alphanumChar.set(ch);
 	for (int ch='A'; ch<='Z'; ch++)  alphanumChar.set(ch);
@@ -107,9 +230,11 @@ public class URI
 	uricChar = new BitSet(128);
 	uricChar.or(unreservedChar);
 	uricChar.or(reservedChar);
+	uricChar.set('%');
 
 	pcharChar = new BitSet(128);
 	pcharChar.or(unreservedChar);
+	pcharChar.set('%');
 	pcharChar.set(':');
 	pcharChar.set('@');
 	pcharChar.set('&');
@@ -120,6 +245,7 @@ public class URI
 
 	userinfoChar = new BitSet(128);
 	userinfoChar.or(unreservedChar);
+	userinfoChar.set('%');
 	userinfoChar.set(';');
 	userinfoChar.set(':');
 	userinfoChar.set('&');
@@ -135,6 +261,14 @@ public class URI
 	schemeChar.set('-');
 	schemeChar.set('.');
 
+	opaqueChar = new BitSet(128);
+	opaqueChar.or(uricChar);
+
+	hostChar = new BitSet(128);
+	hostChar.or(alphanumChar);
+	hostChar.set('-');
+	hostChar.set('.');
+
 	reg_nameChar = new BitSet(128);
 	reg_nameChar.or(unreservedChar);
 	reg_nameChar.set('$');
@@ -145,12 +279,50 @@ public class URI
 	reg_nameChar.set('&');
 	reg_nameChar.set('=');
 	reg_nameChar.set('+');
+
+	resvdSchemeChar = new BitSet(128);
+	resvdSchemeChar.set(':');
+
+	resvdUIChar = new BitSet(128);
+	resvdUIChar.set('@');
+
+	resvdHostChar = new BitSet(128);
+	resvdHostChar.set(':');
+	resvdHostChar.set('/');
+	resvdHostChar.set('?');
+	resvdHostChar.set('#');
+
+	resvdPathChar = new BitSet(128);
+	resvdPathChar.set('/');
+	resvdPathChar.set(';');
+	resvdPathChar.set('?');
+	resvdPathChar.set('#');
+
+	resvdQueryChar = new BitSet(128);
+	resvdQueryChar.set('#');
+
+	escpdPathChar = new BitSet(128);
+	escpdPathChar.or(pcharChar);
+	escpdPathChar.set('%');
+	escpdPathChar.set('/');
+	escpdPathChar.set(';');
+
+	escpdQueryChar = new BitSet(128);
+	escpdQueryChar.or(uricChar);
+	escpdQueryChar.clear('#');
+
+	escpdFragChar = new BitSet(128);
+	escpdFragChar.or(uricChar);
     }
 
 
     /* our uri in pieces */
 
-    protected boolean is_generic;
+    protected static final int OPAQUE       = 0;
+    protected static final int SEMI_GENERIC = 1;
+    protected static final int GENERIC      = 2;
+
+    protected int     type;
     protected String  scheme;
     protected String  opaque;
     protected String  userinfo;
@@ -215,8 +387,8 @@ public class URI
 
 	// trim()
 
-	while (pos < len  &&  Character.isSpace(uri[pos]))    pos++;
-	while (len > 0    &&  Character.isSpace(uri[len-1]))  len--;
+	while (pos < len  &&  Character.isWhitespace(uri[pos]))    pos++;
+	while (len > 0    &&  Character.isWhitespace(uri[len-1]))  len--;
 
 
 	// strip the special "url" or "uri" scheme
@@ -255,21 +427,24 @@ public class URI
 
 	// check for generic vs. opaque
 
-	is_generic = usesGenericSyntax(final_scheme);
-	if (!is_generic)
+	type = usesGenericSyntax(final_scheme) ? GENERIC :
+	       usesSemiGenericSyntax(final_scheme) ? SEMI_GENERIC : OPAQUE;
+	if (type == OPAQUE)
 	{
 	    if (base != null  &&  scheme == null)
 		throw new ParseException("Can't resolve relative URI for " +
 					 "scheme " + final_scheme);
 
-	    opaque = rel_uri.substring(pos);
+	    opaque = escape(rel_uri.substring(pos), opaqueChar, true);
+	    if (opaque.length() > 0  &&  opaque.charAt(0) == '/')
+		opaque = "%2F" + opaque.substring(1);
 	    return;
 	}
 
 
 	// get authority: (//([^/?#]*))?
 
-	if (pos < len-1  &&  uri[pos] == '/'  &&  uri[pos+1] == '/')
+	if (pos+1 < len  &&  uri[pos] == '/'  &&  uri[pos+1] == '/')
 	{
 	    pos += 2;
 	    idx = pos;
@@ -282,45 +457,62 @@ public class URI
 	}
 
 
-	// get path: ([^?#]*)
-
-	idx = pos;
-	while (idx < len  &&  uri[idx] != '?'  &&  uri[idx] != '#')
-	    idx++;
-	this.path = rel_uri.substring(pos, idx);
-	pos = idx;
-
-
-	// get query: (\?([^#]*))?
-
-	if (pos < len  &&  uri[pos] == '?')
+	// handle semi-generic and generic uri's
+	
+	if (type == SEMI_GENERIC)
 	{
-	    pos += 1;
-	    idx = pos;
-	    while (idx < len  &&  uri[idx] != '#')
-		idx++;
-	    this.query = unescape(rel_uri.substring(pos, idx));
-	    pos = idx;
+	    path = escape(rel_uri.substring(pos), uricChar, true);
+	    if (path.length() > 0  &&  path.charAt(0) != '/')
+		path = '/' + path;
 	}
+	else
+	{
+	    // get path: ([^?#]*)
+
+	    idx = pos;
+	    while (idx < len  &&  uri[idx] != '?'  &&  uri[idx] != '#')
+		idx++;
+	    path = escape(rel_uri.substring(pos, idx), escpdPathChar, true);
+	    pos = idx;
 
 
-	// get fragment: (#(.*))?
+	    // get query: (\?([^#]*))?
 
-	if (pos < len  &&  uri[pos] == '#')
-	    this.fragment = unescape(rel_uri.substring(pos+1, len));
+	    if (pos < len  &&  uri[pos] == '?')
+	    {
+		pos += 1;
+		idx = pos;
+		while (idx < len  &&  uri[idx] != '#')
+		    idx++;
+		this.query = escape(rel_uri.substring(pos, idx), escpdQueryChar, true);
+		pos = idx;
+	    }
+
+
+	    // get fragment: (#(.*))?
+
+	    if (pos < len  &&  uri[pos] == '#')
+		this.fragment = escape(rel_uri.substring(pos+1, len), escpdFragChar, true);
+	}
 
 
 	// now resolve the parts relative to the base
 
 	if (base != null)
 	{
-	    if (scheme != null)  return;		// resolve scheme
+	    if (scheme != null  &&			// resolve scheme
+		!(scheme.equals(base.scheme)  &&  ENABLE_BACKWARDS_COMPATIBILITY))
+	      return;
 	    scheme = base.scheme;
 
-	    if (host != null)  return;			// resolve authority
+	    if (host != null)				// resolve authority
+		return;
 	    userinfo = base.userinfo;
 	    host     = base.host;
 	    port     = base.port;
+
+	    if (type == SEMI_GENERIC)			// can't resolve relative paths
+		return;
 
 	    if (path.length() == 0  &&  query == null)	// current doc
 	    {
@@ -329,65 +521,79 @@ public class URI
 		return;
 	    }
 
-	    if (path.length() == 0  ||  path.charAt(0) != '/')	// relative uri
+	    if (path.length() == 0  ||  path.charAt(0) != '/')	// relative path
 	    {
-		idx = base.path.lastIndexOf('/');
-		if (idx == -1)  return;		// weird one
-		path = base.path.substring(0, idx+1) + path;
+		idx = (base.path != null) ? base.path.lastIndexOf('/') : -1;
+		if (idx < 0)
+		    path = '/' + path;
+		else
+		    path = base.path.substring(0, idx+1) + path;
 
-		len = path.length();
-		if (!((idx = path.indexOf("/.")) != -1  &&
-		      (idx == len-2  ||  path.charAt(idx+2) == '/'  ||
-		       (path.charAt(idx+2) == '.'  &&
-			(idx == len-3  ||  path.charAt(idx+3) == '/')) )))
-		    return;
-
-		char[] p = new char[path.length()];		// clean path
-		path.getChars(0, p.length, p, 0);
-
-		int beg = 0;
-		for (idx=1; idx<len; idx++)
-		{
-		    if (p[idx] == '.'  &&  p[idx-1] == '/')
-		    {
-			int end;
-			if (idx == len-1)		// trailing "/."
-			{
-			    end  = idx;
-			    idx += 1;
-			}
-			else if (p[idx+1] == '/')	// "/./"
-			{
-			    end  = idx - 1;
-			    idx += 1;
-			}
-			else if (p[idx+1] == '.'  &&
-				 (idx == len-2  ||  p[idx+2] == '/')) // "/../"
-			{
-			    if (idx < beg + 2)	// keep from backing up too much
-			    {
-				beg = idx + 2;
-				continue;
-			    }
-
-			    end  = idx - 2;
-			    while (end > beg  &&  p[end] != '/')  end--;
-			    if (p[end] != '/')  continue;
-			    if (idx == len-2) end++;
-			    idx += 2;
-			}
-			else
-			    continue;
-			System.arraycopy(p, idx, p, end, len-idx);
-			len -= idx - end;
-			idx = end;
-		    }
-		}
-		path = new String(p, 0, len);
+		path = canonicalizePath(path);
 	    }
 	}
     }
 
+    /**
+     * Remove all "/../" and "/./" from path, where possible. Leading "/../"'s
+     * are not removed.
+     *
+     * @param path the path to canonicalize
+     * @return the canonicalized path
+     */
+    public static String canonicalizePath(String path)
+    {
+	int idx, len = path.length();
+	if (!((idx = path.indexOf("/.")) != -1  &&
+	      (idx == len-2  ||  path.charAt(idx+2) == '/'  ||
+	       (path.charAt(idx+2) == '.'  &&
+		(idx == len-3  ||  path.charAt(idx+3) == '/')) )))
+	    return path;
+
+	char[] p = new char[path.length()];		// clean path
+	path.getChars(0, p.length, p, 0);
+
+	int beg = 0;
+	for (idx=1; idx<len; idx++)
+	{
+	    if (p[idx] == '.'  &&  p[idx-1] == '/')
+	    {
+		int end;
+		if (idx == len-1)		// trailing "/."
+		{
+		    end  = idx;
+		    idx += 1;
+		}
+		else if (p[idx+1] == '/')	// "/./"
+		{
+		    end  = idx - 1;
+		    idx += 1;
+		}
+		else if (p[idx+1] == '.'  &&
+			 (idx == len-2  ||  p[idx+2] == '/')) // "/../"
+		{
+		    if (idx < beg + 2)	// keep from backing up too much
+		    {
+			beg = idx + 2;
+			continue;
+		    }
+
+		    end  = idx - 2;
+		    while (end > beg  &&  p[end] != '/')  end--;
+		    if (p[end] != '/')  continue;
+		    if (idx == len-2) end++;
+		    idx += 2;
+		}
+		else
+		    continue;
+		System.arraycopy(p, idx, p, end, len-idx);
+		len -= idx - end;
+		idx = end;
+	    }
+	}
+
+	return new String(p, 0, len);
+    }
 
     /**
      * Parse the authority specific part
@@ -397,7 +603,7 @@ public class URI
     {
 	/* The authority is further parsed according to:
 	 *
-	 *  ^(([^@]*)@?)([^:]*)?(:(.*))?
+	 *  ^(([^@]*)@?)(\[[^]]*\]|[^:]*)?(:(.*))?
 	 *   12         3       4 5
 	 *
 	 * 2: userinfo
@@ -416,17 +622,31 @@ public class URI
 	    idx++;
 	if (idx < len  &&  uri[idx] == '@')
 	{
-	    this.userinfo = unescape(authority.substring(pos, idx));
+	    this.userinfo = escape(authority.substring(pos, idx), userinfoChar, true);
 	    pos = idx + 1;
 	}
 
 
-	// get host: ([^:]*)?
+	// get host: (\[[^]]*\]|[^:]*)?
 
 	idx = pos;
-	while (idx < len  &&  uri[idx] != ':')
+	if (idx < len  &&  uri[idx] == '[')	// IPv6
+	{
+	    while (idx < len  &&  uri[idx] != ']')
+		idx++;
+	    if (idx == len)
+		throw new ParseException("No closing ']' found for opening '['"+
+					 " at position " + pos +
+					 " in authority `" + authority + "'");
+	    this.host = authority.substring(pos+1, idx);
 	    idx++;
-	this.host = authority.substring(pos, idx);
+	}
+	else
+	{
+	    while (idx < len  &&  uri[idx] != ':')
+		idx++;
+	    this.host = escape(authority.substring(pos, idx), uricChar, true);
+	}
 	pos = idx;
 
 
@@ -437,7 +657,8 @@ public class URI
 	    int p;
 	    try
 	    {
-		p = Integer.parseInt(authority.substring(pos+1, len));
+		p = Integer.parseInt(
+			    unescape(authority.substring(pos+1, len), null));
 		if (p < 0)  throw new NumberFormatException();
 	    }
 	    catch (NumberFormatException e)
@@ -468,7 +689,7 @@ public class URI
 
     /**
      * Constructs a URI from the given parts, using the default port for
-     * this scheme (if known).
+     * this scheme (if known). The parts must be in unescaped form.
      *
      * @param scheme the scheme (sometimes known as protocol)
      * @param host   the host
@@ -482,7 +703,8 @@ public class URI
 
 
     /**
-     * Constructs a URI from the given parts.
+     * Constructs a URI from the given parts. The parts must be in unescaped
+     * form.
      *
      * @param scheme the scheme (sometimes known as protocol)
      * @param host   the host
@@ -499,7 +721,7 @@ public class URI
 
     /**
      * Constructs a URI from the given parts. Any part except for the
-     * the scheme may be null.
+     * the scheme may be null. The parts must be in unescaped form.
      *
      * @param scheme   the scheme (sometimes known as protocol)
      * @param userinfo the userinfo
@@ -516,15 +738,39 @@ public class URI
     {
 	if (scheme == null)
 	    throw new ParseException("missing scheme");
-	this.scheme = scheme.trim().toLowerCase();
-	if (userinfo != null)        this.userinfo = unescape(userinfo.trim());
-	if (host != null)                this.host     = host.trim();
-	if (port != defaultPort(scheme)) this.port     = port;
-	if (path != null)                this.path     = path.trim();	// ???
-	if (query != null)               this.query    = query.trim();
-	if (fragment != null)            this.fragment = fragment.trim();
+	this.scheme = escape(scheme.trim().toLowerCase(), schemeChar, true);
+	if (userinfo != null)
+	    this.userinfo = escape(userinfo.trim(), userinfoChar, true);
+	if (host != null)
+	{
+	    host = host.trim();
+	    this.host = isIPV6Addr(host) ? host : escape(host, hostChar, true);
+	}
+	if (port != defaultPort(scheme))
+	    this.port     = port;
+	if (path != null)
+	    this.path     = escape(path.trim(), escpdPathChar, true);	// ???
+	if (query != null)
+	    this.query    = escape(query.trim(), escpdQueryChar, true);
+	if (fragment != null)
+	    this.fragment = escape(fragment.trim(), escpdFragChar, true);
 
-	this.is_generic = true;
+	type = usesGenericSyntax(scheme) ? GENERIC : SEMI_GENERIC;
+    }
+
+    private static final boolean isIPV6Addr(String host)
+    {
+	if (host.indexOf(':') < 0)
+	    return false;
+
+	for (int idx=0; idx<host.length(); idx++)
+	{
+	    char ch = host.charAt(idx);
+	    if ((ch < '0'  ||  ch > '9')  &&  ch != ':')
+		return false;
+	}
+
+	return true;
     }
 
 
@@ -540,10 +786,10 @@ public class URI
     {
 	if (scheme == null)
 	    throw new ParseException("missing scheme");
-	this.scheme = scheme.trim().toLowerCase();
-	this.opaque = opaque;
+	this.scheme = escape(scheme.trim().toLowerCase(), schemeChar, true);
+	this.opaque = escape(opaque, opaqueChar, true);
 
-	this.is_generic = false;
+	type = OPAQUE;
     }
 
 
@@ -555,46 +801,17 @@ public class URI
      */
     public static boolean usesGenericSyntax(String scheme)
     {
-	scheme = scheme.trim();
+	return usesGenericSyntax.containsKey(scheme.trim().toLowerCase());
+    }
 
-	if (scheme.equalsIgnoreCase("http")    ||
-	    scheme.equalsIgnoreCase("https")   ||
-	    scheme.equalsIgnoreCase("shttp")   ||
-	    scheme.equalsIgnoreCase("coffee")  ||
-	    scheme.equalsIgnoreCase("ftp")     ||
-	    scheme.equalsIgnoreCase("file")    ||
-	    scheme.equalsIgnoreCase("gopher")  ||
-	    scheme.equalsIgnoreCase("nntp")    ||
-	    scheme.equalsIgnoreCase("smtp")    ||
-	    scheme.equalsIgnoreCase("telnet")  ||
-	    scheme.equalsIgnoreCase("news")    ||
-	    scheme.equalsIgnoreCase("snews")   ||
-	    scheme.equalsIgnoreCase("hnews")   ||
-	    scheme.equalsIgnoreCase("rwhois")  ||
-	    scheme.equalsIgnoreCase("whois++") ||
-	    scheme.equalsIgnoreCase("imap")    ||
-	    scheme.equalsIgnoreCase("pop")     ||
-	    scheme.equalsIgnoreCase("wais")    ||
-	    scheme.equalsIgnoreCase("irc")     ||
-	    scheme.equalsIgnoreCase("nfs")     ||
-	    scheme.equalsIgnoreCase("ldap")    ||
-	    scheme.equalsIgnoreCase("prospero")||
-	    scheme.equalsIgnoreCase("z39.50r") ||
-	    scheme.equalsIgnoreCase("z39.50s") ||
-	    scheme.equalsIgnoreCase("sip")     ||
-	    scheme.equalsIgnoreCase("sips")    ||
-	    scheme.equalsIgnoreCase("sipt")    ||
-	    scheme.equalsIgnoreCase("sipu")    ||
-	    scheme.equalsIgnoreCase("vemmi")   ||
-	    scheme.equalsIgnoreCase("videotex"))
-		return true;
 
-	/* Note: schemes which definitely don't use the generic-URI syntax
-	 * and must therefore never appear in the above list:
-	 * "urn", "mailto", "sdp", "service", "tv", "gsm-sms", "tel", "fax",
-	 * "modem", "eid", "cid", "mid", "data"
-	 */
-	return false;
+    /**
+     * @return true if the scheme should be parsed according to a
+     *         semi-generic-URI syntax &lt;scheme&tgt;://&lt;hostport&gt;/&lt;opaque&gt;
+     */
+    public static boolean usesSemiGenericSyntax(String scheme)
+    {
+	return usesSemiGenericSyntax.containsKey(scheme.trim().toLowerCase());
     }
 
 
@@ -606,59 +823,8 @@ public class URI
      */
     public final static int defaultPort(String protocol)
     {
-	String prot = protocol.trim();
-
-	if (prot.equalsIgnoreCase("http")  ||
-	    prot.equalsIgnoreCase("shttp")  ||
-	    prot.equalsIgnoreCase("http-ng")  ||
-	    prot.equalsIgnoreCase("coffee"))
-	    return 80;
-	else if (prot.equalsIgnoreCase("https"))
-	    return 443;
-	else if (prot.equalsIgnoreCase("ftp"))
-	    return 21;
-	else if (prot.equalsIgnoreCase("telnet"))
-	    return 23;
-	else if (prot.equalsIgnoreCase("nntp")  ||
-		 prot.equalsIgnoreCase("news"))
-	    return 119;
-	else if (prot.equalsIgnoreCase("snews"))
-	    return 563;
-	else if (prot.equalsIgnoreCase("hnews"))
-	    return 80;
-	else if (prot.equalsIgnoreCase("smtp"))
-	    return 25;
-	else if (prot.equalsIgnoreCase("gopher"))
-	    return 70;
-	else if (prot.equalsIgnoreCase("wais"))
-	    return 210;
-	else if (prot.equalsIgnoreCase("whois"))
-	    return 43;
-	else if (prot.equalsIgnoreCase("whois++"))
-	    return 63;
-	else if (prot.equalsIgnoreCase("rwhois"))
-	    return 4321;
-	else if (prot.equalsIgnoreCase("imap"))
-	    return 143;
-	else if (prot.equalsIgnoreCase("pop"))
-	    return 110;
-	else if (prot.equalsIgnoreCase("prospero"))
-	    return 1525;
-	else if (prot.equalsIgnoreCase("irc"))
-	    return 194;
-	else if (prot.equalsIgnoreCase("ldap"))
-	    return 389;
-	else if (prot.equalsIgnoreCase("nfs"))
-	    return 2049;
-	else if (prot.equalsIgnoreCase("z39.50r")  ||
-		 prot.equalsIgnoreCase("z39.50s"))
-	    return 210;
-	else if (prot.equalsIgnoreCase("vemmi"))
-	    return 575;
-	else if (prot.equalsIgnoreCase("videotex"))
-	    return 516;
-	else
-	    return 0;
+	Integer port = (Integer) defaultPorts.get(protocol.trim().toLowerCase());
+	return (port != null) ? port.intValue() : 0;
     }
 
 
@@ -692,7 +858,7 @@ public class URI
 
 
     /**
-     * @return the port, or -1 if it's the default port
+     * @return the port, or -1 if it's the default port, or 0 if unknown
      */
     public int getPort()
     {
@@ -710,15 +876,10 @@ public class URI
 
 
     /**
-     * @return the path; this includes the query string
+     * @return the path
      */
     public String getPath()
     {
-	if (query != null)
-	    if (path != null)
-		return path + "?" + query;
-	    else
-		return "?" + query;
 	return path;
     }
 
@@ -729,6 +890,19 @@ public class URI
     public String getQueryString()
     {
 	return query;
+    }
+
+
+    /**
+     * @return the path and query
+     */
+    public String getPathAndQuery()
+    {
+	if (query == null)
+	    return path;
+	if (path == null)
+	    return "?" + query;
+	return path + "?" + query;
     }
 
 
@@ -750,9 +924,8 @@ public class URI
      * <PRE>
      * generic-URI = scheme ":" [ "//" server ] [ "/" ] [ path_segments ] [ "?" query ]
      * </PRE>
-     * (see draft-fielding-uri-syntax-03 for exact syntax). Only URLs
-     * using the generic-URI syntax can be used to create and resolve
-     * relative URIs.
+     * (see RFC-2396 for exact syntax). Only URLs using the generic-URI syntax
+     * can be used to create and resolve relative URIs.
      *
      * <P>Whether a given scheme is parsed according to the generic-URI
      * syntax or wether it is treated as opaque is determined by an internal
@@ -762,7 +935,31 @@ public class URI
      */
     public boolean isGenericURI()
     {
-	return is_generic;
+	return (type == GENERIC);
+    }
+
+    /**
+     * Does the scheme specific part of this URI use the semi-generic-URI syntax?
+     *
+     * <P>Many schemes which don't follow the full generic syntax actually
+     * follow a reduced form where the path part is treated is opaque. This
+     * is used for example by ldap, smtp, pop, etc, and is roughly
+     * <PRE>
+     * generic-URI = scheme ":" [ "//" server ] [ "/" [ opaque_path ] ]
+     * </PRE>
+     * I.e. parsing is identical to the generic-syntax, except that the path
+     * part is not further parsed. URLs using the semi-generic-URI syntax can
+     * be used to create and resolve relative URIs with the restriction that
+     * all paths are treated as absolute.
+     *
+     * <P>Whether a given scheme is parsed according to the semi-generic-URI
+     * syntax is determined by an internal table of URI schemes.
+     *
+     * @see #isGenericURI()
+     */
+    public boolean isSemiGenericURI()
+    {
+	return (type == SEMI_GENERIC);
     }
 
 
@@ -789,24 +986,78 @@ public class URI
 	    hostinfo = host;
 
 	StringBuffer file = new StringBuffer(100);
-
-	if (path != null)
-	    file.append(escape(path.toCharArray(), uricChar));
-
-	if (query != null)
-	{
-	    file.append('?');
-	    file.append(escape(query.toCharArray(), uricChar));
-	}
-
-	if (fragment != null)
-	{
-	    file.append('#');
-	    file.append(escape(fragment.toCharArray(), uricChar));
-	}
+	assemblePath(file, true, true, false);
 
 	url = new URL(scheme, hostinfo, port, file.toString());
 	return url;
+    }
+
+
+    private final void assemblePath(StringBuffer buf, boolean printEmpty,
+				    boolean incFragment, boolean unescape)
+    {
+	if ((path == null  ||  path.length() == 0)  &&  printEmpty)
+	    buf.append('/');
+
+	if (path != null)
+	    buf.append(unescape ? unescapeNoPE(path, resvdPathChar) : path);
+
+	if (query != null)
+	{
+	    buf.append('?');
+	    buf.append(unescape ? unescapeNoPE(query, resvdQueryChar) : query);
+	}
+
+	if (fragment != null  &&  incFragment)
+	{
+	    buf.append('#');
+	    buf.append(unescape ? unescapeNoPE(fragment, null) : fragment);
+	}
+    }
+
+
+    private final String stringify(boolean unescape)
+    {
+	StringBuffer uri = new StringBuffer(100);
+
+	if (scheme != null)
+	{
+	    uri.append(unescape ? unescapeNoPE(scheme, resvdSchemeChar) : scheme);
+	    uri.append(':');
+	}
+
+	if (opaque != null)		// it's an opaque-uri
+	{
+	    uri.append(unescape ? unescapeNoPE(opaque, null) : opaque);
+	    return uri.toString();
+	}
+
+	if (userinfo != null  ||  host != null  ||  port != -1)
+	    uri.append("//");
+
+	if (userinfo != null)
+	{
+	    uri.append(unescape ? unescapeNoPE(userinfo, resvdUIChar) : userinfo);
+	    uri.append('@');
+	}
+
+	if (host != null)
+	{
+	    if (host.indexOf(':') < 0)
+		uri.append(unescape ? unescapeNoPE(host, resvdHostChar) : host);
+	    else
+		uri.append('[').append(host).append(']');
+	}
+
+	if (port != -1)
+	{
+	    uri.append(':');
+	    uri.append(port);
+	}
+
+	assemblePath(uri, false, true, unescape);
+
+	return uri.toString();
     }
 
 
@@ -816,63 +1067,22 @@ public class URI
      */
     public String toExternalForm()
     {
-	StringBuffer uri = new StringBuffer(100);
-
-	if (scheme != null)
-	{
-	    uri.append(escape(scheme.toCharArray(), schemeChar));
-	    uri.append(':');
-	}
-
-	if (opaque != null)		// it's an opaque-uri
-	{
-	    uri.append(escape(opaque.toCharArray(), uricChar));
-	    return uri.toString();
-	}
-
-	if (userinfo != null  ||  host != null  ||  port != -1)
-	    uri.append("//");
-
-	if (userinfo != null)
-	{
-	    uri.append(escape(userinfo.toCharArray(), userinfoChar));
-	    uri.append('@');
-	}
-
-	if (host != null)
-	    uri.append(host.toCharArray());
-
-	if (port != -1)
-	{
-	    uri.append(':');
-	    uri.append(port);
-	}
-
-	if (path != null)
-	    uri.append(path.toCharArray());
-
-	if (query != null)
-	{
-	    uri.append('?');
-	    uri.append(escape(query.toCharArray(), uricChar));
-	}
-
-	if (fragment != null)
-	{
-	    uri.append('#');
-	    uri.append(escape(fragment.toCharArray(), uricChar));
-	}
-
-	return uri.toString();
+	return stringify(false);
     }
 
 
     /**
-     * @see #toExternalForm
+     * Return the URI as string. This differs from toExternalForm() in that
+     * all elements are unescaped before assembly. This is <em>not suitable</em>
+     * for passing to other apps or in header fields and such, and is usually
+     * not what you want.
+     *
+     * @return the URI as a string
+     * @see #toExternalForm()
      */
     public String toString()
     {
-	return toExternalForm();
+	return stringify(true);
     }
 
 
@@ -887,28 +1097,21 @@ public class URI
 	    URI o = (URI) other;
 	    return (scheme.equals(o.scheme)  &&
 		    (
-		     !is_generic  &&
-		     (opaque == null  &&  o.opaque == null  ||
-		      opaque != null  &&  o.opaque != null  &&
-		      opaque.equals(o.opaque))  ||
+		     type == OPAQUE  &&  areEqual(opaque, o.opaque)  ||
 
-		     is_generic  &&
-		     (userinfo == null  &&  o.userinfo == null  ||
-		      userinfo != null  &&  o.userinfo != null  &&
-		      userinfo.equals(o.userinfo))  &&
-		     (host == null  &&  o.host == null  ||
-		      host != null  &&  o.host != null  &&
-		      host.equalsIgnoreCase(o.host))  &&
-		     port == o.port  &&
-		     (path == null  &&  o.path == null  ||
-		      path != null  &&  o.path != null  &&
-		      unescapeNoPE(path).equals(unescapeNoPE(o.path)))  &&
-		     (query == null  &&  o.query == null  ||
-		      query != null  &&  o.query != null  &&
-		      unescapeNoPE(query).equals(unescapeNoPE(o.query)))  &&
-		     (fragment == null  &&  o.fragment == null  ||
-		      fragment != null  &&  o.fragment != null  &&
-		      unescapeNoPE(fragment).equals(unescapeNoPE(o.fragment)))
+		     type == SEMI_GENERIC  &&
+		      areEqual(userinfo, o.userinfo)  &&
+		      areEqualIC(host, o.host)  &&
+		      port == o.port  &&
+		      areEqual(path, o.path)  ||
+
+		     type == GENERIC  &&
+		      areEqual(userinfo, o.userinfo)  &&
+		      areEqualIC(host, o.host)  &&
+		      port == o.port  &&
+		      pathsEqual(path, o.path)  &&
+		      areEqual(query, o.query)  &&
+		      areEqual(fragment, o.fragment)
 		    ));
 	}
 
@@ -922,62 +1125,196 @@ public class URI
 	    else
 		h = host;
 
-	    if (query != null)
-		f = path + "?" + query;
-	    else
-		f = path;
+	    f = getPathAndQuery();
 
 	    return (scheme.equalsIgnoreCase(o.getProtocol())  &&
-		    (!is_generic  &&  opaque.equals(o.getFile())  ||
-		     is_generic  &&
-		     (h == null  &&  o.getHost() == null  ||
-		      h != null  &&  o.getHost() != null  &&
-		      h.equalsIgnoreCase(o.getHost()))  &&
-		     (port == o.getPort()  ||
-		      o.getPort() == defaultPort(scheme))  &&
-		     (f == null  &&  o.getFile() == null  ||
-		      f != null  &&  o.getFile() != null  &&
-		      unescapeNoPE(f).equals(unescapeNoPE(o.getFile())))  &&
-		     (fragment == null  &&  o.getRef() == null  ||
-		      fragment != null  &&  o.getRef() != null  &&
-		      unescapeNoPE(fragment).equals(unescapeNoPE(o.getRef())))
-		     )
-		    );
+		    (type == OPAQUE  &&  opaque.equals(o.getFile())  ||
+
+		     type == SEMI_GENERIC  &&
+		       areEqualIC(h, o.getHost())  &&
+		       (port == o.getPort()  ||
+			o.getPort() == defaultPort(scheme))  &&
+		       areEqual(f, o.getFile())  ||
+
+		     type == GENERIC  &&
+		       areEqualIC(h, o.getHost())  &&
+		       (port == o.getPort()  ||
+			o.getPort() == defaultPort(scheme))  &&
+		       pathsEqual(f, o.getFile())  &&
+		       areEqual(fragment, o.getRef())
+		    )
+		   );
 	}
 
 	return false;
     }
 
+    private static final boolean areEqual(String s1, String s2)
+    {
+	return (s1 == null  &&  s2 == null  ||
+		s1 != null  &&  s2 != null  &&
+		  (s1.equals(s2)  ||
+		   unescapeNoPE(s1, null).equals(unescapeNoPE(s2, null)))
+	       );
+    }
+
+    private static final boolean areEqualIC(String s1, String s2)
+    {
+	return (s1 == null  &&  s2 == null  ||
+		s1 != null  &&  s2 != null  &&
+		  (s1.equalsIgnoreCase(s2)  ||
+		   unescapeNoPE(s1, null).equalsIgnoreCase(unescapeNoPE(s2, null)))
+	       );
+    }
+
+    private static final boolean pathsEqual(String p1, String p2)
+    {
+	if (p1 == null  &&  p2 == null)
+	    return true;
+	if (p1 == null  ||  p2 == null)
+	    return false;
+	if (p1.equals(p2))
+	    return true;
+
+	// ok, so it wasn't that simple. Let's split into parts and compare
+	// unescaped.
+	int pos1 = 0, end1 = p1.length(), pos2 = 0, end2 = p2.length();
+	while (pos1 < end1  &&  pos2 < end2)
+	{
+	    int start1 = pos1, start2 = pos2;
+
+	    char ch;
+	    while (pos1 < end1  &&  (ch = p1.charAt(pos1)) != '/'  &&  ch != ';')
+		pos1++;
+	    while (pos2 < end2  &&  (ch = p2.charAt(pos2)) != '/'  &&  ch != ';')
+		pos2++;
+
+	    if (pos1 == end1  &&  pos2 < end2  ||
+		pos2 == end2  &&  pos1 < end1  ||
+		pos1 < end1  &&  pos2 < end2  &&  p1.charAt(pos1) != p2.charAt(pos2))
+		return false;
+
+	    if ((!p1.regionMatches(start1, p2, start2, pos1-start1)  ||  (pos1-start1) != (pos2-start2))  &&
+		!unescapeNoPE(p1.substring(start1, pos1), null).equals(unescapeNoPE(p2.substring(start2, pos2), null)))
+		return false;
+
+	    pos1++;
+	    pos2++;
+	}
+
+	return (pos1 == end1  &&  pos2 == end2);
+    }
+
+    private int hashCode = -1;
 
     /**
-     * Escape any character not in the given character class.
+     * The hash code is calculated over scheme, host, path, and query.
+     *
+     * @return the hash code
+     */
+    public int hashCode()
+    {
+	if (hashCode == -1)
+	    hashCode = (scheme != null ? unescapeNoPE(scheme, null).hashCode() : 0) + 
+		       (type == OPAQUE ?
+			  (opaque != null ? unescapeNoPE(opaque, null).hashCode() : 0) * 7
+			: (host != null ? unescapeNoPE(host, null).toLowerCase().hashCode() : 0) * 7 +
+			  (path != null ? unescapeNoPE(path, null).hashCode() : 0) * 13 +
+			  (query != null ? unescapeNoPE(query, null).hashCode() : 0) * 17);
+
+	return hashCode;
+    }
+
+
+    /**
+     * Escape any character not in the given character class. Characters
+     * greater 255 are always escaped according to ??? .
+     *
+     * @param elem         the string to escape
+     * @param allowed_char the BitSet of all allowed characters
+     * @param utf8         if true, will first UTF-8 encode unallowed characters
+     * @return the string with all characters not in allowed_char
+     *         escaped
+     */
+    public static String escape(String elem, BitSet allowed_char, boolean utf8)
+    {
+	return new String(escape(elem.toCharArray(), allowed_char, utf8));
+    }
+
+    /**
+     * Escape any character not in the given character class. Characters
+     * greater 255 are always escaped according to ??? .
      *
      * @param elem         the array of characters to escape
      * @param allowed_char the BitSet of all allowed characters
+     * @param utf8         if true, will first UTF-8 encode unallowed characters
      * @return the elem array with all characters not in allowed_char
      *         escaped
      */
-    private static char[] escape(char[] elem, BitSet allowed_char)
+    public static char[] escape(char[] elem, BitSet allowed_char, boolean utf8)
     {
 	int cnt=0;
 	for (int idx=0; idx<elem.length; idx++)
-	    if (!allowed_char.get(elem[idx]))  cnt++;
+	{
+	    if (!allowed_char.get(elem[idx]))
+	    {
+		cnt += 2;
+		if (utf8)
+		{
+		    if (elem[idx] >= 0x0080)
+			cnt += 3;
+		    if (elem[idx] >= 0x00800)
+			cnt += 3;
+		    if ((elem[idx] & 0xFC00) == 0xD800  &&  idx+1 < elem.length  &&
+			(elem[idx+1] & 0xFC00) == 0xDC00)
+		      cnt -= 6;
+		}
+	    }
+	}
 
 	if (cnt == 0)  return elem;
 
-	char[] tmp = new char[elem.length + 2*cnt];
-	for (int idx=0, pos=0; idx<elem.length; idx++, pos++)
+	char[] tmp = new char[elem.length + cnt];
+	for (int idx=0, pos=0; idx<elem.length; idx++)
 	{
-	    if (allowed_char.get(elem[idx]))
-		tmp[pos] = elem[idx];
-	    else
+	    char c = elem[idx];
+	    if (allowed_char.get(c))
+		tmp[pos++] = c;
+	    else if (utf8)
 	    {
-		if (elem[idx] > 255)
-		    throw new RuntimeException("Can't handle non 8-bt chars");
-		tmp[pos++] = '%';
-		tmp[pos++] = hex[(elem[idx] >> 4) & 0xf];
-		tmp[pos]   = hex[elem[idx] & 0xf];
+		/* We're UTF-8 encoding the chars first, as recommended in
+		 * the HTML 4.0 specification:
+		 * http://www.w3.org/TR/REC-html40/appendix/notes.html#h-B.2.1
+		 * Note that this doesn't change things for ASCII chars
+		 */
+		if (c <= 0x007F)
+		{
+		    pos = enc(tmp, pos, c);
+		}
+		else if (c <= 0x07FF)
+		{
+		    pos = enc(tmp, pos, 0xC0 | ((c >>  6) & 0x1F));
+		    pos = enc(tmp, pos, 0x80 | ((c >>  0) & 0x3F));
+		}
+		else if (!((c & 0xFC00) == 0xD800  &&  idx+1 < elem.length  &&
+			     (elem[idx+1] & 0xFC00) == 0xDC00))
+		{
+		    pos = enc(tmp, pos, 0xE0 | ((c >> 12) & 0x0F));
+		    pos = enc(tmp, pos, 0x80 | ((c >>  6) & 0x3F));
+		    pos = enc(tmp, pos, 0x80 | ((c >>  0) & 0x3F));
+		}
+		else
+		{
+		    int ch = ((c & 0x03FF) << 10) | (elem[++idx] & 0x03FF);
+		    ch += 0x10000;
+		    pos = enc(tmp, pos, 0xF0 | ((ch >> 18) & 0x07));
+		    pos = enc(tmp, pos, 0x80 | ((ch >> 12) & 0x3F));
+		    pos = enc(tmp, pos, 0x80 | ((ch >>  6) & 0x3F));
+		    pos = enc(tmp, pos, 0x80 | ((ch >>  0) & 0x3F));
+		}
 	    }
+	    else
+		pos = enc(tmp, pos, c);
 	}
 
 	return tmp;
@@ -986,16 +1323,25 @@ public class URI
     private static final char[] hex =
 	    {'0','1','2','3','4','5','6','7','8','9','A','B','C','D','E','F'};
 
+    private static final int enc(char[] out, int pos, int c)
+    {
+	out[pos++] = '%';
+	out[pos++] = hex[(c >> 4) & 0xf];
+	out[pos++] = hex[c & 0xf];
+	return pos;
+    }
 
     /**
-     * Unescape escaped characters (i.e. %xx).
+     * Unescape escaped characters (i.e. %xx) except reserved ones.
      *
-     * @param str the string to unescape
+     * @param str      the string to unescape
+     * @param reserved the characters which may not be unescaped, or null
      * @return the unescaped string
      * @exception ParseException if the two digits following a `%' are
      *            not a valid hex number
      */
-    static final String unescape(String str)  throws ParseException
+    public static final String unescape(String str, BitSet reserved)
+	    throws ParseException
     {
 	if (str == null  ||  str.indexOf('%') == -1)
 	    return str;  				// an optimization
@@ -1003,46 +1349,139 @@ public class URI
 	char[] buf = str.toCharArray();
 	char[] res = new char[buf.length];
 
-	int didx=0;
-	for (int sidx=0; sidx<buf.length; sidx++, didx++)
+	char[] utf = new char[4];
+	int utf_idx = 0, utf_len = -1;
+	int didx = 0;
+	for (int sidx=0; sidx<buf.length; sidx++)
 	{
 	    if (buf[sidx] == '%')
 	    {
 		int ch;
                 try
                 {
+		    if (sidx + 3 > buf.length)
+			throw new NumberFormatException();
 		    ch = Integer.parseInt(str.substring(sidx+1,sidx+3), 16);
-		    if (ch < 0)  throw new NumberFormatException();
+		    if (ch < 0)
+			throw new NumberFormatException();
+		    sidx += 2;
                 }
                 catch (NumberFormatException e)
                 {
+		    /* Hmm, people not reading specs again, so we just
+		     * ignore it...
                     throw new ParseException(str.substring(sidx,sidx+3) +
                                             " is an invalid code");
+		    */
+		    ch = buf[sidx];
                 }
-		res[didx] = (char) ch;
-		sidx += 2;
+
+		// check if we're working on a utf-char
+		if (utf_len > 0)
+		{
+		    if ((ch & 0xC0) != 0x80)	// oops, we misinterpreted
+		    {
+			didx = copyBuf(utf, utf_idx, ch, res, didx, reserved, false);
+			utf_len = -1;
+		    }
+		    else if (utf_idx == utf_len - 1)	// end-of-char
+		    {
+			if ((utf[0] & 0xE0) == 0xC0)
+			    ch = (utf[0] & 0x1F) <<  6 |
+				 (ch & 0x3F);
+			else if ((utf[0] & 0xF0) == 0xE0)
+			    ch = (utf[0] & 0x0F) << 12 |
+				 (utf[1] & 0x3F) <<  6 |
+				 (ch & 0x3F);
+			else
+			    ch = (utf[0] & 0x07) << 18 |
+				 (utf[1] & 0x3F) << 12 |
+				 (utf[2] & 0x3F) <<  6 |
+				 (ch & 0x3F);
+			if (reserved != null  &&  reserved.get(ch))
+			    didx = copyBuf(utf, utf_idx, ch, res, didx, null, true);
+			else if (utf_len < 4)
+			    res[didx++] = (char) ch;
+			else
+			{
+			    ch -= 0x10000;
+			    res[didx++] = (char) ((ch >> 10)    | 0xD800);
+			    res[didx++] = (char) ((ch & 0x03FF) | 0xDC00);
+			}
+			utf_len = -1;
+		    }
+		    else				// continue
+			utf[utf_idx++] = (char) ch;
+		}
+		// check if this is the start of a utf-char
+		else if ((ch & 0xE0) == 0xC0  ||  (ch & 0xF0) == 0xE0  ||
+			 (ch & 0xF8) == 0xF0)
+		{
+		    if ((ch & 0xE0) == 0xC0)
+			utf_len = 2;
+		    else if ((ch & 0xF0) == 0xE0)
+			utf_len = 3;
+		    else
+			utf_len = 4;
+		    utf[0] = (char) ch;
+		    utf_idx = 1;
+		}
+		// leave reserved alone
+		else if (reserved != null  &&  reserved.get(ch))
+		{
+		    res[didx++] = buf[sidx];
+		    sidx -= 2;
+		}
+		// just use the decoded version
+		else
+		    res[didx++] = (char) ch;
+	    }
+	    else if (utf_len > 0)	// oops, we misinterpreted
+	    {
+		didx = copyBuf(utf, utf_idx, buf[sidx], res, didx, reserved, false);
+		utf_len = -1;
 	    }
 	    else
-		res[didx] = buf[sidx];
+		res[didx++] = buf[sidx];
 	}
+	if (utf_len > 0)	// oops, we misinterpreted
+	    didx = copyBuf(utf, utf_idx, -1, res, didx, reserved, false);
 
 	return new String(res, 0, didx);
     }
 
+    private static final int copyBuf(char[] utf, int utf_idx, int ch,
+				     char[] res, int didx, BitSet reserved,
+				     boolean escapeAll)
+    {
+	if (ch >= 0)
+	    utf[utf_idx++] = (char) ch;
+
+	for (int idx=0; idx<utf_idx; idx++)
+	{
+	    if (reserved != null  &&  reserved.get(utf[idx])  ||  escapeAll)
+		didx = enc(res, didx, utf[idx]);
+	    else
+		res[didx++] = utf[idx];
+	}
+
+	return didx;
+    }
 
     /**
      * Unescape escaped characters (i.e. %xx). If a ParseException would
      * be thrown then just return the original string.
      *
-     * @param str the string to unescape
+     * @param str      the string to unescape
+     * @param reserved the characters which may not be unescaped, or null
      * @return the unescaped string, or the original string if unescaping
      *         would throw a ParseException
-     * @see #unescape(java.lang.String)
+     * @see #unescape(java.lang.String, java.util.BitSet)
      */
-    private static final String unescapeNoPE(String str)
+    private static final String unescapeNoPE(String str, BitSet reserved)
     {
 	try
-	    { return unescape(str); }
+	    { return unescape(str, reserved); }
 	catch (ParseException pe)
 	    { return str; }
     }
@@ -1062,6 +1501,7 @@ public class URI
 	/* Relative URI test set, taken from Section C of rfc-2396 and
 	 * Roy's test1. All Roy's URI parser tests can be found at
 	 * http://www.ics.uci.edu/~fielding/url/
+	 * The tests have been augmented by a few for the IPv6 syntax
 	 */
 
 	URI base = new URI("http://a/b/c/d;p?q");
@@ -1073,6 +1513,7 @@ public class URI
 	testParser(base, "g/",         "http://a/b/c/g/");
 	testParser(base, "/g",         "http://a/g");
 	testParser(base, "//g",        "http://g");
+	testParser(base, "//[23:54]",  "http://[23:54]");
 	testParser(base, "?y",         "http://a/b/c/?y");
 	testParser(base, "g?y",        "http://a/b/c/g?y");
 	testParser(base, "#s",         "http://a/b/c/d;p?q#s");
@@ -1110,8 +1551,14 @@ public class URI
 	testParser(base, "g?y/../x",      "http://a/b/c/g?y/../x");
 	testParser(base, "g#s/./x",       "http://a/b/c/g#s/./x");
 	testParser(base, "g#s/../x",      "http://a/b/c/g#s/../x");
-	testParser(base, "http:g",        "http:g");
-	testParser(base, "http:",         "http:");
+	if (ENABLE_BACKWARDS_COMPATIBILITY)
+	    testParser(base, "http:g",        "http://a/b/c/g");
+	else
+	    testParser(base, "http:g",        "http:g");
+	if (ENABLE_BACKWARDS_COMPATIBILITY)
+	    testParser(base, "http:",         "http://a/b/c/d;p?q");
+	else
+	    testParser(base, "http:",         "http:");
 	testParser(base, "./g:h",         "http://a/b/c/g:h");
 
 
@@ -1124,6 +1571,7 @@ public class URI
 	testParser(base, "g/",       "http://a/b/c/g/");
 	testParser(base, "/g",       "http://a/g");
 	testParser(base, "//g",      "http://g");
+	testParser(base, "//[23:54]","http://[23:54]");
 	testParser(base, "?y",       "http://a/b/c/?y");
 	testParser(base, "g?y",      "http://a/b/c/g?y");
 	testParser(base, "g?y/./x",  "http://a/b/c/g?y/./x");
@@ -1193,6 +1641,7 @@ public class URI
 	testParser(base, "g/",            "http:///s//a/b/g/");
 	testParser(base, "/g",            "http:///g");
 	testParser(base, "//g",           "http://g");
+	testParser(base, "//[23:54]",     "http://[23:54]");
 	testParser(base, "//g/x",         "http://g/x");
 	testParser(base, "///g",          "http:///g");
 	testParser(base, "./",            "http:///s//a/b/");
@@ -1202,6 +1651,106 @@ public class URI
 	testParser(base, "../../g",       "http:///s//g");
 	testParser(base, "../../../g",    "http:///s/g");
 	testParser(base, "../../../../g", "http:///g");
+
+
+	/* Some additional parser tests
+	 */
+	base = new URI("http://s");
+
+	testParser(base, "ftp:h",         "ftp:h");
+	testParser(base, "ftp://h",       "ftp://h");
+	testParser(base, "//g",           "http://g");
+	testParser(base, "//g?h",         "http://g?h");
+	testParser(base, "g",             "http://s/g");
+	testParser(base, "./g",           "http://s/g");
+	testParser(base, "?g",            "http://s/?g");
+	testParser(base, "#g",            "http://s#g");
+
+	base = new URI("http:");
+
+	testParser(base, "ftp:h",         "ftp:h");
+	testParser(base, "ftp://h",       "ftp://h");
+	testParser(base, "//g",           "http://g");
+	testParser(base, "g",             "http:/g");
+	testParser(base, "?g",            "http:/?g");
+	testParser(base, "#g",            "http:#g");
+
+	base = new URI("http://s/t");
+
+	testParser(base, "ftp:/h",        "ftp:/h");
+	if (ENABLE_BACKWARDS_COMPATIBILITY)
+	    testParser(base, "http:/h",       "http://s/h");
+	else
+	    testParser(base, "http:/h",       "http:/h");
+
+	base = new URI("http://s/g?h/j");
+	testParser(base, "k",             "http://s/k");
+	testParser(base, "k?l",           "http://s/k?l");
+
+
+	/* Parser tests for semi-generic syntax
+	 */
+	base = new URI("ldap:");
+
+	testParser(base, "ldap:",         "ldap:");
+	testParser(base, "ldap://a",      "ldap://a");
+	testParser(base, "ldap://a/b",    "ldap://a/b");
+	testParser(base, "ldap:/b",       "ldap:/b");
+
+	testParser(base, "ftp:h",         "ftp:h");
+	testParser(base, "ftp://h",       "ftp://h");
+	testParser(base, "//g",           "ldap://g");
+	testParser(base, "//g?h",         "ldap://g/?h");
+	testParser(base, "g",             "ldap:/g");
+	testParser(base, "./g",           "ldap:/./g");
+	testParser(base, "?g",            "ldap:/?g");
+	testParser(base, "#g",            "ldap:/%23g");
+
+	base = new URI("ldap://s");
+
+	if (ENABLE_BACKWARDS_COMPATIBILITY)
+	    testParser(base, "ldap:",         "ldap://s");
+	else
+	    testParser(base, "ldap:",         "ldap:");
+	testParser(base, "ldap://a",      "ldap://a");
+	testParser(base, "ldap://a/b",    "ldap://a/b");
+	if (ENABLE_BACKWARDS_COMPATIBILITY)
+	    testParser(base, "ldap:/b",       "ldap://s/b");
+	else
+	    testParser(base, "ldap:/b",       "ldap:/b");
+
+	testParser(base, "ftp:h",         "ftp:h");
+	testParser(base, "ftp://h",       "ftp://h");
+	testParser(base, "//g",           "ldap://g");
+	testParser(base, "//g?h",         "ldap://g/?h");
+	testParser(base, "g",             "ldap://s/g");
+	testParser(base, "./g",           "ldap://s/./g");
+	testParser(base, "?g",            "ldap://s/?g");
+	testParser(base, "#g",            "ldap://s/%23g");
+
+	base = new URI("ldap://s/t");
+
+	testParser(base, "ftp:/h",        "ftp:/h");
+	if (ENABLE_BACKWARDS_COMPATIBILITY)
+	    testParser(base, "ldap:/h",       "ldap://s/h");
+	else
+	    testParser(base, "ldap:/h",       "ldap:/h");
+
+	if (ENABLE_BACKWARDS_COMPATIBILITY)
+	    testParser(base, "ldap:",         "ldap://s");
+	else
+	    testParser(base, "ldap:",         "ldap:");
+	testParser(base, "ldap://a",      "ldap://a");
+	testParser(base, "ldap://a/b",    "ldap://a/b");
+
+	testParser(base, "ftp:h",         "ftp:h");
+	testParser(base, "ftp://h",       "ftp://h");
+	testParser(base, "//g",           "ldap://g");
+	testParser(base, "//g?h",         "ldap://g/?h");
+	testParser(base, "g",             "ldap://s/g");
+	testParser(base, "./g",           "ldap://s/./g");
+	testParser(base, "?g",            "ldap://s/?g");
+	testParser(base, "#g",            "ldap://s/%23g");
 
 
 	/* equality tests */
@@ -1219,11 +1768,17 @@ public class URI
 	testEqual("http://a/", "Http://A/");
 	testEqual("http://a.b.c/", "Http://A.b.C/");
 	testEqual("http:///", "Http:///");
+	testEqual("http://[]/", "Http:///");
 	testNotEqual("http:///", "Http://a/");
+	testNotEqual("http://[]/", "Http://a/");
+	testPE(null, "ftp://[23::43:1/");
+	testPE(null, "ftp://[/");
 
 	// port
 	testEqual("http://a.b.c/", "Http://A.b.C:80/");
 	testEqual("http://a.b.c:/", "Http://A.b.C:80/");
+	testEqual("http://[23::45:::5:]/", "Http://[23::45:::5:]:80/");
+	testEqual("http://[23::45:::5:]:/", "Http://[23::45:::5:]:80/");
 	testEqual("nntp://a", "nntp://a:119");
 	testEqual("nntp://a:", "nntp://a:119");
 	testEqual("nntp://a/", "nntp://a:119/");
@@ -1248,17 +1803,69 @@ public class URI
 	testEqual("ftp://a/b%2b/", "ftp://a/b+/");
 	testEqual("ftp://a/b%2b/", "ftp://a/b+/");
 	testEqual("ftp://a/b%5E/", "ftp://a/b^/");
+	testEqual("ftp://a/b%4C/", "ftp://a/bL/");
+	testNotEqual("ftp://a/b/", "ftp://a//b/");
+	testNotEqual("ftp://a/b/", "ftp://a/b//");
+	testNotEqual("ftp://a/b%4C/", "ftp://a/bl/");
 	testNotEqual("ftp://a/b%3f/", "ftp://a/b?/");
+	testNotEqual("ftp://a/b%2f/", "ftp://a/b//");
+	testNotEqual("ftp://a/b%2fc/", "ftp://a/b/c/");
+	testNotEqual("ftp://a/bc/", "ftp://a/b//");
+	testNotEqual("ftp://a/bc/", "ftp://a/b/");
+	testNotEqual("ftp://a/bc//", "ftp://a/b/");
+	testNotEqual("ftp://a/b/", "ftp://a/bc//");
+	testNotEqual("ftp://a/b/", "ftp://a/bc/");
+	testNotEqual("ftp://a/b//", "ftp://a/bc/");
+
+	testNotEqual("ftp://a/b;fc/", "ftp://a/bf;c/");
+	testNotEqual("ftp://a/b%3bfc/", "ftp://a/b;fc/");
+	testEqual("ftp://a/b;/;/", "ftp://a/b;/;/");
+	testNotEqual("ftp://a/b;/", "ftp://a/b//");
+	testNotEqual("ftp://a/b//", "ftp://a/b;/");
+	testNotEqual("ftp://a/b/;", "ftp://a/b//");
+	testNotEqual("ftp://a/b//", "ftp://a/b/;");
+	testNotEqual("ftp://a/b;/", "ftp://a/b;//");
+	testNotEqual("ftp://a/b;//", "ftp://a/b;/");
+
+	// escaping/unescaping
+	testEscape("hello\u1212there", "hello%E1%88%92there");
+	testEscape("hello\u0232there", "hello%C8%B2there");
+	testEscape("hello\uDA42\uDD42there", "hello%F2%A0%A5%82there");
+	testEscape("hello\uDA42", "hello%ED%A9%82");
+	testEscape("hello\uDA42there", "hello%ED%A9%82there");
+	testUnescape("hello%F2%A0%A5%82there", "hello\uDA42\uDD42there");
+	testUnescape("hello%F2%A0%A5there", "hello\u00F2\u00A0\u00A5there");
+	testUnescape("hello%F2%A0there", "hello\u00F2\u00A0there");
+	testUnescape("hello%F2there", "hello\u00F2there");
+	testUnescape("hello%F2%A0%A5%82", "hello\uDA42\uDD42");
+	testUnescape("hello%F2%A0%A5", "hello\u00F2\u00A0\u00A5");
+	testUnescape("hello%F2%A0", "hello\u00F2\u00A0");
+	testUnescape("hello%F2", "hello\u00F2");
+	testUnescape("hello%E1%88%92there", "hello\u1212there");
+	testUnescape("hello%E1%88there", "hello\u00E1\u0088there");
+	testUnescape("hello%E1there", "hello\u00E1there");
+	testUnescape("hello%E1%71there", "hello\u00E1qthere");
+	testUnescape("hello%E1%88", "hello\u00E1\u0088");
+	testUnescape("hello%E1%71", "hello\u00E1q");
+	testUnescape("hello%E1", "hello\u00E1");
+	testUnescape("hello%C8%B2there", "hello\u0232there");
+	testUnescape("hello%C8there", "hello\u00C8there");
+	testUnescape("hello%C8%71there", "hello\u00C8qthere");
+	testUnescape("hello%C8%71", "hello\u00C8q");
+	testUnescape("hello%C8", "hello\u00C8");
+	testUnescape("%71there", "qthere");
+	testUnescape("%B1there", "\u00B1there");
 
 	System.err.println("*** Tests finished successfuly");
     }
 
+    private static final String nl = System.getProperty("line.separator");
+
     private static void testParser(URI base, String relURI, String result)
 	    throws Exception
     {
-	if (!(new URI(base, relURI).toString().equals(result)))
+	if (!(new URI(base, relURI).toExternalForm().equals(result)))
 	{
-	    String nl = System.getProperty("line.separator");
 	    throw new Exception("Test failed: " + nl +
 				"  base-URI = <" + base + ">" + nl +
 				"  rel-URI  = <" + relURI + ">" + nl+
@@ -1269,19 +1876,28 @@ public class URI
 
     private static void testEqual(String one, String two)  throws Exception
     {
-	if (!(new URI(one).equals(new URI(two))))
+	URI u1 = new URI(one);
+	URI u2 = new URI(two);
+
+	if (!u1.equals(u2))
 	{
-	    String nl = System.getProperty("line.separator");
 	    throw new Exception("Test failed: " + nl +
 				"  <" + one + "> != <" + two + ">");
+	}
+	if (u1.hashCode() != u2.hashCode())
+	{
+	    throw new Exception("Test failed: " + nl +
+				"  hashCode <" + one + "> != hashCode <" + two + ">");
 	}
     }
 
     private static void testNotEqual(String one, String two)  throws Exception
     {
-	if ((new URI(one).equals(new URI(two))))
+	URI u1 = new URI(one);
+	URI u2 = new URI(two);
+
+	if (u1.equals(u2))
 	{
-	    String nl = System.getProperty("line.separator");
 	    throw new Exception("Test failed: " + nl +
 				"  <" + one + "> == <" + two + ">");
 	}
@@ -1296,10 +1912,28 @@ public class URI
 	    { got_pe = true; }
 	if (!got_pe)
 	{
-	    String nl = System.getProperty("line.separator");
 	    throw new Exception("Test failed: " + nl +
 				"  <" + uri + "> should be invalid");
 	}
     }
-}
 
+    private static void testEscape(String raw, String escaped)  throws Exception
+    {
+	String test = new String(escape(raw.toCharArray(), uricChar, true));
+	if (!test.equals(escaped))
+	    throw new Exception("Test failed: " + nl +
+				"  raw-string: " + raw + nl +
+				"  escaped:    " + test + nl +
+				"  expected:   " + escaped);
+    }
+
+    private static void testUnescape(String escaped, String raw)
+	throws Exception
+    {
+	if (!unescape(escaped, null).equals(raw))
+	    throw new Exception("Test failed: " + nl +
+				"  escaped-string: " + escaped + nl +
+				"  unescaped:      " + unescape(escaped, null) + nl +
+				"  expected:       " + raw);
+    }
+}

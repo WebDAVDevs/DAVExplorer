@@ -1,14 +1,11 @@
 
 import HTTPClient.HTTPConnection;
 import HTTPClient.HTTPResponse;
-import HTTPClient.RoRequest;
-import HTTPClient.Response;
-import HTTPClient.RoResponse;
+import HTTPClient.URI;
+import HTTPClient.NVPair;
 import HTTPClient.AuthorizationInfo;
-import HTTPClient.AuthorizationHandler;
-import HTTPClient.AuthSchemeNotImplException;
-import java.net.URL;
-import java.io.IOException;
+import HTTPClient.DefaultAuthHandler;
+import HTTPClient.AuthorizationPrompter;
 
 
 public class GetAuthInfo
@@ -32,12 +29,11 @@ public class GetAuthInfo
 	    System.exit(1);
 	}
 
-	URL url = new URL(args[0]);
+	URI url = new URI(args[0]);
 
-	AuthorizationInfo.setAuthHandler(new MyAuthHandler(
-			AuthorizationInfo.getAuthHandler(), pa_name, pa_pass));
+	DefaultAuthHandler.setAuthorizationPrompter(new MyAuthPrompter(pa_name, pa_pass));
 	HTTPConnection con = new HTTPConnection(url);
-	HTTPResponse   rsp = con.Head(url.getFile());
+	HTTPResponse   rsp = con.Head(url.getPathAndQuery());
 
 	int sts = rsp.getStatusCode();
 	if (sts < 300)
@@ -48,65 +44,30 @@ public class GetAuthInfo
 }
 
 
-class MyAuthHandler implements AuthorizationHandler
+class MyAuthPrompter implements AuthorizationPrompter
 {
-    private String pa_name, pa_pass;
-    private AuthorizationHandler def_handler;
-    private boolean been_here;
+    private String  pa_name, pa_pass;
+    private boolean been_here = false;
 
-    public MyAuthHandler(AuthorizationHandler def, String pa_name,
-			 String pa_pass)
+    MyAuthPrompter(String pa_name, String pa_pass)
     {
-	def_handler  = def;
 	this.pa_name = pa_name;
 	this.pa_pass = pa_pass;
-	been_here    = false;
     }
 
 
-    public AuthorizationInfo getAuthorization(AuthorizationInfo challenge,
-					      RoRequest req, RoResponse resp)
-    {
-	// create and send auth info if necessary
-
-	try
+    public NVPair getUsernamePassword(AuthorizationInfo challenge, boolean forProxy) {
+	if (forProxy  &&  pa_name != null)
 	{
-	    pa: if (resp.getStatusCode() == 407  &&  pa_name != null)
+	    if (been_here)
 	    {
-		if (been_here)
-		{
-		    System.out.println();
-		    System.out.println("Proxy authorization failed");
-		    return null;
-		}
-
-		been_here = true;
-
-		if (challenge.getScheme().equalsIgnoreCase("Basic"))
-		    AuthorizationInfo.addBasicAuthorization(
-						       challenge.getHost(),
-						       challenge.getPort(),
-						       challenge.getRealm(),
-						       pa_name, pa_pass);
-		else if (challenge.getScheme().equalsIgnoreCase("Digest"))
-		    AuthorizationInfo.addDigestAuthorization(
-						       challenge.getHost(),
-						       challenge.getPort(),
-						       challenge.getRealm(),
-						       pa_name, pa_pass);
-		else
-		    break pa;
-
-		AuthorizationInfo info = AuthorizationInfo.getAuthorization(
-				challenge.getHost(), challenge.getPort(),
-				challenge.getScheme(), challenge.getRealm());
-		return def_handler.fixupAuthInfo(info, req, challenge, resp);
+		System.out.println();
+		System.out.println("Proxy authorization failed");
+		return null;
 	    }
-	}
-	catch (Exception e)
-	{
-	    System.out.println("Error reading response: " + e);
-	    return null;
+
+	    been_here = true;
+	    return new NVPair(pa_name, pa_pass);
 	}
 
 	if (been_here)
@@ -119,18 +80,10 @@ class MyAuthHandler implements AuthorizationHandler
 	// print out all challenge info
 
 	System.out.println();
-	try
-	{
-	    if (resp.getStatusCode() == 407)
-		System.out.println("The proxy requires authorization");
-	    else
-		System.out.println("The server requires authorization for this resource");
-	}
-	catch(IOException ioe)
-	{
-	    System.out.println("Error reading response: " + ioe);
-	    return null;
-	}
+	if (forProxy)
+	    System.out.println("The proxy requires authorization");
+	else
+	    System.out.println("The server requires authorization for this resource");
 
 	System.out.println();
 	System.out.println("Scheme: " + challenge.getScheme());
@@ -163,31 +116,4 @@ class MyAuthHandler implements AuthorizationHandler
 
 	return null;
     }
-
-
-    public AuthorizationInfo fixupAuthInfo(AuthorizationInfo info,
-					   RoRequest req,
-					   AuthorizationInfo challenge,
-					   RoResponse resp)
-	    throws AuthSchemeNotImplException
-    {
-	return def_handler.fixupAuthInfo(info, req, challenge, resp);
-    }
-
-    public void handleAuthHeaders(Response resp, RoRequest req,
-				  AuthorizationInfo prev,
-				  AuthorizationInfo prxy)
-	    throws IOException
-    {
-	def_handler.handleAuthHeaders(resp, req, prev, prxy);
-    }
-
-    public void handleAuthTrailers(Response resp, RoRequest req,
-				   AuthorizationInfo prev,
-				   AuthorizationInfo prxy)
-	    throws IOException
-    {
-	def_handler.handleAuthTrailers(resp, req, prev, prxy);
-    }
 }
-

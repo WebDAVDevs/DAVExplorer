@@ -1,8 +1,8 @@
 /*
- * @(#)UncompressInputStream.java			0.3-2 18/06/1999
+ * @(#)UncompressInputStream.java			0.3-3 06/05/2001
  *
  *  This file is part of the HTTPClient package
- *  Copyright (C) 1996-1999  Ronald Tschalär
+ *  Copyright (C) 1996-2001 Ronald Tschalär
  *
  *  This library is free software; you can redistribute it and/or
  *  modify it under the terms of the GNU Lesser General Public
@@ -24,6 +24,10 @@
  *
  *  ronald@innovation.ch
  *
+ *  The HTTPClient's home page is located at:
+ *
+ *  http://www.innovation.ch/java/HTTPClient/ 
+ *
  */
 
 package HTTPClient;
@@ -41,7 +45,7 @@ import java.io.FilterInputStream;
  * heavily on the <var>unlzw.c</var> code in <var>gzip-1.2.4</var> (written
  * by Peter Jannesen) and the original compress code.
  *
- * @version	0.3-2  18/06/1999
+ * @version	0.3-3  06/05/2001
  * @author	Ronald Tschalär
  */
 class UncompressInputStream extends FilterInputStream
@@ -445,4 +449,3 @@ class UncompressInputStream extends FilterInputStream
 	System.err.println("Time: " + (end-beg)/1000. + " seconds");
     }
 }
-

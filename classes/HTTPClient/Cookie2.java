@@ -1,8 +1,8 @@
 /*
- * @(#)Cookie2.java					0.3-2 18/06/1999
+ * @(#)Cookie2.java					0.3-3 06/05/2001
  *
  *  This file is part of the HTTPClient package
- *  Copyright (C) 1996-1999  Ronald Tschalär
+ *  Copyright (C) 1996-2001 Ronald Tschalär
  *
  *  This library is free software; you can redistribute it and/or
  *  modify it under the terms of the GNU Lesser General Public
@@ -24,31 +24,35 @@
  *
  *  ronald@innovation.ch
  *
+ *  The HTTPClient's home page is located at:
+ *
+ *  http://www.innovation.ch/java/HTTPClient/ 
+ *
  */
 
 package HTTPClient;
 
-import java.io.File;
+import java.io.UnsupportedEncodingException;
 import java.net.ProtocolException;
 import java.util.Date;
 import java.util.Vector;
-import java.util.Hashtable;
-import java.util.Enumeration;
 import java.util.StringTokenizer;
 
 
 /**
- * This class represents an http cookie as specified in the
- * <A HREF="ftp://ds.internic.net/internet-drafts/draft-ietf-http-state-man-mec-10.txt">
- * HTTP State Management Mechanism spec</A> (also known as a version 1 cookie).
+ * This class represents an http cookie as specified in the <A
+ * HREF="http://www.ietf.org/rfc/rfc2965.txt">HTTP State Management Mechanism spec</A>
+ * (also known as a version 1 cookie).
  *
- * @version	0.3-2  18/06/1999
+ * @version	0.3-3  06/05/2001
  * @author	Ronald Tschalär
  * @since	V0.3
  */
-
 public class Cookie2 extends Cookie
 {
+    /** Make this compatible with V0.3-2 */
+    private static final long serialVersionUID = 2208203902820875917L;
+
     protected int     version;
     protected boolean discard;
     protected String  comment;
@@ -122,6 +126,7 @@ public class Cookie2 extends Cookie
     {
 	super(req);
 
+	path = Util.getPath(req.getRequestURI());
 	int slash = path.lastIndexOf('/');
 	if (slash != -1)  path = path.substring(0, slash+1);
 	if (domain.indexOf('.') == -1)  domain += ".local";
@@ -142,9 +147,9 @@ public class Cookie2 extends Cookie
     /**
      * Parses the Set-Cookie2 header into an array of Cookies.
      *
-     * @param set_cookie the Set-Cookie header received from the server
+     * @param set_cookie the Set-Cookie2 header received from the server
      * @param req the request used
-     * @return an array of Cookies as parsed from the Set-Cookie header
+     * @return an array of Cookies as parsed from the Set-Cookie2 header
      * @exception ProtocolException if an error occurs during parsing
      */
     protected static Cookie[] parse(String set_cookie, RoRequest req)
@@ -294,7 +299,13 @@ public class Cookie2 extends Cookie
 		else if (name.equals("comment"))	// Comment
 		{
 		    if (curr.comment != null)  continue;
-		    curr.comment = params[idx2].getValue();
+		    try
+		    {
+			curr.comment =
+			    new String(params[idx2].getValue().getBytes("8859_1"), "UTF8");
+		    }
+		    catch (UnsupportedEncodingException usee)
+			{ throw new Error(usee.toString()); /* shouldn't happen */ }
 		}
 		else if (name.equals("commenturl"))	// CommentURL
 		{
@@ -315,11 +326,7 @@ public class Cookie2 extends Cookie
 
 	    // check version
 
-	    if (curr.version == -1)
-		throw new ProtocolException("Bad Set-Cookie2 header: " +
-					    set_cookie + "\nMissing Version " +
-					    "attribute");
-	    if (curr.version != 1)  continue;	// ignore unknown version
+	    if (curr.version == -1)  continue;
 
 
 	    // setup defaults
@@ -331,7 +338,14 @@ public class Cookie2 extends Cookie
 
 	    // path attribute must be a prefix of the request-URI
 	    if (!Util.getPath(req.getRequestURI()).startsWith(curr.path))
+	    {
+		Log.write(Log.COOKI, "Cook2: Bad Set-Cookie2 header: " +
+				     set_cookie + "\n       path `" +
+				     curr.path + "' is not a prefix of the " +
+				     "request uri `" + req.getRequestURI() +
+				     "'");
 		continue;
+	    }
 
 	    // if host name is simple (i.e w/o a domain) then append .local
 	    String eff_host = req.getConnection().getHost();
@@ -339,14 +353,35 @@ public class Cookie2 extends Cookie
 
 	    // domain must be either .local or must contain at least two dots
 	    if (!curr.domain.equals(".local")  &&
-		curr.domain.indexOf('.', 1) == -1)  continue;
+		curr.domain.indexOf('.', 1) == -1)
+	    {
+		Log.write(Log.COOKI, "Cook2: Bad Set-Cookie2 header: " +
+				     set_cookie + "\n       domain `" +
+				     curr.domain + "' is not `.local' and " +
+				     "doesn't contain two `.'s");
+		continue;
+	    }
 
 	    // domain must domain match host
-	    if (!eff_host.endsWith(curr.domain))  continue;
+	    if (!eff_host.endsWith(curr.domain))
+	    {
+		Log.write(Log.COOKI, "Cook2: Bad Set-Cookie2 header: " +
+				     set_cookie + "\n       domain `" +
+				     curr.domain + "' does not match current" +
+				     "host `" + eff_host + "'"); 
+		continue;
+	    }
 
 	    // host minus domain may not contain any dots
 	    if (eff_host.substring(0, eff_host.length()-curr.domain.length()).
-		indexOf('.') != -1)  continue;
+		indexOf('.') != -1)
+	    {
+		Log.write(Log.COOKI, "Cook2: Bad Set-Cookie2 header: " +
+				     set_cookie + "\n       domain `" +
+				     curr.domain + "' is more than one `.'" +
+				     "away from host `" + eff_host + "'"); 
+		continue;
+	    }
 
 	    // if a port list is given it must include the current port
 	    if (curr.port_set)
@@ -355,7 +390,14 @@ public class Cookie2 extends Cookie
 		for (idx2=0; idx2<curr.port_list.length; idx2++)
 		    if (curr.port_list[idx2] == req.getConnection().getPort())
 			break;
-		if (idx2 == curr.port_list.length)  continue;
+		if (idx2 == curr.port_list.length)
+		{
+		    Log.write(Log.COOKI, "Cook2: Bad Set-Cookie2 header: " +
+					 set_cookie + "\n       port list " +
+					 "does include current port " +
+					 req.getConnection().getPort());
+		    continue;
+		}
 	    }
 
 
@@ -501,31 +543,33 @@ public class Cookie2 extends Cookie
      */
     public String toString()
     {
-	String string = name + "=" + value;
+	StringBuffer res = new StringBuffer(name.length() + value.length() + 50);
+	res.append(name).append('=').append(value);
 
 	if (version == 1)
 	{
-	    string += "; Version=" + version;
-	    string += "; Path=" + path;
-	    string += "; Domain=" + domain;
+	    res.append("; Version=").append(version);
+	    res.append("; Path=").append(path);
+	    res.append("; Domain=").append(domain);
 	    if (port_set)
 	    {
-		string += "; Port=\"" + port_list[0];
+		res.append("; Port=\"").append(port_list[0]);
 		for (int idx=1; idx<port_list.length; idx++)
-		    string += "," + port_list[idx];
-		string += "\"";
+		    res.append(',').append(port_list[idx]);
+		res.append('\"');
 	    }
-	    if (expires != null)   string += "; Max-Age=" +
-			((expires.getTime() - new Date().getTime()) / 1000L);
-	    if (discard)           string += "; Discard";
-	    if (secure)            string += "; Secure";
-	    if (comment != null)   string += "; Comment=\"" + comment + "\"";
-	    if (comment_url != null)  string += "; CommentURL=\"" + comment_url + "\"";
+	    if (expires != null)
+		res.append("; Max-Age=").append(
+		    ((expires.getTime() - System.currentTimeMillis()) / 1000L));
+	    if (discard)           res.append("; Discard");
+	    if (secure)            res.append("; Secure");
+	    if (comment != null)   res.append("; Comment=\"").append(comment).append('\"');
+	    if (comment_url != null)
+		res.append("; CommentURL=\"").append(comment_url).append('\"');
 	}
 	else
 	    throw new Error("Internal Error: unknown version " + version);
 
-	return string;
+	return res.toString();
     }
 }
-

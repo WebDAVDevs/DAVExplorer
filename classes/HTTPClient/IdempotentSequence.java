@@ -1,8 +1,8 @@
 /*
- * @(#)IdempotentSequence.java				0.3-3 18/06/1999
+ * @(#)IdempotentSequence.java				0.3-3 06/05/2001
  *
  *  This file is part of the HTTPClient package
- *  Copyright (C) 1996-2000 Ronald Tschalär
+ *  Copyright (C) 1996-2001 Ronald Tschalär
  *
  *  This library is free software; you can redistribute it and/or
  *  modify it under the terms of the GNU Lesser General Public
@@ -24,10 +24,13 @@
  *
  *  ronald@innovation.ch
  *
+ *  The HTTPClient's home page is located at:
+ *
+ *  http://www.innovation.ch/java/HTTPClient/ 
+ *
  */
 
 package HTTPClient;
-
 
 import java.util.Hashtable;
 import java.util.Enumeration;
@@ -52,10 +55,9 @@ import java.util.Enumeration;
  *     ...
  * </PRE>
  *
- * @version	0.3-3  18/06/1999
+ * @version	0.3-3  06/05/2001
  * @author	Ronald Tschalär
  */
-
 class IdempotentSequence
 {
     /** method number definitions */
@@ -401,4 +403,3 @@ class IdempotentSequence
 	System.out.println("Tests finished");
     }
 }
-

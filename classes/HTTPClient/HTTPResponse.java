@@ -1,8 +1,8 @@
 /*
- * @(#)HTTPResponse.java				0.3-2 18/06/1999
+ * @(#)HTTPResponse.java				0.3-3 06/05/2001
  *
  *  This file is part of the HTTPClient package
- *  Copyright (C) 1996-1999  Ronald Tschalär
+ *  Copyright (C) 1996-2001 Ronald Tschalär
  *
  *  This library is free software; you can redistribute it and/or
  *  modify it under the terms of the GNU Lesser General Public
@@ -24,13 +24,17 @@
  *
  *  ronald@innovation.ch
  *
+ *  The HTTPClient's home page is located at:
+ *
+ *  http://www.innovation.ch/java/HTTPClient/
+ *
  */
 
 package HTTPClient;
 
 import java.io.IOException;
-import java.io.EOFException;
 import java.io.InterruptedIOException;
+// 2001-May-23: jfeise@ics.uci.edu  added for logging
 import java.io.FileOutputStream;
 import java.io.InputStream;
 import java.io.ByteArrayInputStream;
@@ -45,12 +49,11 @@ import java.util.Enumeration;
  * the modules handle the response before finally giving the info to
  * the user.
  *
- * @version	0.3-2  18/06/1999
+ * @version	0.3-3  06/05/2001
  * @author	Ronald Tschalär
  * @since	0.3
  */
-
-public class HTTPResponse implements GlobalConstants, HTTPClientModuleConstants
+public class HTTPResponse implements HTTPClientModuleConstants
 {
     /** the list of modules */
     private HTTPClientModule[]  modules;
@@ -62,7 +65,7 @@ public class HTTPResponse implements GlobalConstants, HTTPClientModuleConstants
     private Request      request = null;
 
     /** the current response */
-    private Response     response = null;
+            Response     response = null;
 
     /** the HttpOutputStream to synchronize on */
     private HttpOutputStream out_stream = null;
@@ -106,6 +109,9 @@ public class HTTPResponse implements GlobalConstants, HTTPClientModuleConstants
     /** marks this response as aborted (stop() in HTTPConnection) */
     private boolean      aborted = false;
 
+    /** should the request be retried by the application? */
+    private boolean      retry = false;
+
     /** the method used in the request */
     private String       method = null;
 
@@ -117,6 +123,7 @@ public class HTTPResponse implements GlobalConstants, HTTPClientModuleConstants
     private static String  logFilename = null;
     private static String  inboundHeader = "\r\n========= Inbound Message Header =========\r\n";
     private static String  inboundBody   = "\r\n========= Inbound Message Body =========\r\n";
+
 
     // Constructors
 
@@ -132,10 +139,16 @@ public class HTTPResponse implements GlobalConstants, HTTPClientModuleConstants
 	this.timeout = timeout;
 	try
 	{
+	    int qp = orig.getRequestURI().indexOf('?');
 	    this.OriginalURI = new URI(orig.getConnection().getProtocol(),
+				       null,
 				       orig.getConnection().getHost(),
 				       orig.getConnection().getPort(),
-				       orig.getRequestURI());
+				       qp < 0 ? orig.getRequestURI() :
+					 orig.getRequestURI().substring(0, qp),
+				       qp < 0 ? null :
+					 orig.getRequestURI().substring(qp+1),
+				       null);
 	}
 	catch (ParseException pe)
 	    { }
@@ -307,7 +320,10 @@ public class HTTPResponse implements GlobalConstants, HTTPClientModuleConstants
     public int getHeaderAsInt(String hdr)
 		throws IOException, ModuleException, NumberFormatException
     {
-	return Integer.parseInt(getHeader(hdr));
+	String val = getHeader(hdr);
+	if (val == null)
+	    throw new NumberFormatException("null");
+	return Integer.parseInt(val);
     }
 
     /**
@@ -331,13 +347,14 @@ public class HTTPResponse implements GlobalConstants, HTTPClientModuleConstants
 	if (raw_date == null) return null;
 
 	// asctime() format is missing an explicit GMT specifier
-	if (raw_date.toUpperCase().indexOf("GMT") == -1)
+	if (raw_date.toUpperCase().indexOf("GMT") == -1  &&
+	    raw_date.indexOf(' ') > 0)
 	    raw_date += " GMT";
 
 	Date   date;
 
 	try
-	    { date = new Date(raw_date); }
+	    { date = Util.parseHttpDate(raw_date); }
 	catch (IllegalArgumentException iae)
 	{
 	    // some servers erroneously send a number, so let's try that
@@ -397,7 +414,10 @@ public class HTTPResponse implements GlobalConstants, HTTPClientModuleConstants
     public int getTrailerAsInt(String trailer)
 		throws IOException, ModuleException, NumberFormatException
     {
-	return Integer.parseInt(getTrailer(trailer));
+	String val = getTrailer(trailer);
+	if (val == null)
+	    throw new NumberFormatException("null");
+	return Integer.parseInt(val);
     }
 
     /**
@@ -421,13 +441,14 @@ public class HTTPResponse implements GlobalConstants, HTTPClientModuleConstants
 	if (raw_date == null) return null;
 
 	// asctime() format is missing an explicit GMT specifier
-	if (raw_date.toUpperCase().indexOf("GMT") == -1)
+	if (raw_date.toUpperCase().indexOf("GMT") == -1  &&
+	    raw_date.indexOf(' ') > 0)
 	    raw_date += " GMT";
 
 	Date   date;
 
 	try
-	    { date = new Date(raw_date); }
+	    { date = Util.parseHttpDate(raw_date); }
 	catch (IllegalArgumentException iae)
 	{
 	    // some servers erroneously send a number, so let's try that
@@ -464,10 +485,14 @@ public class HTTPResponse implements GlobalConstants, HTTPClientModuleConstants
      * then this method only returns any unread data remaining on the stream
      * and then closes it.
      *
-     * <P>Note to the unwarry: code like
-     *    <code>System.out.println("The data: " + resp.getData())</code>
+     * <P>Note to the unwary: code like
+     *<PRE>
+     *     System.out.println("The data: " + resp.getData())
+     *</PRE>
      * will probably not do what you want - use
-     *    <code>System.out.println("The data: " + new String(resp.getData()))</code>
+     *<PRE>
+     *     System.out.println("The data: " + resp.getText())
+     *</PRE>
      * instead.
      *
      * @see #getInputStream()
@@ -486,18 +511,13 @@ public class HTTPResponse implements GlobalConstants, HTTPClientModuleConstants
 	    try
 		{ readResponseData(inp_stream); }
 	    catch (InterruptedIOException ie)		// don't intercept
-	    {
-		throw ie;
-	    }
+		{ throw ie; }
 	    catch (IOException ioe)
 	    {
-		if (DebugResp)
-		{
-		    System.err.println("HResp: (\"" + method + " " +
-				       OriginalURI.getPath() + "\")");
-		    System.err.print("       ");
-		    ioe.printStackTrace();
-		}
+		Log.write(Log.RESP, "HResp: (\"" + method + " " +
+				    OriginalURI.getPathAndQuery() + "\")");
+		Log.write(Log.RESP, "       ", ioe);
+
 		try { inp_stream.close(); } catch (Exception e) { }
 		throw ioe;
 	    }
@@ -506,6 +526,34 @@ public class HTTPResponse implements GlobalConstants, HTTPClientModuleConstants
 	}
 
 	return Data;
+    }
+
+    /**
+     * Reads all the response data into a buffer and turns it into a string
+     * using the appropriate character converter. Since this uses {@link
+     * #getData() getData()}, the caveats of that method apply here as well.
+     *
+     * @see #getData()
+     * @return the body as a String. If no data was returned then an empty
+     *         string is returned.
+     * @exception IOException If any io exception occured while reading
+     *			      the data, or if the content is not text
+     * @exception ModuleException if any module encounters an exception.
+     * @exception ParseException if an error occured trying to parse the
+     *                           content-type header field
+     */
+    public synchronized String getText()
+	throws IOException, ModuleException, ParseException
+    {
+	String ct = getHeader("Content-Type");
+	if (ct == null  ||  !ct.toLowerCase().startsWith("text/"))
+	    throw new IOException("Content-Type `" + ct + "' is not a text type");
+
+	String charset = Util.getParameter("charset", ct);
+	if (charset == null)
+	    charset = "ISO-8859-1";
+
+	return new String(getData(), charset);
     }
 
     /**
@@ -534,6 +582,62 @@ public class HTTPResponse implements GlobalConstants, HTTPClientModuleConstants
 
 
     /**
+     * Should the request be retried by the application? If the application
+     * used an <var>HttpOutputStream</var> in the request then various
+     * modules (such as the redirection and authorization modules) are not
+     * able to resend the request themselves. Instead, it becomes the
+     * application's responsibility. The application can check this flag, and
+     * if it's set, resend the exact same request. The modules such as the
+     * RedirectionModule or AuthorizationModule will then recognize the resend
+     * and fix up or redirect the request as required (i.e. they defer their
+     * normal action until the resend).
+     *
+     * <P>If the application resends the request then it <strong>must</strong>
+     * use the same <var>HttpOutputStream</var> instance. This is because the
+     * modules use this to recognize the retried request and to perform the
+     * necessary work on the request before it's sent.
+     *
+     * <P>Here is a skeleton example of usage:
+     * <PRE>
+     *     OutputStream out = new HttpOutputStream(1234);
+     *     do
+     *     {
+     *         rsp = con.Post("/cgi-bin/my_cgi", out);
+     *         out.write(...);
+     *         out.close();
+     *     } while (rsp.retryRequest());
+     *
+     *     if (rsp.getStatusCode() >= 300)
+     *         ...
+     * </PRE>
+     *
+     * <P>Note that for this to ever return true, the java system property
+     * <var>HTTPClient.deferStreamed</var> must be set to true at the beginning
+     * of the application (before the HTTPConnection class is loaded). This
+     * prevents unwary applications from causing inadvertent memory leaks. If
+     * an application does set this, then it <em>must</em> resend any request
+     * whose response returns true here in order to prevent memory leaks (a
+     * switch to JDK 1.2 will allow us to use weak references and eliminate
+     * this problem).
+     *
+     * @return true if the request should be retried.
+     * @exception IOException If any exception occurs on the socket.
+     * @exception ModuleException if any module encounters an exception.
+     */
+    public boolean retryRequest()  throws IOException, ModuleException
+    {
+	if (!initialized)
+	{
+	    try
+		{ handleResponse(); }
+	    catch (RetryException re)
+		{ this.retry = response.retry; }
+	}
+	return retry;
+    }
+
+
+    /**
      * produces a full list of headers and their values, one per line.
      *
      * @return a string containing the headers
@@ -546,12 +650,11 @@ public class HTTPResponse implements GlobalConstants, HTTPClientModuleConstants
 		{ handleResponse(); }
 	    catch (Exception e)
 	    {
-		if (DebugResp  &&  !(e instanceof InterruptedIOException))
+		if (!(e instanceof InterruptedIOException))
 		{
-		    System.err.println("HResp: (\"" + method + " " +
-				       OriginalURI.getPath() + "\")");
-		    System.err.print("       ");
-		    e.printStackTrace();
+		    Log.write(Log.RESP, "HResp: (\"" + method + " " +
+				        OriginalURI.getPathAndQuery() + "\")");
+		    Log.write(Log.RESP, "       ", e);
 		}
 		return "Failed to read headers: " + e;
 	    }
@@ -697,8 +800,9 @@ public class HTTPResponse implements GlobalConstants, HTTPClientModuleConstants
 	/* all done, so copy data */
 	if (!request.internal_subrequest)
 	    init(response);
-        else if( logging )
-            doBodyLogging();
+    // 2001-May-23: jfeise@ics.uci.edu  added logging
+    else if( logging )
+        doBodyLogging();
 
 	if (handle_trailers)
 	    invokeTrailerHandlers(false);
@@ -724,13 +828,12 @@ public class HTTPResponse implements GlobalConstants, HTTPClientModuleConstants
 	this.Headers       = resp.Headers;
 	this.inp_stream    = resp.inp_stream;
 	this.Data          = resp.Data;
+	this.retry         = resp.retry;
 	initialized        = true;
-        //setLogging( resp );
 
-        // ????????? jfeise
-        if( logging )
-            doBodyLogging();
-
+    // 2001-May-23: jfeise@ics.uci.edu  added logging
+    if( logging )
+        doBodyLogging();
     }
 
 
@@ -873,6 +976,8 @@ public class HTTPResponse implements GlobalConstants, HTTPClientModuleConstants
 	return timeout;
     }
 
+
+    // 2001-May-23: jfeise@ics.uci.edu  added logging
     public void setLogging( boolean logging, String filename )
     {
         this.logging = logging;
@@ -880,12 +985,15 @@ public class HTTPResponse implements GlobalConstants, HTTPClientModuleConstants
     }
 
 
+    // 2001-May-23: jfeise@ics.uci.edu  added logging
     private void setLogging( Response resp )
     {
         logging = resp.getLogging();
         logFilename = resp.getLogFilename();
     }
 
+
+    // 2001-May-23: jfeise@ics.uci.edu  added logging
     private void setLogging( Request req )
     {
         if( req.getConnection() != null )
@@ -895,6 +1003,8 @@ public class HTTPResponse implements GlobalConstants, HTTPClientModuleConstants
         }
     }
 
+
+    // 2001-May-23: jfeise@ics.uci.edu  added logging
     private void doBodyLogging()
     {
         if( Data == null )
@@ -925,4 +1035,3 @@ public class HTTPResponse implements GlobalConstants, HTTPClientModuleConstants
         }
     }
 }
-

@@ -1,8 +1,8 @@
 /*
- * @(#)AuthorizationInfo.java               0.3-2 18/06/1999
+ * @(#)AuthorizationInfo.java				0.3-3 06/05/2001
  *
  *  This file is part of the HTTPClient package
- *  Copyright (C) 1996-1999  Ronald Tschalär
+ *  Copyright (C) 1996-2001 Ronald Tschalär
  *
  *  This library is free software; you can redistribute it and/or
  *  modify it under the terms of the GNU Lesser General Public
@@ -24,10 +24,13 @@
  *
  *  ronald@innovation.ch
  *
+ *  The HTTPClient's home page is located at:
+ *
+ *  http://www.innovation.ch/java/HTTPClient/ 
+ *
  */
 
 package HTTPClient;
-
 
 import java.io.IOException;
 import java.net.ProtocolException;
@@ -52,14 +55,14 @@ import java.util.Enumeration;
  * the one used by the "Basic" scheme and derivatives, and the one used by
  * the "Digest" scheme and derivatives. The first form contains just the
  * the scheme and a "cookie":
- *
+ * 
  * <PRE>    Authorization: Basic aGVsbG86d29ybGQ=</PRE>
- *
+ * 
  * The second form contains the scheme followed by a number of parameters
  * in the form of name=value pairs:
- *
+ * 
  * <PRE>    Authorization: Digest username="hello", realm="test", nonce="42", ...</PRE>
- *
+ * 
  * The two fields "cookie" and "params" correspond to these two forms.
  * <A HREF="#toString()">toString()</A> is used by the AuthorizationModule
  * when generating the Authorization header and will format the info
@@ -81,12 +84,11 @@ import java.util.Enumeration;
  * AuthorizationInfo instances. There can be only one instance per host,
  * port, scheme, and realm combination (see <A HREF="#equals">equals()</A>).
  *
- * @version 0.3-2  18/06/1999
- * @author  Ronald Tschalär
- * @since   V0.1
+ * @version	0.3-3  06/05/2001
+ * @author	Ronald Tschalär
+ * @since	V0.1
  */
-
-public class AuthorizationInfo implements GlobalConstants, Cloneable
+public class AuthorizationInfo implements Cloneable
 {
     // class fields
 
@@ -95,11 +97,11 @@ public class AuthorizationInfo implements GlobalConstants, Cloneable
 
     /** A pointer to the handler to be called when we need authorization info */
     private static AuthorizationHandler
-               AuthHandler = new DefaultAuthHandler();
+				 AuthHandler = new DefaultAuthHandler();
 
     static
     {
-        CntxtList.put(HTTPConnection.getDefaultContext(), new Hashtable());
+	CntxtList.put(HTTPConnection.getDefaultContext(), new Hashtable());
     }
 
 
@@ -143,8 +145,8 @@ public class AuthorizationInfo implements GlobalConstants, Cloneable
      */
     AuthorizationInfo(String host, int port)
     {
-    this.host = host.trim().toLowerCase();
-    this.port = port;
+	this.host = host.trim().toLowerCase();
+	this.port = port;
     }
 
 
@@ -160,18 +162,18 @@ public class AuthorizationInfo implements GlobalConstants, Cloneable
      * @param info   arbitrary extra info, or null
      */
     public AuthorizationInfo(String host, int port, String scheme,
-                 String realm, NVPair params[], Object info)
+			     String realm, NVPair params[], Object info)
     {
-    this.scheme = scheme.trim();
-    this.host   = host.trim().toLowerCase();
-    this.port   = port;
-    this.realm  = realm;
-    this.cookie = null;
+	this.scheme = scheme.trim();
+	this.host   = host.trim().toLowerCase();
+	this.port   = port;
+	this.realm  = realm;
+	this.cookie = null;
 
-    if (params != null)
-        auth_params = Util.resizeArray(params, params.length);
+	if (params != null)
+	    auth_params = Util.resizeArray(params, params.length);
 
-    this.extra_info   = info;
+	this.extra_info   = info;
     }
 
 
@@ -189,16 +191,16 @@ public class AuthorizationInfo implements GlobalConstants, Cloneable
      *               base64-encoded username/password message.
      */
     public AuthorizationInfo(String host, int port, String scheme,
-                 String realm, String cookie)
+			     String realm, String cookie)
     {
-    this.scheme = scheme.trim();
-    this.host   = host.trim().toLowerCase();
-    this.port   = port;
-    this.realm  = realm;
-    if (cookie != null)
-        this.cookie = cookie.trim();
-    else
-        this.cookie = null;
+	this.scheme = scheme.trim();
+	this.host   = host.trim().toLowerCase();
+	this.port   = port;
+	this.realm  = realm;
+	if (cookie != null)
+	    this.cookie = cookie.trim();
+	else
+	    this.cookie = null;
     }
 
 
@@ -209,16 +211,16 @@ public class AuthorizationInfo implements GlobalConstants, Cloneable
      */
     AuthorizationInfo(AuthorizationInfo templ)
     {
-    this.scheme = templ.scheme;
-    this.host   = templ.host;
-    this.port   = templ.port;
-    this.realm  = templ.realm;
-    this.cookie = templ.cookie;
+	this.scheme = templ.scheme;
+	this.host   = templ.host;
+	this.port   = templ.port;
+	this.realm  = templ.realm;
+	this.cookie = templ.cookie;
 
-    this.auth_params =
-        Util.resizeArray(templ.auth_params, templ.auth_params.length);
+	this.auth_params =
+		Util.resizeArray(templ.auth_params, templ.auth_params.length);
 
-    this.extra_info  = templ.extra_info;
+	this.extra_info  = templ.extra_info;
     }
 
 
@@ -229,23 +231,26 @@ public class AuthorizationInfo implements GlobalConstants, Cloneable
      * the server requests authorization and no entry for the requested
      * scheme and realm can be found in the list. The handler must implement
      * the AuthorizationHandler interface.
-     * <BR>If no handler is set then a default handler is used. This handler
-     * currently only handles the "Basic" scheme and brings up a popup which
-     * prompts for the username and password.
-     * <BR>The default handler can be disabled by setting the auth handler
-     * to <var>null</var>.
+     *
+     * <P>If no handler is set then a {@link DefaultAuthHandler default
+     * handler} is used. This handler currently only handles the "Basic" and
+     * "Digest" schemes and brings up a popup which prompts for the username
+     * and password.
+     *
+     * <P>The default handler can be disabled by setting the auth handler to
+     * <var>null</var>.
      *
      * @param  handler the new authorization handler
      * @return the old authorization handler
      * @see    AuthorizationHandler
      */
     public static AuthorizationHandler
-            setAuthHandler(AuthorizationHandler handler)
+		    setAuthHandler(AuthorizationHandler handler)
     {
-    AuthorizationHandler tmp = AuthHandler;
-    AuthHandler = handler;
+	AuthorizationHandler tmp = AuthHandler;
+	AuthHandler = handler;
 
-    return tmp;
+	return tmp;
     }
 
 
@@ -257,7 +262,7 @@ public class AuthorizationInfo implements GlobalConstants, Cloneable
      */
     public static AuthorizationHandler getAuthHandler()
     {
-    return AuthHandler;
+	return AuthHandler;
     }
 
 
@@ -272,11 +277,11 @@ public class AuthorizationInfo implements GlobalConstants, Cloneable
      * @return a pointer to the authorization data or null if not found
      */
     public static AuthorizationInfo getAuthorization(
-                        String host, int port,
-                        String scheme, String realm)
+						String host, int port,
+						String scheme, String realm)
     {
-    return getAuthorization(host, port, scheme, realm,
-                HTTPConnection.getDefaultContext());
+	return getAuthorization(host, port, scheme, realm,
+				HTTPConnection.getDefaultContext());
     }
 
 
@@ -292,17 +297,17 @@ public class AuthorizationInfo implements GlobalConstants, Cloneable
      * @return a pointer to the authorization data or null if not found
      */
     public static synchronized AuthorizationInfo getAuthorization(
-                        String host, int port,
-                        String scheme, String realm,
-                        Object context)
+						String host, int port,
+						String scheme, String realm,
+						Object context)
     {
-    Hashtable AuthList = Util.getList(CntxtList, context);
+	Hashtable AuthList = Util.getList(CntxtList, context);
 
-    AuthorizationInfo auth_info =
-        new AuthorizationInfo(host.trim(), port, scheme.trim(),
-                  realm, (NVPair[]) null, null);
+	AuthorizationInfo auth_info =
+	    new AuthorizationInfo(host, port, scheme, realm, (NVPair[]) null,
+				  null);
 
-    return (AuthorizationInfo) AuthList.get(auth_info);
+	return (AuthorizationInfo) AuthList.get(auth_info);
     }
 
 
@@ -315,30 +320,30 @@ public class AuthorizationInfo implements GlobalConstants, Cloneable
      * @param  req        the request which initiated this query
      * @param  resp       the full response
      * @return a structure containing the requested info, or null if either
-     *         no AuthHandler is set or the user canceled the request.
+     *	       no AuthHandler is set or the user canceled the request.
      * @exception AuthSchemeNotImplException if this is thrown by
      *                                            the AuthHandler.
      */
     static AuthorizationInfo queryAuthHandler(AuthorizationInfo auth_info,
-                          RoRequest req, RoResponse resp)
-    throws AuthSchemeNotImplException
+					      RoRequest req, RoResponse resp)
+	throws AuthSchemeNotImplException, IOException
     {
-    if (AuthHandler == null)
-        return null;
+	if (AuthHandler == null)
+	    return null;
 
-    AuthorizationInfo new_info =
-            AuthHandler.getAuthorization(auth_info, req, resp);
-    if (new_info != null)
-    {
-        if (req != null)
-        addAuthorization((AuthorizationInfo) new_info.clone(),
-                 req.getConnection().getContext());
-        else
-        addAuthorization((AuthorizationInfo) new_info.clone(),
-                 HTTPConnection.getDefaultContext());
-    }
+	AuthorizationInfo new_info =
+		    AuthHandler.getAuthorization(auth_info, req, resp);
+	if (new_info != null)
+	{
+	    if (req != null)
+		addAuthorization((AuthorizationInfo) new_info.clone(),
+				 req.getConnection().getContext());
+	    else
+		addAuthorization((AuthorizationInfo) new_info.clone(),
+				 HTTPConnection.getDefaultContext());
+	}
 
-    return new_info;
+	return new_info;
     }
 
 
@@ -348,30 +353,30 @@ public class AuthorizationInfo implements GlobalConstants, Cloneable
      * AuthHandler (if set).
      *
      * @param  auth_info    the AuthorizationInfo
-     * @param  request      the request which initiated this query
+     * @param  req          the request which initiated this query
      * @param  resp         the full response
      * @param  query_auth_h if true, query the auth-handler if no info found.
      * @return a pointer to the authorization data or null if not found
      * @exception AuthSchemeNotImplException If thrown by the AuthHandler.
      */
     static synchronized AuthorizationInfo getAuthorization(
-                    AuthorizationInfo auth_info, RoRequest req,
-                    RoResponse resp, boolean query_auth_h)
-    throws AuthSchemeNotImplException
+				    AuthorizationInfo auth_info, RoRequest req,
+				    RoResponse resp, boolean query_auth_h)
+	throws AuthSchemeNotImplException, IOException
     {
-    Hashtable AuthList;
-    if (req != null)
-        AuthList = Util.getList(CntxtList, req.getConnection().getContext());
-    else
-        AuthList = Util.getList(CntxtList, HTTPConnection.getDefaultContext());
+	Hashtable AuthList;
+	if (req != null)
+	    AuthList = Util.getList(CntxtList, req.getConnection().getContext());
+	else
+	    AuthList = Util.getList(CntxtList, HTTPConnection.getDefaultContext());
 
-    AuthorizationInfo new_info =
-        (AuthorizationInfo) AuthList.get(auth_info);
+	AuthorizationInfo new_info =
+	    (AuthorizationInfo) AuthList.get(auth_info);
 
-    if (new_info == null  &&  query_auth_h)
-        new_info = queryAuthHandler(auth_info, req, resp);
+	if (new_info == null  &&  query_auth_h)
+	    new_info = queryAuthHandler(auth_info, req, resp);
 
-    return new_info;
+	return new_info;
     }
 
 
@@ -383,18 +388,21 @@ public class AuthorizationInfo implements GlobalConstants, Cloneable
      * @param  port         the port
      * @param  scheme       the scheme
      * @param  realm        the realm
+     * @param  req          the request which initiated this query
+     * @param  resp         the full response
      * @param  query_auth_h if true, query the auth-handler if no info found.
      * @return a pointer to the authorization data or null if not found
      * @exception AuthSchemeNotImplException If thrown by the AuthHandler.
      */
     static AuthorizationInfo getAuthorization(String host, int port,
-                          String scheme, String realm,
-                          boolean query_auth_h)
-    throws AuthSchemeNotImplException
+					      String scheme, String realm,
+					      RoRequest req, RoResponse resp,
+					      boolean query_auth_h)
+	throws AuthSchemeNotImplException, IOException
     {
-    return getAuthorization(new AuthorizationInfo(host.trim(), port,
-                scheme.trim(), realm, (NVPair[]) null, null),
-                null, null, query_auth_h);
+	return getAuthorization(new AuthorizationInfo(host, port, scheme,
+						realm, (NVPair[]) null, null),
+				req, resp, query_auth_h);
     }
 
 
@@ -407,7 +415,7 @@ public class AuthorizationInfo implements GlobalConstants, Cloneable
      */
     public static void addAuthorization(AuthorizationInfo auth_info)
     {
-    addAuthorization(auth_info, HTTPConnection.getDefaultContext());
+	addAuthorization(auth_info, HTTPConnection.getDefaultContext());
     }
 
 
@@ -420,28 +428,28 @@ public class AuthorizationInfo implements GlobalConstants, Cloneable
      * @param context   the context to associate this info with
      */
     public static void addAuthorization(AuthorizationInfo auth_info,
-                    Object context)
+					Object context)
     {
-    Hashtable AuthList = Util.getList(CntxtList, context);
+	Hashtable AuthList = Util.getList(CntxtList, context);
 
-    // merge path list
-    AuthorizationInfo old_info =
-                (AuthorizationInfo) AuthList.get(auth_info);
-    if (old_info != null)
-    {
-        int ol = old_info.paths.length,
-        al = auth_info.paths.length;
+	// merge path list
+	AuthorizationInfo old_info =
+			    (AuthorizationInfo) AuthList.get(auth_info);
+	if (old_info != null)
+	{
+	    int ol = old_info.paths.length,
+		al = auth_info.paths.length;
 
-        if (al == 0)
-        auth_info.paths = old_info.paths;
-        else
-        {
-        auth_info.paths = Util.resizeArray(auth_info.paths, al+ol);
-        System.arraycopy(old_info.paths, 0, auth_info.paths, al, ol);
-        }
-    }
+	    if (al == 0)
+		auth_info.paths = old_info.paths;
+	    else
+	    {
+		auth_info.paths = Util.resizeArray(auth_info.paths, al+ol);
+		System.arraycopy(old_info.paths, 0, auth_info.paths, al, ol);
+	    }
+	}
 
-    AuthList.put(auth_info, auth_info);
+	AuthList.put(auth_info, auth_info);
     }
 
 
@@ -459,11 +467,11 @@ public class AuthorizationInfo implements GlobalConstants, Cloneable
      * @param info   arbitrary extra auth info
      */
     public static void addAuthorization(String host, int port, String scheme,
-                    String realm, String cookie,
-                    NVPair params[], Object info)
+					String realm, String cookie,
+					NVPair params[], Object info)
     {
-    addAuthorization(host, port, scheme, realm, cookie, params, info,
-             HTTPConnection.getDefaultContext());
+	addAuthorization(host, port, scheme, realm, cookie, params, info,
+			 HTTPConnection.getDefaultContext());
     }
 
 
@@ -482,17 +490,17 @@ public class AuthorizationInfo implements GlobalConstants, Cloneable
      * @param context the context to associate this info with
      */
     public static void addAuthorization(String host, int port, String scheme,
-                    String realm, String cookie,
-                    NVPair params[], Object info,
-                    Object context)
+					String realm, String cookie,
+					NVPair params[], Object info,
+					Object context)
     {
-    AuthorizationInfo auth =
-        new AuthorizationInfo(host, port, scheme, realm, cookie);
-    if (params != null  &&  params.length > 0)
-        auth.auth_params = Util.resizeArray(params, params.length);
-    auth.extra_info = info;
+	AuthorizationInfo auth =
+	    new AuthorizationInfo(host, port, scheme, realm, cookie);
+	if (params != null  &&  params.length > 0)
+	    auth.auth_params = Util.resizeArray(params, params.length);
+	auth.extra_info = info;
 
-    addAuthorization(auth, context);
+	addAuthorization(auth, context);
     }
 
 
@@ -508,12 +516,12 @@ public class AuthorizationInfo implements GlobalConstants, Cloneable
      * @param passwd the password
      */
     public static void addBasicAuthorization(String host, int port,
-                         String realm, String user,
-                         String passwd)
+					     String realm, String user,
+					     String passwd)
     {
-    addAuthorization(host, port, "Basic", realm,
-             Codecs.base64Encode(user + ":" + passwd),
-             (NVPair[]) null, null);
+	addAuthorization(host, port, "Basic", realm,
+			 Codecs.base64Encode(user + ":" + passwd),
+			 (NVPair[]) null, null);
     }
 
 
@@ -530,12 +538,12 @@ public class AuthorizationInfo implements GlobalConstants, Cloneable
      * @param context the context to associate this info with
      */
     public static void addBasicAuthorization(String host, int port,
-                         String realm, String user,
-                         String passwd, Object context)
+					     String realm, String user,
+					     String passwd, Object context)
     {
-    addAuthorization(host, port, "Basic", realm,
-             Codecs.base64Encode(user + ":" + passwd),
-             (NVPair[]) null, null, context);
+	addAuthorization(host, port, "Basic", realm,
+			 Codecs.base64Encode(user + ":" + passwd),
+			 (NVPair[]) null, null, context);
     }
 
 
@@ -551,11 +559,11 @@ public class AuthorizationInfo implements GlobalConstants, Cloneable
      * @param passwd the password
      */
     public static void addDigestAuthorization(String host, int port,
-                          String realm, String user,
-                          String passwd)
+					      String realm, String user,
+					      String passwd)
     {
-    addDigestAuthorization(host, port, realm, user, passwd,
-                   HTTPConnection.getDefaultContext());
+	addDigestAuthorization(host, port, realm, user, passwd,
+			       HTTPConnection.getDefaultContext());
     }
 
 
@@ -572,39 +580,39 @@ public class AuthorizationInfo implements GlobalConstants, Cloneable
      * @param context the context to associate this info with
      */
     public static void addDigestAuthorization(String host, int port,
-                          String realm, String user,
-                          String passwd, Object context)
+					      String realm, String user,
+					      String passwd, Object context)
     {
-    AuthorizationInfo prev =
-            getAuthorization(host, port, "Digest", realm, context);
-    NVPair[] params;
+	AuthorizationInfo prev =
+			getAuthorization(host, port, "Digest", realm, context);
+	NVPair[] params;
 
-    if (prev == null)
-    {
-        params = new NVPair[4];
-        params[0] = new NVPair("username", user);
-        params[1] = new NVPair("uri", "");
-        params[2] = new NVPair("nonce", "");
-        params[3] = new NVPair("response", "");
-    }
-    else
-    {
-        params = prev.getParams();
-        for (int idx=0; idx<params.length; idx++)
-        {
-        if (params[idx].getName().equalsIgnoreCase("username"))
-        {
-            params[idx] = new NVPair("username", user);
-            break;
-        }
-        }
-    }
+	if (prev == null)
+	{
+	    params = new NVPair[4];
+	    params[0] = new NVPair("username", user);
+	    params[1] = new NVPair("uri", "");
+	    params[2] = new NVPair("nonce", "");
+	    params[3] = new NVPair("response", "");
+	}
+	else
+	{
+	    params = prev.getParams();
+	    for (int idx=0; idx<params.length; idx++)
+	    {
+		if (params[idx].getName().equalsIgnoreCase("username"))
+		{
+		    params[idx] = new NVPair("username", user);
+		    break;
+		}
+	    }
+	}
 
-    String[] extra = { new MD5(user + ":" + realm + ":" + passwd).asHex(),
-               null };
+	String[] extra = { MD5.hexDigest(user + ":" + realm + ":" + passwd),
+			   null, null };
 
-    addAuthorization(host, port, "Digest", realm, null, params, extra,
-             context);
+	addAuthorization(host, port, "Digest", realm, null, params, extra,
+			 context);
     }
 
 
@@ -617,7 +625,7 @@ public class AuthorizationInfo implements GlobalConstants, Cloneable
      */
     public static void removeAuthorization(AuthorizationInfo auth_info)
     {
-    removeAuthorization(auth_info, HTTPConnection.getDefaultContext());
+	removeAuthorization(auth_info, HTTPConnection.getDefaultContext());
     }
 
 
@@ -629,10 +637,10 @@ public class AuthorizationInfo implements GlobalConstants, Cloneable
      * @param context   the context this info is associated with
      */
     public static void removeAuthorization(AuthorizationInfo auth_info,
-                       Object context)
+					   Object context)
     {
-    Hashtable AuthList = Util.getList(CntxtList, context);
-    AuthList.remove(auth_info);
+	Hashtable AuthList = Util.getList(CntxtList, context);
+	AuthList.remove(auth_info);
     }
 
 
@@ -647,11 +655,11 @@ public class AuthorizationInfo implements GlobalConstants, Cloneable
      * @param realm  the realm
      */
     public static void removeAuthorization(String host, int port, String scheme,
-                       String realm)
+					   String realm)
     {
-    removeAuthorization(
-        new AuthorizationInfo(host, port, scheme, realm, (NVPair[]) null,
-                  null));
+	removeAuthorization(
+	    new AuthorizationInfo(host, port, scheme, realm, (NVPair[]) null,
+				  null));
     }
 
 
@@ -666,11 +674,11 @@ public class AuthorizationInfo implements GlobalConstants, Cloneable
      * @param context the context this info is associated with
      */
     public static void removeAuthorization(String host, int port, String scheme,
-                       String realm, Object context)
+					   String realm, Object context)
     {
-    removeAuthorization(
-        new AuthorizationInfo(host, port, scheme, realm, (NVPair[]) null,
-                  null), context);
+	removeAuthorization(
+	    new AuthorizationInfo(host, port, scheme, realm, (NVPair[]) null,
+				  null), context);
     }
 
 
@@ -686,82 +694,82 @@ public class AuthorizationInfo implements GlobalConstants, Cloneable
      */
     static AuthorizationInfo findBest(RoRequest req)
     {
-    String path = Util.getPath(req.getRequestURI());
-    String host = req.getConnection().getHost();
-    int    port = req.getConnection().getPort();
+	String path = Util.getPath(req.getRequestURI());
+	String host = req.getConnection().getHost();
+	int    port = req.getConnection().getPort();
 
 
-    // First search for an exact match
+	// First search for an exact match
 
-    Hashtable AuthList =
-            Util.getList(CntxtList, req.getConnection().getContext());
-    Enumeration list = AuthList.elements();
-    while (list.hasMoreElements())
-    {
-        AuthorizationInfo info = (AuthorizationInfo) list.nextElement();
+	Hashtable AuthList =
+		    Util.getList(CntxtList, req.getConnection().getContext());
+	Enumeration list = AuthList.elements();
+	while (list.hasMoreElements())
+	{
+	    AuthorizationInfo info = (AuthorizationInfo) list.nextElement();
 
-        if (!info.host.equals(host)  ||  info.port != port)
-        continue;
+	    if (!info.host.equals(host)  ||  info.port != port)
+		continue;
 
-        String[] paths = info.paths;
-        for (int idx=0; idx<paths.length; idx++)
-        {
-        if (path.equals(paths[idx]))
-            return info;
-        }
-    }
+	    String[] paths = info.paths;
+	    for (int idx=0; idx<paths.length; idx++)
+	    {
+		if (path.equals(paths[idx]))
+		    return info;
+	    }
+	}
 
 
-    // Now find the closest parent or child
+	// Now find the closest parent or child
 
-    AuthorizationInfo best = null;
-    String base = path.substring(0, path.lastIndexOf('/')+1);
-    int    min  = Integer.MAX_VALUE;
+	AuthorizationInfo best = null;
+	String base = path.substring(0, path.lastIndexOf('/')+1);
+	int    min  = Integer.MAX_VALUE;
 
-    list = AuthList.elements();
-    while (list.hasMoreElements())
-    {
-        AuthorizationInfo info = (AuthorizationInfo) list.nextElement();
+	list = AuthList.elements();
+	while (list.hasMoreElements())
+	{
+	    AuthorizationInfo info = (AuthorizationInfo) list.nextElement();
 
-        if (!info.host.equals(host)  ||  info.port != port)
-        continue;
+	    if (!info.host.equals(host)  ||  info.port != port)
+		continue;
 
-        String[] paths = info.paths;
-        for (int idx=0; idx<paths.length; idx++)
-        {
-        // strip the last path segment, leaving a trailing "/"
-        String ibase =
-            paths[idx].substring(0, paths[idx].lastIndexOf('/')+1);
+	    String[] paths = info.paths;
+	    for (int idx=0; idx<paths.length; idx++)
+	    {
+		// strip the last path segment, leaving a trailing "/"
+		String ibase =
+			paths[idx].substring(0, paths[idx].lastIndexOf('/')+1);
 
-        if (base.equals(ibase))
-            return info;
+		if (base.equals(ibase))
+		    return info;
 
-        if (base.startsWith(ibase))     // found a parent
-        {
-            int num_seg = 0, pos = ibase.length()-1;
-            while ((pos = base.indexOf('/', pos+1)) != -1)  num_seg++;
+		if (base.startsWith(ibase))		// found a parent
+		{
+		    int num_seg = 0, pos = ibase.length()-1;
+		    while ((pos = base.indexOf('/', pos+1)) != -1)  num_seg++;
 
-            if (num_seg < min)
-            {
-            min  = num_seg;
-            best = info;
-            }
-        }
-        else if (ibase.startsWith(base))    // found a child
-        {
-            int num_seg = 0, pos = base.length();
-            while ((pos = ibase.indexOf('/', pos+1)) != -1)  num_seg++;
+		    if (num_seg < min)
+		    {
+			min  = num_seg;
+			best = info;
+		    }
+		}
+		else if (ibase.startsWith(base))	// found a child
+		{
+		    int num_seg = 0, pos = base.length();
+		    while ((pos = ibase.indexOf('/', pos+1)) != -1)  num_seg++;
 
-            if (num_seg < min)
-            {
-            min  = num_seg;
-            best = info;
-            }
-        }
-        }
-    }
+		    if (num_seg < min)
+		    {
+			min  = num_seg;
+			best = info;
+		    }
+		}
+	    }
+	}
 
-    return best;
+	return best;
     }
 
 
@@ -773,15 +781,15 @@ public class AuthorizationInfo implements GlobalConstants, Cloneable
      */
     public synchronized void addPath(String resource)
     {
-    String path = Util.getPath(resource);
+	String path = Util.getPath(resource);
 
-    // First check that we don't already have this one
-    for (int idx=0; idx<paths.length; idx++)
-        if (paths[idx].equals(path)) return;
+	// First check that we don't already have this one
+	for (int idx=0; idx<paths.length; idx++)
+	    if (paths[idx].equals(path)) return;
 
-    // Ok, add it
-    paths = Util.resizeArray(paths, paths.length+1);
-    paths[paths.length-1] = path;
+	// Ok, add it
+	paths = Util.resizeArray(paths, paths.length+1);
+	paths[paths.length-1] = path;
     }
 
 
@@ -797,163 +805,193 @@ public class AuthorizationInfo implements GlobalConstants, Cloneable
      * @exception ProtocolException if any error during the parsing occurs.
      */
     static AuthorizationInfo[] parseAuthString(String challenge, RoRequest req,
-                           RoResponse resp)
-        throws ProtocolException
+					       RoResponse resp)
+	    throws ProtocolException
     {
-    int    beg = 0,
-           end = 0;
-    char[] buf = challenge.toCharArray();
-    char   ch;
-    int    len = buf.length;
+	int    beg = 0,
+	       end = 0;
+	char[] buf = challenge.toCharArray();
+	int    len = buf.length;
+	int[]  pos_ref = new int[2];
 
-    AuthorizationInfo auth_arr[] = new AuthorizationInfo[0],
-              curr;
+	AuthorizationInfo auth_arr[] = new AuthorizationInfo[0],
+			  curr;
 
-    while (Character.isSpace(buf[len-1]))  len--;
+	while (Character.isWhitespace(buf[len-1]))  len--;
 
-    while (true)            // get all challenges
-    {
-        // get scheme
-        beg = Util.skipSpace(buf, beg);
-        if (beg == len)  break;
+	while (true)			// get all challenges
+	{
+	    // get scheme
+	    beg = Util.skipSpace(buf, beg);
+	    if (beg == len)  break;
 
-        end = beg + 1;
-        while (end < len  &&  !Character.isSpace(buf[end]) &&
-               buf[end] != ',')
-            end++;
+	    end = Util.findSpace(buf, beg+1);
 
-        int sts;
-        try
-        { sts = resp.getStatusCode(); }
-        catch (IOException ioe)
-        { throw new ProtocolException(ioe.toString()); }
-        if (sts == 401)
-        curr = new AuthorizationInfo(req.getConnection().getHost(),
-                         req.getConnection().getPort());
-        else
-        curr = new AuthorizationInfo(req.getConnection().getProxyHost(),
-                        req.getConnection().getProxyPort());
-        curr.scheme = challenge.substring(beg, end);
+	    int sts;
+	    try
+		{ sts = resp.getStatusCode(); }
+	    catch (IOException ioe)
+		{ throw new ProtocolException(ioe.toString()); }
+	    if (sts == 401)
+		curr = new AuthorizationInfo(req.getConnection().getHost(),
+					     req.getConnection().getPort());
+	    else
+		curr = new AuthorizationInfo(req.getConnection().getProxyHost(),
+					     req.getConnection().getProxyPort());
 
-        // get auth-parameters
-        boolean first = true;
-        Vector params = new Vector();
-        while (true)
-        {
-        beg = Util.skipSpace(buf, end);
-        if (beg == len)  break;
+	    /* Hack for schemes like NTLM which don't have any params or cookie.
+	     * Mickeysoft, hello? What were you morons thinking here? I suppose
+	     * you weren't, as usual, huh?
+	     */
+	    if (buf[end-1] == ',')
+	    {
+		curr.scheme = challenge.substring(beg, end-1);
+		beg = end;
+	    }
+	    else
+	    {
+		curr.scheme = challenge.substring(beg, end);
 
-        if (!first)             // expect ","
-        {
-            if (buf[beg] != ',')
-            throw new ProtocolException("Bad Authentication header "
-                            + "format: '" + challenge +
-                            "'\nExpected \",\" at position "+
-                            beg);
+		pos_ref[0] = beg; pos_ref[1] = end;
+		Vector params = parseParams(challenge, buf, pos_ref, len, curr);
+		beg = pos_ref[0]; end = pos_ref[1];
 
-            beg = Util.skipSpace(buf, beg+1);   // find param name
-            if (beg == len)  break;
-            if (buf[beg] == ',')    // skip empty params
-            {
-            end = beg;
-            continue;
-            }
-        }
+		if (!params.isEmpty())
+		{
+		    curr.auth_params = new NVPair[params.size()];
+		    params.copyInto(curr.auth_params);
+		}
+	    }
 
-        int pstart = beg;
+	    if (curr.realm == null)
+		/* Can't do this if we're supposed to allow for broken schemes
+		 * such as NTLM, Kerberos, and PEM.
+		 *
+		throw new ProtocolException("Bad Authentication header "
+		    + "format: " + challenge + "\nNo realm value found");
+		 */
+		curr.realm = "";
 
-        // extract name
-        end = beg + 1;
-        while (end < len  &&  !Character.isSpace(buf[end]) &&
-               buf[end] != '='  &&  buf[end] != ',')
-            end++;
+	    auth_arr = Util.resizeArray(auth_arr, auth_arr.length+1);
+	    auth_arr[auth_arr.length-1] = curr;
+	}
 
-        // hack to deal with schemes which use cookies in challenge
-        if (first  &&
-            (end == len   ||  buf[end] == '='  &&
-            (end+1 == len  ||  (buf[end+1] == '='  &&  end+2 == len))))
-        {
-            curr.cookie = challenge.substring(beg, len);
-            beg = len;
-            break;
-        }
-
-        String param_name = challenge.substring(beg, end),
-               param_value;
-
-        beg = Util.skipSpace(buf, end); // find "=" or ","
-
-        if (beg < len  &&  buf[beg] != '='  &&  buf[beg] != ',')
-        {       // It's not a param, but another challenge
-            beg = pstart+1;
-            break;
-        }
-
-
-        if (buf[beg] == '=')        // we have a value
-        {
-            beg = Util.skipSpace(buf, beg+1);
-            if (beg == len)
-            throw new ProtocolException("Bad Authentication header "
-                            + "format: " + challenge +
-                            "\nUnexpected EOL after token" +
-                            " at position " + (end-1));
-            if (buf[beg] != '"')    // it's a token
-            {
-            end = Util.skipToken(buf, beg);
-            if (end == beg)
-                throw new ProtocolException("Bad Authentication header "
-                + "format: " + challenge + "\nToken expected at " +
-                "position " + beg);
-            param_value = challenge.substring(beg, end);
-            }
-            else            // it's a quoted-string
-            {
-            end = beg++;
-            do
-                end = challenge.indexOf('"', end+1);
-            while (end != -1  &&  challenge.charAt(end-1) == '\\');
-            if (end == -1)
-                throw new ProtocolException("Bad Authentication header "
-                + "format: " + challenge + "\nClosing <\"> for "
-                + "quoted-string starting at position " + beg
-                + " not found");
-            param_value =
-                Util.dequoteString(challenge.substring(beg, end));
-            end++;
-            }
-        }
-        else                // this is not strictly allowed
-            param_value = null;
-
-        if (param_name.equalsIgnoreCase("realm"))
-            curr.realm = param_value;
-        else
-            params.addElement(new NVPair(param_name, param_value));
-
-        first = false;
-        }
-
-        if (!params.isEmpty())
-        {
-        curr.auth_params = new NVPair[params.size()];
-        params.copyInto(curr.auth_params);
-        }
-
-        if (curr.realm == null)
-        /* Can't do this if we're supposed to allow for broken schemes
-         * such as NTLM, Kerberos, and PEM.
-         *
-        throw new ProtocolException("Bad Authentication header "
-            + "format: " + challenge + "\nNo realm value found");
-         */
-        curr.realm = "";
-
-        auth_arr = Util.resizeArray(auth_arr, auth_arr.length+1);
-        auth_arr[auth_arr.length-1] = curr;
+	return auth_arr;
     }
 
-    return auth_arr;
+    private static final Vector parseParams(String challenge, char[] buf,
+					    int[] pos_ref, int len,
+					    AuthorizationInfo curr)
+	    throws ProtocolException
+    {
+	int beg = pos_ref[0];
+	int end = pos_ref[1];
+
+	// get auth-parameters
+	boolean first = true;
+	Vector params = new Vector();
+	while (true)
+	{
+	    beg = Util.skipSpace(buf, end);
+	    if (beg == len)  break;
+
+	    if (!first)				// expect ","
+	    {
+		if (buf[beg] != ',')
+		    throw new ProtocolException("Bad Authentication header "
+						+ "format: '" + challenge +
+						"'\nExpected \",\" at position "+
+						beg);
+
+		beg = Util.skipSpace(buf, beg+1);	// find param name
+		if (beg == len)  break;
+		if (buf[beg] == ',')	// skip empty params
+		{
+		    end = beg;
+		    continue;
+		}
+	    }
+
+	    int pstart = beg;
+
+	    // extract name
+	    end = beg + 1;
+	    while (end < len  &&  !Character.isWhitespace(buf[end]) &&
+		   buf[end] != '='  &&  buf[end] != ',')
+		end++;
+
+	    // hack to deal with schemes which use cookies in challenge
+	    if (first  &&
+		(end == len   ||  buf[end] == '='  &&
+		(end+1 == len  ||  (buf[end+1] == '='  &&  end+2 == len))))
+	    {
+		curr.cookie = challenge.substring(beg, len);
+		beg = len;
+		break;
+	    }
+
+	    String param_name = challenge.substring(beg, end),
+		   param_value;
+
+	    beg = Util.skipSpace(buf, end);	// find "=" or ","
+
+	    if (beg < len  &&  buf[beg] != '='  &&  buf[beg] != ','  ||
+		/* This deals with the M$ crap */
+		!first  &&  (beg == len   ||  buf[beg] == ','))
+	    {
+		// It's not a param, but another challenge
+		beg = pstart;
+		break;
+	    }
+
+
+	    if (beg < len  &&  buf[beg] == '=')		// we have a value
+	    {
+		beg = Util.skipSpace(buf, beg+1);
+		if (beg == len)
+		    throw new ProtocolException("Bad Authentication header "
+						+ "format: " + challenge +
+						"\nUnexpected EOL after token" +
+						" at position " + (end-1));
+		if (buf[beg] != '"')	// it's a token
+		{
+		    end = Util.skipToken(buf, beg);
+		    if (end == beg)
+			throw new ProtocolException("Bad Authentication header "
+			    + "format: " + challenge + "\nToken expected at " +
+			    "position " + beg);
+		    param_value = challenge.substring(beg, end);
+		}
+		else			// it's a quoted-string
+		{
+		    end = beg++;
+		    do
+			end = challenge.indexOf('"', end+1);
+		    while (end != -1  &&  challenge.charAt(end-1) == '\\');
+		    if (end == -1)
+			throw new ProtocolException("Bad Authentication header "
+			    + "format: " + challenge + "\nClosing <\"> for "
+			    + "quoted-string starting at position " + beg
+			    + " not found");
+		    param_value =
+			Util.dequoteString(challenge.substring(beg, end));
+		    end++;
+		}
+	    }
+	    else				// this is not strictly allowed
+		param_value = null;
+
+	    if (param_name.equalsIgnoreCase("realm"))
+		curr.realm = param_value;
+	    else
+		params.addElement(new NVPair(param_name, param_value));
+
+	    first = false;
+	}
+
+	pos_ref[0] = beg;
+	pos_ref[1] = end;
+	return params;
     }
 
 
@@ -966,7 +1004,7 @@ public class AuthorizationInfo implements GlobalConstants, Cloneable
      */
     public final String getHost()
     {
-    return host;
+	return host;
     }
 
 
@@ -977,7 +1015,7 @@ public class AuthorizationInfo implements GlobalConstants, Cloneable
      */
     public final int getPort()
     {
-    return port;
+	return port;
     }
 
 
@@ -988,7 +1026,7 @@ public class AuthorizationInfo implements GlobalConstants, Cloneable
      */
     public final String getScheme()
     {
-    return scheme;
+	return scheme;
     }
 
 
@@ -999,7 +1037,7 @@ public class AuthorizationInfo implements GlobalConstants, Cloneable
      */
     public final String getRealm()
     {
-    return realm;
+	return realm;
     }
 
 
@@ -1011,7 +1049,7 @@ public class AuthorizationInfo implements GlobalConstants, Cloneable
      */
     public final String getCookie()
     {
-    return cookie;
+	return cookie;
     }
 
 
@@ -1023,7 +1061,7 @@ public class AuthorizationInfo implements GlobalConstants, Cloneable
      */
     public final void setCookie(String cookie)
     {
-    this.cookie = cookie;
+	this.cookie = cookie;
     }
 
 
@@ -1034,7 +1072,7 @@ public class AuthorizationInfo implements GlobalConstants, Cloneable
      */
     public final NVPair[] getParams()
     {
-    return Util.resizeArray(auth_params, auth_params.length);
+	return Util.resizeArray(auth_params, auth_params.length);
     }
 
 
@@ -1045,10 +1083,10 @@ public class AuthorizationInfo implements GlobalConstants, Cloneable
      */
     public final void setParams(NVPair[] params)
     {
-    if (params != null)
-        auth_params = Util.resizeArray(params, params.length);
-    else
-        auth_params = new NVPair[0];
+	if (params != null)
+	    auth_params = Util.resizeArray(params, params.length);
+	else
+	    auth_params = new NVPair[0];
     }
 
 
@@ -1059,7 +1097,7 @@ public class AuthorizationInfo implements GlobalConstants, Cloneable
      */
     public final Object getExtraInfo()
     {
-    return extra_info;
+	return extra_info;
     }
 
 
@@ -1070,7 +1108,7 @@ public class AuthorizationInfo implements GlobalConstants, Cloneable
      */
     public final void setExtraInfo(Object info)
     {
-    extra_info = info;
+	extra_info = info;
     }
 
 
@@ -1082,39 +1120,39 @@ public class AuthorizationInfo implements GlobalConstants, Cloneable
      */
     public String toString()
     {
-    StringBuffer field = new StringBuffer(100);
+	StringBuffer field = new StringBuffer(100);
 
-    field.append(scheme);
-    field.append(" ");
+	field.append(scheme);
+	field.append(" ");
 
-    if (cookie != null)
-    {
-        field.append(cookie);
-    }
-    else
-    {
-        if (realm.length() > 0)
-        {
-        field.append("realm=\"");
-        field.append(Util.quoteString(realm, "\\\""));
-        field.append('"');
-        }
+	if (cookie != null)
+	{
+	    field.append(cookie);
+	}
+	else
+	{
+	    if (realm.length() > 0)
+	    {
+		field.append("realm=\"");
+		field.append(Util.quoteString(realm, "\\\""));
+		field.append('"');
+	    }
 
-        for (int idx=0; idx<auth_params.length; idx++)
-        {
-        field.append(',');
-        field.append(auth_params[idx].getName());
-        if( auth_params[idx].getValue() != null )
-        {
-            field.append("=\"");
-            field.append(
-                Util.quoteString(auth_params[idx].getValue(), "\\\""));
-        }
-        field.append('"');
-        }
-    }
+	    for (int idx=0; idx<auth_params.length; idx++)
+	    {
+		field.append(',');
+		field.append(auth_params[idx].getName());
+		if (auth_params[idx].getValue() != null)
+		{
+		    field.append("=\"");
+		    field.append(
+			Util.quoteString(auth_params[idx].getValue(), "\\\""));
+		    field.append('"');
+		}
+	    }
+	}
 
-    return field.toString();
+	return field.toString();
     }
 
 
@@ -1127,7 +1165,7 @@ public class AuthorizationInfo implements GlobalConstants, Cloneable
      */
     public int hashCode()
     {
-    return (host+scheme.toLowerCase()+realm).hashCode();
+	return (host+scheme.toLowerCase()+realm).hashCode();
     }
 
     /**
@@ -1142,16 +1180,16 @@ public class AuthorizationInfo implements GlobalConstants, Cloneable
      */
     public boolean equals(Object obj)
     {
-    if ((obj != null)  &&  (obj instanceof AuthorizationInfo))
-    {
-        AuthorizationInfo auth = (AuthorizationInfo) obj;
-        if (host.equals(auth.host)  &&
-        (port == auth.port)  &&
-        scheme.equalsIgnoreCase(auth.scheme)  &&
-        realm.equals(auth.realm))
-            return true;
-    }
-    return false;
+	if ((obj != null)  &&  (obj instanceof AuthorizationInfo))
+	{
+	    AuthorizationInfo auth = (AuthorizationInfo) obj;
+	    if (host.equals(auth.host)  &&
+		(port == auth.port)  &&
+		scheme.equalsIgnoreCase(auth.scheme)  &&
+		realm.equals(auth.realm))
+		    return true;
+	}
+	return false;
     }
 
 
@@ -1160,26 +1198,25 @@ public class AuthorizationInfo implements GlobalConstants, Cloneable
      */
     public Object clone()
     {
-    AuthorizationInfo ai;
-    try
-    {
-        ai = (AuthorizationInfo) super.clone();
-        ai.auth_params = Util.resizeArray(auth_params, auth_params.length);
-        try
-        {
-        // ai.extra_info  = extra_info.clone();
-        ai.extra_info = extra_info.getClass().getMethod("clone", null).
-                invoke(extra_info, null);
-        }
-        catch (Throwable t)
-        { }
-        ai.paths = new String[paths.length];
-        System.arraycopy(paths, 0, ai.paths, 0, paths.length);
-    }
-    catch (CloneNotSupportedException cnse)
-        { throw new InternalError(cnse.toString()); /* shouldn't happen */ }
+	AuthorizationInfo ai;
+	try
+	{
+	    ai = (AuthorizationInfo) super.clone();
+	    ai.auth_params = Util.resizeArray(auth_params, auth_params.length);
+	    try
+	    {
+		// ai.extra_info  = extra_info.clone();
+		ai.extra_info = extra_info.getClass().getMethod("clone", null).
+				invoke(extra_info, null);
+	    }
+	    catch (Throwable t)
+		{ }
+	    ai.paths = new String[paths.length];
+	    System.arraycopy(paths, 0, ai.paths, 0, paths.length);
+	}
+	catch (CloneNotSupportedException cnse)
+	    { throw new InternalError(cnse.toString()); /* shouldn't happen */ }
 
-    return ai;
+	return ai;
     }
 }
-

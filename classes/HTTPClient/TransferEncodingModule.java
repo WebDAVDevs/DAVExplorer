@@ -1,8 +1,8 @@
 /*
- * @(#)TransferEncodingModule.java			0.3-2 18/06/1999
+ * @(#)TransferEncodingModule.java			0.3-3 06/05/2001
  *
  *  This file is part of the HTTPClient package
- *  Copyright (C) 1996-1999  Ronald Tschalär
+ *  Copyright (C) 1996-2001 Ronald Tschalär
  *
  *  This library is free software; you can redistribute it and/or
  *  modify it under the terms of the GNU Lesser General Public
@@ -24,6 +24,10 @@
  *
  *  ronald@innovation.ch
  *
+ *  The HTTPClient's home page is located at:
+ *
+ *  http://www.innovation.ch/java/HTTPClient/ 
+ *
  */
 
 package HTTPClient;
@@ -39,33 +43,11 @@ import java.util.zip.GZIPInputStream;
  * handles the "gzip", "deflate", "compress", "chunked" and "identity"
  * tokens.
  *
- * Note: This module requires JDK 1.1 or later.
- *
- * @version	0.3-2  18/06/1999
+ * @version	0.3-3  06/05/2001
  * @author	Ronald Tschalär
  */
-
-class TransferEncodingModule implements HTTPClientModule, GlobalConstants
+class TransferEncodingModule implements HTTPClientModule
 {
-    static
-    {
-	/* This ensures that the loading of this class is only successful
-	 * if we're in JDK 1.1 (or later) and have access to java.util.zip
-	 */
-	try
-	    { new InflaterInputStream(null); }
-	catch (NullPointerException npe)
-	    { /* JDK 1.2 Final started throwing this */ }
-    }
-
-
-    // Constructors
-
-    TransferEncodingModule()
-    {
-    }
-
-
     // Methods
 
     /**
@@ -181,42 +163,36 @@ class TransferEncodingModule implements HTTPClientModule, GlobalConstants
 	    String encoding = ((HttpHeaderElement) pte.lastElement()).getName();
 	    if (encoding.equalsIgnoreCase("gzip"))
 	    {
-		if (DebugMods)
-		    System.err.println("TEM:   pushing gzip-input-stream");
+		Log.write(Log.MODS, "TEM:   pushing gzip-input-stream");
 
 		resp.inp_stream = new GZIPInputStream(resp.inp_stream);
 	    }
 	    else if (encoding.equalsIgnoreCase("deflate"))
 	    {
-		if (DebugMods)
-		    System.err.println("TEM:   pushing inflater-input-stream");
+		Log.write(Log.MODS, "TEM:   pushing inflater-input-stream");
 
 		resp.inp_stream = new InflaterInputStream(resp.inp_stream);
 	    }
 	    else if (encoding.equalsIgnoreCase("compress"))
 	    {
-		if (DebugMods)
-		    System.err.println("TEM:   pushing uncompress-input-stream");
+		Log.write(Log.MODS, "TEM:   pushing uncompress-input-stream");
 
 		resp.inp_stream = new UncompressInputStream(resp.inp_stream);
 	    }
 	    else if (encoding.equalsIgnoreCase("chunked"))
 	    {
-		if (DebugMods)
-		    System.err.println("TEM:   pushing chunked-input-stream");
+		Log.write(Log.MODS, "TEM:   pushing chunked-input-stream");
 
 		resp.inp_stream = new ChunkedInputStream(resp.inp_stream);
 	    }
 	    else if (encoding.equalsIgnoreCase("identity"))
 	    {
-		if (DebugMods)
-		    System.err.println("TEM:   ignoring 'identity' token");
+		Log.write(Log.MODS, "TEM:   ignoring 'identity' token");
 	    }
 	    else
 	    {
-		if (DebugMods)
-		    System.err.println("TEM:   Unknown transfer encoding '" +
-					encoding + "'");
+		Log.write(Log.MODS, "TEM:   Unknown transfer encoding '" +
+				    encoding + "'");
 
 		break;
 	    }
@@ -238,4 +214,3 @@ class TransferEncodingModule implements HTTPClientModule, GlobalConstants
     {
     }
 }
-

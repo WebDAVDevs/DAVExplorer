@@ -1,8 +1,8 @@
 /*
- * @(#)SocksClient.java					0.3-2 18/06/1999
+ * @(#)SocksClient.java					0.3-3 06/05/2001
  *
  *  This file is part of the HTTPClient package
- *  Copyright (C) 1996-1999  Ronald Tschalär
+ *  Copyright (C) 1996-2001 Ronald Tschalär
  *
  *  This library is free software; you can redistribute it and/or
  *  modify it under the terms of the GNU Lesser General Public
@@ -24,13 +24,22 @@
  *
  *  ronald@innovation.ch
  *
+ *  The HTTPClient's home page is located at:
+ *
+ *  http://www.innovation.ch/java/HTTPClient/ 
+ *
  */
 
 package HTTPClient;
 
-
-import java.io.*;
-import java.net.*;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
+import java.io.ByteArrayOutputStream;
+import java.net.Socket;
+import java.net.InetAddress;
+import java.net.SocketException;
+import java.net.UnknownHostException;
 
 /**
  * This class implements a SOCKS Client. Supports both versions 4 and 5.
@@ -48,11 +57,10 @@ import java.net.*;
  * (where <var>socks_client</var> is the above created SocksClient instance).
  * That's all.
  *
- * @version	0.3-2  18/06/1999
+ * @version	0.3-3  06/05/2001
  * @author	Ronald Tschalär
  */
-
-class SocksClient implements GlobalConstants
+class SocksClient
 {
     /** the host the socks server sits on */
     private String socks_host;
@@ -131,18 +139,34 @@ class SocksClient implements GlobalConstants
      */
     Socket getSocket(String host, int port)  throws IOException
     {
+	return getSocket(host, port, null, -1);
+    }
+
+    /**
+     * Initiates a connection to the socks server, does the startup
+     * protocol and returns a socket ready for talking.
+     *
+     * @param host      the host you wish to connect to
+     * @param port      the port you wish to connect to
+     * @param localAddr the local address to bind to
+     * @param localPort the local port to bind to
+     * @return a Socket with a connection via socks to the desired host/port
+     * @exception IOException if any socket operation fails
+     */
+    Socket getSocket(String host, int port, InetAddress localAddr,
+		     int localPort)  throws IOException
+    {
 	Socket sock = null;
 
 	try
 	{
-	    if (DebugSocks)
-		System.err.println("Socks: contacting server on " +
-				    socks_host + ":" + socks_port);
+	    Log.write(Log.SOCKS, "Socks: contacting server on " +
+				 socks_host + ":" + socks_port);
 
 
 	    // create socket and streams
 
-	    sock = connect(socks_host, socks_port);
+	    sock = connect(socks_host, socks_port, localAddr, localPort);
 	    InputStream  inp = sock.getInputStream();
 	    OutputStream out = sock.getOutputStream();
 
@@ -166,12 +190,12 @@ class SocksClient implements GlobalConstants
 		    }
 		    catch (SocksException se)
 		    {
-			if (DebugSocks)
-			    System.err.println("Socks: V4 request failed: " +
-						se.getMessage());
+			Log.write(Log.SOCKS, "Socks: V4 request failed: " +
+					     se.getMessage());
 
 			sock.close();
-			sock = connect(socks_host, socks_port);
+			sock = connect(socks_host, socks_port, localAddr,
+				       localPort);
 			inp = sock.getInputStream();
 			out = sock.getOutputStream();
 
@@ -184,8 +208,7 @@ class SocksClient implements GlobalConstants
 				    "version "+socks_version);
 	    }
 
-	    if (DebugSocks)
-		System.err.println("Socks: connection established.");
+	    Log.write(Log.SOCKS, "Socks: connection established.");
 
 	    return sock;
 	}
@@ -206,17 +229,27 @@ class SocksClient implements GlobalConstants
      * Connect to the host/port, trying all addresses assciated with that
      * host.
      *
+     * @param host      the host you wish to connect to
+     * @param port      the port you wish to connect to
+     * @param localAddr the local address to bind to
+     * @param localPort the local port to bind to
      * @return the Socket
      * @exception IOException if the connection could not be established
      */
-    private static final Socket connect(String host, int port)
+    private static final Socket connect(String host, int port,
+					InetAddress localAddr, int localPort)
 	    throws IOException
     {
 	InetAddress[] addr_list = InetAddress.getAllByName(host);
 	for (int idx=0; idx<addr_list.length; idx++)
 	{
 	    try
-		{ return new Socket(addr_list[idx], port); }
+	    {
+		if (localAddr == null)
+		    return new Socket(addr_list[idx], port);
+		else
+		    return new Socket(addr_list[idx], port, localAddr, localPort);
+	    }
 	    catch (SocketException se)
 	    {
 		if (idx < addr_list.length-1)
@@ -242,9 +275,8 @@ class SocksClient implements GlobalConstants
     {
 	ByteArrayOutputStream buffer = new ByteArrayOutputStream(100);
 
-	if (DebugSocks)
-	    System.err.println("Socks: Beginning V4 Protocol Exchange for host "
-				+ host + ":" + port);
+	Log.write(Log.SOCKS, "Socks: Beginning V4 Protocol Exchange for host "
+			     + host + ":" + port);
 
 	// get ip addr and user name
 
@@ -258,9 +290,8 @@ class SocksClient implements GlobalConstants
 		{ v4A = true; }
 	    catch (SecurityException se)
 		{ v4A = true; }
-	    if (DebugSocks)
-		if (v4A)
-		    System.err.println("Socks: Switching to version 4A");
+	    if (v4A)
+		Log.write(Log.SOCKS, "Socks: Switching to version 4A");
 	}
 
 	if (user == null)	// I see no reason not to cache this
@@ -270,30 +301,28 @@ class SocksClient implements GlobalConstants
 		{ user_str = System.getProperty("user.name", ""); }
 	    catch (SecurityException se)
 		{ user_str = "";	/* try it anyway */ }
-	    user = new byte[user_str.length()+1];
-	    user_str.getBytes(0, user_str.length(), user, 0);
+	    byte[] tmp = user_str.getBytes();
+	    user = new byte[tmp.length+1];
+	    System.arraycopy(tmp, 0, user, 0, tmp.length);
 	    user[user_str.length()] = 0;	// 0-terminated string
 	}
 
 
 	// send version 4 request
 
-	if (DebugSocks)
-	    System.err.println("Socks: Sending connect request for user " +
-				new String(user, 0, 0, user.length-1));
+	Log.write(Log.SOCKS, "Socks: Sending connect request for user " +
+			     new String(user, 0, user.length-1));
 
 	buffer.reset();
 	buffer.write(4);				// version
 	buffer.write(CONNECT);				// command
 	buffer.write((port >> 8) & 0xff);		// port
 	buffer.write(port & 0xff);
-	buffer.write(addr, 0, addr.length);		// address
-	buffer.write(user, 0, user.length);		// user
+	buffer.write(addr);				// address
+	buffer.write(user);				// user
 	if (v4A)
 	{
-	    byte[] host_buf = new byte[host.length()];
-	    host.getBytes(0, host.length(), host_buf, 0);
-	    buffer.write(host_buf, 0, host_buf.length);	// host name
+	    buffer.write(host.getBytes("8859_1"));	// host name
 	    buffer.write(0);				// terminating 0
 	}
 	buffer.writeTo(out);
@@ -305,18 +334,16 @@ class SocksClient implements GlobalConstants
 	if (version == -1)
 	    throw new SocksException("Connection refused by server");
 	else if (version == 4)	// not all socks4 servers are correct...
-	    if (DebugSocks)
-		System.err.println("Socks: Warning: received version 4 " +
-				    "instead of 0");
+	    Log.write(Log.SOCKS, "Socks: Warning: received version 4 " +
+				 "instead of 0");
 	else if (version != 0)
 	    throw new SocksException("Received invalid version: " + version +
 				     "; expected: 0");
 
 	int sts = inp.read();
 
-	if (DebugSocks)
-	    System.err.println("Socks: Received response; version: " + version +
-				"; status: " + sts);
+	Log.write(Log.SOCKS, "Socks: Received response; version: " + version +
+			     "; status: " + sts);
 
 	switch (sts)
 	{
@@ -331,7 +358,7 @@ class SocksClient implements GlobalConstants
 		throw new SocksException("Connection request rejected: " +
 					 "identd reports different user-id " +
 					 "from "+
-					 new String(user, 0, 0, user.length-1));
+					 new String(user, 0, user.length-1));
 	    default:	// unknown status
 		throw new SocksException("Connection request rejected: " +
 					 "unknown error " + sts);
@@ -357,15 +384,13 @@ class SocksClient implements GlobalConstants
 	int                   version;
 	ByteArrayOutputStream buffer = new ByteArrayOutputStream(100);
 
-	if (DebugSocks)
-	    System.err.println("Socks: Beginning V5 Protocol Exchange for host "
-				+ host + ":" + port);
+	Log.write(Log.SOCKS, "Socks: Beginning V5 Protocol Exchange for host "
+			     + host + ":" + port);
 
 	// send version 5 verification methods
 
-	if (DebugSocks)
-	    System.err.println("Socks: Sending authentication request; methods"
-				+ " No-Authentication, Username/Password");
+	Log.write(Log.SOCKS, "Socks: Sending authentication request; methods"
+			     + " No-Authentication, Username/Password");
 
 	buffer.reset();
 	buffer.write(5);		// version
@@ -387,9 +412,8 @@ class SocksClient implements GlobalConstants
 
 	int method = inp.read();
 
-	if (DebugSocks)
-	    System.err.println("Socks: Received response; version: " + version +
-				"; method: " + method);
+	Log.write(Log.SOCKS, "Socks: Received response; version: " + version +
+			     "; method: " + method);
 
 
 	// enter sub-negotiation for authentication
@@ -415,8 +439,7 @@ class SocksClient implements GlobalConstants
 
 	// send version 5 request
 
-	if (DebugSocks)
-	    System.err.println("Socks: Sending connect request");
+	Log.write(Log.SOCKS, "Socks: Sending connect request");
 
 	buffer.reset();
 	buffer.write(5);				// version
@@ -424,9 +447,7 @@ class SocksClient implements GlobalConstants
 	buffer.write(0);				// reserved - must be 0
 	buffer.write(DMNAME);				// address type
 	buffer.write(host.length() & 0xff);		// address length
-	byte[] hname = new byte[host.length()];
-	host.getBytes(0, host.length(), hname, 0);
-	buffer.write(hname, 0, hname.length);		// address
+	buffer.write(host.getBytes("8859_1"));		// address
 	buffer.write((port >> 8) & 0xff);		// port
 	buffer.write(port & 0xff);
 	buffer.writeTo(out);
@@ -441,9 +462,8 @@ class SocksClient implements GlobalConstants
 
 	int sts = inp.read();
 
-	if (DebugSocks)
-	    System.err.println("Socks: Received response; version: " + version +
-				"; status: " + sts);
+	Log.write(Log.SOCKS, "Socks: Received response; version: " + version +
+			     "; status: " + sts);
 
 	switch (sts)
 	{
@@ -528,9 +548,8 @@ class SocksClient implements GlobalConstants
 	byte[] buffer;
 
 
-	if (DebugSocks)
-	    System.err.println("Socks: Entering authorization subnegotiation" +
-				"; method: Username/Password");
+	Log.write(Log.SOCKS, "Socks: Entering authorization subnegotiation" +
+			     "; method: Username/Password");
 
 	// get username/password
 
@@ -539,7 +558,8 @@ class SocksClient implements GlobalConstants
 	{
 	    auth_info =
 		AuthorizationInfo.getAuthorization(socks_host, socks_port,
-						   "SOCKS5", "USER/PASS", true);
+						   "SOCKS5", "USER/PASS",
+						   null, null, true);
 	}
 	catch (AuthSchemeNotImplException atnie)
 	    { auth_info = null; }
@@ -559,16 +579,17 @@ class SocksClient implements GlobalConstants
 
 	// send them to server
 
-	if (DebugSocks)
-	    System.err.println("Socks: Sending authorization request for user "+
-				user_str);
+	Log.write(Log.SOCKS, "Socks: Sending authorization request for user "+
+			     user_str);
 
-	buffer = new byte[1+1+user_str.length()+1+pass_str.length()];
+	byte[] utmp = user_str.getBytes();
+	byte[] ptmp = pass_str.getBytes();
+	buffer = new byte[1+1+utmp.length+1+ptmp.length];
 	buffer[0] = 1;				// version 1 (subnegotiation)
-	buffer[1] = (byte) user_str.length();		// Username length
-	user_str.getBytes(0, buffer[1], buffer, 2);	// Username
-	buffer[2+buffer[1]] = (byte) pass_str.length();	// Password length
-	pass_str.getBytes(0, buffer[2+buffer[1]], buffer, 2+buffer[1]+1);// Password
+	buffer[1] = (byte) utmp.length;				// Username length
+	System.arraycopy(utmp, 0, buffer, 2, utmp.length);	// Username
+	buffer[2+buffer[1]] = (byte) ptmp.length;		// Password length
+	System.arraycopy(ptmp, 0, buffer, 2+buffer[1]+1, ptmp.length);	// Password
 	out.write(buffer);
 
 
@@ -585,9 +606,8 @@ class SocksClient implements GlobalConstants
 	    throw new SocksException("Username/Password authentication " +
 				     "failed; status: "+sts);
 
-	if (DebugSocks)
-	    System.err.println("Socks: Received response; version: " + version +
-				"; status: " + sts);
+	Log.write(Log.SOCKS, "Socks: Received response; version: " + version +
+			     "; status: " + sts);
     }
 
 
@@ -600,4 +620,3 @@ class SocksClient implements GlobalConstants
 	return getClass().getName() + "[" + socks_host + ":" + socks_port + "]";
     }
 }
-

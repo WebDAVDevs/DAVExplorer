@@ -1,8 +1,8 @@
 /*
- * @(#)RespInputStream.java				0.3-2 18/06/1999
+ * @(#)RespInputStream.java				0.3-3 06/05/2001
  *
  *  This file is part of the HTTPClient package
- *  Copyright (C) 1996-1999  Ronald Tschalär
+ *  Copyright (C) 1996-2001 Ronald Tschalär
  *
  *  This library is free software; you can redistribute it and/or
  *  modify it under the terms of the GNU Lesser General Public
@@ -24,6 +24,10 @@
  *
  *  ronald@innovation.ch
  *
+ *  The HTTPClient's home page is located at:
+ *
+ *  http://www.innovation.ch/java/HTTPClient/ 
+ *
  */
 
 package HTTPClient;
@@ -37,12 +41,15 @@ import java.io.InterruptedIOException;
  * consist of the capability to have the data pushed into a buffer if the
  * stream demux needs to.
  *
- * @version	0.3-2  18/06/1999
+ * @version	0.3-3  06/05/2001
  * @author	Ronald Tschalär
  * @since	V0.2
  */
 final class RespInputStream extends InputStream implements GlobalConstants
 {
+    /** Use old behaviour: don't set a timeout when reading the response body */
+    private static boolean dontTimeoutBody = false;
+
     /** the stream demultiplexor */
     private StreamDemultiplexor demux = null;
 
@@ -70,6 +77,19 @@ final class RespInputStream extends InputStream implements GlobalConstants
 
     /** the total number of bytes of entity data read from the demux so far */
             int                 count = 0;
+
+    static
+    {
+	try
+	{
+	    dontTimeoutBody = Boolean.getBoolean("HTTPClient.dontTimeoutRespBody");
+	    if (dontTimeoutBody)
+		Log.write(Log.DEMUX, "RspIS: disabling timeouts when " +
+				     "reading response body");
+	}
+	catch (Exception e)
+	    { }
+    }
 
 
     // Constructors
@@ -125,19 +145,14 @@ final class RespInputStream extends InputStream implements GlobalConstants
 	}
 	else
 	{
-	    if (DebugDemux)
-	    {
-		if (resph.resp.cd_type != CD_HDRS)
-		    System.err.println("RspIS: Reading stream " +
-				       this.hashCode() +
-				       " (" + Thread.currentThread() + ")");
-	    }
+	    if (resph.resp.cd_type != CD_HDRS)
+		Log.write(Log.DEMUX, "RspIS: Reading stream " + this.hashCode());
 
 	    int rcvd;
-	    if (resph.resp.cd_type == CD_HDRS)
-		rcvd = demux.read(b, off, len, resph, resph.resp.timeout);
-	    else
+	    if (dontTimeoutBody  &&  resph.resp.cd_type != CD_HDRS)
 		rcvd = demux.read(b, off, len, resph, 0);
+	    else
+		rcvd = demux.read(b, off, len, resph, resph.resp.timeout);
 	    if (rcvd != -1  &&  resph.resp.got_headers)
 		count += rcvd;
 
@@ -207,9 +222,7 @@ final class RespInputStream extends InputStream implements GlobalConstants
 	    if (dont_truncate  &&  (buffer == null  ||  interrupted))
 		readAll(resph.resp.timeout);
 
-	    if (DebugDemux)
-		System.err.println("RspIS: User closed stream " + hashCode() +
-				   " (" + Thread.currentThread() + ")");
+	    Log.write(Log.DEMUX, "RspIS: User closed stream " + hashCode());
 
 	    demux.closeSocketIfAllStreamsClosed();
 
@@ -253,11 +266,9 @@ final class RespInputStream extends InputStream implements GlobalConstants
      */
     void readAll(int timeout)  throws IOException
     {
-	if (DebugDemux)
-	    System.err.println("RspIS: Read-all on stream " + this.hashCode() +
-			       " (" + Thread.currentThread() + ")");
+	Log.write(Log.DEMUX, "RspIS: Read-all on stream " + this.hashCode());
 
-	synchronized(resph.resp)
+	synchronized (resph.resp)
 	{
 	    if (!resph.resp.got_headers)	// force headers to be read
 	    {
@@ -268,7 +279,7 @@ final class RespInputStream extends InputStream implements GlobalConstants
 	    }
 	}
 
-	synchronized(this)
+	synchronized (this)
 	{
 	    if (buffer != null  &&  !interrupted)  return;
 
@@ -332,4 +343,3 @@ final class RespInputStream extends InputStream implements GlobalConstants
 	dont_truncate = true;
     }
 }
-

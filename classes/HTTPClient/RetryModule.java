@@ -1,8 +1,8 @@
 /*
- * @(#)RetryModule.java					0.3-2 18/06/1999
+ * @(#)RetryModule.java					0.3-3 06/05/2001
  *
  *  This file is part of the HTTPClient package
- *  Copyright (C) 1996-1999  Ronald Tschalär
+ *  Copyright (C) 1996-2001 Ronald Tschalär
  *
  *  This library is free software; you can redistribute it and/or
  *  modify it under the terms of the GNU Lesser General Public
@@ -24,6 +24,10 @@
  *
  *  ronald@innovation.ch
  *
+ *  The HTTPClient's home page is located at:
+ *
+ *  http://www.innovation.ch/java/HTTPClient/ 
+ *
  */
 
 package HTTPClient;
@@ -42,11 +46,10 @@ import java.io.IOException;
  * also resend all other requests in the chain. Also, it rethrows the
  * RetryException in Phase1 to restart the processing of the modules.
  *
- * @version	0.3-2  18/06/1999
+ * @version	0.3-3  06/05/2001
  * @author	Ronald Tschalär
  * @since	V0.3
  */
-
 class RetryModule implements HTTPClientModule, GlobalConstants
 {
     // Constructors
@@ -81,7 +84,7 @@ class RetryModule implements HTTPClientModule, GlobalConstants
 	}
 	catch (RetryException re)
 	{
-	    if (DebugMods) System.err.println("RtryM: Caught RetryException");
+	    Log.write(Log.MODS, "RtryM: Caught RetryException");
 
 	    boolean got_lock = false;
 
@@ -98,6 +101,8 @@ class RetryModule implements HTTPClientModule, GlobalConstants
 
 		for (RetryException e=re.first; e!=null; e=e.next)
 		{
+		    Log.write(Log.MODS, "RtryM: handling exception ", e);
+
 		    Request req = e.request;
 		    HTTPConnection con = req.getConnection();
 
@@ -113,9 +118,25 @@ class RetryModule implements HTTPClientModule, GlobalConstants
 			((!con.ServProtVersKnown  ||
 			  con.ServerProtocolVersion <= HTTP_1_0)  &&
 			 req.num_retries > 4)  ||
-			e.response.got_headers  ||
-			req.getStream() != null)
+			e.response.got_headers)
 		    {
+			e.first = null;
+			continue;
+		    }
+
+
+		    /**
+		     * if an output stream was used (i.e. we don't have the
+		     * data to resend) then delegate the responsibility for
+		     * resending to the application.
+		     */
+		    if (req.getStream() != null)
+		    {
+			if (HTTPConnection.deferStreamed)
+			{
+			    req.getStream().reset();
+			    e.response.setRetryRequest(true);
+			}
 			e.first = null;
 			continue;
 		    }
@@ -173,10 +194,9 @@ class RetryModule implements HTTPClientModule, GlobalConstants
 
 		    // now resend the request
 
-		    if (DebugDemux)
-			System.err.println("RtryM: Retrying request '" +
-					    req.getMethod() + " " +
-					    req.getRequestURI() + "'");
+		    Log.write(Log.MODS, "RtryM: Retrying request '" +
+					req.getMethod() + " " +
+					req.getRequestURI() + "'");
 
 		    if (e.conn_reset)
 			req.num_retries++;
@@ -263,4 +283,3 @@ class RetryModule implements HTTPClientModule, GlobalConstants
 	}
     }
 }
-

@@ -1,8 +1,8 @@
 /*
- * @(#)NVPair.java					0.3-2 18/06/1999
+ * @(#)NVPair.java					0.3-3 06/05/2001
  *
  *  This file is part of the HTTPClient package
- *  Copyright (C) 1996-1999  Ronald Tschalär
+ *  Copyright (C) 1996-2001 Ronald Tschalär
  *
  *  This library is free software; you can redistribute it and/or
  *  modify it under the terms of the GNU Lesser General Public
@@ -24,6 +24,10 @@
  *
  *  ronald@innovation.ch
  *
+ *  The HTTPClient's home page is located at:
+ *
+ *  http://www.innovation.ch/java/HTTPClient/ 
+ *
  */
 
 package HTTPClient;
@@ -33,10 +37,9 @@ package HTTPClient;
  * This class holds a Name/Value pair of strings. It's used for headers,
  * form-data, attribute-lists, etc. This class is immutable.
  *
- * @version	0.3-2  18/06/1999
+ * @version	0.3-3  06/05/2001
  * @author	Ronald Tschalär
  */
-
 public final class NVPair
 {
     /** the name */
@@ -49,25 +52,9 @@ public final class NVPair
     // Constructors
 
     /**
-     * Creates an empty name/value pair.
-     */
-    NVPair()
-    {
-	this("", "");
-    }
-
-    /**
-     * Creates a copy of a given name/value pair.
-     * @param p the name/value pair to copy
-     */
-    public NVPair(NVPair p)
-    {
-	this(p.name, p.value);
-    }
-
-    /**
      * Creates a new name/value pair and initializes it to the
      * specified name and value.
+     *
      * @param name  the name
      * @param value the value
      */
@@ -77,11 +64,21 @@ public final class NVPair
 	this.value = value;
     }
 
+    /**
+     * Creates a copy of a given name/value pair.
+     *
+     * @param p the name/value pair to copy
+     */
+    public NVPair(NVPair p)
+    {
+	this(p.name, p.value);
+    }
+
 
     // Methods
 
     /**
-     * get the name
+     * Get the name.
      *
      * @return the name
      */
@@ -91,7 +88,7 @@ public final class NVPair
     }
 
     /**
-     * get the value
+     * Get the value.
      *
      * @return the value
      */
@@ -102,7 +99,8 @@ public final class NVPair
 
 
     /**
-     * produces a string containing the name and value of this instance.
+     * Produces a string containing the name and value of this instance.
+     *
      * @return a string containing the class name and the name and value
      */
     public String toString()
@@ -110,4 +108,3 @@ public final class NVPair
 	return getClass().getName() + "[name=" + name + ",value=" + value + "]";
     }
 }
-

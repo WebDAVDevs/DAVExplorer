@@ -8,12 +8,18 @@
 
 package HTTPClient.doc;
 
-import java.applet.*;
-import java.awt.*;
-import HTTPClient.*;
+import java.applet.Applet;
+import java.awt.Button;
+import java.awt.Graphics;
+import java.awt.TextArea;
+import java.awt.BorderLayout;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 
+import HTTPClient.HTTPResponse;
+import HTTPClient.HTTPConnection;
 
-public class HTTPClientExample extends Applet implements Runnable
+public class HTTPClientExample extends Applet implements Runnable, ActionListener
 {
     private HTTPConnection con;
     private HTTPResponse   rsp = null;
@@ -34,7 +40,9 @@ public class HTTPClientExample extends Applet implements Runnable
 	add("Center", text = new TextArea(60, 60));
 	text.setEditable(false);
 
-	add("South", new Button("Doit"));
+	Button doit = new Button("Doit");
+	doit.addActionListener(this);
+	add("South", doit);
  
 
 	/* get an HTTPConnection */
@@ -113,15 +121,9 @@ public class HTTPClientExample extends Applet implements Runnable
     }
 
 
-    public boolean action(Event evt, Object obj)
+    public void actionPerformed(ActionEvent evt)
     {
-	if (obj.equals("Doit"))
-	{
-	    notifyDoit();	// tell request thread to do the request
-	    return true;
-	}
-
-	return super.action(evt, obj);
+	notifyDoit();	// tell request thread to do the request
     }
 
 
@@ -133,14 +135,12 @@ public class HTTPClientExample extends Applet implements Runnable
 
 	try
 	{
-	    text.appendText("\n---Headers:\n" + rsp.toString());
-	    text.appendText("\n---Data:\n" + new String(rsp.getData(), 0) +
-			    "\n");
+	    text.append("\n---Headers:\n" + rsp.toString());
+	    text.append("\n---Data:\n" + rsp.getText() + "\n");
 	}
 	catch (Exception e)
 	{
-	    text.appendText("\n---Got Exception:\n" + e + "\n");
+	    text.append("\n---Got Exception:\n" + e + "\n");
 	}
     }
 }
-

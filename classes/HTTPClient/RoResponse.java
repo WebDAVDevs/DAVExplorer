@@ -1,8 +1,8 @@
 /*
- * @(#)RoResponse.java					0.3-2 18/06/1999
+ * @(#)RoResponse.java					0.3-3 06/05/2001
  *
  *  This file is part of the HTTPClient package
- *  Copyright (C) 1996-1999  Ronald Tschalär
+ *  Copyright (C) 1996-2001 Ronald Tschalär
  *
  *  This library is free software; you can redistribute it and/or
  *  modify it under the terms of the GNU Lesser General Public
@@ -24,15 +24,16 @@
  *
  *  ronald@innovation.ch
  *
+ *  The HTTPClient's home page is located at:
+ *
+ *  http://www.innovation.ch/java/HTTPClient/ 
+ *
  */
 
 package HTTPClient;
 
 import java.io.InputStream;
 import java.io.IOException;
-import java.io.InterruptedIOException;
-import java.io.EOFException;
-import java.net.ProtocolException;
 import java.util.Date;
 
 
@@ -41,10 +42,9 @@ import java.util.Date;
  * response. It is the compile-time type passed to various handlers which
  * might the response info but musn't modify the response.
  *
- * @version	0.3-2  18/06/1999
+ * @version	0.3-3  06/05/2001
  * @author	Ronald Tschalär
  */
-
 public interface RoResponse
 {
     /**
@@ -181,4 +181,3 @@ public interface RoResponse
      */
     public InputStream getInputStream()  throws IOException;
 }
-

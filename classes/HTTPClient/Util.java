@@ -1,8 +1,8 @@
 /*
- * @(#)Util.java					0.3-2 18/06/1999
+ * @(#)Util.java					0.3-3 06/05/2001
  *
  *  This file is part of the HTTPClient package
- *  Copyright (C) 1996-1999  Ronald Tschalär
+ *  Copyright (C) 1996-2001 Ronald Tschalär
  *
  *  This library is free software; you can redistribute it and/or
  *  modify it under the terms of the GNU Lesser General Public
@@ -24,38 +24,48 @@
  *
  *  ronald@innovation.ch
  *
+ *  The HTTPClient's home page is located at:
+ *
+ *  http://www.innovation.ch/java/HTTPClient/ 
+ *
  */
 
 package HTTPClient;
 
+import java.lang.reflect.Array;
 import java.net.URL;
 import java.util.Date;
 import java.util.BitSet;
+import java.util.Locale;
 import java.util.Vector;
 import java.util.Hashtable;
 import java.util.SimpleTimeZone;
 import java.util.StringTokenizer;
+import java.text.DateFormat;
 import java.text.SimpleDateFormat;
-import java.util.Locale;
 
 
 /**
  * This class holds various utility methods.
  *
- * @version	0.3-2  18/06/1999
+ * @version	0.3-3  06/05/2001
  * @author	Ronald Tschalär
  */
-
 public class Util
 {
     private static final BitSet Separators = new BitSet(128);
     private static final BitSet TokenChar = new BitSet(128);
     private static final BitSet UnsafeChar = new BitSet(128);
-    private static SimpleDateFormat http_format;
+    private static DateFormat http_format;
+    private static DateFormat parse_1123;
+    private static DateFormat parse_850;
+    private static DateFormat parse_asctime;
+    private static final Object http_format_lock = new Object();
+    private static final Object http_parse_lock  = new Object();
 
     static
     {
-	// rfc-2068 tspecial
+	// rfc-2616 tspecial
 	Separators.set('(');
 	Separators.set(')');
 	Separators.set('<');
@@ -76,7 +86,7 @@ public class Util
 	Separators.set(' ');
 	Separators.set('\t');
 
-	// rfc-2068 token
+	// rfc-2616 token
 	for (int ch=32; ch<127; ch++)  TokenChar.set(ch);
 	TokenChar.xor(Separators);
 
@@ -98,7 +108,7 @@ public class Util
 	UnsafeChar.set('`');
 	UnsafeChar.set(127);
 
-	// rfc-1123 date format (restricted to GMT, as per rfc-2068)
+	// rfc-1123 date format (restricted to GMT, as per rfc-2616)
 	/* This initialization has been moved to httpDate() because it
 	 * takes an awfully long time and is often not needed
 	 *
@@ -119,10 +129,10 @@ public class Util
 
     // Methods
 
-    // this doesn't work!!! Aaaaarrgghhh!
     final static Object[] resizeArray(Object[] src, int new_size)
     {
-	Object tmp[] = new Object[new_size];
+	Class compClass = src.getClass().getComponentType();
+	Object tmp[] = (Object[]) Array.newInstance(compClass, new_size);
 	System.arraycopy(src, 0, tmp, 0,
 			(src.length < new_size ? src.length : new_size));
 	return tmp;
@@ -221,21 +231,17 @@ public class Util
      */
     final static Hashtable getList(Hashtable cntxt_list, Object cntxt)
     {
-	Hashtable list = (Hashtable) cntxt_list.get(cntxt);
-	if (list == null)
+	synchronized (cntxt_list)
 	{
-	    synchronized(cntxt_list)	// only synch if necessary
+	    Hashtable list = (Hashtable) cntxt_list.get(cntxt);
+	    if (list == null)
 	    {
-		list = (Hashtable) cntxt_list.get(cntxt);
-		if (list == null)	// verify nobody else beat us to it
-		{
-		    list = new Hashtable();
-		    cntxt_list.put(cntxt, list);
-		}
+		list = new Hashtable();
+		cntxt_list.put(cntxt, list);
 	    }
-	}
 
-	return list;
+	    return list;
+	}
     }
 
 
@@ -521,7 +527,7 @@ public class Util
 					 beg);
 
 	    end = beg+1;			// extract element name
-	    while (end < len  &&  !Character.isSpace(buf[end])  &&
+	    while (end < len  &&  !Character.isWhitespace(buf[end])  &&
 		   buf[end] != '='  &&  buf[end] != ','  &&  buf[end] != ';')
 		end++;
 	    elem_name = new String(buf, beg, end-beg);
@@ -566,7 +572,7 @@ public class Util
 					 beg);
 
 		end = beg+1;			// extract param name
-		while (end < len  &&  !Character.isSpace(buf[end])  &&
+		while (end < len  &&  !Character.isWhitespace(buf[end])  &&
 		       buf[end] != '='  &&  buf[end] != ','  && buf[end] != ';')
 		    end++;
 		param_name = new String(buf, beg, end-beg);
@@ -653,7 +659,7 @@ public class Util
 	else					// it's a simple token value
 	{
 	    end = beg;
-	    while (end < len  &&  !Character.isSpace(buf[end])  &&
+	    while (end < len  &&  !Character.isWhitespace(buf[end])  &&
 		   buf[end] != ','  &&  buf[end] != ';')
 		end++;
 
@@ -770,7 +776,7 @@ public class Util
     final static int skipSpace(char[] str, int pos)
     {
 	int len = str.length;
-	while (pos < len  &&  Character.isSpace(str[pos]))  pos++;
+	while (pos < len  &&  Character.isWhitespace(str[pos]))  pos++;
 	return pos;
     }
 
@@ -786,7 +792,7 @@ public class Util
     final static int findSpace(char[] str, int pos)
     {
 	int len = str.length;
-	while (pos < len  &&  !Character.isSpace(str[pos]))  pos++;
+	while (pos < len  &&  !Character.isWhitespace(str[pos]))  pos++;
 	return pos;
     }
 
@@ -852,7 +858,7 @@ public class Util
 	    return false;
 
 	try
-	    { return URI.unescape(url1.getFile()).equals(URI.unescape(url2.getFile())); }
+	    { return URI.unescape(url1.getFile(), null).equals(URI.unescape(url2.getFile(), null)); }
 	catch (ParseException pe)
 	    { return url1.getFile().equals(url2.getFile());}
     }
@@ -873,10 +879,57 @@ public class Util
 
 
     /**
+     * Parse the http date string. java.util.Date will do this fine, but
+     * is deprecated, so we use SimpleDateFormat instead.
+     *
+     * @param dstr  the date string to parse
+     * @return the Date object
+     */
+    final static Date parseHttpDate(String dstr)
+    {
+	synchronized (http_parse_lock)
+	{
+	    if (parse_1123 == null)
+		setupParsers();
+	}
+
+	try
+	    { return parse_1123.parse(dstr); }
+	catch (java.text.ParseException pe)
+	    { }
+	try
+	    { return parse_850.parse(dstr); }
+	catch (java.text.ParseException pe)
+	    { }
+	try
+	    { return parse_asctime.parse(dstr); }
+	catch (java.text.ParseException pe)
+	    { throw new IllegalArgumentException(pe.toString()); }
+    }
+
+    private static final void setupParsers()
+    {
+	parse_1123 =
+	    new SimpleDateFormat("EEE, dd MMM yyyy HH:mm:ss 'GMT'", Locale.US);
+	parse_850 =
+	    new SimpleDateFormat("EEEE, dd-MMM-yy HH:mm:ss 'GMT'", Locale.US);
+	parse_asctime =
+	    new SimpleDateFormat("EEE MMM d HH:mm:ss yyyy", Locale.US);
+
+	parse_1123.setTimeZone(new SimpleTimeZone(0, "GMT"));
+	parse_850.setTimeZone(new SimpleTimeZone(0, "GMT"));
+	parse_asctime.setTimeZone(new SimpleTimeZone(0, "GMT"));
+
+	parse_1123.setLenient(true);
+	parse_850.setLenient(true);
+	parse_asctime.setLenient(true);
+    }
+
+    /**
      * This returns a string containing the date and time in <var>date</var>
      * formatted according to a subset of RFC-1123. The format is defined in
      * the HTTP/1.0 spec (RFC-1945), section 3.3, and the HTTP/1.1 spec
-     * (RFC-2068), section 3.3.1. Note that Date.toGMTString() is close, but
+     * (RFC-2616), section 3.3.1. Note that Date.toGMTString() is close, but
      * is missing the weekday and supresses the leading zero if the day is
      * less than the 10th. Instead we use the SimpleDateFormat class.
      *
@@ -887,23 +940,22 @@ public class Util
      * @param date the date and time to be converted
      * @return a string containg the date and time as used in http
      */
-    public final static String httpDate(Date date)
+    public static final String httpDate(Date date)
     {
-	if (http_format == null)
+	synchronized (http_format_lock)
 	{
-	    synchronized(HTTPClient.Util.class)
-	    {
-		if (http_format == null)
-		{
-		    http_format =
-			new SimpleDateFormat("EEE, dd MMM yyyy HH:mm:ss 'GMT'",
-					     Locale.US);
-		    http_format.setTimeZone(new SimpleTimeZone(0, "GMT"));
-		}
-	    }
+	    if (http_format == null)
+		setupFormatter();
 	}
 
 	return http_format.format(date);
+    }
+
+    private static final void setupFormatter()
+    {
+	http_format =
+	    new SimpleDateFormat("EEE, dd MMM yyyy HH:mm:ss 'GMT'", Locale.US);
+	http_format.setTimeZone(new SimpleTimeZone(0, "GMT"));
     }
 
 
@@ -948,7 +1000,7 @@ public class Util
      * <P>The "resource" part of an HTTP URI can contain a number of parts,
      * some of which are not always of interest. These methods here will
      * extract the various parts, assuming the following syntanx (taken from
-     * RFC-2068):
+     * RFC-2616):
      *
      * <PRE>
      * resource = [ "/" ] [ path ] [ ";" params ] [ "?" query ] [ "#" fragment ]
@@ -1034,5 +1086,46 @@ public class Util
 	else
 	    return resource.substring(beg+1);
     }
-}
 
+
+    /**
+     * Match <var>pattern</var> against <var>name</var>, where
+     * <var>pattern</var> may contain wildcards ('*').
+     *
+     * @param pattern the pattern to match; may contain '*' which match
+     *                any number (0 or more) of any character (think file
+     *                globbing)
+     * @param name    the name to match against the pattern
+     * @return true if the name matches the pattern; false otherwise
+     */
+    public static final boolean wildcardMatch(String pattern, String name)
+    {
+	return
+	    wildcardMatch(pattern, name, 0, 0, pattern.length(), name.length());
+    }
+
+    private static final boolean wildcardMatch(String pattern, String name,
+					       int ppos, int npos, int plen,
+					       int nlen)
+    {
+	// find wildcard
+	int star = pattern.indexOf('*', ppos);
+	if (star < 0)
+	{
+	    return ((plen-ppos) == (nlen-npos)  &&
+		    pattern.regionMatches(ppos, name, npos, plen-ppos));
+	}
+
+	// match prefix
+	if (!pattern.regionMatches(ppos, name, npos, star-ppos))
+	    return false;
+
+	// match suffix
+	if (star == plen-1)
+	    return true;
+	while(!wildcardMatch(pattern, name, star+1, npos, plen, nlen)  &&
+	      npos < nlen)
+	    npos++;
+	return (npos < nlen);
+    }
+}

@@ -1,8 +1,8 @@
 /*
- * @(#)Request.java					0.3-2E 16/06/2000
+ * @(#)Request.java					0.3-3 06/05/2001
  *
  *  This file is part of the HTTPClient package
- *  Copyright (C) 1996-2000  Ronald Tschalär
+ *  Copyright (C) 1996-2001 Ronald Tschalär
  *
  *  This library is free software; you can redistribute it and/or
  *  modify it under the terms of the GNU Lesser General Public
@@ -24,6 +24,10 @@
  *
  *  ronald@innovation.ch
  *
+ *  The HTTPClient's home page is located at:
+ *
+ *  http://www.innovation.ch/java/HTTPClient/ 
+ *
  */
 
 package HTTPClient;
@@ -33,11 +37,10 @@ package HTTPClient;
  * This class represents an http request. It's used by classes which
  * implement the HTTPClientModule interface.
  *
- * @version	0.3-2E  16/06/2000
+ * @version	0.3-3  06/05/2001
  * @author	Ronald Tschalär
  */
-
-public final class Request implements RoRequest
+public final class Request implements RoRequest, Cloneable
 {
     /** null headers */
     private static final NVPair[] empty = new NVPair[0];
@@ -160,12 +163,23 @@ public final class Request implements RoRequest
 	{
 	    req_uri = req_uri.trim();
 	    if (req_uri.charAt(0) != '/'  &&  !req_uri.equals("*")  &&
-		!method.equals("CONNECT"))
+		!method.equals("CONNECT")  &&  !isAbsolute(req_uri))
 		req_uri = "/" + req_uri;
 	    this.req_uri = req_uri;
 	}
 	else
 	    this.req_uri = "/";
+    }
+
+    private static final boolean isAbsolute(String uri)
+    {
+	char ch = '\0';
+	int  pos = 0, len = uri.length();
+	while (pos < len  &&  (ch = uri.charAt(pos)) != ':'  &&
+	       ch != '/'  &&  ch != '?'  &&  ch != '#')
+	  pos++;
+
+	return (ch == ':');
     }
 
 
@@ -243,6 +257,46 @@ public final class Request implements RoRequest
 
 
     /**
+     * @return a clone of this request object
+     */
+    public Object clone()
+    {
+	Request cl;
+	try
+	    { cl = (Request) super.clone(); }
+	catch (CloneNotSupportedException cnse)
+	    { throw new InternalError(cnse.toString()); /* shouldn't happen */ }
+
+	cl.headers = new NVPair[headers.length];
+	System.arraycopy(headers, 0, cl.headers, 0, headers.length);
+
+	return cl;
+    }
+
+
+    /**
+     * Copy all the fields from <var>other</var> to this request.
+     *
+     * @param other the Request to copy from
+     */
+    public void copyFrom(Request other)
+    {
+	this.connection          = other.connection;
+	this.method              = other.method;
+	this.req_uri             = other.req_uri;
+	this.headers             = other.headers;
+	this.data                = other.data;
+	this.stream              = other.stream;
+	this.allow_ui            = other.allow_ui;
+	this.delay_entity        = other.delay_entity;
+	this.num_retries         = other.num_retries;
+	this.dont_pipeline       = other.dont_pipeline;
+	this.aborted             = other.aborted;
+	this.internal_subrequest = other.internal_subrequest;
+    }
+
+
+    /**
      * @return a string containing the method and request-uri
      */
     public String toString()
@@ -250,4 +304,3 @@ public final class Request implements RoRequest
 	return getClass().getName() + ": " + method + " " + req_uri;
     }
 }
-

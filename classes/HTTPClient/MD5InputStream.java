@@ -1,8 +1,8 @@
 /*
- * @(#)MD5InputStream.java				0.3-2 18/06/1999
+ * @(#)MD5InputStream.java				0.3-3 06/05/2001
  *
  *  This file is part of the HTTPClient package
- *  Copyright (C) 1996-1999  Ronald Tschalär
+ *  Copyright (C) 1996-2001 Ronald Tschalär
  *
  *  This library is free software; you can redistribute it and/or
  *  modify it under the terms of the GNU Lesser General Public
@@ -24,6 +24,10 @@
  *
  *  ronald@innovation.ch
  *
+ *  The HTTPClient's home page is located at:
+ *
+ *  http://www.innovation.ch/java/HTTPClient/ 
+ *
  */
 
 package HTTPClient;
@@ -31,7 +35,8 @@ package HTTPClient;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.FilterInputStream;
-import java.net.ProtocolException;
+import java.security.MessageDigest;
+import java.security.NoSuchAlgorithmException;
 
 
 /**
@@ -39,13 +44,13 @@ import java.net.ProtocolException;
  * stream is closed the calculated digest is passed to a HashVerifier which
  * is expected to verify this digest and to throw an Exception if it fails.
  *
- * @version	0.3-2  18/06/1999
+ * @version	0.3-3  06/05/2001
  * @author	Ronald Tschalär
  */
 class MD5InputStream extends FilterInputStream
 {
     private HashVerifier verifier;
-    private MD5 md5;
+    private MessageDigest md5;
     private long rcvd = 0;
     private boolean closed = false;
 
@@ -58,7 +63,10 @@ class MD5InputStream extends FilterInputStream
     {
 	super(is);
 	this.verifier = verifier;
-	md5 = new MD5();
+	try
+	    { md5 = MessageDigest.getInstance("MD5"); }
+	catch (NoSuchAlgorithmException nsae)
+	    { throw new Error(nsae.toString()); }
     }
 
 
@@ -66,7 +74,7 @@ class MD5InputStream extends FilterInputStream
     {
 	int b = in.read();
 	if (b != -1)
-	    md5.Update((byte) b);
+	    md5.update((byte) b);
 	else
 	    real_close();
 
@@ -80,7 +88,7 @@ class MD5InputStream extends FilterInputStream
     {
 	int num = in.read(buf, off, len);
 	if (num > 0)
-	    md5.Update(buf, off, num);
+	    md5.update(buf, off, num);
 	else
 	    real_close();
 
@@ -130,7 +138,6 @@ class MD5InputStream extends FilterInputStream
 	closed = true;
 
 	in.close();
-	verifier.verifyHash(md5.Final(), rcvd);
+	verifier.verifyHash(md5.digest(), rcvd);
     }
 }
-

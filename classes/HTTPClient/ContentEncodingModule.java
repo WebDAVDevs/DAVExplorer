@@ -1,8 +1,8 @@
 /*
- * @(#)ContentEncodingModule.java			0.3-2 18/06/1999
+ * @(#)ContentEncodingModule.java			0.3-3 06/05/2001
  *
  *  This file is part of the HTTPClient package
- *  Copyright (C) 1996-1999  Ronald Tschalär
+ *  Copyright (C) 1996-2001 Ronald Tschalär
  *
  *  This library is free software; you can redistribute it and/or
  *  modify it under the terms of the GNU Lesser General Public
@@ -24,6 +24,10 @@
  *
  *  ronald@innovation.ch
  *
+ *  The HTTPClient's home page is located at:
+ *
+ *  http://www.innovation.ch/java/HTTPClient/ 
+ *
  */
 
 package HTTPClient;
@@ -38,33 +42,11 @@ import java.util.zip.GZIPInputStream;
  * This module handles the Content-Encoding response header. It currently
  * handles the "gzip", "deflate", "compress" and "identity" tokens.
  *
- * Note: This module requires JDK 1.1 or later.
- *
- * @version	0.3-2  18/06/1999
+ * @version	0.3-3  06/05/2001
  * @author	Ronald Tschalär
  */
-
-class ContentEncodingModule implements HTTPClientModule, GlobalConstants
+class ContentEncodingModule implements HTTPClientModule
 {
-    static
-    {
-	/* This ensures that the loading of this class is only successful
-	 * if we're in JDK 1.1 (or later) and have access to java.util.zip
-	 */
-	try
-	    { new InflaterInputStream(null); }
-	catch (NullPointerException npe)
-	    { /* JDK 1.2 Final started throwing this */ }
-    }
-
-
-    // Constructors
-
-    ContentEncodingModule()
-    {
-    }
-
-
     // Methods
 
     /**
@@ -187,8 +169,7 @@ class ContentEncodingModule implements HTTPClientModule, GlobalConstants
 	if (encoding.equalsIgnoreCase("gzip")  ||
 	    encoding.equalsIgnoreCase("x-gzip"))
 	{
-	    if (DebugMods)
-		System.err.println("CEM:   pushing gzip-input-stream");
+	    Log.write(Log.MODS, "CEM:   pushing gzip-input-stream");
 
 	    resp.inp_stream = new GZIPInputStream(resp.inp_stream);
 	    pce.removeElementAt(pce.size()-1);
@@ -196,8 +177,7 @@ class ContentEncodingModule implements HTTPClientModule, GlobalConstants
 	}
 	else if (encoding.equalsIgnoreCase("deflate"))
 	{
-	    if (DebugMods)
-		System.err.println("CEM:   pushing inflater-input-stream");
+	    Log.write(Log.MODS, "CEM:   pushing inflater-input-stream");
 
 	    resp.inp_stream = new InflaterInputStream(resp.inp_stream);
 	    pce.removeElementAt(pce.size()-1);
@@ -206,8 +186,7 @@ class ContentEncodingModule implements HTTPClientModule, GlobalConstants
 	else if (encoding.equalsIgnoreCase("compress")  ||
 		 encoding.equalsIgnoreCase("x-compress"))
 	{
-	    if (DebugMods)
-		System.err.println("CEM:   pushing uncompress-input-stream");
+	    Log.write(Log.MODS, "CEM:   pushing uncompress-input-stream");
 
 	    resp.inp_stream = new UncompressInputStream(resp.inp_stream);
 	    pce.removeElementAt(pce.size()-1);
@@ -215,15 +194,13 @@ class ContentEncodingModule implements HTTPClientModule, GlobalConstants
 	}
 	else if (encoding.equalsIgnoreCase("identity"))
 	{
-	    if (DebugMods)
-		System.err.println("CEM:   ignoring 'identity' token");
+	    Log.write(Log.MODS, "CEM:   ignoring 'identity' token");
 	    pce.removeElementAt(pce.size()-1);
 	}
 	else
 	{
-	    if (DebugMods)
-		System.err.println("CEM:   Unknown content encoding '" +
-				    encoding + "'");
+	    Log.write(Log.MODS, "CEM:   Unknown content encoding '" +
+				encoding + "'");
 	}
 
 	if (pce.size() > 0)
@@ -240,4 +217,3 @@ class ContentEncodingModule implements HTTPClientModule, GlobalConstants
     {
     }
 }
-

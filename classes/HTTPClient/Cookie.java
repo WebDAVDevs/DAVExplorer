@@ -1,8 +1,8 @@
 /*
- * @(#)Cookie.java					0.3-2 18/06/1999
+ * @(#)Cookie.java					0.3-3 06/05/2001
  *
  *  This file is part of the HTTPClient package
- *  Copyright (C) 1996-1999  Ronald Tschalär
+ *  Copyright (C) 1996-2001 Ronald Tschalär
  *
  *  This library is free software; you can redistribute it and/or
  *  modify it under the terms of the GNU Lesser General Public
@@ -24,28 +24,52 @@
  *
  *  ronald@innovation.ch
  *
+ *  The HTTPClient's home page is located at:
+ *
+ *  http://www.innovation.ch/java/HTTPClient/ 
+ *
  */
 
 package HTTPClient;
 
-import java.io.File;
+import java.io.Serializable;
 import java.net.ProtocolException;
 import java.util.Date;
-import java.util.Hashtable;
 
 
 /**
- * This class represents an http cookie as specified in
- * <a href="http://home.netscape.com/newsref/std/cookie_spec.html">Netscape's
- * cookie spec</a>
+ * This class represents an http cookie as specified in <a
+ * href="http://home.netscape.com/newsref/std/cookie_spec.html">Netscape's
+ * cookie spec</a>; however, because not even Netscape follows their own spec,
+ * and because very few folks out there actually read specs but instead just
+ * look whether Netscape accepts their stuff, the Set-Cookie header field
+ * parser actually tries to follow what Netscape has implemented, instead of
+ * what the spec says. Additionally, the parser it will also recognize the
+ * Max-Age parameter from <a
+ * href="http://www.ietf.org/rfc/rfc2109.txt">rfc-2109</a>, as that uses the
+ * same header field (Set-Cookie).
  *
- * @version	0.3-2  18/06/1999
+ * <P>Some notes about how Netscape (4.7) parses:
+ * <ul>
+ * <LI>Quoting: only quotes around the expires value are recognized as such;
+ *     quotes around any other value are treated as part of the value.
+ * <LI>White space: white space around names and values is ignored
+ * <LI>Default path: if no path parameter is given, the path defaults to the
+ *     path in the request-uri up to, but not including, the last '/'. Note
+ *     that this is entirely different from what the spec says.
+ * <LI>Commas and other delimiters: Netscape just parses until the next ';'.
+ *     This means will allow commas etc inside values.
+ * </ul>
+ *
+ * @version	0.3-3  06/05/2001
  * @author	Ronald Tschalär
  * @since	V0.3
  */
-
-public class Cookie implements java.io.Serializable
+public class Cookie implements Serializable
 {
+    /** Make this compatible with V0.3-2 */
+    private static final long serialVersionUID = 8599975325569296615L;
+
     protected String  name;
     protected String  value;
     protected Date    expires;
@@ -101,12 +125,14 @@ public class Cookie implements java.io.Serializable
 	domain  = req.getConnection().getHost();
 	if (domain.indexOf('.') == -1)  domain += ".local";
 	path    = Util.getPath(req.getRequestURI());
-
-	String prot = req.getConnection().getProtocol();
-	if (prot.equals("https")  ||  prot.equals("shttp"))
-	    secure = true;
-	else
-	    secure  = false;
+	/* This does not follow netscape's spec at all, but it's the way
+	 * netscape seems to do it, and because people rely on that we
+	 * therefore also have to do it...
+	 */
+	int slash = path.lastIndexOf('/');
+	if (slash >= 0)
+	    path = path.substring(0, slash);
+	secure = false;
     }
 
 
@@ -143,8 +169,44 @@ public class Cookie implements java.io.Serializable
 	    curr  = new Cookie(req);
 	    start = beg;
 
-	    boolean legal = true;
+	    // get cookie name and value first
 
+	    end = set_cookie.indexOf('=', beg);
+	    if (end == -1)
+		throw new ProtocolException("Bad Set-Cookie header: " +
+					    set_cookie + "\nNo '=' found " +
+					    "for token starting at " +
+					    "position " + beg);
+	    curr.name = set_cookie.substring(beg, end).trim(); 
+
+	    beg = Util.skipSpace(buf, end+1);
+	    int comma = set_cookie.indexOf(',', beg);
+	    int semic = set_cookie.indexOf(';', beg);
+	    if (comma == -1  &&  semic == -1)  end = len;
+	    else if (comma == -1)  end = semic;
+	    else if (semic == -1)  end = comma;
+	    else
+	    {
+		if (comma > semic)
+		    end = semic;
+		else
+		{
+		    // try to handle broken servers which put commas
+		    // into cookie values
+		    int eq = set_cookie.indexOf('=', comma);
+		    if (eq > 0  &&  eq < semic)
+			end = set_cookie.lastIndexOf(',', eq);
+		    else
+			end = semic;
+		}
+	    }
+	    curr.value = set_cookie.substring(beg, end).trim();
+
+	    beg = end;
+
+	    // now parse attributes
+
+	    boolean legal = true;
 	    parts: while (true)			// parse all parts
 	    {
 		if (beg >= len  ||  buf[beg] == ',')  break;
@@ -188,123 +250,185 @@ public class Cookie implements java.io.Serializable
 
 		if (name.equalsIgnoreCase("expires"))
 		{
+		    /* Netscape ignores quotes around the date, and some twits
+		     * actually send that...
+		     */
+		    if (set_cookie.charAt(beg) == '\"')
+			beg = Util.skipSpace(buf, beg+1);
+
 		    /* cut off the weekday if it is there. This is a little
 		     * tricky because the comma is also used between cookies
 		     * themselves. To make sure we don't inadvertantly
 		     * mistake a date for a weekday we only skip letters.
 		     */
 		    int pos = beg;
-		    while (buf[pos] >= 'a'  &&  buf[pos] <= 'z'  ||
-			   buf[pos] >= 'A'  &&  buf[pos] <= 'Z')
+		    while (pos < len  &&
+			   (buf[pos] >= 'a'  &&  buf[pos] <= 'z'  ||
+			    buf[pos] >= 'A'  &&  buf[pos] <= 'Z'))
 			pos++;
 		    pos = Util.skipSpace(buf, pos);
-		    if (buf[pos] == ',')
+		    if (pos < len  &&  buf[pos] == ','  &&  pos > beg)
 			beg = pos+1;
 		}
 
-		int comma = set_cookie.indexOf(',', beg);
-		int semic = set_cookie.indexOf(';', beg);
+		comma = set_cookie.indexOf(',', beg);
+		semic = set_cookie.indexOf(';', beg);
 		if (comma == -1  &&  semic == -1)  end = len;
 		else if (comma == -1)  end = semic;
 		else if (semic == -1)  end = comma;
 		else end = Math.min(comma, semic);
 
 		String value = set_cookie.substring(beg, end).trim();
-
-		if (name.equalsIgnoreCase("expires"))
-		{
-		    try
-			{ curr.expires = new Date(value); }
-		    catch (IllegalArgumentException iae)
-		    {
-			/* More broken servers to deal with... Ignore expires
-			 * if it's invalid
-			throw new ProtocolException("Bad Set-Cookie header: "+
-					set_cookie + "\nInvalid date found at "+
-					"position " + beg);
-			*/
-		    }
-		}
-		else if (name.equalsIgnoreCase("domain"))
-		{
-		    // domains are case insensitive.
-		    value = value.toLowerCase();
-
-		    // add leading dot, if missing
-		    if (value.charAt(0) != '.'  &&  !value.equals(curr.domain))
-			value = '.' + value;
-
-		    // must be the same domain as in the url
-		    if (!curr.domain.endsWith(value))
-			legal = false;
-
-
-		    /* Netscape's original 2-/3-dot rule really doesn't work
-		     * because many countries use a shallow hierarchy (similar
-		     * to the special TLDs defined in the spec). While the
-		     * rules in draft-ietf-http-state-man-mec-08 aren't
-		     * perfect either, they are better. OTOH, some sites
-		     * use a domain so that the host name minus the domain
-		     * name contains a dot (e.g. host x.x.yahoo.com and
-		     * domain .yahoo.com). So, for the seven special TLDs we
-		     * use the 2-dot rule, and for all others we use the
-		     * rules in the state-man draft instead.
-		     */
-
-		    // domain must be either .local or must contain at least
-		    // two dots
-		    if (!value.equals(".local")  && value.indexOf('.', 1) == -1)
-			legal = false;
-
-		    // If TLD not special then host minus domain may not
-		    // contain any dots
-		    String top = null;
-		    if (value.length() > 3 )
-			top = value.substring(value.length()-4);
-		    if (top == null  ||  !(
-			top.equalsIgnoreCase(".com")  ||
-			top.equalsIgnoreCase(".edu")  ||
-			top.equalsIgnoreCase(".net")  ||
-			top.equalsIgnoreCase(".org")  ||
-			top.equalsIgnoreCase(".gov")  ||
-			top.equalsIgnoreCase(".mil")  ||
-			top.equalsIgnoreCase(".int")))
-		    {
-			int dl = curr.domain.length(), vl = value.length();
-			if (dl > vl  &&
-			    curr.domain.substring(0, dl-vl).indexOf('.') != -1)
-				legal = false;
-		    }
-
-		    curr.domain = value;
-		}
-		else if (name.equalsIgnoreCase("path"))
-		    curr.path = value;
-		else
-		{
-		    curr.name  = name;
-		    curr.value = value;
-		}
+		legal &= setAttribute(curr, name, value, set_cookie);
 
 		beg = end;
 		if (beg < len  &&  buf[beg] == ';')	// consume ";"
 		    beg = Util.skipSpace(buf, beg+1);
 	    }
 
-	    if (curr.name == null  ||  curr.value == null)
-                throw new ProtocolException("Bad Set-Cookie header: " +
-					    set_cookie + "\nNo Name=Value found"
-					    + " for cookie starting at " +
-					    "posibition " + start);
-
 	    if (legal)
 	    {
 		cookie_arr = Util.resizeArray(cookie_arr, cookie_arr.length+1);
 		cookie_arr[cookie_arr.length-1] = curr;
-	    }
+	    } else
+		Log.write(Log.COOKI, "Cooki: Ignoring cookie: " + curr);
 	}
 
 	return cookie_arr;
+    }
+
+    /**
+     * Set the given attribute, if valid.
+     *
+     * @param cookie     the cookie on which to set the value
+     * @param name       the name of the attribute
+     * @param value      the value of the attribute
+     * @param set_cookie the complete Set-Cookie header
+     * @return true if the attribute is legal; false otherwise
+     */
+    private static boolean setAttribute(Cookie cookie, String name,
+					String value, String set_cookie)
+	    throws ProtocolException
+    {
+	if (name.equalsIgnoreCase("expires"))
+	{
+	    if (value.charAt(value.length()-1) == '\"')
+		value = value.substring(0, value.length()-1).trim();
+	    try
+		// This is too strict...
+		// { cookie.expires = Util.parseHttpDate(value); }
+		{ cookie.expires = new Date(value); }
+	    catch (IllegalArgumentException iae)
+	    {
+		/* More broken servers to deal with... Ignore expires
+		 * if it's invalid
+		throw new ProtocolException("Bad Set-Cookie header: " +
+				    set_cookie + "\nInvalid date found at " +
+				    "position " + beg);
+		*/
+		Log.write(Log.COOKI, "Cooki: Bad Set-Cookie header: " + set_cookie +
+				     "\n       Invalid date `" + value + "'");
+	    }
+	}
+	else if (name.equals("max-age"))	// from rfc-2109
+	{
+	    if (cookie.expires != null)  return true;
+	    if (value.charAt(0) == '\"'  &&  value.charAt(value.length()-1) == '\"')
+		value = value.substring(1, value.length()-1).trim();
+	    int age;
+	    try
+		{ age = Integer.parseInt(value); }
+	    catch (NumberFormatException nfe)
+	    {
+		throw new ProtocolException("Bad Set-Cookie header: " +
+				    set_cookie + "\nMax-Age '" + value +
+				    "' not a number");
+	    }
+	    cookie.expires = new Date(System.currentTimeMillis() + age*1000L);
+	}
+	else if (name.equalsIgnoreCase("domain"))
+	{
+	    // you get everything these days...
+	    if (value.length() == 0)
+	    {
+		Log.write(Log.COOKI, "Cooki: Bad Set-Cookie header: " + set_cookie +
+				     "\n       domain is empty - ignoring domain");
+		return true;
+	    }
+
+	    // domains are case insensitive.
+	    value = value.toLowerCase();
+
+	    // add leading dot, if missing
+	    if (value.length() != 0 && value.charAt(0) != '.'  &&
+		!value.equals(cookie.domain))
+		value = '.' + value;
+
+	    // must be the same domain as in the url
+	    if (!cookie.domain.endsWith(value))
+	    {
+		Log.write(Log.COOKI, "Cooki: Bad Set-Cookie header: " + set_cookie +
+				     "\n       Current domain " + cookie.domain +
+				     " does not match given parsed " + value);
+		return false;
+	    }
+
+
+	    /* Netscape's original 2-/3-dot rule really doesn't work because
+	     * many countries use a shallow hierarchy (similar to the special
+	     * TLDs defined in the spec). While the rules in rfc-2965 aren't
+	     * perfect either, they are better. OTOH, some sites use a domain
+	     * so that the host name minus the domain name contains a dot (e.g.
+	     * host x.x.yahoo.com and domain .yahoo.com). So, for the seven
+	     * special TLDs we use the 2-dot rule, and for all others we use
+	     * the rules in the state-man draft instead.
+	     */
+
+	    // domain must be either .local or must contain at least
+	    // two dots
+	    if (!value.equals(".local")  && value.indexOf('.', 1) == -1)
+	    {
+		Log.write(Log.COOKI, "Cooki: Bad Set-Cookie header: " + set_cookie +
+				     "\n       Domain attribute " + value +
+				     "isn't .local and doesn't have at " +
+				     "least 2 dots");
+		return false;
+	    }
+
+	    // If TLD not special then host minus domain may not
+	    // contain any dots
+	    String top = null;
+	    if (value.length() > 3 )
+		top = value.substring(value.length()-4);
+	    if (top == null  ||  !(
+		top.equalsIgnoreCase(".com")  ||
+		top.equalsIgnoreCase(".edu")  ||
+		top.equalsIgnoreCase(".net")  ||
+		top.equalsIgnoreCase(".org")  ||
+		top.equalsIgnoreCase(".gov")  ||
+		top.equalsIgnoreCase(".mil")  ||
+		top.equalsIgnoreCase(".int")))
+	    {
+		int dl = cookie.domain.length(), vl = value.length();
+		if (dl > vl  &&
+		    cookie.domain.substring(0, dl-vl).indexOf('.') != -1)
+		{
+		    Log.write(Log.COOKI, "Cooki: Bad Set-Cookie header: " + set_cookie +
+					 "\n       Domain attribute " + value +
+					 "is more than one level below " +
+					 "current domain " + cookie.domain);
+		    return false;
+		}
+	    }
+
+	    cookie.domain = value;
+	}
+	else if (name.equalsIgnoreCase("path"))
+	    cookie.path = value;
+	else
+	  ; // unknown attribute - ignore
+
+	return true;
     }
 
 
@@ -439,12 +563,12 @@ public class Cookie implements java.io.Serializable
      */
     public String toString()
     {
-	String string = name + "=" + value;
-	if (expires != null)  string += "; expires=" + expires;
-	if (path != null)     string += "; path=" + path;
-	if (domain != null)   string += "; domain=" + domain;
-	if (secure)           string += "; secure";
-	return string;
+	StringBuffer res = new StringBuffer(name.length() + value.length() + 30);
+	res.append(name).append('=').append(value);
+	if (expires != null)  res.append("; expires=").append(expires);
+	if (path != null)     res.append("; path=").append(path);
+	if (domain != null)   res.append("; domain=").append(domain);
+	if (secure)           res.append("; secure");
+	return res.toString();
     }
 }
-

@@ -1,8 +1,8 @@
 /*
- * @(#)HTTPClientModule.java				0.3-2 18/06/1999
+ * @(#)HTTPClientModule.java				0.3-3 06/05/2001
  *
  *  This file is part of the HTTPClient package
- *  Copyright (C) 1996-1999  Ronald Tschalär
+ *  Copyright (C) 1996-2001 Ronald Tschalär
  *
  *  This library is free software; you can redistribute it and/or
  *  modify it under the terms of the GNU Lesser General Public
@@ -23,6 +23,10 @@
  *  I may be contacted at:
  *
  *  ronald@innovation.ch
+ *
+ *  The HTTPClient's home page is located at:
+ *
+ *  http://www.innovation.ch/java/HTTPClient/ 
  *
  */
 
@@ -59,7 +63,8 @@ import java.io.IOException;
  * processing which needn't be done if the request is not returned to the
  * user is deferred until this phase. For example, the Content-MD5,
  * Content-Encoding and Transfer-Encoding modules do their work in this
- * phase as the body is usually discarded if a new subrequest is generated.
+ * phase as the response body is usually discarded if a new subrequest is
+ * generated.
  *
  * <P>When the user invokes any request method (such as <code>Get(...)</code>)
  * a list of of modules to be used is built. Then, for each module in the
@@ -72,11 +77,10 @@ import java.io.IOException;
  * made to detect redirect loops; it could do this by defining an instance
  * variable and incrementing it each time the request handler is invoked.
  *
- * @version	0.3-2  18/06/1999
+ * @version	0.3-3  06/05/2001
  * @author	Ronald Tschalär
  * @since	V0.3
  */
-
 public interface HTTPClientModule extends HTTPClientModuleConstants
 {
     /**
@@ -193,4 +197,3 @@ public interface HTTPClientModule extends HTTPClientModuleConstants
     public void trailerHandler(Response response, RoRequest request)
 	    throws IOException, ModuleException;
 }
-

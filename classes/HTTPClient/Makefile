@@ -1,24 +1,18 @@
-# Makefile for DAV Explorer (HTTPClient part)
-#
-# Copyright (c) 1999-2001 Regents of the University of California.
-# All rights reserved.
-#
-# Redistribution and use in source and binary forms are permitted
-# provided that the above copyright notice and this paragraph are
-# duplicated in all such forms and that any documentation,
-# advertising materials, and other materials related to such
-# distribution and use acknowledge that the software was developed
-# by the University of California, Irvine.  The name of the
-# University may not be used to endorse or promote products derived
-# from this software without specific prior written permission.
-# THIS SOFTWARE IS PROVIDED ``AS IS'' AND WITHOUT ANY EXPRESS OR
-# IMPLIED WARRANTIES, INCLUDING, WITHOUT LIMITATION, THE IMPLIED
-# WARRANTIES OF MERCHANTIBILITY AND FITNESS FOR A PARTICULAR PURPOSE.
 
 ### general JDK definitions
 
-JC	 = javac
-JFLAGS   = 
+JC	 = $(JAVA_HOME)/bin/javac
+JDOC	 = $(JAVA_HOME)/bin/javadoc
+JFLAGS   = -O -g -deprecation
+#CLASSP   = -classpath "$(JAVA_HOME)/lib/classes.zip:.."
+#JDCLASSP = -classpath "$(JAVA_HOME)/lib/classes.zip:.."
+CLASSP   = -classpath ".."
+JDCLASSP = -classpath ".."
+
+JTAGS    = /usr/bin/ctags
+JTFLAGS  = --java-types=+C -f -
+
+MV       = mv -f
 
 
 ### java extensions
@@ -26,28 +20,37 @@ JFLAGS   =
 .SUFFIXES: .java .class
 
 .java.class:
-	$(JC) $(JFLAGS) $<
+	$(JC) $(JFLAGS) $(CLASSP) $<
 
 
 ### all source files
 
-classes = NVPair.class \
+classes = GlobalConstants.class \
+	  Log.class \
+	  URI.class \
+	  MD5.class \
+	  NVPair.class \
+	  Cookie.class \
+	  Cookie2.class \
+	  Util.class \
+	  Codecs.class \
+	  LinkedList.class \
+	  StreamDemultiplexor.class \
+	  HTTPConnection.class \
+	  HTTPResponse.class \
+	  HttpOutputStream.class \
+	  AuthorizationPrompter.class \
 	  AuthorizationHandler.class \
 	  AuthorizationInfo.class \
 	  DefaultAuthHandler.class \
-	  StreamDemultiplexor.class \
-	  ExtBufferedInputStream.class \
+	  BufferedInputStream.class \
 	  IdempotentSequence.class \
 	  SocksClient.class \
 	  RoRequest.class \
 	  RoResponse.class \
 	  Request.class \
-	  HTTPResponse.class \
 	  Response.class \
-	  ResponseHandler.class \
-	  RespInputStream.class \
 	  CIHashtable.class \
-	  HttpOutputStream.class \
 	  HTTPClientModule.class \
 	  HTTPClientModuleConstants.class \
 	  RedirectionModule.class \
@@ -55,11 +58,8 @@ classes = NVPair.class \
 	  RetryException.class \
 	  AuthorizationModule.class \
 	  CookieModule.class \
-	  Cookie.class \
-	  Cookie2.class \
 	  CookiePolicyHandler.class \
 	  ContentMD5Module.class \
-	  MD5.class \
 	  MD5InputStream.class \
 	  HashVerifier.class \
 	  DefaultModule.class \
@@ -67,59 +67,51 @@ classes = NVPair.class \
 	  ContentEncodingModule.class \
 	  ChunkedInputStream.class \
 	  UncompressInputStream.class \
+	  HttpHeaderElement.class \
+	  FilenameMangler.class \
+	  ModuleException.class \
+	  ParseException.class \
+	  ProtocolNotSuppException.class \
+	  AuthSchemeNotImplException.class \
+	  SocksException.class \
 	  HttpURLConnection.class \
 	  http/Handler.class \
 	  https/Handler.class \
-	  shttp/Handler.class \
-	  GlobalConstants.class \
-	  URI.class \
-	  Util.class \
-	  HttpHeaderElement.class \
-	  FilenameMangler.class \
-	  Codecs.class \
-	  LinkedList.class \
-	  ModuleException.class \
-	  ProtocolNotSuppException.class \
-	  AuthSchemeNotImplException.class \
-	  ParseException.class \
-	  SocksException.class \
-	  HTTPConnection.class
+	  shttp/Handler.class
 
 
 ### targets 
 
 all: $(classes)
 
-clean::
-	- rm -f *.class
-	- cd http; rm -f *.class
-	- cd https; rm -f *.class
-	- cd shttp; rm -f *.class
+doc::
+	- $(RM) -r doc/api/*
+	$(JDOC) $(JDCLASSP) -author -version -d doc/api -link http://java.sun.com/products/jdk/1.2/docs/api/ -windowtitle "HTTPClient API" HTTPClient HTTPClient.http HTTPClient.https
+	find doc/api -type d -exec chmod 755 {} \;
+	chmod -R a+r doc/api
 
-dist::
-	- rm -rf *.class CVS
-	- cd http; rm -rf *.class CVS
-	- cd https; rm -rf *.class CVS
-	- cd shttp; rm -rf *.class CVS
+tags::
+	$(JTAGS) $(JTFLAGS) *.java *http*/*.java | perl -e '@lines = <>; print sort @lines;' > tags 2> /dev/null
+#	should autosort, but sort seems screwed up
+#	$(JTAGS) $(JTFLAGS) *.java *http*/*.java > /dev/null 2>&1
+
+kit::
+	- $(RM) HTTPClient.zip
+	- $(RM) HTTPClient.tar.gz
+	cd ../; zip -qr9 HTTPClient.zip HTTPClient
+	cd ../; tar zhcf HTTPClient.tar.gz HTTPClient
+	cd ../; $(MV) HTTPClient.zip HTTPClient
+	cd ../; $(MV) HTTPClient.tar.gz HTTPClient
+
 
 ### Interface Dependencies
 
 HTTPConnection.class \
-HTTPResponse.class \
-HttpOutputStream.class \
 Response.class \
 StreamDemultiplexor.class \
-AuthorizationInfo.class \
-SocksClient.class \
-AuthorizationModule.class \
-ContentEncodingModule.class \
-ContentMD5Module.class \
-CookieModule.class \
 DefaultModule.class \
-RedirectionModule.class \
 RetryModule.class \
-TransferEncodingModule.class \
-HttpURLConnection.class : GlobalConstants.class
+RespInputStream.class : GlobalConstants.class
 
 Request.class \
 HTTPClientModule.class \
@@ -147,6 +139,8 @@ HTTPClientModule.class : HTTPClientModuleConstants.class
 AuthorizationInfo.class \
 AuthorizationModule.class \
 DefaultAuthHandler.class : AuthorizationHandler.class
+
+DefaultAuthHandler.class : AuthorizationPrompter.class
 
 CookieModule.class : CookiePolicyHandler.class
 

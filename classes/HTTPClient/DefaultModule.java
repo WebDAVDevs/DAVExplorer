@@ -1,8 +1,8 @@
 /*
- * @(#)DefaultModule.java				0.3-2 18/06/1999
+ * @(#)DefaultModule.java				0.3-3 06/05/2001
  *
  *  This file is part of the HTTPClient package
- *  Copyright (C) 1996-1999  Ronald Tschalär
+ *  Copyright (C) 1996-2001 Ronald Tschalär
  *
  *  This library is free software; you can redistribute it and/or
  *  modify it under the terms of the GNU Lesser General Public
@@ -24,6 +24,10 @@
  *
  *  ronald@innovation.ch
  *
+ *  The HTTPClient's home page is located at:
+ *
+ *  http://www.innovation.ch/java/HTTPClient/ 
+ *
  */
 
 package HTTPClient;
@@ -36,11 +40,10 @@ import java.net.ProtocolException;
  * This is the default module which gets called after all other modules
  * have done their stuff.
  *
- * @version	0.3-2  18/06/1999
+ * @version	0.3-3  06/05/2001
  * @author	Ronald Tschalär
  */
-
-class DefaultModule implements HTTPClientModule, GlobalConstants
+class DefaultModule implements HTTPClientModule
 {
     /** number of times the request will be retried */
     private int req_timeout_retries;
@@ -91,8 +94,7 @@ class DefaultModule implements HTTPClientModule, GlobalConstants
 
 		if (req_timeout_retries-- == 0  ||  req.getStream() != null)
 		{
-		    if (DebugMods)
-			System.err.println("DefM:  Status " + sts + " " +
+		    Log.write(Log.MODS, "DefM:  Status " + sts + " " +
 				    resp.getReasonLine() + " not handled - " +
 				    "maximum number of retries exceeded");
 
@@ -100,10 +102,9 @@ class DefaultModule implements HTTPClientModule, GlobalConstants
 		}
 		else
 		{
-		    if (DebugMods)
-			System.err.println("DefM:  Handling " + sts + " " +
-					    resp.getReasonLine() + " - " +
-					    "resending request");
+		    Log.write(Log.MODS, "DefM:  Handling " + sts + " " +
+					resp.getReasonLine() + " - " +
+					"resending request");
 
 		    return RSP_REQUEST;
 		}
@@ -119,10 +120,9 @@ class DefaultModule implements HTTPClientModule, GlobalConstants
 		    throw new ProtocolException("Received status code 411 even"+
 					    " though Content-Length was sent");
 
-		if (DebugMods)
-		    System.err.println("DefM:  Handling " + sts + " " +
-					resp.getReasonLine() + " - resending " +
-					"request with 'Content-length: 0'");
+		Log.write(Log.MODS, "DefM:  Handling " + sts + " " +
+				    resp.getReasonLine() + " - resending " +
+				    "request with 'Content-length: 0'");
 
 		req.setData(new byte[0]);	// will send Content-Length: 0
 		return RSP_REQUEST;
@@ -151,4 +151,3 @@ class DefaultModule implements HTTPClientModule, GlobalConstants
     {
     }
 }
-

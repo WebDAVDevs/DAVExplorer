@@ -1,8 +1,8 @@
 /*
- * @(#)HttpHeaderElement.java				0.3-2 18/06/1999
+ * @(#)HttpHeaderElement.java				0.3-3 06/05/2001
  *
  *  This file is part of the HTTPClient package
- *  Copyright (C) 1996-1999  Ronald Tschalär
+ *  Copyright (C) 1996-2001 Ronald Tschalär
  *
  *  This library is free software; you can redistribute it and/or
  *  modify it under the terms of the GNU Lesser General Public
@@ -24,6 +24,10 @@
  *
  *  ronald@innovation.ch
  *
+ *  The HTTPClient's home page is located at:
+ *
+ *  http://www.innovation.ch/java/HTTPClient/ 
+ *
  */
 
 package HTTPClient;
@@ -31,15 +35,14 @@ package HTTPClient;
 
 /**
  * This class holds a description of an http header element. It is used
- * by <code>HTTPClient.Util.parseHeader()</code>.
+ * by {@link Util#parseHeader(java.lang.String) Util.parseHeader}.
  *
  * @see Util#parseHeader(java.lang.String)
  * @see Util#getElement(java.util.Vector, java.lang.String)
  * @see Util#assembleHeader(java.util.Vector)
- * @version	0.3-2  18/06/1999
+ * @version	0.3-3  06/05/2001
  * @author	Ronald Tschalär
  */
-
 public class HttpHeaderElement
 {
     /** element name */
@@ -198,4 +201,3 @@ public class HttpHeaderElement
 	}
     }
 }
-

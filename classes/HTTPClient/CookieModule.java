@@ -1,8 +1,8 @@
 /*
- * @(#)CookieModule.java				0.3-2 18/06/1999
+ * @(#)CookieModule.java				0.3-3 06/05/2001
  *
  *  This file is part of the HTTPClient package
- *  Copyright (C) 1996-1999  Ronald Tschalär
+ *  Copyright (C) 1996-2001 Ronald Tschalär
  *
  *  This library is free software; you can redistribute it and/or
  *  modify it under the terms of the GNU Lesser General Public
@@ -24,6 +24,10 @@
  *
  *  ronald@innovation.ch
  *
+ *  The HTTPClient's home page is located at:
+ *
+ *  http://www.innovation.ch/java/HTTPClient/ 
+ *
  */
 
 package HTTPClient;
@@ -35,11 +39,9 @@ import java.io.FileOutputStream;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.net.ProtocolException;
-import java.util.Date;
 import java.util.Vector;
 import java.util.Hashtable;
 import java.util.Enumeration;
-import java.util.StringTokenizer;
 
 import java.awt.Frame;
 import java.awt.Panel;
@@ -71,6 +73,15 @@ import java.awt.event.WindowAdapter;
  * allows it, and a cookie from the cookie list is only sent if the handler
  * allows it.
  *
+ * <P>This module expects to be the only one handling cookies. Specifically, it
+ * will remove any <var>Cookie</var> and <var>Cookie2</var> header fields found
+ * in the request, and it will remove the <var>Set-Cookie</var> and
+ * <var>Set-Cookie2</var> header fields in the response (after processing them).
+ * In order to add cookies to a request or to prevent cookies from being sent,
+ * you can use the {@link #addCookie(HTTPClient.Cookie) addCookie} and {@link
+ * #removeCookie(HTTPClient.Cookie) removeCookie} methods to manipulate the
+ * module's list of cookies.
+ *
  * <P>A cookie jar can be used to store cookies between sessions. This file is
  * read when this class is loaded and is written when the application exits;
  * only cookies from the default context are saved. The name of the file is
@@ -80,13 +91,12 @@ import java.awt.event.WindowAdapter;
  * to <var>true</var>.
  *
  * @see <a href="http://home.netscape.com/newsref/std/cookie_spec.html">Netscape's cookie spec</a>
- * @see <a href="ftp://ds.internic.net/internet-drafts/draft-ietf-http-state-man-mec-10.txt">HTTP State Management Mechanism spec</a>
- * @version	0.3-2  18/06/1999
+ * @see <a href="http://www.ietf.org/rfc/rfc2965.txt">HTTP State Management Mechanism spec</a>
+ * @version	0.3-3  06/05/2001
  * @author	Ronald Tschalär
  * @since	V0.3
  */
-
-public class CookieModule implements HTTPClientModule, GlobalConstants
+public class CookieModule implements HTTPClientModule
 {
     /** the list of known cookies */
     private static Hashtable cookie_cntxt_list = new Hashtable();
@@ -287,9 +297,9 @@ public class CookieModule implements HTTPClientModule, GlobalConstants
 
 	Vector  names   = new Vector();
 	Vector  lens    = new Vector();
-	boolean cookie2 = false;
+	int     version = 0;
 
-	synchronized(cookie_list)
+	synchronized (cookie_list)
 	{
 	    Enumeration list = cookie_list.elements();
 	    Vector remove_list = null;
@@ -300,6 +310,8 @@ public class CookieModule implements HTTPClientModule, GlobalConstants
 
 		if (cookie.hasExpired())
 		{
+		    Log.write(Log.COOKI, "CookM: cookie has expired and is " +
+					 "being removed: " + cookie);
 		    if (remove_list == null)  remove_list = new Vector();
 		    remove_list.addElement(cookie);
 		    continue;
@@ -319,7 +331,8 @@ public class CookieModule implements HTTPClientModule, GlobalConstants
 		    names.insertElementAt(cookie.toExternalForm(), idx);
 		    lens.insertElementAt(new Integer(len), idx);
 
-		    if (cookie instanceof Cookie2)  cookie2 = true;
+		    if (cookie instanceof Cookie2)
+			version = Math.max(version, ((Cookie2) cookie).getVersion());
 		}
 	    }
 
@@ -336,8 +349,8 @@ public class CookieModule implements HTTPClientModule, GlobalConstants
 	{
 	    StringBuffer value = new StringBuffer();
 
-	    if (cookie2)
-		value.append("$Version=\"1\"; ");
+	    if (version > 0)
+		value.append("$Version=\"" + version + "\"; ");
 
 	    value.append((String) names.elementAt(0));
 	    for (int idx=1; idx<names.size(); idx++)
@@ -349,7 +362,7 @@ public class CookieModule implements HTTPClientModule, GlobalConstants
 	    hdrs[hdrs.length-1] = new NVPair("Cookie", value.toString());
 
 	    // add Cookie2 header if necessary
-	    if (!cookie2)
+	    if (version != 1)	// we currently know about version 1 only
 	    {
 		int idx;
 		for (idx=0; idx<hdrs.length; idx++)
@@ -365,8 +378,7 @@ public class CookieModule implements HTTPClientModule, GlobalConstants
 
 	    req.setHeaders(hdrs);
 
-	    if (DebugMods)
-		System.err.println("CookM: Sending cookies '" + value + "'");
+	    Log.write(Log.COOKI, "CookM: Sending cookies '" + value + "'");
 	}
 
 	return REQ_CONTINUE;
@@ -417,7 +429,7 @@ public class CookieModule implements HTTPClientModule, GlobalConstants
     public void trailerHandler(Response resp, RoRequest req)  throws IOException
     {
 	String set_cookie = resp.getTrailer("Set-Cookie");
-	String set_cookie2 = resp.getHeader("Set-Cookie2");
+	String set_cookie2 = resp.getTrailer("Set-Cookie2");
 	if (set_cookie == null  &&  set_cookie2 == null)
 	    return;
 
@@ -441,24 +453,28 @@ public class CookieModule implements HTTPClientModule, GlobalConstants
 	else
 	    cookies = Cookie.parse(set_cookie, req);
 
-	if (DebugMods)
+	if (Log.isEnabled(Log.COOKI))
 	{
-	    System.err.println("CookM: Received and parsed " + cookies.length +
-			       " cookies:");
+	    Log.write(Log.COOKI, "CookM: Received and parsed " + cookies.length +
+				 " cookies:");
 	    for (int idx=0; idx<cookies.length; idx++)
-		System.err.println("CookM: Cookie " + idx + ": " +cookies[idx]);
+		Log.write(Log.COOKI, "CookM: Cookie " + idx + ": " + cookies[idx]);
 	}
 
 	Hashtable cookie_list =
 	    Util.getList(cookie_cntxt_list, req.getConnection().getContext());
-	synchronized(cookie_list)
+	synchronized (cookie_list)
 	{
 	    for (int idx=0; idx<cookies.length; idx++)
 	    {
 		Cookie cookie = (Cookie) cookie_list.get(cookies[idx]);
 		if (cookie != null  &&  cookies[idx].hasExpired())
+		{
+		    Log.write(Log.COOKI, "CookM: cookie has expired and is " +
+					 "being removed: " + cookie);
 		    cookie_list.remove(cookie);		// expired, so remove
-		else  					// new or replaced
+		}
+		else if (!cookies[idx].hasExpired())	// new or replaced
 		{
 		    if (cookie_handler == null  ||
 			cookie_handler.acceptCookie(cookies[idx], req, resp))
@@ -487,8 +503,8 @@ public class CookieModule implements HTTPClientModule, GlobalConstants
      */
     public static void discardAllCookies(Object context)
     {
-	Hashtable cookie_list = Util.getList(cookie_cntxt_list, context);
-	cookie_list.clear();
+	if (context != null)
+	    cookie_cntxt_list.remove(context);
     }
 
 
@@ -500,7 +516,7 @@ public class CookieModule implements HTTPClientModule, GlobalConstants
      */
     public static Cookie[] listAllCookies()
     {
-	synchronized(cookie_cntxt_list)
+	synchronized (cookie_cntxt_list)
 	{
 	    Cookie[] cookies = new Cookie[0];
 	    int idx = 0;
@@ -509,7 +525,7 @@ public class CookieModule implements HTTPClientModule, GlobalConstants
 	    while (cntxt_list.hasMoreElements())
 	    {
 		Hashtable cntxt = (Hashtable) cntxt_list.nextElement();
-		synchronized(cntxt)
+		synchronized (cntxt)
 		{
 		    cookies = Util.resizeArray(cookies, idx+cntxt.size());
 		    Enumeration cookie_list = cntxt.elements();
@@ -534,7 +550,7 @@ public class CookieModule implements HTTPClientModule, GlobalConstants
     {
 	Hashtable cookie_list = Util.getList(cookie_cntxt_list, context);
 
-	synchronized(cookie_list)
+	synchronized (cookie_list)
 	{
 	    Cookie[] cookies = new Cookie[cookie_list.size()];
 	    int idx = 0;
@@ -638,21 +654,21 @@ public class CookieModule implements HTTPClientModule, GlobalConstants
      * <var>HTTPClient.cookies.hosts.reject</var>. These properties must
      * contain a "|" separated list of host and domain names. All names
      * beginning with a "." are treated as domain names, all others as host
-     * names. An empty string which will match all hosts. The two lists are
-     * further expanded if the user chooses one of the "Accept All from Domain"
-     * or "Reject All from Domain" buttons in the dialog box.
+     * names. An empty string will match all hosts. The two lists are
+     * further expanded if the user chooses one of the "Accept All from
+     * Domain" or "Reject All from Domain" buttons in the dialog box.
      *
      * <P>Note: the default handler does not implement the rules concerning
-     * unverifiable transactions (section 4.3.5,
-     * <A HREF="http://www.cis.ohio-state.edu/htbin/rfc/rfc2109">RFC-2109</A>).
-     * The reason for this is simple: the default handler knows nothing
-     * about the application using this client, and it therefore does not
-     * have enough information to determine when a request is verifiable
-     * and when not. You are therefore encouraged to provide your own handler
-     * which implements section 4.3.5 (use the
-     * <var>CookiePolicyHandler.sendCookie</var> method for this).
+     * unverifiable transactions (section 3.3.6, <A
+     * HREF="http://www.ietf.org/rfc/rfc2965.txt">RFC-2965</A>). The reason
+     * for this is simple: the default handler knows nothing about the
+     * application using this client, and it therefore does not have enough
+     * information to determine when a request is verifiable and when not. You
+     * are therefore encouraged to provide your own handler which implements
+     * section 3.3.6 (use the <code>CookiePolicyHandler.sendCookie</code>
+     * method for this).
      *
-     * @param the new policy handler
+     * @param handler the new policy handler
      * @return the previous policy handler
      */
     public static synchronized CookiePolicyHandler
@@ -668,7 +684,6 @@ public class CookieModule implements HTTPClientModule, GlobalConstants
 /**
  * A simple cookie policy handler.
  */
-
 class DefaultCookiePolicyHandler implements CookiePolicyHandler
 {
     /** a list of all hosts and domains from which to silently accept cookies */
@@ -768,7 +783,8 @@ class DefaultCookiePolicyHandler implements CookiePolicyHandler
 
     void addAcceptDomain(String domain)
     {
-	if (domain.indexOf('.') == -1)  domain += ".local";
+	if (domain.indexOf('.') == -1  &&  domain.length() > 0)
+	    domain += ".local";
 
 	for (int idx=0; idx<accept_domains.length; idx++)
 	{
@@ -787,7 +803,8 @@ class DefaultCookiePolicyHandler implements CookiePolicyHandler
 
     void addRejectDomain(String domain)
     {
-	if (domain.indexOf('.') == -1)  domain += ".local";
+	if (domain.indexOf('.') == -1  &&  domain.length() > 0)
+	    domain += ".local";
 
 	for (int idx=0; idx<reject_domains.length; idx++)
 	{
@@ -811,7 +828,7 @@ class DefaultCookiePolicyHandler implements CookiePolicyHandler
  * A simple popup that asks whether the cookie should be accepted or rejected,
  * or if cookies from whole domains should be silently accepted or rejected.
  *
- * @version	0.3-2  18/06/1999
+ * @version	0.3-3  06/05/2001
  * @author	Ronald Tschalär
  */
 class BasicCookieBox extends Frame
@@ -1149,4 +1166,3 @@ class Separator extends Panel
 	return new Dimension(4, 2);
     }
 }
-

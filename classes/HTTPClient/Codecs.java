@@ -1,8 +1,8 @@
 /*
- * @(#)Codecs.java					0.3-2 18/06/1999
+ * @(#)Codecs.java					0.3-3 06/05/2001
  *
  *  This file is part of the HTTPClient package
- *  Copyright (C) 1996-1999  Ronald Tschalär
+ *  Copyright (C) 1996-2001 Ronald Tschalär
  *
  *  This library is free software; you can redistribute it and/or
  *  modify it under the terms of the GNU Lesser General Public
@@ -24,30 +24,35 @@
  *
  *  ronald@innovation.ch
  *
+ *  The HTTPClient's home page is located at:
+ *
+ *  http://www.innovation.ch/java/HTTPClient/ 
+ *
  */
 
 package HTTPClient;
-
 
 import java.util.BitSet;
 import java.util.Vector;
 import java.util.StringTokenizer;
 import java.io.IOException;
+import java.io.EOFException;
 import java.io.InputStream;
-import java.io.DataInputStream;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.BufferedReader;
+import java.io.InputStreamReader;
+import java.io.UnsupportedEncodingException;
+import java.net.URLConnection;
 
 
 /**
  * This class collects various encoders and decoders.
  *
- * @version	0.3-2  18/06/1999
+ * @version	0.3-3  06/05/2001
  * @author	Ronald Tschalär
  */
-
 public class Codecs
 {
     private static BitSet  BoundChar;
@@ -59,7 +64,8 @@ public class Codecs
 
     private final static String ContDisp = "\r\nContent-Disposition: form-data; name=\"";
     private final static String FileName = "\"; filename=\"";
-    private final static String Boundary = "\r\n-----ieoau._._+2_8_GoodLuck8.3-dskdfJwSJKlrWLr0234324jfLdsjfdAuaoei-----";
+    private final static String ContType = "\r\nContent-Type: ";
+    private final static String Boundary = "\r\n----------ieoau._._+2_8_GoodLuck8.3-dskdfJwSJKl234324jfLdsjfdAuaoei-----";
 
 
     // Class Initializer
@@ -146,10 +152,10 @@ public class Codecs
     {
 	if (str == null)  return  null;
 
-	byte data[] = new byte[str.length()];
-	str.getBytes(0, str.length(), data, 0);
-
-	return new String(base64Encode(data), 0);
+	try
+	    { return new String(base64Encode(str.getBytes("8859_1")), "8859_1"); }
+	catch (UnsupportedEncodingException uee)
+	    { throw new Error(uee.toString()); }
     }
 
 
@@ -210,10 +216,10 @@ public class Codecs
     {
 	if (str == null)  return  null;
 
-	byte data[] = new byte[str.length()];
-	str.getBytes(0, str.length(), data, 0);
-
-	return new String(base64Decode(data), 0);
+	try
+	    { return new String(base64Decode(str.getBytes("8859_1")), "8859_1"); }
+	catch (UnsupportedEncodingException uee)
+	    { throw new Error(uee.toString()); }
     }
 
 
@@ -742,7 +748,9 @@ public class Codecs
      *     NVPair[] opts = Codecs.mpFormDataDecode(body, req.getContentType(),
      *                                             ".");
      * </PRE>
-     * Assuming the data received looked something like:
+     * (where 'req' is the HttpServletRequest).
+     *
+     * <P>Assuming the data received looked something like:
      * <PRE>
      * -----------------------------114975832116442893661388290519
      * Content-Disposition: form-data; name="option"
@@ -785,13 +793,9 @@ public class Codecs
 	if (bndstr == null)
 	    throw new ParseException("'boundary' parameter not found in Content-type: " + cont_type);
 
-	byte[] srtbndry = new byte[bndstr.length()+4],
-	       boundary = new byte[bndstr.length()+6],
-	       endbndry = new byte[bndstr.length()+6];
-
-	(    "--" + bndstr + "\r\n").getBytes(0, srtbndry.length, srtbndry, 0);
-	("\r\n--" + bndstr + "\r\n").getBytes(0, boundary.length, boundary, 0);
-	("\r\n--" + bndstr + "--"  ).getBytes(0, endbndry.length, endbndry, 0);
+	byte[] srtbndry = (    "--" + bndstr + "\r\n").getBytes("8859_1"),
+	       boundary = ("\r\n--" + bndstr + "\r\n").getBytes("8859_1"),
+	       endbndry = ("\r\n--" + bndstr + "--"  ).getBytes("8859_1");
 
 
 	// setup search routines
@@ -806,7 +810,7 @@ public class Codecs
 	int start = Util.findStr(srtbndry, bs, data, 0, data.length);
 	if (start == -1)	// didn't even find the start
 	    throw new ParseException("Starting boundary not found: " +
-				     new String(srtbndry,0));
+				     new String(srtbndry, "8859_1"));
 	start += srtbndry.length;
 
 	NVPair[] res  = new NVPair[10];
@@ -823,7 +827,7 @@ public class Codecs
 		end = Util.findStr(endbndry, be, data, start, data.length);
 		if (end == -1)
 		    throw new ParseException("Ending boundary not found: " +
-					     new String(endbndry,0));
+					     new String(endbndry, "8859_1"));
 		done = true;
 	    }
 
@@ -835,7 +839,7 @@ public class Codecs
 	    {
 		int next = findEOL(data, start) + 2;
 		if (next-2 <= start)  break;	// empty line -> end of headers
-		hdr      = new String(data, 0, start, next-2-start);
+		hdr      = new String(data, start, next-2-start, "8859_1");
 		start    = next;
 
 		// handle line continuation
@@ -844,7 +848,7 @@ public class Codecs
 		       ((ch = data[next]) == ' '  ||  ch == '\t'))
 		{
 		    next   = findEOL(data, start) + 2;
-		    hdr   += new String(data, 0, start, next-2-start);
+		    hdr   += new String(data, start, next-2-start, "8859_1");
 		    start  = next;
 		}
 
@@ -885,7 +889,7 @@ public class Codecs
 	    {
 		if (mangler != null)
 		    filename = mangler.mangleFilename(filename, name);
-		if (filename != null)
+		if (filename != null  &&  filename.length() > 0)
 		{
 		    File file = new File(dir, filename);
 		    FileOutputStream out = new FileOutputStream(file);
@@ -898,7 +902,7 @@ public class Codecs
 	    }
 	    else					// It's simple data
 	    {
-		value = new String(data, 0, start, end-start);
+		value = new String(data, start, end-start, "8859_1");
 	    }
 
 	    if (idx >= res.length)
@@ -940,9 +944,8 @@ public class Codecs
      *                        value is the actual filename (the file will be
      *                        read and it's contents put in the body of that
      *                        part).
-     * @param     cont_type   this returns a new NVPair in the 0'th element
-     *                        which contains
-     *			      name = "Content-Type",
+     * @param     ct_hdr      this returns a new NVPair in the 0'th element
+     *                        which contains name = "Content-Type",
      *			      value = "multipart/form-data; boundary=..."
      *                        (the reason this parameter is an array is
      *                        because a) that's the only way to simulate
@@ -955,10 +958,10 @@ public class Codecs
      * @see #mpFormDataEncode(HTTPClient.NVPair[], HTTPClient.NVPair[], HTTPClient.NVPair[], HTTPClient.FilenameMangler)
      */
     public final static byte[] mpFormDataEncode(NVPair[] opts, NVPair[] files,
-						NVPair[] cont_type)
+						NVPair[] ct_hdr)
 	    throws IOException
     {
-	return mpFormDataEncode(opts, files, cont_type, null);
+	return mpFormDataEncode(opts, files, ct_hdr, null);
     }
 
 
@@ -967,7 +970,7 @@ public class Codecs
     /**
      * This method encodes name/value pairs and files into a byte array
      * using the multipart/form-data encoding. The boundary is returned
-     * as part of <var>cont_type</var>.
+     * as part of <var>ct_hdr</var>.
      * <BR>Example:
      * <PRE>
      *     NVPair[] opts = { new NVPair("option", "doit") };
@@ -984,6 +987,7 @@ public class Codecs
      * doit
      * -----------------------------114975832116442893661388290519
      * Content-Disposition: form-data; name="comment"; filename="comment.txt"
+     * Content-Type: text/plain
      *                                                         &nbsp;
      * Gnus and Gnats are not Gnomes.
      * -----------------------------114975832116442893661388290519--
@@ -991,25 +995,42 @@ public class Codecs
      * where the "Gnus and Gnats ..." is the contents of the file
      * <VAR>comment.txt</VAR> in the current directory.
      *
+     * <P>If no elements are found in the parameters then a zero-length
+     * byte[] is returned and the content-type is set to
+     * <var>application/octet-string</var> (because a multipart must
+     * always have at least one part.
+     *
+     * <P>For files an attempt is made to discover the content-type, and if
+     * found a Content-Type header will be added to that part. The content type
+     * is retrieved using java.net.URLConnection.guessContentTypeFromName() -
+     * see java.net.URLConnection.setFileNameMap() for how to modify that map.
+     * Note that under JDK 1.1 by default the map seems to be empty. If you
+     * experience troubles getting the server to accept the data then make
+     * sure the fileNameMap is returning a content-type for each file (this
+     * may mean you'll have to set your own).
+     *
      * @param     opts        the simple form-data to encode (may be null);
      *                        for each NVPair the name refers to the 'name'
      *                        attribute to be used in the header of the part,
      *                        and the value is contents of the part.
+     *                        null elements in the array are ingored.
      * @param     files       the files to encode (may be null); for each
      *                        NVPair the name refers to the 'name' attribute
      *                        to be used in the header of the part, and the
      *                        value is the actual filename (the file will be
-     *                        read and it's contents put in the body of that
-     *                        part).
-     * @param     cont_type   this returns a new NVPair in the 0'th element
-     *                        which contains
-     *			      name = "Content-Type",
+     *                        read and it's contents put in the body of
+     *                        that part). null elements in the array
+     *                        are ingored.
+     * @param     ct_hdr      this returns a new NVPair in the 0'th element
+     *                        which contains name = "Content-Type",
      *			      value = "multipart/form-data; boundary=..."
      *                        (the reason this parameter is an array is
      *                        because a) that's the only way to simulate
      *                        pass-by-reference and b) you need an array for
      *                        the headers parameter to the Post() or Put()
-     *                        anyway).
+     *                        anyway). The exception to this is that if no
+     *                        opts or files are given the type is set to
+     *                        "application/octet-stream" instead.
      * @param     mangler     the filename mangler, or null if no mangling is
      *                        to be done. This allows you to change the name
      *                        used in the <var>filename</var> attribute of the
@@ -1020,20 +1041,17 @@ public class Codecs
      * @exception IOException If any file operation fails.
      */
     public final static byte[] mpFormDataEncode(NVPair[] opts, NVPair[] files,
-						NVPair[] cont_type,
+						NVPair[] ct_hdr,
 						FilenameMangler mangler)
 	    throws IOException
     {
+	byte[] boundary  = Boundary.getBytes("8859_1"),
+	       cont_disp = ContDisp.getBytes("8859_1"),
+	       cont_type = ContType.getBytes("8859_1"),
+	       filename  = FileName.getBytes("8859_1");
 	int len = 0,
-	    hdr_len = 2  + 2 + 70 + 2 +  39 + 2 +  2;
-	     //       \r\n --  bnd  \r\n C..  \r\n \r\n
-	byte[] boundary  = new byte[74],
-	       cont_disp = new byte[40],
-	       filename  = new byte[13];
-
-        ContDisp.getBytes(0, ContDisp.length(), cont_disp, 0);
-	FileName.getBytes(0, FileName.length(), filename, 0);
-	Boundary.getBytes(0, Boundary.length(), boundary, 0);
+	    hdr_len = boundary.length + cont_disp.length+1 + 2 +  2;
+	    //        \r\n --  bnd      \r\n C-D: ..; n=".." \r\n \r\n
 
 	if (opts == null)   opts  = dummy;
 	if (files == null)  files = dummy;
@@ -1042,24 +1060,40 @@ public class Codecs
 	// Calculate the length of the data
 
 	for (int idx=0; idx<opts.length; idx++)
+	{
+	    if (opts[idx] == null)  continue;
+
 	    len += hdr_len + opts[idx].getName().length() +
 		   opts[idx].getValue().length();
+	}
 
 	for (int idx=0; idx<files.length; idx++)
 	{
+	    if (files[idx] == null)  continue;
+
 	    File file = new File(files[idx].getValue());
 	    String fname = file.getName();
 	    if (mangler != null)
 		fname = mangler.mangleFilename(fname, files[idx].getName());
 	    if (fname != null)
 	    {
-		len += hdr_len + files[idx].getName().length() + 13;
+		len += hdr_len + files[idx].getName().length() + filename.length;
 		len += fname.length() + file.length();
+
+		String ct = CT.getContentType(file.getName());
+		if (ct != null)
+		    len += cont_type.length + ct.length();
 	    }
 	}
 
+	if (len == 0)
+	{
+	    ct_hdr[0] = new NVPair("Content-Type", "application/octet-stream");
+	    return new byte[0];
+	}
+
 	len -= 2;			// first CR LF is not written
-	len += 2 + 2 + 70 + 2 + 2;	// \r\n -- bnd -- \r\n
+	len += boundary.length + 2 + 2;	// \r\n -- bnd -- \r\n
 
 
 	// Now fill array
@@ -1086,17 +1120,18 @@ public class Codecs
 
 	    for (int idx=0; idx<opts.length; idx++)
 	    {
+		if (opts[idx] == null)  continue;
+
 		System.arraycopy(boundary, off, res, pos, boundary.length-off);
 		pos += boundary.length - off;
 		off  = 0;
+		int  start = pos;
+
 		System.arraycopy(cont_disp, 0, res, pos, cont_disp.length);
 		pos += cont_disp.length;
 
 		int nlen = opts[idx].getName().length();
-		opts[idx].getName().getBytes(0, nlen, res, pos);
-		if (nlen >= boundary.length  &&
-		    Util.findStr(boundary, bnd_cmp, res, pos, pos+nlen) != -1)
-		    continue NewBound;
+		System.arraycopy(opts[idx].getName().getBytes("8859_1"), 0, res, pos, nlen);
 		pos += nlen;
 
 		res[pos++] = (byte) '"';
@@ -1106,15 +1141,18 @@ public class Codecs
 		res[pos++] = (byte) '\n';
 
 		int vlen = opts[idx].getValue().length();
-		opts[idx].getValue().getBytes(0, vlen, res, pos);
-		if (vlen >= boundary.length  &&
-		    Util.findStr(boundary, bnd_cmp, res, pos, pos+vlen) != -1)
-		    continue NewBound;
+		System.arraycopy(opts[idx].getValue().getBytes("8859_1"), 0, res, pos, vlen);
 		pos += vlen;
+
+		if ((pos-start) >= boundary.length  &&
+		    Util.findStr(boundary, bnd_cmp, res, start, pos) != -1)
+		    continue NewBound;
 	    }
 
 	    for (int idx=0; idx<files.length; idx++)
 	    {
+		if (files[idx] == null)  continue;
+
 		File file = new File(files[idx].getValue());
 		String fname = file.getName();
 		if (mangler != null)
@@ -1124,34 +1162,39 @@ public class Codecs
 		System.arraycopy(boundary, off, res, pos, boundary.length-off);
 		pos += boundary.length - off;
 		off  = 0;
+		int start = pos;
+
 		System.arraycopy(cont_disp, 0, res, pos, cont_disp.length);
 		pos += cont_disp.length;
 
 		int nlen = files[idx].getName().length();
-		files[idx].getName().getBytes(0, nlen, res, pos);
-		if (nlen >= boundary.length  &&
-		    Util.findStr(boundary, bnd_cmp, res, pos, pos+nlen) != -1)
-		    continue NewBound;
+		System.arraycopy(files[idx].getName().getBytes("8859_1"), 0, res, pos, nlen);
 		pos += nlen;
 
 		System.arraycopy(filename, 0, res, pos, filename.length);
 		pos += filename.length;
 
 		nlen = fname.length();
-		fname.getBytes(0, nlen, res, pos);
-		if (nlen >= boundary.length  &&
-		    Util.findStr(boundary, bnd_cmp, res, pos, pos+nlen) != -1)
-		    continue NewBound;
+		System.arraycopy(fname.getBytes("8859_1"), 0, res, pos, nlen);
 		pos += nlen;
 
 		res[pos++] = (byte) '"';
+
+		String ct = CT.getContentType(file.getName());
+		if (ct != null)
+		{
+		    System.arraycopy(cont_type, 0, res, pos, cont_type.length);
+		    pos += cont_type.length;
+		    System.arraycopy(ct.getBytes("8859_1"), 0, res, pos, ct.length());
+		    pos += ct.length();
+		}
+
 		res[pos++] = (byte) '\r';
 		res[pos++] = (byte) '\n';
 		res[pos++] = (byte) '\r';
 		res[pos++] = (byte) '\n';
 
 		nlen = (int) file.length();
-		int opos = pos;
 		FileInputStream fin = new FileInputStream(file);
 		while (nlen > 0)
 		{
@@ -1159,7 +1202,10 @@ public class Codecs
 		    nlen -= got;
 		    pos += got;
 		}
-		if (Util.findStr(boundary, bnd_cmp, res, opos, pos) != -1)
+		fin.close();
+
+		if ((pos-start) >= boundary.length  &&
+		    Util.findStr(boundary, bnd_cmp, res, start, pos) != -1)
 		    continue NewBound;
 	    }
 
@@ -1180,11 +1226,22 @@ public class Codecs
 	 * but too many script authors are not capable of reading specs...
 	 * So, I give up and don't quote it.
 	 */
-	cont_type[0] = new NVPair("Content-Type",
-				  "multipart/form-data; boundary=" +
-				  new String(boundary, 0, 4, 70));
+	ct_hdr[0] = new NVPair("Content-Type",
+			       "multipart/form-data; boundary=" +
+			       new String(boundary, 4, boundary.length-4, "8859_1"));
 
 	return res;
+    }
+
+    private static class CT extends URLConnection
+    {
+	protected static final String getContentType(String fname)
+	{
+	    return guessContentTypeFromName(fname);
+	}
+
+	private CT() { super(null); }
+	public void connect() { }
     }
 
 
@@ -1208,11 +1265,12 @@ public class Codecs
 
 	for (idx = 0; idx < pairs.length; idx++)
 	{
-	    qbuf.append(URLEncode(pairs[idx].getName()) + "=" +
-			URLEncode(pairs[idx].getValue()) + "&");
+	    if (pairs[idx] != null)
+		qbuf.append(URLEncode(pairs[idx].getName()) + "=" +
+			    URLEncode(pairs[idx].getValue()) + "&");
 	}
 
-	if (idx > 0)
+	if (qbuf.length() > 0)
 	    qbuf.setLength(qbuf.length()-1);	// remove trailing '&'
 
 	return qbuf.toString();
@@ -1332,8 +1390,12 @@ public class Codecs
 
 	if (len > 0)
 	{
-	    hex_len.getBytes(0, hex_len.length(), res, r_off);
-	    r_off += hex_len.length();
+	    int hlen = hex_len.length();
+	    try
+		{ System.arraycopy(hex_len.getBytes("8859_1"), 0, res, r_off, hlen); }
+	    catch (UnsupportedEncodingException uee)
+		{ throw new Error(uee.toString()); }
+	    r_off += hlen;
 	    res[r_off++] = (byte) '\r';
 	    res[r_off++] = (byte) '\n';
 
@@ -1351,16 +1413,24 @@ public class Codecs
 
 	    for (int idx=0; idx<ftrs.length; idx++)
 	    {
-		ftrs[idx].getName().getBytes(0, ftrs[idx].getName().length(),
-					     res, r_off);
-		r_off += ftrs[idx].getName().length();
+		int nlen = ftrs[idx].getName().length();
+		try
+		    { System.arraycopy(ftrs[idx].getName().getBytes("8859_1"),
+				       0, res, r_off, nlen); }
+		catch (UnsupportedEncodingException uee)
+		    { throw new Error(uee.toString()); }
+		r_off += nlen;
 
 		res[r_off++] = (byte) ':';
 		res[r_off++] = (byte) ' ';
 
-		ftrs[idx].getValue().getBytes(0, ftrs[idx].getValue().length(),
-					      res, r_off);
-		r_off += ftrs[idx].getValue().length();
+		int vlen = ftrs[idx].getValue().length();
+		try
+		    { System.arraycopy(ftrs[idx].getValue().getBytes("8859_1"),
+				       0, res, r_off, vlen); }
+		catch (UnsupportedEncodingException uee)
+		    { throw new Error(uee.toString()); }
+		r_off += vlen;
 
 		res[r_off++] = (byte) '\r';
 		res[r_off++] = (byte) '\n';
@@ -1393,13 +1463,18 @@ public class Codecs
     public final static Object chunkedDecode(InputStream input)
 	    throws ParseException, IOException
     {
-	int len = getChunkLength(input);
+	long clen = getChunkLength(input);
 
-	if (len > 0)			// it's a chunk
+	if (clen > Integer.MAX_VALUE)		// Huston, what the hell are you sending?
+	    throw new ParseException("Can't deal with chunk lengths greater " +
+				     "Integer.MAX_VALUE: " + clen + " > " +
+				     Integer.MAX_VALUE);
+
+	if (clen > 0)			// it's a chunk
 	{
-	    byte[] res = new byte[len];
+	    byte[] res = new byte[(int) clen];
 
-	    int off = 0;
+	    int off = 0, len = 0;
 	    while (len != -1  &&  off < res.length)
 	    {
 		len  = input.read(res, off, res.length-off);
@@ -1420,11 +1495,11 @@ public class Codecs
 	{
 	    NVPair[] res = new NVPair[0];
 
-	    DataInputStream datain = new DataInputStream(input);
+	    BufferedReader reader = new BufferedReader(new InputStreamReader(input, "8859_1"));
 	    String line;
 
 	    // read and parse footer
-	    while ((line = datain.readLine()) != null  &&  line.length() > 0)
+	    while ((line = reader.readLine()) != null  &&  line.length() > 0)
 	    {
 		int colon = line.indexOf(':');
 		if (colon == -1)
@@ -1449,39 +1524,43 @@ public class Codecs
      * @exception ParseException If any exception during parsing occured.
      * @exception IOException    If any exception during reading occured.
      */
-    final static int getChunkLength(InputStream input)
+    final static long getChunkLength(InputStream input)
 	    throws ParseException, IOException
     {
-	byte[] hex_len = new byte[8];	// if they send more than 2GB chunks...
+	byte[] hex_len = new byte[16];	// if they send more than 8EB chunks...
 	int    off     = 0,
 	       ch;
 
 
 	// read chunk length
 
-	while ((ch = input.read()) != '\r'  &&  ch != '\n'  &&
-		ch != ';'  &&  off < hex_len.length)
+	while ((ch = input.read()) > 0  &&  (ch == ' '  ||  ch == '\t')) ;
+	if (ch < 0)
+	    throw new EOFException("Premature EOF while reading chunk length");
+	hex_len[off++] = (byte) ch;
+	while ((ch = input.read()) > 0  &&  ch != '\r'  &&  ch != '\n'  &&
+		ch != ' '  &&  ch != '\t'  &&  ch != ';'  &&
+		off < hex_len.length)
 	    hex_len[off++] = (byte) ch;
 
+	while ((ch == ' '  ||  ch == '\t')  &&  (ch = input.read()) > 0) ;
 	if (ch == ';')		// chunk-ext (ignore it)
-	    while ((ch = input.read()) != '\r'  &&  ch != '\n') ;
+	    while ((ch = input.read()) > 0  &&  ch != '\r'  &&  ch != '\n') ;
 
+	if (ch < 0)
+	    throw new EOFException("Premature EOF while reading chunk length");
 	if (ch != '\n'  &&  (ch != '\r'  ||  input.read() != '\n'))
 	    throw new ParseException("Didn't find valid chunk length: " +
-				     new String(hex_len, 0, 0, off));
+				     new String(hex_len, 0, off, "8859_1"));
 
 	// parse chunk length
 
-	int len;
 	try
-	    { len = Integer.parseInt(new String(hex_len, 0, 0, off).trim(),
-				     16); }
+	    { return Long.parseLong(new String(hex_len, 0, off, "8859_1").trim(),
+				    16); }
 	catch (NumberFormatException nfe)
 	    { throw new ParseException("Didn't find valid chunk length: " +
-					new String(hex_len, 0, 0, off) ); }
-
-	return len;
+					new String(hex_len, 0, off, "8859_1") ); }
     }
 
 }
-

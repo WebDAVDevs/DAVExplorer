@@ -17,6 +17,8 @@
 <UL>
 <LI><A HREF="#general">General</A>
     <UL>
+    <LI><A HREF="#cookie_handler">How do I get rid of the Cookie-Popup</A>
+    <LI><A HREF="#jdk">Will the HTTPClient work with JDK 1.3? (1.2, 1.1)</A>
     <LI><A HREF="#hang">Dialog box doesn't appear or hangs</A>
     <LI><A HREF="#handler">Displaying images and playing sound</A>
     <LI><A HREF="#formdata">File upload using multipart/form-data</A>
@@ -30,6 +32,8 @@
                            the expected results</A>
     <li><A HREF="#cookiesns">The site is saying "Your browser doesn't support
                              cookies"</A>
+    <LI><A HREF="#multi_clients">How do I simulate multiple independent clients
+	or users?</A>
     </UL>
 <LI><A HREF="#applet">Applet specific</A>
     <UL>
@@ -45,6 +49,31 @@
 <H2><A NAME="general">General</A></H2>
 
 
+<H4><A NAME="cookie_handler">Every time the server tries to set a cookie
+    I get a pop-window asking whether I want to accept the cookie. How
+    do I get rid of it?</A>
+    </H4>
+
+<BLOCKQUOTE>
+    <P>If you just want to accept all cookies blindly then set the
+    cookie-policy-handler to null:
+    <PRE>
+	CookieModule.setCookiePolicyHandler(null); </PRE>
+    See the <A HREF="advanced_info.html#cookie_mod">advanced_info</A>
+    doc for more information.
+</BLOCKQUOTE>
+
+
+<H4><A NAME="jdk">Will the HTTPClient work with JDK 1.3? (or 1.1, or
+    1.2)</A>
+    </H4>
+
+<BLOCKQUOTE>
+    <P>The HTTPClient will work fine with JDK 1.1 or later, including
+    JDK 1.2 and JDK 1.3. Only JDK 1.0.2 is not supported anymore.
+</BLOCKQUOTE>
+
+
 <H4><A NAME="hang">All goes fine, until I try to do a request to a site
     that requires authorization or tries to set cookies. The dialog box
     either doesn't appear, or it appears but then everything hangs.</A>
@@ -58,7 +87,7 @@
     events can be processed till the popup has been closed again
     (thereby allowing the request to finish and to return to the
     caller), and the popup won't do anything unless it gets the
-    corresponding event (e.g.  a keyboard or mouse event).
+    corresponding event (e.g. a keyboard or mouse event).
     <P>There are various solutions to this:
     <OL>
     <LI>Don't do any request from inside an event handler. This can be
@@ -68,9 +97,9 @@
 	Applet</A>).
     <LI>Install your own authorization and cookie policy handlers which
 	don't use the AWT (see <A
-	HREF="api/HTTPClient.AuthorizationInfo.html#setAuthHandler(HTTPClient.AuthorizationHandler)">AuthorizationInfo.setAuthHandler</A>
+	HREF="api/HTTPClient/AuthorizationInfo.html#setAuthHandler(HTTPClient.AuthorizationHandler)">AuthorizationInfo.setAuthHandler</A>
 	and <A
-	HREF="api/HTTPClient.CookieModule.html#setCookiePolicyHandler(HTTPClient.CookiePolicyHandler)">CookieModule.setCookiePolicyHandler</A>).
+	HREF="api/HTTPClient/CookieModule.html#setCookiePolicyHandler(HTTPClient.CookiePolicyHandler)">CookieModule.setCookiePolicyHandler</A>).
 	However, I recommend the previous solution, as in general it is
 	bad practice to do any sort of extended work inside an event
 	handler (i.e. the code in the handler should execute quickly
@@ -80,9 +109,9 @@
 	<A HREF="getting_started.html#auth">Authorization Handling</A>
 	for more info.
     <LI>Use <A
-	HREF="api/HTTPClient.HTTPConnection.html#setAllowUserInteraction(boolean)">HTTPConnection.setAllowUserInteraction()</A>
+	HREF="api/HTTPClient/HTTPConnection.html#setAllowUserInteraction(boolean)">HTTPConnection.setAllowUserInteraction()</A>
 	or <A
-	HREF="api/HTTPClient.HTTPConnection.html#setDefaultAllowUserInteraction(boolean)">HTTPConnection.setDefaultAllowUserInteraction()</A>
+	HREF="api/HTTPClient/HTTPConnection.html#setDefaultAllowUserInteraction(boolean)">HTTPConnection.setDefaultAllowUserInteraction()</A>
 	to prevent the popups from being used. Note that this means that
 	cookies will be silently accepted and that authorization info
 	must be provided via the addXXXAuthorization() methods (see
@@ -97,7 +126,8 @@
 
 <BLOCKQUOTE>
     <P>You certainly could write your own ContentHandler's, but there
-    is an easier way (however, it relies on undocumented sun classes):
+    is an easier way (however, one solution relies on undocumented sun
+    classes):
     <DL>
     <DT>Sound (.au)
     <DD>This tip is from a <A HREF="http://www.javaworld.com/javaworld/javatips/jw-javatip24.html">JavaWorld article</A> by Chong Ser Wah.
@@ -110,12 +140,12 @@
 	    AudioStream as = new AudioStream(resp.getStream());
 	    AudioPlayer.player.start(as); </PRE>
     <DT>Images (gif and jpeg)
-    <DD>This is from <A HREF="http://www.dtack.com/java/dtack/hinweis/imagedecode/imagedecode.html">a tip by David Erb</A>.
-	The <A HREF="ImageFromResponse.java">ImageFromResponse</A> class
-	will return an <var>Image</var> given an <var>HTTPResponse</var>
-	and a <var>java.awt.Component</var>:
+    <DD>Assuming <var>resp</var> is the <var>HTTPResponse</var>, use the
+	following:
 	<PRE>
-	    Image img = ImageFromResponse.create(resp, component); </PRE>
+	    import java.awt.Toolkit;
+
+	    Image img = ToolKit.getDefaultToolkit().createImage(resp.getData()); </PRE>
     </DL>
 </BLOCKQUOTE>
 
@@ -125,7 +155,7 @@
     do this with the HTTPClient?</A></H4>
 
 <BLOCKQUOTE>
-    <P>See <A HREF="api/HTTPClient.Codecs.html#mpFormDataEncode(HTTPClient.NVPair[], HTTPClient.NVPair[], HTTPClient.NVPair[])">Codecs.mpFormDataEncode()</A>.
+    <P>See <A HREF="api/HTTPClient/Codecs.html#mpFormDataEncode(HTTPClient.NVPair[], HTTPClient.NVPair[], HTTPClient.NVPair[])">Codecs.mpFormDataEncode()</A>.
 </BLOCKQUOTE>
 
 
@@ -211,9 +241,9 @@
 	    be looking at the User-Agent field. You can try setting the
 	    User-Agent header with something like the following:
 	    <PRE>
-            HTTPConnection.setDefaultHeaders(
+            con.setDefaultHeaders(
                 new NVPair[] { new NVPair("User-Agent", "Mozilla/4.5") });</PRE>
-	    (do this before you create the HTTPConnection).
+	    (do this before you send the request, of course).
 	<LI>The site may be expecting a Referer header containing a valid
 	    url. Try setting that header appropriately.
 	<LI>The site may be requiring cookies. Try accepting any cookies it
@@ -230,8 +260,9 @@
     (<code>&lt;INPUT TYPE=HIDDEN NAME=... VALUE=...&gt;</code>). If you
     are taking an html form and trying to do the same request as a browser
     would then make sure your sending along the info from those fields too
-    (the fields may be anywhere on the page, so look closely). If that
-    isn't the problem, see <A HREF="#diffres">above</A>.
+    (the fields may be anywhere on the page, so look closely). Also, take
+    a look at the <A HREF="emulating_forms.html">Emulating Forms</A> doc.
+    If that isn't the problem, see <A HREF="#diffres">above</A>.
 </BLOCKQUOTE>
 
 <H4><A NAME="cookiesns">The site is saying "Your browser doesn't support
@@ -243,9 +274,17 @@
     just set the header to something used by Netscape or Exploder.
     Example:
     <PRE>
-    HTTPConnection.setDefaultHeaders(
+    con.setDefaultHeaders(
             new NVPair[] { new NVPair("User-Agent", "Mozilla/4.5") });</PRE>
-    (do this before you create the HTTPConnection).
+    (do this before you send the request, of course).
+</BLOCKQUOTE>
+
+<H4><A NAME="multi_clients">How do I simulate multiple independent clients or
+			    users?</A></H4>
+
+<BLOCKQUOTE>
+    <P>See the section on <A HREF="advanced_info.html#contexts">Contexts</A> in
+    the advanced-info doc.
 </BLOCKQUOTE>
 
 <HR>
@@ -253,19 +292,20 @@
 
 
 <H4><A NAME="se-prop">I keep getting the message "#Security Exception:
-    properties" (Netscape 3.x) or "#Security Exception:
-    checkpropsaccess.key" (Netscape 4.x) in the Java Console every time
+    properties" (Netscape 3.x), "#Security Exception: checkpropsaccess.key"
+    (Netscape 4.x), or
+    "com.ms.security.SecurityExceptionEx[HTTPClient/HTTPConnection.&lt;clinit&gt;]:
+    Unable to access system property:" (Internet Exploder) in the Java Console
+    every time
     my Applet starts.</A></H4>
 
 <BLOCKQUOTE>
-    <P>This can be ignored. What is happening is that the static
-    initializer of the HTTPConnection class tries to read a couple
+    <P>These can be ignored. What is happening is that the static
+    initializer of the HTTPConnection class tries to read a number of
     properties and this results in a SecurityException (in an Applet).
-    This exception is caught inside the initializer, but Netscape's
-    AppletSecurityManager prints the above message before throwing the
-    exception. The properties that are being tried are
-    <CODE>"proxySet"</CODE> and <CODE>"socksHost"</CODE>, which can be
-    set by applications to enable proxies.
+    These exceptions are caught inside the initializer, but Netscape's
+    AppletSecurityManager and Exploder's StandardSecurityManager print the
+    above messages before throwing each exception.
 </BLOCKQUOTE>
 
 
@@ -281,10 +321,10 @@
     seconds.  To prevent applications from hanging at exit this thread
     is made a daemon thread when created (using
     <code>setDaemon(true)</code>).  Furthermore, the thread is created
-    when sending a request, and is therefore created in the context of
-    whatever thread is calling HTTPClient. The problem now is that the
-    AWT event handler runs in thread of its own which belongs to the
-    main thread group java.lang.ThreadGroup, but applets are only
+    when sending the first request, and is therefore created in the
+    context of whatever thread is calling HTTPClient. The problem now is
+    that the AWT event handler runs in thread of its own which belongs
+    to the main thread group java.lang.ThreadGroup, but applets are only
     allowed to manipulate threads in the AppletThreadGroup (this
     includes stop()'ing a thread or doing a setDaemon()). Now if the
     HTTPClient is called from an event handler the timeout thread is
@@ -332,7 +372,7 @@
 <HR>
 
 <ADDRESS>
-Ronald Tschal&auml;r / 18. June 1999 /
+Ronald Tschal&auml;r / 6. May 2001 /
 <A HREF="mailto:ronald@innovation.ch">ronald@innovation.ch</A>.
 </ADDRESS>
 

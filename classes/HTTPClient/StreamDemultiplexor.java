@@ -1,8 +1,8 @@
 /*
- * @(#)StreamDemultiplexor.java				0.3-2 18/06/1999
+ * @(#)StreamDemultiplexor.java				0.3-3 06/05/2001
  *
  *  This file is part of the HTTPClient package
- *  Copyright (C) 1996-1999  Ronald Tschalär
+ *  Copyright (C) 1996-2001 Ronald Tschalär
  *
  *  This library is free software; you can redistribute it and/or
  *  modify it under the terms of the GNU Lesser General Public
@@ -24,24 +24,27 @@
  *
  *  ronald@innovation.ch
  *
+ *  The HTTPClient's home page is located at:
+ *
+ *  http://www.innovation.ch/java/HTTPClient/ 
+ *
  */
 
 package HTTPClient;
 
-
-import java.io.*;
+import java.io.IOException;
+import java.io.EOFException;
+import java.io.InterruptedIOException;
 import java.net.Socket;
-import java.util.Vector;
-import java.util.Enumeration;
+import java.net.SocketException;
 
 /**
  * This class handles the demultiplexing of input stream. This is needed
  * for things like keep-alive in HTTP/1.0, persist in HTTP/1.1 and in HTTP-NG.
  *
- * @version	0.3-2  18/06/1999
+ * @version	0.3-3  06/05/2001
  * @author	Ronald Tschalär
  */
-
 class StreamDemultiplexor implements GlobalConstants
 {
     /** the protocol were handling request for */
@@ -51,7 +54,7 @@ class StreamDemultiplexor implements GlobalConstants
     private HTTPConnection         Connection;
 
     /** the input stream to demultiplex */
-    private ExtBufferedInputStream Stream;
+    private BufferedInputStream    Stream;
 
     /** the socket this hangs off */
     private Socket                 Sock = null;
@@ -65,11 +68,14 @@ class StreamDemultiplexor implements GlobalConstants
     /** timer thread which implements the timers */
     private static SocketTimeout   TimerThread = null;
 
+    /** cleanup object to stop timer thread when we're gc'd */
+    private static Object          cleanup;
+
     /** a Vector to hold the list of response handlers were serving */
     private LinkedList             RespHandlerList;
 
     /** number of unread bytes in current chunk (if transf-enc == chunked) */
-    private int                    chunk_len;
+    private long                   chunk_len;
 
     /** the currently set timeout for the socket */
     private int                    cur_timeout = 0;
@@ -79,6 +85,25 @@ class StreamDemultiplexor implements GlobalConstants
     {
 	TimerThread = new SocketTimeout(60);
 	TimerThread.start();
+
+	/* This is here to clean up the timer thread should the
+	 * StreamDemultiplexor class be gc'd. This will not usually happen,
+	 * unless the stuff is being run in an Applet or similar environment
+	 * where multiple classloaders are used to load the same class
+	 * multiple times. However, even in those environments it's not clear
+	 * that this here will do us any good, because classes aren't usually
+	 * gc'd unless their classloader is, but the timer thread keeps a
+	 * reference to the classloader, and hence ought to prevent the
+	 * classloader from being gc'd.
+	 */
+	cleanup = new Object() {
+	    private final SocketTimeout timer = StreamDemultiplexor.TimerThread;
+
+	    protected void finalize()
+	    {
+		timer.kill();
+	    }
+	};
     }
 
 
@@ -108,17 +133,18 @@ class StreamDemultiplexor implements GlobalConstants
      */
     private void init(Socket sock)  throws IOException
     {
-	if (DebugDemux)
-	    System.err.println("Demux: Initializing Stream Demultiplexor (" +
-				this.hashCode() + ")");
+	Log.write(Log.DEMUX, "Demux: Initializing Stream Demultiplexor (" +
+			     this.hashCode() + ")");
 
 	this.Sock       = sock;
-	this.Stream     = new ExtBufferedInputStream(sock.getInputStream());
+	this.Stream     = new BufferedInputStream(sock.getInputStream());
 	MarkedForClose  = null;
 	chunk_len       = -1;
 
-	// start a timer to close the socket after 60 seconds
+	// create a timer to close the socket after 60 seconds, but don't
+	// start it yet
 	Timer = TimerThread.setTimeout(this);
+	Timer.hyber();
     }
 
 
@@ -129,7 +155,7 @@ class StreamDemultiplexor implements GlobalConstants
      */
     void register(Response resp_handler, Request req)  throws RetryException
     {
-	synchronized(RespHandlerList)
+	synchronized (RespHandlerList)
 	{
 	    if (Sock == null)
 		throw new RetryException();
@@ -148,10 +174,14 @@ class StreamDemultiplexor implements GlobalConstants
     RespInputStream getStream(Response resp)
     {
 	ResponseHandler resph;
-	for (resph = (ResponseHandler) RespHandlerList.enumerate();
-	     resph != null; resph = (ResponseHandler) RespHandlerList.next())
+	synchronized (RespHandlerList)
 	{
-	    if (resph.resp == resp)  break;
+	    for (resph = (ResponseHandler) RespHandlerList.enumerate();
+		 resph != null;
+		 resph = (ResponseHandler) RespHandlerList.next())
+	    {
+		if (resph.resp == resp)  break;
+	    }
 	}
 
 	if (resph != null)
@@ -178,7 +208,10 @@ class StreamDemultiplexor implements GlobalConstants
 	    throws IOException
     {
 	if (resph.exception != null)
-	    throw (IOException) resph.exception.fillInStackTrace();
+	{
+	    resph.exception.fillInStackTrace();
+	    throw resph.exception;
+	}
 
 	if (resph.eof)
 	    return -1;
@@ -197,25 +230,27 @@ class StreamDemultiplexor implements GlobalConstants
 		if (ioe instanceof InterruptedIOException)
 		    throw ioe;
 		else
-		    throw (IOException) resph.exception.fillInStackTrace();
+		{
+		    resph.exception.fillInStackTrace();
+		    throw resph.exception;
+		}
 	    }
 	}
 
 
 	// Now we can read from the stream.
 
-	synchronized(this)
+	synchronized (this)
 	{
 	    if (resph.exception != null)
-		throw (IOException) resph.exception.fillInStackTrace();
-
-	    if (DebugDemux)
 	    {
-		if (resph.resp.cd_type != CD_HDRS)
-		    System.err.println("Demux: Reading for stream " +
-				       resph.stream.hashCode() +
-				       " (" + Thread.currentThread() + ")");
+		resph.exception.fillInStackTrace();
+		throw resph.exception;
 	    }
+
+	    if (resph.resp.cd_type != CD_HDRS)
+		Log.write(Log.DEMUX, "Demux: Reading for stream " +
+				     resph.stream.hashCode());
 
 	    if (Timer != null)  Timer.hyber();
 
@@ -225,16 +260,10 @@ class StreamDemultiplexor implements GlobalConstants
 
 		if (timeout != cur_timeout)
 		{
-		    if (DebugDemux)
-		    {
-			System.err.println("Demux: Setting timeout to " +
-					   timeout + " ms");
-		    }
+		    Log.write(Log.DEMUX, "Demux: Setting timeout to " +
+					 timeout + " ms");
 
-		    try
-			{ Sock.setSoTimeout(timeout); }
-		    catch (Throwable t)
-			{ }
+		    Sock.setSoTimeout(timeout);
 		    cur_timeout = timeout;
 		}
 
@@ -277,7 +306,7 @@ class StreamDemultiplexor implements GlobalConstants
 
 			if (chunk_len > 0)		// it's data
 			{
-			    if (len > chunk_len)  len = chunk_len;
+			    if (len > chunk_len)  len = (int) chunk_len;
 			    rcvd = Stream.read(b, off, len);
 			    if (rcvd == -1)
 				throw new EOFException("Premature EOF encountered");
@@ -310,7 +339,6 @@ class StreamDemultiplexor implements GlobalConstants
 			if (ovf != -1)
 			{
 			    rcvd -= ovf;
-			    Stream.reset();
 			    close(resph);
 			}
 
@@ -332,22 +360,14 @@ class StreamDemultiplexor implements GlobalConstants
 	    }
 	    catch (IOException ioe)
 	    {
-		if (DebugDemux)
-		{
-		    System.err.print("Demux: (" + Thread.currentThread() + ") ");
-		    ioe.printStackTrace();
-		}
+		Log.write(Log.DEMUX, "Demux: ", ioe);
 
 		close(ioe, true);
 		throw resph.exception;		// set by retry_requests
 	    }
 	    catch (ParseException pe)
 	    {
-		if (DebugDemux)
-		{
-		    System.err.print("Demux: (" + Thread.currentThread() + ") ");
-		    pe.printStackTrace();
-		}
+		Log.write(Log.DEMUX, "Demux: ", pe);
 
 		close(new IOException(pe.toString()), true);
 		throw resph.exception;		// set by retry_requests
@@ -362,7 +382,10 @@ class StreamDemultiplexor implements GlobalConstants
     synchronized long skip(long num, ResponseHandler resph) throws IOException
     {
 	if (resph.exception != null)
-	    throw (IOException) resph.exception.fillInStackTrace();
+	{
+	    resph.exception.fillInStackTrace();
+	    throw resph.exception;
+	}
 
 	if (resph.eof)
 	    return 0;
@@ -376,18 +399,23 @@ class StreamDemultiplexor implements GlobalConstants
     }
 
     /**
-     * Determines the number of available bytes.
+     * Determines the number of available bytes. If <var>resph</var> is null, return
+     * available bytes on the socket stream itself (used by HTTPConnection).
      */
     synchronized int available(ResponseHandler resph) throws IOException
     {
-	int avail = Stream.available();
-	if (resph == null)  return avail;
+	if (resph != null  &&  resph.exception != null)
+	{
+	    resph.exception.fillInStackTrace();
+	    throw resph.exception;
+	}
 
-	if (resph.exception != null)
-	    throw (IOException) resph.exception.fillInStackTrace();
-
-	if (resph.eof)
+	if (resph != null  &&  resph.eof)
 	    return 0;
+
+	int avail = Stream.available();
+	if (resph == null)
+	  return avail;
 
 	switch (resph.resp.cd_type)
 	{
@@ -439,9 +467,8 @@ class StreamDemultiplexor implements GlobalConstants
 	if (Sock == null)	// already cleaned up
 	    return;
 
-	if (DebugDemux)
-	    System.err.println("Demux: Closing all streams and socket (" +
-				this.hashCode() + ")");
+	Log.write(Log.DEMUX, "Demux: Closing all streams and socket (" +
+			     this.hashCode() + ")");
 
 	try
 	    { Stream.close(); }
@@ -463,7 +490,7 @@ class StreamDemultiplexor implements GlobalConstants
 	// Here comes the tricky part: redo outstanding requests!
 
 	if (exception != null)
-	    synchronized(RespHandlerList)
+	    synchronized (RespHandlerList)
 		{ retry_requests(exception, was_reset); }
     }
 
@@ -520,18 +547,19 @@ class StreamDemultiplexor implements GlobalConstants
      * Closes the associated stream. If this one has been markedForClose then
      * the socket is closed; else closeSocketIfAllStreamsClosed is invoked.
      */
-    synchronized void close(ResponseHandler resph)
+    private void close(ResponseHandler resph)
     {
-	if (resph != (ResponseHandler) RespHandlerList.getFirst())
-	    return;
+	synchronized (RespHandlerList)
+	{
+	    if (resph != (ResponseHandler) RespHandlerList.getFirst())
+		return;
 
-	if (DebugDemux)
-	    System.err.println("Demux: Closing stream " +
-				resph.stream.hashCode() +
-				" (" + Thread.currentThread() + ")");
+	    Log.write(Log.DEMUX, "Demux: Closing stream " +
+				 resph.stream.hashCode());
 
-	resph.eof = true;
-	RespHandlerList.remove(resph);
+	    resph.eof = true;
+	    RespHandlerList.remove(resph);
+	}
 
 	if (resph == MarkedForClose)
 	    close(new IOException("Premature end of Keep-Alive"), false);
@@ -564,7 +592,7 @@ class StreamDemultiplexor implements GlobalConstants
      */
     synchronized void closeSocketIfAllStreamsClosed()
     {
-	synchronized(RespHandlerList)
+	synchronized (RespHandlerList)
 	{
 	    ResponseHandler resph = (ResponseHandler) RespHandlerList.enumerate();
 
@@ -615,55 +643,52 @@ class StreamDemultiplexor implements GlobalConstants
      */
     synchronized void markForClose(Response resp)
     {
-	synchronized(RespHandlerList)
+	synchronized (RespHandlerList)
 	{
 	    if (RespHandlerList.getFirst() == null)	// no active request,
 	    {						// so close the socket
 		close(new IOException("Premature end of Keep-Alive"), false);
 		return;
 	    }
-	}
 
-	if (Timer != null)
-	{
-	    Timer.kill();
-	    Timer = null;
-	}
-
-	ResponseHandler resph, lasth = null;
-	for (resph = (ResponseHandler) RespHandlerList.enumerate();
-	     resph != null; resph = (ResponseHandler) RespHandlerList.next())
-	{
-	    if (resph.resp == resp)	// new resp precedes any others
+	    if (Timer != null)
 	    {
-		MarkedForClose = resph;
-
-		if (DebugDemux)
-		    System.err.println("Demux: stream " +
-				       resp.inp_stream.hashCode() +
-				       " marked for close (" +
-				       Thread.currentThread() + ")");
-
-		closeSocketIfAllStreamsClosed();
-		return;
+		Timer.kill();
+		Timer = null;
 	    }
 
-	    if (MarkedForClose == resph)
-		return;	// already marked for closing after an earlier resp
+	    ResponseHandler resph, lasth = null;
+	    for (resph = (ResponseHandler) RespHandlerList.enumerate();
+		 resph != null;
+		 resph = (ResponseHandler) RespHandlerList.next())
+	    {
+		if (resph.resp == resp)	// new resp precedes any others
+		{
+		    MarkedForClose = resph;
 
-	    lasth = resph;
+		    Log.write(Log.DEMUX, "Demux: stream " +
+					 resp.inp_stream.hashCode() +
+					 " marked for close");
+
+		    closeSocketIfAllStreamsClosed();
+		    return;
+		}
+
+		if (MarkedForClose == resph)
+		    return;	// already marked for closing after an earlier resp
+
+		lasth = resph;
+	    }
+
+	    if (lasth == null)
+		return;
+
+	    MarkedForClose = lasth;		// resp == null, so use last resph
+	    closeSocketIfAllStreamsClosed();
+
+	    Log.write(Log.DEMUX, "Demux: stream " + lasth.stream.hashCode() +
+				 " marked for close");
 	}
-
-	if (lasth == null)
-	    return;
-
-	MarkedForClose = lasth;		// resp == null, so use last resph
-	closeSocketIfAllStreamsClosed();
-
-	if (DebugDemux)
-	    System.err.println("Demux: stream " + lasth.stream.hashCode() +
-			       " marked for close (" +
-			       Thread.currentThread() + ")");
     }
 
 
@@ -675,14 +700,12 @@ class StreamDemultiplexor implements GlobalConstants
      */
     void abort()
     {
-	if (DebugDemux)
-	    System.err.println("Demux: Aborting socket (" +
-				this.hashCode() + ")");
+	Log.write(Log.DEMUX, "Demux: Aborting socket (" + this.hashCode() + ")");
 
 
 	// notify all responses of abort
 
-	synchronized(RespHandlerList)
+	synchronized (RespHandlerList)
 	{
 	    for (ResponseHandler resph =
 				(ResponseHandler) RespHandlerList.enumerate();
@@ -707,7 +730,7 @@ class StreamDemultiplexor implements GlobalConstants
 		{
 		    try
 			{ Sock.setSoLinger(false, 0); }
-		    catch (Throwable t)
+		    catch (SocketException se)
 			{ }
 
 		    try
@@ -772,11 +795,14 @@ class StreamDemultiplexor implements GlobalConstants
 
 
 /**
- * This thread is used to implement socket timeouts. It keeps a list of
- * timer entries and expries them after a given time.
+ * This thread is used to reap idle connections. It is NOT used to timeout
+ * reads or writes on a socket. It keeps a list of timer entries and expires
+ * them after a given time.
  */
-class SocketTimeout extends Thread implements GlobalConstants
+class SocketTimeout extends Thread
 {
+    private boolean alive = true;
+
     /**
      * This class represents a timer entry. It is used to close an
      * inactive socket after n seconds. Once running, the timer may be
@@ -804,7 +830,7 @@ class SocketTimeout extends Thread implements GlobalConstants
 	    if (restart)  return;
 	    restart = true;
 
-	    synchronized(time_list)
+	    synchronized (time_list)
 	    {
 		if (!alive)  return;
 
@@ -831,7 +857,7 @@ class SocketTimeout extends Thread implements GlobalConstants
 	    restart = false;
 	    hyber   = false;
 
-	    synchronized(time_list)
+	    synchronized (time_list)
 	    {
 		if (prev == null)  return;
 		next.prev = prev;
@@ -841,8 +867,8 @@ class SocketTimeout extends Thread implements GlobalConstants
 	}
     }
 
-    private TimeoutEntry[]  time_list;
-    private int		current;
+    TimeoutEntry[] time_list;	// jdk 1.1.x javac bug: these must not
+    int		   current;	//   be private!
 
 
     SocketTimeout(int secs)
@@ -866,7 +892,7 @@ class SocketTimeout extends Thread implements GlobalConstants
     public TimeoutEntry setTimeout(StreamDemultiplexor demux)
     {
 	TimeoutEntry entry = new TimeoutEntry(demux);
-	synchronized(time_list)
+	synchronized (time_list)
 	{
 	    entry.next = time_list[current];
 	    entry.prev = time_list[current].prev;
@@ -886,11 +912,11 @@ class SocketTimeout extends Thread implements GlobalConstants
     {
 	TimeoutEntry marked = null;
 
-	while (true)
+	while (alive)
 	{
 	    try { sleep(1000L); } catch (InterruptedException ie) { }
 
-	    synchronized(time_list)
+	    synchronized (time_list)
 	    {
 		// reset all restart flags
 		for (TimeoutEntry entry = time_list[current].next;
@@ -932,5 +958,11 @@ class SocketTimeout extends Thread implements GlobalConstants
 	    }
 	}
     }
-}
 
+    /**
+     * Stop the timer thread.
+     */
+    public void kill() {
+	alive = false;
+    }
+}

@@ -1,8 +1,8 @@
 /*
- * @(#)HttpOutputStream.java				0.3-2 18/06/1999
+ * @(#)HttpOutputStream.java				0.3-3 06/05/2001
  *
  *  This file is part of the HTTPClient package
- *  Copyright (C) 1996-1999  Ronald Tschalär
+ *  Copyright (C) 1996-2001 Ronald Tschalär
  *
  *  This library is free software; you can redistribute it and/or
  *  modify it under the terms of the GNU Lesser General Public
@@ -24,10 +24,13 @@
  *
  *  ronald@innovation.ch
  *
+ *  The HTTPClient's home page is located at:
+ *
+ *  http://www.innovation.ch/java/HTTPClient/ 
+ *
  */
 
 package HTTPClient;
-
 
 import java.io.OutputStream;
 import java.io.ByteArrayOutputStream;
@@ -81,14 +84,15 @@ import java.io.IOException;
  * that of a request sent with a data parameter. The reason for this is that
  * the various modules cannot resend a request which used an output stream.
  * Therefore such things as authorization and retrying of requests won't be
- * done by the HTTPClient for such requests.
+ * done by the HTTPClient for such requests. But see {@link
+ * HTTPResponse#retryRequest() HTTPResponse.retryRequest} for a partial
+ * solution.
  *
- * @version	0.3-2  18/06/1999
+ * @version	0.3-3  06/05/2001
  * @author	Ronald Tschalär
  * @since	V0.3
  */
-
-public class HttpOutputStream extends OutputStream implements GlobalConstants
+public class HttpOutputStream extends OutputStream
 {
     /** null trailers */
     private static final NVPair[] empty = new NVPair[0];
@@ -171,13 +175,10 @@ public class HttpOutputStream extends OutputStream implements GlobalConstants
 	if (os == null)
 	    bos = new ByteArrayOutputStream();
 
-	if (DebugConn)
-	{
-	    System.err.println("OutS:  Stream ready for writing");
-	    if (bos != null)
-		System.err.println("OutS:  Buffering all data before sending " +
-				   "request");
-	}
+	Log.write(Log.CONN, "OutS:  Stream ready for writing");
+	if (bos != null)
+	    Log.write(Log.CONN, "OutS:  Buffering all data before sending " +
+			        "request");
     }
 
 
@@ -225,7 +226,7 @@ public class HttpOutputStream extends OutputStream implements GlobalConstants
      * Gets the trailers which were set with <code>setTrailers()</code>.
      *
      * @return an array of header fields
-     * @see #setTrailers(NVPair[])
+     * @see #setTrailers(HTTPClient.NVPair[])
      */
     public NVPair[] getTrailers()
     {
@@ -255,6 +256,23 @@ public class HttpOutputStream extends OutputStream implements GlobalConstants
 	    this.trailers = trailers;
 	else
 	    this.trailers = empty;
+    }
+
+
+    /**
+     * Reset this output stream, so it may be reused in a retried request.
+     * This method may only be invoked by modules, and <strong>must</strong>
+     * never be invoked by an application.
+     */
+    public void reset()
+    {
+	rcvd     = 0;
+	req      = null;
+	resp     = null;
+	os       = null;
+	bos      = null;
+	con_to   = 0;
+	ignore   = false;
     }
 
 
@@ -372,7 +390,7 @@ public class HttpOutputStream extends OutputStream implements GlobalConstants
 		req.setHeaders(hdrs);
 	    }
 
-	    if (DebugConn)  System.err.println("OutS:  Sending request");
+	    Log.write(Log.CONN, "OutS:  Sending request");
 
 	    try
 		{ resp = req.getConnection().sendRequest(req, con_to); }
@@ -397,13 +415,13 @@ public class HttpOutputStream extends OutputStream implements GlobalConstants
 	    {
 		if (length == -1)
 		{
-		    if (DebugConn  &&  trailers.length > 0)
+		    if (Log.isEnabled(Log.CONN)  &&  trailers.length > 0)
 		    {
-			System.err.println("OutS:  Sending trailers:");
+			Log.write(Log.CONN, "OutS:  Sending trailers:");
 			for (int idx=0; idx<trailers.length; idx++)
-			    System.err.println("       " +
-				      trailers[idx].getName() + ": " +
-				      trailers[idx].getValue());
+			    Log.write(Log.CONN, "       " +
+						trailers[idx].getName() + ": " +
+						trailers[idx].getValue());
 		    }
 
 		    os.write(Codecs.chunkedEncode(null, 0, 0, trailers, true));
@@ -411,7 +429,7 @@ public class HttpOutputStream extends OutputStream implements GlobalConstants
 
 		os.flush();
 
-		if (DebugConn)  System.err.println("OutS:  All data sent");
+		Log.write(Log.CONN, "OutS:  All data sent");
 	    }
 	    catch (IOException ioe)
 	    {
@@ -436,4 +454,3 @@ public class HttpOutputStream extends OutputStream implements GlobalConstants
 	return getClass().getName() + "[length=" + length + "]";
     }
 }
-

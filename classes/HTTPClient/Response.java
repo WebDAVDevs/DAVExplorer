@@ -1,8 +1,8 @@
 /*
- * @(#)Response.java					0.3-2 18/06/1999
+ * @(#)Response.java					0.3-3 06/05/2001
  *
  *  This file is part of the HTTPClient package
- *  Copyright (C) 1996-1999  Ronald Tschalär
+ *  Copyright (C) 1996-2001  Ronald Tschalär
  *
  *  This library is free software; you can redistribute it and/or
  *  modify it under the terms of the GNU Lesser General Public
@@ -24,6 +24,9 @@
  *
  *  ronald@innovation.ch
  *
+ *  The HTTPClient's home page is located at:
+ *
+ *  http://www.innovation.ch/java/HTTPClient/
  */
 
 package HTTPClient;
@@ -31,14 +34,17 @@ package HTTPClient;
 import java.io.InputStream;
 import java.io.SequenceInputStream;
 import java.io.ByteArrayInputStream;
+// 2001-May-23: jfeise@ics.uci.edu  added for logging
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InterruptedIOException;
 import java.io.EOFException;
+import java.io.UnsupportedEncodingException;
 import java.net.URL;
 import java.net.ProtocolException;
 import java.util.Date;
 import java.util.Vector;
+import java.util.Hashtable;
 import java.util.StringTokenizer;
 import java.util.NoSuchElementException;
 
@@ -48,12 +54,14 @@ import java.util.NoSuchElementException;
  * modules. When all modules have handled the response then the HTTPResponse
  * fills in its fields with the data from this class.
  *
- * @version	0.3-2  18/06/1999
+ * @version	0.3-3  06/05/2001
  * @author	Ronald Tschalär
  */
-
-public final class Response implements RoResponse, GlobalConstants
+public final class Response implements RoResponse, GlobalConstants, Cloneable
 {
+    /** This contains a list of headers which may only have a single value */
+    private static final Hashtable singleValueHeaders;
+
     /** our http connection */
     private HTTPConnection connection;
 
@@ -129,10 +137,37 @@ public final class Response implements RoResponse, GlobalConstants
     /** should this response be handled further? */
             boolean      final_resp = false;
 
+    /** should the request be retried by the application? */
+            boolean      retry = false;
+
+    /**
+      * Joachim Feise (jfeise@ics.uci.edu)
+      * Logging extension
+      */
     private static boolean logging = false;
     private static String  logFilename = null;
     private static String  inboundHeader = "\r\n========= Inbound Message Header =========\r\n";
     private static String  inboundBody   = "\r\n========= Inbound Message Body =========\r\n";
+
+    static
+    {
+	/* This static initializer creates a hashtable of header names that
+	 * should only have at most a single value in a server response. Other
+	 * headers that may have multiple values (ie Set-Cookie) will have
+	 * their values combined into one header, with individual values being
+	 * separated by commas.
+	 */
+	String[] singleValueHeaderNames = {
+	    "age", "location", "content-base", "content-length",
+	    "content-location", "content-md5", "content-range", "content-type",
+	    "date", "etag", "expires", "proxy-authenticate", "retry-after",
+	};
+
+	singleValueHeaders = new Hashtable(singleValueHeaderNames.length);
+	for (int idx=0; idx<singleValueHeaderNames.length; idx++)
+	  singleValueHeaders.put(singleValueHeaderNames[idx],
+				 singleValueHeaderNames[idx]);
+    }
 
 
     // Constructors
@@ -348,7 +383,10 @@ public final class Response implements RoResponse, GlobalConstants
     public int getHeaderAsInt(String hdr)
 		throws IOException, NumberFormatException
     {
-	return Integer.parseInt(getHeader(hdr));
+	String val = getHeader(hdr);
+	if (val == null)
+	    throw new NumberFormatException("null");
+	return Integer.parseInt(val);
     }
 
     /**
@@ -356,7 +394,7 @@ public final class Response implements RoResponse, GlobalConstants
      * date; if this fails it is parsed as a long representing the number
      * of seconds since 12:00 AM, Jan 1st, 1970. If this also fails an
      * IllegalArgumentException is thrown.
-     * 
+     *
      * <P>Note: When sending dates use Util.httpDate().
      *
      * @param  hdr the header name.
@@ -372,13 +410,14 @@ public final class Response implements RoResponse, GlobalConstants
 	if (raw_date == null)  return null;
 
 	// asctime() format is missing an explicit GMT specifier
-	if (raw_date.toUpperCase().indexOf("GMT") == -1)
+	if (raw_date.toUpperCase().indexOf("GMT") == -1  &&
+	    raw_date.indexOf(' ') > 0)
 	    raw_date += " GMT";
 
 	Date date;
 
 	try
-	    { date = new Date(raw_date); }
+	    { date = Util.parseHttpDate(raw_date); }
 	catch (IllegalArgumentException iae)
 	{
 	    long time;
@@ -452,7 +491,10 @@ public final class Response implements RoResponse, GlobalConstants
     public int getTrailerAsInt(String trailer)
 		throws IOException, NumberFormatException
     {
-	return Integer.parseInt(getTrailer(trailer));
+	String val = getTrailer(trailer);
+	if (val == null)
+	    throw new NumberFormatException("null");
+	return Integer.parseInt(val);
     }
 
 
@@ -479,13 +521,14 @@ public final class Response implements RoResponse, GlobalConstants
 	if (raw_date == null) return null;
 
 	// asctime() format is missing an explicit GMT specifier
-	if (raw_date.toUpperCase().indexOf("GMT") == -1)
+	if (raw_date.toUpperCase().indexOf("GMT") == -1  &&
+	    raw_date.indexOf(' ') > 0)
 	    raw_date += " GMT";
 
 	Date   date;
 
 	try
-	    { date = new Date(raw_date); }
+	    { date = Util.parseHttpDate(raw_date); }
 	catch (IllegalArgumentException iae)
 	{
 	    // some servers erroneously send a number, so let's try that
@@ -557,12 +600,9 @@ public final class Response implements RoResponse, GlobalConstants
 		{ throw ie; }
 	    catch (IOException ioe)
 	    {
-		if (DebugResp)
-		{
-		    System.err.print("Resp:  (" + inp_stream.hashCode() +
-				     ") (" + Thread.currentThread() + ")");
-		    ioe.printStackTrace();
-		}
+		Log.write(Log.RESP, "Resp:  (" + inp_stream.hashCode() + ")",
+			  ioe);
+
 		try { inp_stream.close(); } catch (Exception e) { }
 		throw ioe;
 	    }
@@ -570,19 +610,20 @@ public final class Response implements RoResponse, GlobalConstants
 	    inp_stream.close();
 	}
 
-        if( logging )
+    // 2001-May-23: jfeise@ics.uci.edu  added logging
+    if( logging )
+    {
+        try
         {
-            try
-            {
-                FileOutputStream fos = new FileOutputStream( logFilename, true );
-                fos.write( inboundBody.getBytes() );
-                fos.write( Data );
-                fos.close();
-            }
-            catch( IOException e )
-            {
-            }
+            FileOutputStream fos = new FileOutputStream( logFilename, true );
+            fos.write( inboundBody.getBytes() );
+            fos.write( Data );
+            fos.close();
         }
+        catch( IOException e )
+        {
+        }
+    }
 
 	return Data;
     }
@@ -623,6 +664,33 @@ public final class Response implements RoResponse, GlobalConstants
 	return (cd_type != CD_0);
     }
 
+    /**
+     * Should the request be retried by the application? This can be used
+     * by modules to signal to the application that it should retry the
+     * request. It's used when the request used an <var>HttpOutputStream</var>
+     * and the module is therefore not able to retry the request itself.
+     * This flag is <var>false</var> by default.
+     *
+     * <P>If a module sets this flag then it must also reset() the
+     * the <var>HttpOutputStream</var> so it may be reused by the application.
+     * It should then also use this <var>HttpOutputStream</var> to recognize
+     * the retried request in the requestHandler().
+     *
+     * @param flag indicates whether the application should retry the request.
+     */
+    public void setRetryRequest(boolean flag)
+    {
+	retry = flag;
+    }
+
+    /**
+     * @return true if the request should be retried.
+     */
+    public boolean retryRequest()
+    {
+	return retry;
+    }
+
 
     // Helper Methods
 
@@ -636,7 +704,10 @@ public final class Response implements RoResponse, GlobalConstants
     {
 	if (got_headers)  return;
 	if (exception != null)
-	    throw (IOException) exception.fillInStackTrace();
+	{
+	    exception.fillInStackTrace();
+	    throw exception;
+	}
 
 	reading_headers = true;
 	try
@@ -777,17 +848,13 @@ public final class Response implements RoResponse, GlobalConstants
 	    inp_stream.close();		// we will not receive any more data
 	}
 
-	if (DebugResp)
-	{
-	    System.err.println("Resp:  Response entity delimiter: " +
-		(cd_type == CD_0       ? "No Entity"      :
-		 cd_type == CD_CLOSE   ? "Close"          :
-		 cd_type == CD_CONTLEN ? "Content-Length" :
-		 cd_type == CD_CHUNKED ? "Chunked"        :
-		 cd_type == CD_MP_BR   ? "Multipart"      :
-		 "???" ) + " (" + inp_stream.hashCode() + ") (" +
-		 Thread.currentThread() + ")");
-	}
+	Log.write(Log.RESP, "Resp:  Response entity delimiter: " +
+	    (cd_type == CD_0       ? "No Entity"      :
+	     cd_type == CD_CLOSE   ? "Close"          :
+	     cd_type == CD_CONTLEN ? "Content-Length" :
+	     cd_type == CD_CHUNKED ? "Chunked"        :
+	     cd_type == CD_MP_BR   ? "Multipart"      :
+	     "???" ) + " (" + inp_stream.hashCode() + ")");
 
 
 	// remove erroneous connection tokens
@@ -907,17 +974,12 @@ public final class Response implements RoResponse, GlobalConstants
      */
     private String readResponseHeaders(InputStream inp)  throws IOException
     {
-	if (DebugResp)
-	{
-	    if (buf_pos == 0)
-		System.err.println("Resp:  Reading Response headers " +
-				    inp_stream.hashCode() + " (" +
-				    Thread.currentThread() + ")");
-	    else
-		System.err.println("Resp:  Resuming reading Response headers " +
-				    inp_stream.hashCode() + " (" +
-				    Thread.currentThread() + ")");
-	}
+	if (buf_pos == 0)
+	    Log.write(Log.RESP, "Resp:  Reading Response headers " +
+				inp_stream.hashCode());
+	else
+	    Log.write(Log.RESP, "Resp:  Resuming reading Response headers " +
+				inp_stream.hashCode());
 
 
 	// read 7 bytes to see type of response
@@ -934,8 +996,8 @@ public final class Response implements RoResponse, GlobalConstants
 			if ((c = inp.read()) == -1)
 			    throw new EOFException("Encountered premature EOF "
 						   + "while reading Version");
-		    } while (Character.isSpace( (char) (c & 0xFF) )) ;
-		    buf[0] = (byte) (c & 0xFF);
+		    } while (Character.isWhitespace((char) c)) ;
+		    buf[0] = (byte) c;
 		    buf_pos = 1;
 		}
 
@@ -951,12 +1013,9 @@ public final class Response implements RoResponse, GlobalConstants
 	    }
 	    catch (EOFException eof)
 	    {
-		if (DebugResp)
-		{
-		    System.err.print("Resp:  (" + inp_stream.hashCode() + ") ("
-				     + Thread.currentThread() + ")");
-		    eof.printStackTrace();
-		}
+		Log.write(Log.RESP, "Resp:  (" + inp_stream.hashCode() + ")",
+			  eof);
+
 		throw eof;
 	    }
 	    for (int idx=0; idx<buf.length; idx++)
@@ -1076,27 +1135,25 @@ public final class Response implements RoResponse, GlobalConstants
 	StringTokenizer lines = new StringTokenizer(headers, "\r\n"),
 			elem;
 
-
-	if (DebugResp)
-	    System.err.println("Resp:  Parsing Response headers from Request "+
+	if (Log.isEnabled(Log.RESP))
+	    Log.write(Log.RESP, "Resp:  Parsing Response headers from Request "+
 				"\"" + method + " " + resource + "\":  (" +
-				inp_stream.hashCode() + ") (" +
-				Thread.currentThread() + ")\n\n"+headers);
+				inp_stream.hashCode() + ")\n\n" + headers);
 
-        if(logging)
+    // 2001-May-23: jfeise@ics.uci.edu  added logging
+    if(logging)
+    {
+        try
         {
-            try
-            {
-                FileOutputStream fos = new FileOutputStream( logFilename, true );
-                fos.write( inboundHeader.getBytes() );
-                fos.write( headers.getBytes() );
-                fos.close();
-            }
-            catch( IOException e )
-            {
-            }
+            FileOutputStream fos = new FileOutputStream( logFilename, true );
+            fos.write( inboundHeader.getBytes() );
+            fos.write( headers.getBytes() );
+            fos.close();
         }
-
+        catch( IOException e )
+        {
+        }
+    }
 
 	// Detect and handle HTTP/0.9 responses
 
@@ -1107,8 +1164,10 @@ public final class Response implements RoResponse, GlobalConstants
 	    StatusCode = 200;
 	    ReasonLine = "OK";
 
-	    Data       = new byte[headers.length()];
-	    headers.getBytes(0, headers.length(), Data, 0);
+	    try
+		{ Data = headers.getBytes("8859_1"); }
+	    catch (UnsupportedEncodingException uee)
+		{ throw new Error(uee.toString()); }
 
 	    return;
 	}
@@ -1141,7 +1200,7 @@ public final class Response implements RoResponse, GlobalConstants
 	/* If the status code shows an error and we're sending (or have sent)
 	 * an entity and it's length is delimited by a Content-length header,
 	 * then we must close the the connection (if indeed it hasn't already
-	 * been done) - RFC-2068, Section 8.2 .
+	 * been done) - RFC-2616, Section 8.2.2 .
 	 */
 	if (StatusCode >= 300  &&  sent_entity)
 	{
@@ -1204,12 +1263,13 @@ public final class Response implements RoResponse, GlobalConstants
     {
 	if (got_trailers)  return;
 	if (exception != null)
-	    throw (IOException) exception.fillInStackTrace();
+	{
+	    exception.fillInStackTrace();
+	    throw exception;
+	}
 
-	if (DebugResp)
-	    System.err.println("Resp:  Reading Response trailers " +
-				inp_stream.hashCode() + " (" +
-				Thread.currentThread() + ")");
+	Log.write(Log.RESP, "Resp:  Reading Response trailers " +
+			    inp_stream.hashCode());
 
 	try
 	{
@@ -1221,11 +1281,10 @@ public final class Response implements RoResponse, GlobalConstants
 
 	    if (trailers_read)
 	    {
-		if (DebugResp)
-		    System.err.println("Resp:  Parsing Response trailers from "+
-				       "Request \"" + method + " " + resource +
-				       "\":  (" + inp_stream.hashCode() + ") ("+
-				       Thread.currentThread() + ")\n\n"+hdrs);
+		Log.write(Log.RESP, "Resp:  Parsing Response trailers from "+
+				    "Request \"" + method + " " + resource +
+				    "\":  (" + inp_stream.hashCode() +
+				    ")\n\n" + hdrs);
 
 		parseHeaderFields(new StringTokenizer(hdrs.toString(), "\r\n"),
 				  Trailers);
@@ -1267,18 +1326,21 @@ public final class Response implements RoResponse, GlobalConstants
 					    hdr);
 	    }
 
-	    String hdr_name = hdr.substring(0, sep).trim();
+	    String hdr_name  = hdr.substring(0, sep).trim();
+	    String hdr_value = hdr.substring(sep+1).trim();
 
-	    int len = hdr.length();
-	    sep++;
-	    while (sep < len  &&  Character.isSpace(hdr.charAt(sep)))  sep++;
-	    String hdr_value = hdr.substring(sep);
-
-	    String old_value  = (String) list.get(hdr_name);
-	    if (old_value == null)
-		list.put(hdr_name, hdr_value);
+	    // Can header have multiple values?
+	    if (!singleValueHeaders.containsKey(hdr_name.toLowerCase()))
+	    {
+		String old_value  = (String) list.get(hdr_name);
+		if (old_value == null)
+		    list.put(hdr_name, hdr_value);
+		else
+		    list.put(hdr_name, old_value + ", " + hdr_value);
+	    }
 	    else
-		list.put(hdr_name, old_value + ", " + hdr_value);
+		// No multiple values--just replace/put latest header value
+		list.put(hdr_name, hdr_value);
 	}
     }
 
@@ -1355,20 +1417,22 @@ public final class Response implements RoResponse, GlobalConstants
 		{ inp.close(); }
 	    catch (IOException ioe)
 		{ }
-            if( logging )
-            {
-                try
-                {
-                    FileOutputStream fos = new FileOutputStream( logFilename, true );
-                    fos.write( inboundBody.getBytes() );
-                    fos.write( Data );
-                    fos.close();
-                }
-                catch( IOException e )
-                {
-                }
-            }
 	}
+
+    // 2001-May-23: jfeise@ics.uci.edu  added logging
+    if( logging )
+    {
+        try
+        {
+            FileOutputStream fos = new FileOutputStream( logFilename, true );
+            fos.write( inboundBody.getBytes() );
+            fos.write( Data );
+            fos.close();
+        }
+        catch( IOException e )
+        {
+        }
+    }
     }
 
 
@@ -1390,7 +1454,25 @@ public final class Response implements RoResponse, GlobalConstants
 	isFirstResponse = true;
     }
 
+    /**
+     * @return a clone of this request object
+     */
+    public Object clone()
+    {
+	Response cl;
+	try
+	    { cl = (Response) super.clone(); }
+	catch (CloneNotSupportedException cnse)
+	    { throw new InternalError(cnse.toString()); /* shouldn't happen */ }
 
+	cl.Headers  = (CIHashtable) Headers.clone();
+	cl.Trailers = (CIHashtable) Trailers.clone();
+
+	return cl;
+    }
+
+
+    // 2001-May-23: jfeise@ics.uci.edu  added logging
     public void setLogging( boolean logging, String filename )
     {
         this.logging = logging;
@@ -1399,16 +1481,22 @@ public final class Response implements RoResponse, GlobalConstants
             http_resp.setLogging( logging, filename );
     }
 
+
+    // 2001-May-23: jfeise@ics.uci.edu  added logging
     public boolean getLogging()
     {
         return logging;
     }
 
+
+    // 2001-May-23: jfeise@ics.uci.edu  added logging
     public String getLogFilename()
     {
         return logFilename;
     }
 
+
+    // 2001-May-23: jfeise@ics.uci.edu  added logging
     public void doBodyLogging()
     {
         if( Data == null )
@@ -1436,4 +1524,3 @@ public final class Response implements RoResponse, GlobalConstants
         }
     }
 }
-

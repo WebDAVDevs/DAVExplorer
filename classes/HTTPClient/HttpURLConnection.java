@@ -1,8 +1,8 @@
 /*
- * @(#)HttpURLConnection.java				0.3-2 18/06/1999
+ * @(#)HttpURLConnection.java				0.3-3 06/05/2001
  *
  *  This file is part of the HTTPClient package
- *  Copyright (C) 1996-1999  Ronald Tschalär
+ *  Copyright (C) 1996-2001 Ronald Tschalär
  *
  *  This library is free software; you can redistribute it and/or
  *  modify it under the terms of the GNU Lesser General Public
@@ -24,18 +24,19 @@
  *
  *  ronald@innovation.ch
  *
+ *  The HTTPClient's home page is located at:
+ *
+ *  http://www.innovation.ch/java/HTTPClient/ 
+ *
  */
 
 package HTTPClient;
 
 import java.net.URL;
 import java.net.ProtocolException;
-import java.net.UnknownHostException;
 import java.io.IOException;
-import java.io.InterruptedIOException;
 import java.io.InputStream;
 import java.io.OutputStream;
-import java.io.BufferedInputStream;
 import java.io.ByteArrayOutputStream;
 import java.util.Date;
 import java.util.Hashtable;
@@ -84,19 +85,39 @@ import java.util.Enumeration;
  * to be done either on the command line or somewhere in the code before
  * the first URLConnection.openConnection() is invoked).
  *
- * @version	0.3-2  18/06/1999
+ * <P>A second potential incompatibility is that the HTTPClient aggresively
+ * resuses connections, and can do so more often that Sun's client. This
+ * can cause problems if you send multiple requests, and the first one has
+ * a long response. In this case (assuming the server allows the connection
+ * to be used for multiple requests) the responses to second, third, etc
+ * request won't be received until the first response has been completely
+ * read. With Sun's client on the other hand you may not experience this,
+ * as it may not be able to keep the connection open and there may create
+ * multiple connections for the requests. This allows the responses to the
+ * second, third, etc requests to be read before the first response has
+ * completed. <strong>Note:</strong> whether this will happen depends on
+ * details of the resource being requested and the server. In many cases
+ * the HTTPClient and Sun's client will exhibit the same behaviour. Also,
+ * applications which depend on being able to read the second response
+ * before the first one has completed must be considered broken, because
+ * A) this behaviour cannot be relied upon even in Sun's current client,
+ * and B) Sun's implementation will exhibit the same problem if they ever
+ * switch to HTTP/1.1.
+ *
+ * @version	0.3-3  06/05/2001
  * @author	Ronald Tschalär
  * @since	V0.3
  */
-
 public class HttpURLConnection extends java.net.HttpURLConnection
-			       implements GlobalConstants
 {
-    /** a list of HTTPConnections */
-    private static Hashtable  connections = new Hashtable();
+    /** the cache of HTTPConnections */
+    protected static Hashtable  connections = new Hashtable();
 
     /** the current connection */
-    private HTTPConnection    con;
+    protected HTTPConnection    con;
+
+    /** the cached url.toString() */
+    private String            urlString;
 
     /** the resource */
     private String            resource;
@@ -114,7 +135,7 @@ public class HttpURLConnection extends java.net.HttpURLConnection
     private NVPair[]          headers;
 
     /** the response */
-    private HTTPResponse      resp;
+    protected HTTPResponse      resp;
 
     /** is the redirection module activated for this instance? */
     private boolean           do_redir;
@@ -218,6 +239,8 @@ public class HttpURLConnection extends java.net.HttpURLConnection
 	headers       = default_headers;
 	do_redir      = getFollowRedirects();
 	output_stream = null;
+
+	urlString     = url.toString();
     }
 
 
@@ -230,7 +253,7 @@ public class HttpURLConnection extends java.net.HttpURLConnection
      * @return an HTTPConnection
      * @exception ProtocolNotSuppException if the protocol is not supported
      */
-    private HTTPConnection getConnection(URL url)
+    protected HTTPConnection getConnection(URL url)
 	    throws ProtocolNotSuppException
     {
 	// try the cache, using the host name
@@ -267,9 +290,8 @@ public class HttpURLConnection extends java.net.HttpURLConnection
 	if (connected)
 	    throw new ProtocolException("Already connected!");
 
-	if (DebugURLC)
-	    System.err.println("URLC:  (" + url + ") Setting request method: " +
-			       method);
+	Log.write(Log.URLC, "URLC:  (" + urlString + ") Setting request method: " +
+			    method);
 
 	this.method = method.trim().toUpperCase();
 	method_set  = true;
@@ -551,12 +573,11 @@ public class HttpURLConnection extends java.net.HttpURLConnection
 
 	if (output_stream == null)
 	{
-	    if (DebugURLC)
-		System.err.println("URLC:  (" +url+ ") creating output stream");
+	    Log.write(Log.URLC, "URLC:  (" + urlString + ") creating output stream");
 
 	    String cl = getRequestProperty("Content-Length");
 	    if (cl != null)
-		output_stream = new HttpOutputStream(Integer.parseInt(cl));
+		output_stream = new HttpOutputStream(Integer.parseInt(cl.trim()));
 	    else
 	    {
 		// Hack: because of restrictions when using true output streams
@@ -589,10 +610,7 @@ public class HttpURLConnection extends java.net.HttpURLConnection
 	if (connected)
 	{
 	    try
-	    {
-		if (resp.getEffectiveURL() != null)
-		    return resp.getEffectiveURL();
-	    }
+		{ return resp.getEffectiveURI().toURL(); }
 	    catch (Exception e)
 		{ return null; }
 	}
@@ -621,9 +639,8 @@ public class HttpURLConnection extends java.net.HttpURLConnection
      */
     public void setRequestProperty(String name, String value)
     {
-	if (DebugURLC)
-	    System.err.println("URLC:  (" +url+ ") Setting request property: " +
-			       name + " : " + value);
+	Log.write(Log.URLC, "URLC:  (" + urlString + ") Setting request property: " +
+			    name + " : " + value);
 
 	int idx;
 	for (idx=0; idx<headers.length; idx++)
@@ -666,9 +683,8 @@ public class HttpURLConnection extends java.net.HttpURLConnection
      */
     public static void setDefaultRequestProperty(String name, String value)
     {
-	if (DebugURLC)
-	    System.err.println("URLC:  Setting default request property: " +
-			       name + " : " + value);
+	Log.write(Log.URLC, "URLC:  Setting default request property: " +
+			    name + " : " + value);
 
 	int idx;
 	for (idx=0; idx<default_headers.length; idx++)
@@ -735,12 +751,11 @@ public class HttpURLConnection extends java.net.HttpURLConnection
     {
 	if (connected)  return;
 
-	if (DebugURLC)
-	    System.err.println("URLC:  (" + url + ") Connecting ...");
+	Log.write(Log.URLC, "URLC:  (" + urlString + ") Connecting ...");
 
 	// useCaches TBD!!!
 
-	synchronized(con)
+	synchronized (con)
 	{
 	    con.setAllowUserInteraction(allowUserInteraction);
 	    if (do_redir)
@@ -771,8 +786,7 @@ public class HttpURLConnection extends java.net.HttpURLConnection
      */
     public void disconnect()
     {
-	if (DebugURLC)
-	    System.err.println("URLC:  (" + url + ") Disconnecting ...");
+	Log.write(Log.URLC, "URLC:  (" + urlString + ") Disconnecting ...");
 
 	con.stop();
     }
@@ -798,4 +812,3 @@ public class HttpURLConnection extends java.net.HttpURLConnection
 	return getClass().getName() + "[" + url + "]";
     }
 }
-

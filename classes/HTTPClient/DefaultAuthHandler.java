@@ -1,8 +1,8 @@
 /*
- * @(#)DefaultAuthHandler.java				0.3-2 18/06/1999
+ * @(#)DefaultAuthHandler.java				0.3-3 06/05/2001
  *
  *  This file is part of the HTTPClient package
- *  Copyright (C) 1996-1999  Ronald Tschalär
+ *  Copyright (C) 1996-2001 Ronald Tschalär
  *
  *  This library is free software; you can redistribute it and/or
  *  modify it under the terms of the GNU Lesser General Public
@@ -24,14 +24,19 @@
  *
  *  ronald@innovation.ch
  *
+ *  The HTTPClient's home page is located at:
+ *
+ *  http://www.innovation.ch/java/HTTPClient/ 
+ *
  */
 
 package HTTPClient;
 
-
 import java.io.IOException;
+import java.io.BufferedReader;
 import java.io.FileInputStream;
 import java.io.DataInputStream;
+import java.io.InputStreamReader;
 import java.util.Vector;
 import java.util.StringTokenizer;
 
@@ -51,17 +56,26 @@ import java.awt.event.WindowEvent;
 import java.awt.event.WindowAdapter;
 
 /**
- * A simple authorization handler that throws up a message box requesting
- * both a username and password. This is default authorization handler.
- * Currently only handles the authentication types "Basic", "Digest" and
- * "SOCKS5" (used for the SocksClient and not part of HTTP per se).
+ * This class is the default authorization handler. It currently handles the
+ * authentication schemes "Basic", "Digest", and "SOCKS5" (used for the
+ * SocksClient and not part of HTTP per se).
  *
- * @version	0.3-2  18/06/1999
+ * <P>By default, when a username and password is required, this handler throws
+ * up a message box requesting the desired info. However, applications can
+ * {@link #setAuthorizationPrompter(HTTPClient.AuthorizationPrompter) set their
+ * own authorization prompter} if desired.
+ *
+ * <P><strong>Note:</strong> all methods except for
+ * <var>setAuthorizationPrompter</var> are meant to be invoked by the
+ * AuthorizationModule only, i.e. should not be invoked by the application
+ * (those methods are only public because implementing the
+ * <var>AuthorizationHandler</var> interface requires them to be).
+ *
+ * @version	0.3-3  06/05/2001
  * @author	Ronald Tschalär
  * @since	V0.2
  */
-
-class DefaultAuthHandler implements AuthorizationHandler, GlobalConstants
+public class DefaultAuthHandler implements AuthorizationHandler, GlobalConstants
 {
     private static final byte[] NUL = new byte[0];
 
@@ -71,8 +85,8 @@ class DefaultAuthHandler implements AuthorizationHandler, GlobalConstants
 
     private static byte[] digest_secret = null;
 
-    private BasicAuthBox inp = null;
-
+    private static AuthorizationPrompter prompter    = null;
+    private static boolean               prompterSet = false;
 
 
     /**
@@ -93,8 +107,8 @@ class DefaultAuthHandler implements AuthorizationHandler, GlobalConstants
 	else if (!info.getScheme().equalsIgnoreCase("Digest"))
 	    throw new AuthSchemeNotImplException(info.getScheme());
 
-	if (DebugAuth)
-	    System.err.println("Auth:  fixing up Authorization for host " +
+	if (Log.isEnabled(Log.AUTH))
+	    Log.write(Log.AUTH, "Auth:  fixing up Authorization for host " +
 				info.getHost()+":"+info.getPort() +
 				"; scheme: " + info.getScheme() +
 				"; realm: " + info.getRealm());
@@ -116,13 +130,13 @@ class DefaultAuthHandler implements AuthorizationHandler, GlobalConstants
      */
     public AuthorizationInfo getAuthorization(AuthorizationInfo challenge,
 					      RoRequest req, RoResponse resp)
-		    throws AuthSchemeNotImplException
+		    throws AuthSchemeNotImplException, IOException
     {
 	AuthorizationInfo cred;
 
 
-	if (DebugAuth)
-	    System.err.println("Auth:  Requesting Authorization for host " +
+	if (Log.isEnabled(Log.AUTH))
+	    Log.write(Log.AUTH, "Auth:  Requesting Authorization for host " +
 				challenge.getHost()+":"+challenge.getPort() +
 				"; scheme: " + challenge.getScheme() +
 				"; realm: " + challenge.getRealm());
@@ -148,34 +162,17 @@ class DefaultAuthHandler implements AuthorizationHandler, GlobalConstants
 
 	// Ask the user for username/password
 
-	if (!req.allowUI())
-	    return null;
-
-	if (inp == null)
-	{
-	    synchronized(getClass())
-	    {
-		if (inp == null)
-		    inp = new BasicAuthBox();
-	    }
-	}
-
 	NVPair answer;
-	if (challenge.getScheme().equalsIgnoreCase("basic")  ||
-	    challenge.getScheme().equalsIgnoreCase("Digest"))
+	synchronized (getClass())
 	{
-	    answer = inp.getInput("Enter username and password for realm `" +
-				  challenge.getRealm() + "'",
-				  "on host " + challenge.getHost() + ":" +
-				  challenge.getPort(),
-				  "Authentication Scheme: " +
-				  challenge.getScheme());
-	}
-	else
-	{
-	    answer = inp.getInput("Enter username and password for SOCKS " +
-				  "server on host ", challenge.getHost(),
-				  "Authentication Method: username/password");
+	    if (!req.allowUI()  ||  prompterSet  &&  prompter == null)
+		return null;
+
+	    if (prompter == null)
+		setDefaultPrompter();
+
+	    answer = prompter.getUsernamePassword(challenge,
+						  resp.getStatusCode() == 407);
 	}
 
 	if (answer == null)
@@ -222,7 +219,7 @@ class DefaultAuthHandler implements AuthorizationHandler, GlobalConstants
 
 	// Done
 
-	if (DebugAuth) System.err.println("Auth:  Got Authorization");
+	Log.write(Log.AUTH, "Auth:  Got Authorization");
 
 	return cred;
     }
@@ -358,7 +355,7 @@ class DefaultAuthHandler implements AuthorizationHandler, GlobalConstants
 							  Object context)
     {
 	String A1 = user + ":" + realm + ":" + pass;
-	String[] info = { new MD5(A1).asHex(), null, null };
+	String[] info = { MD5.hexDigest(A1), null, null };
 
 	AuthorizationInfo prev = AuthorizationInfo.getAuthorization(host, port,
 						    "Digest", realm, context);
@@ -427,7 +424,7 @@ class DefaultAuthHandler implements AuthorizationHandler, GlobalConstants
 	NVPair[] params;
 	String[] extra;
 
-	synchronized(info)	// we need to juggle nonce, nc, etc
+	synchronized (info)	// we need to juggle nonce, nc, etc
 	{
 	    params = info.getParams();
 
@@ -469,7 +466,8 @@ class DefaultAuthHandler implements AuthorizationHandler, GlobalConstants
 
 	    // fix up uri and nonce
 
-	    params[uri] = new NVPair("uri", req.getRequestURI());
+	    params[uri] = new NVPair("uri",
+		    URI.escape(req.getRequestURI(), URI.escpdPathChar, false));
 	    String old_nonce = params[nonce].getValue();
 	    if (ch_nonce != -1  &&
 		!old_nonce.equals(ch_params[ch_nonce].getValue()))
@@ -523,9 +521,8 @@ class DefaultAuthHandler implements AuthorizationHandler, GlobalConstants
 		time[6] = (byte) ((l_time >> 48) & 0xFF);
 		time[7] = (byte) ((l_time >> 56) & 0xFF);
 
-		MD5 hash = new MD5(digest_secret);
-		hash.Update(time);
-		params[cnonce] = new NVPair("cnonce", hash.asHex());
+		params[cnonce] =
+		    new NVPair("cnonce", MD5.hexDigest(digest_secret, time));
 	    }
 
 
@@ -616,9 +613,9 @@ class DefaultAuthHandler implements AuthorizationHandler, GlobalConstants
 		alg != -1  &&
 		params[alg].getValue().equalsIgnoreCase("MD5-sess"))
 	    {
-		extra[DI_A1S] = new MD5(extra[DI_A1] + ":" +
-					params[nonce].getValue() + ":" +
-					params[cnonce].getValue()).asHex();
+		extra[DI_A1S] = MD5.hexDigest(extra[DI_A1] + ":" +
+					      params[nonce].getValue() + ":" +
+					      params[cnonce].getValue());
 	    }
 
 
@@ -635,9 +632,7 @@ class DefaultAuthHandler implements AuthorizationHandler, GlobalConstants
 	if (qop != -1 && params[qop].getValue().equalsIgnoreCase("auth-int") &&
 	    req.getStream() == null)
 	{
-	    MD5 entity_hash = new MD5();
-	    entity_hash.Update(req.getData() == null ? NUL : req.getData());
-	    hash = entity_hash.asHex();
+	    hash = MD5.hexDigest(req.getData() == null ? NUL : req.getData());
 	}
 
 	if (req.getStream() == null)
@@ -714,6 +709,8 @@ class DefaultAuthHandler implements AuthorizationHandler, GlobalConstants
 		    { Uri = new URI(base, tok.nextToken()); }
 		catch (ParseException pe)
 		    { continue; }
+		if (Uri.getHost() == null)
+		    continue;
 
 		AuthorizationInfo tmp =
 		    AuthorizationInfo.getAuthorization(Uri.getHost(),
@@ -723,7 +720,7 @@ class DefaultAuthHandler implements AuthorizationHandler, GlobalConstants
 					     req.getConnection().getContext());
 		if (tmp == null)
 		{
-		    params[uri] = new NVPair("uri", Uri.getPath());
+		    params[uri] = new NVPair("uri", Uri.getPathAndQuery());
 		    tmp = new AuthorizationInfo(Uri.getHost(), Uri.getPort(),
 					        info.getScheme(),
 						info.getRealm(), params,
@@ -731,7 +728,7 @@ class DefaultAuthHandler implements AuthorizationHandler, GlobalConstants
 		    AuthorizationInfo.addAuthorization(tmp);
 		}
 		if (from_server)
-		    tmp.addPath(Uri.getPath());
+		    tmp.addPath(Uri.getPathAndQuery());
 	    }
 	}
 	else if (from_server  &&  challenge != null)
@@ -760,7 +757,7 @@ class DefaultAuthHandler implements AuthorizationHandler, GlobalConstants
     private static AuthorizationInfo digest_check_stale(
 					      AuthorizationInfo challenge,
 					      RoRequest req, RoResponse resp)
-	    throws AuthSchemeNotImplException
+	    throws AuthSchemeNotImplException, IOException
     {
 	AuthorizationInfo cred = null;
 
@@ -789,6 +786,7 @@ class DefaultAuthHandler implements AuthorizationHandler, GlobalConstants
     private static boolean handle_nextnonce(AuthorizationInfo prev,
 					    RoRequest req,
 					    HttpHeaderElement nextnonce)
+	    throws IOException
     {
 	if (prev == null  ||  nextnonce == null  ||
 	    nextnonce.getValue() == null)
@@ -799,7 +797,7 @@ class DefaultAuthHandler implements AuthorizationHandler, GlobalConstants
 	    { ai = AuthorizationInfo.getAuthorization(prev, req, null, false); }
 	catch (AuthSchemeNotImplException asnie)
 	    { ai = prev; /* shouldn't happen */ }
-	synchronized(ai)
+	synchronized (ai)
 	{
 	    NVPair[] params = ai.getParams();
 	    params = setValue(params, "nonce", nextnonce.getValue());
@@ -831,16 +829,14 @@ class DefaultAuthHandler implements AuthorizationHandler, GlobalConstants
 
 	if (resp.hasEntity())
 	{
-	    if (DebugAuth)
-		System.err.println("Auth:  pushing md5-check-stream to verify "+
-				   "digest from " + hdr_name);
+	    Log.write(Log.AUTH, "Auth:  pushing md5-check-stream to verify "+
+				"digest from " + hdr_name);
 	    resp.inp_stream = new MD5InputStream(resp.inp_stream, verifier);
 	}
 	else
 	{
-	    if (DebugAuth)
-		System.err.println("Auth:  verifying digest from " + hdr_name);
-	    verifier.verifyHash(new MD5().Final(), 0);
+	    Log.write(Log.AUTH, "Auth:  verifying digest from " + hdr_name);
+	    verifier.verifyHash(MD5.digest(NUL), 0);
 	}
 
 	return true;
@@ -896,17 +892,15 @@ class DefaultAuthHandler implements AuthorizationHandler, GlobalConstants
 	     !resp.hasEntity()  &&  qop.getValue().equalsIgnoreCase("auth-int"))
 	   )
 	{
-	    if (DebugAuth)
-		System.err.println("Auth:  verifying rspauth from " + hdr_name);
-	    verifier.verifyHash(new MD5().Final(), 0);
+	    Log.write(Log.AUTH, "Auth:  verifying rspauth from " + hdr_name);
+	    verifier.verifyHash(MD5.digest(NUL), 0);
 	}
 	else
 	{
 	    // else push md5 stream and verify after body
 
-	    if (DebugAuth)
-		System.err.println("Auth:  pushing md5-check-stream to verify "+
-				   "rspauth from " + hdr_name);
+	    Log.write(Log.AUTH, "Auth:  pushing md5-check-stream to verify "+
+				"rspauth from " + hdr_name);
 	    resp.inp_stream = new MD5InputStream(resp.inp_stream, verifier);
 	}
 
@@ -936,17 +930,17 @@ class DefaultAuthHandler implements AuthorizationHandler, GlobalConstants
 	{
 	    A2 += ":" + hash;
 	}
-	A2 = new MD5(A2).asHex();
+	A2 = MD5.hexDigest(A2);
 
 	if (qop == -1)
-	    resp_val = new MD5(A1 + ":" + params[nonce].getValue() + ":" +
-			       A2).asHex();
+	    resp_val =
+		MD5.hexDigest(A1 + ":" + params[nonce].getValue() + ":" + A2);
 	else
 	    resp_val =
-		new MD5(A1 + ":" + params[nonce].getValue() + ":" +
-			params[nc].getValue() + ":" +
-			params[cnonce].getValue() + ":" +
-			params[qop].getValue() + ":" + A2).asHex();
+		MD5.hexDigest(A1 + ":" + params[nonce].getValue() + ":" +
+			      params[nc].getValue() + ":" +
+			      params[cnonce].getValue() + ":" +
+			      params[qop].getValue() + ":" + A2);
 
 	return resp_val;
     }
@@ -982,32 +976,31 @@ class DefaultAuthHandler implements AuthorizationHandler, GlobalConstants
 
 	NVPair[] hdrs = req.getHeaders();
 	byte[] entity_body = (req.getData() == null ? NUL : req.getData());
-	MD5 entity_hash = new MD5();
-	entity_hash.Update(entity_body);
+	String entity_hash = MD5.hexDigest(entity_body);
 
-	String entity_info = new MD5(req.getRequestURI() + ":" +
+	String entity_info = MD5.hexDigest(req.getRequestURI() + ":" +
 	     (ct == -1 ? "" : hdrs[ct].getValue()) + ":" +
 	     entity_body.length + ":" +
 	     (ce == -1 ? "" : hdrs[ce].getValue()) + ":" +
 	     (lm == -1 ? "" : hdrs[lm].getValue()) + ":" +
-	     (ex == -1 ? "" : hdrs[ex].getValue())).asHex();
+	     (ex == -1 ? "" : hdrs[ex].getValue()));
 	String entity_digest = A1_hash + ":" + nonce + ":" + req.getMethod() +
 			":" + (dt == -1 ? "" : hdrs[dt].getValue()) +
-			":" + entity_info + ":" + entity_hash.asHex();
+			":" + entity_info + ":" + entity_hash;
 
-	if (DebugAuth)
+	if (Log.isEnabled(Log.AUTH))
 	{
-	    System.err.println("Auth:  Entity-Info: '" + req.getRequestURI() + ":" +
+	    Log.write(Log.AUTH, "Auth:  Entity-Info: '" + req.getRequestURI() + ":" +
 		 (ct == -1 ? "" : hdrs[ct].getValue()) + ":" +
 		 entity_body.length + ":" +
 		 (ce == -1 ? "" : hdrs[ce].getValue()) + ":" +
 		 (lm == -1 ? "" : hdrs[lm].getValue()) + ":" +
 		 (ex == -1 ? "" : hdrs[ex].getValue()) +"'");
-	    System.err.println("Auth:  Entity-Body: '" + entity_hash.asHex() + "'");
-	    System.err.println("Auth:  Entity-Digest: '" + entity_digest + "'");
+	    Log.write(Log.AUTH, "Auth:  Entity-Body: '" + entity_hash + "'");
+	    Log.write(Log.AUTH, "Auth:  Entity-Digest: '" + entity_digest + "'");
 	}
 
-	return new MD5(entity_digest).asHex();
+	return MD5.hexDigest(entity_digest);
     }
 
 
@@ -1167,8 +1160,8 @@ class DefaultAuthHandler implements AuthorizationHandler, GlobalConstants
 	StringBuffer str = new StringBuffer(buf.length*3);
 	for (int idx=0; idx<buf.length; idx++)
 	{
-	    str.append(Character.forDigit(buf[idx] >>> 4, 16));
-	    str.append(Character.forDigit(buf[idx] & 16, 16));
+	    str.append(Character.forDigit((buf[idx] >> 4) & 15, 16));
+	    str.append(Character.forDigit(buf[idx] & 15, 16));
 	    str.append(':');
 	}
 	str.setLength(str.length()-1);
@@ -1188,6 +1181,62 @@ class DefaultAuthHandler implements AuthorizationHandler, GlobalConstants
 	}
 
 	return digest;
+    }
+
+
+    /**
+     * Set a new username/password prompter.
+     *
+     * @param prompt the AuthorizationPrompter to use whenever a username
+     *               and password are needed; if null, no querying will be
+     *               done
+     * @return the previous prompter
+     */
+    public static synchronized AuthorizationPrompter setAuthorizationPrompter(
+					    AuthorizationPrompter prompt)
+    {
+	AuthorizationPrompter prev = prompter;
+	prompter    = prompt;
+	prompterSet = true;
+	return prev;
+    }
+
+
+    /**
+     * Set the default authorization prompter. It first tries to figure out
+     * if the AWT is running, and if it is then the GUI popup prompter is used;
+     * otherwise the command line prompter is used.
+     */
+    private static void setDefaultPrompter()
+    {
+	// if the AWT is running use the popup box; else use the
+	// the command line prompter.
+	if (!SimpleAuthPrompt.canUseCLPrompt()  ||  isAWTRunning())
+	    prompter = new SimpleAuthPopup();
+	else
+	    prompter = new SimpleAuthPrompt();
+    }
+
+    /**
+     * Try and figure out if the AWT is running. This is done by searching all
+     * threads and looking for one whose name starts with "AWT-". 
+     */
+    private static final boolean isAWTRunning() {
+	// find top-level thread group
+	ThreadGroup root = Thread.currentThread().getThreadGroup();
+	while (root.getParent() != null)
+	    root = root.getParent();
+
+	// search all threads
+	Thread[] t_list = new Thread[root.activeCount() + 5];
+	int t_num = root.enumerate(t_list);
+	for (int idx=0; idx<t_num; idx++)
+	{
+	    if (t_list[idx].getName().startsWith("AWT-"))
+		return true;
+	}
+
+	return false;
     }
 }
 
@@ -1262,18 +1311,18 @@ class VerifyRspAuth implements HashVerifier, GlobalConstants
 
 	String A1, A2;
 	if (alg != null  &&  alg.equalsIgnoreCase("MD5-sess"))
-	    A1 = new MD5(HA1 + ":" + nonce + ":" + cnonce).asHex();
+	    A1 = MD5.hexDigest(HA1 + ":" + nonce + ":" + cnonce);
 	else
 	    A1 = HA1;
 
 	// draft-01 was: A2 = resp.getStatusCode() + ":" + uri;
 	A2 = ":" + uri;
 	if (qop.equalsIgnoreCase("auth-int"))
-	    A2 += ":" + MD5.asHex(hash);
-	A2 = new MD5(A2).asHex();
+	    A2 += ":" + MD5.toHex(hash);
+	A2 = MD5.hexDigest(A2);
 
-	hash = new MD5(A1 + ":" + nonce + ":" +  nc + ":" + cnonce + ":" +
-		       qop + ":" + A2).Final();
+	hash = MD5.digest(A1 + ":" + nonce + ":" +  nc + ":" + cnonce + ":" +
+			  qop + ":" + A2);
 
 	for (int idx=0; idx<hash.length; idx++)
 	{
@@ -1284,9 +1333,8 @@ class VerifyRspAuth implements HashVerifier, GlobalConstants
 				      DefaultAuthHandler.hex(hash));
 	}
 
-	if (DebugAuth)
-	    System.err.println("Auth:  rspauth from " + hdr +
-			       " successfully verified");
+	Log.write(Log.AUTH, "Auth:  rspauth from " + hdr +
+			    " successfully verified");
     }
 }
 
@@ -1335,16 +1383,16 @@ class VerifyDigest implements HashVerifier, GlobalConstants
 
 	byte[] digest = DefaultAuthHandler.unHex(elem.getValue());
 
-	String entity_info = new MD5(
+	String entity_info = MD5.hexDigest(
 				uri + ":" +
 				header_val("Content-Type", resp) + ":" +
 				header_val("Content-Length", resp) + ":" +
 				header_val("Content-Encoding", resp) + ":" +
 				header_val("Last-Modified", resp) + ":" +
-				header_val("Expires", resp)).asHex();
-	hash = new MD5(HA1 + ":" + nonce + ":" + method + ":" +
-		       header_val("Date", resp) +
-		       ":" + entity_info + ":" + MD5.asHex(hash)).Final();
+				header_val("Expires", resp));
+	hash = MD5.digest(HA1 + ":" + nonce + ":" + method + ":" +
+			  header_val("Date", resp) +
+			  ":" + entity_info + ":" + MD5.toHex(hash));
 
 	for (int idx=0; idx<hash.length; idx++)
 	{
@@ -1355,9 +1403,8 @@ class VerifyDigest implements HashVerifier, GlobalConstants
 				      DefaultAuthHandler.hex(hash));
 	}
 
-	if (DebugAuth)
-	    System.err.println("Auth:  digest from " + hdr +
-			       " successfully verified");
+	Log.write(Log.AUTH, "Auth:  digest from " + hdr +
+			    " successfully verified");
     }
 
 
@@ -1371,158 +1418,334 @@ class VerifyDigest implements HashVerifier, GlobalConstants
 }
 
 
-/**
- * This class implements a simple popup that request username and password
- * used for the "basic" and "digest" authentication schemes.
- *
- * @version	0.3-2  18/06/1999
- * @author	Ronald Tschalär
- */
-class BasicAuthBox extends Frame
+class SimpleAuthPopup implements AuthorizationPrompter
 {
-    private final static String title = "Authorization Request";
-    private Dimension           screen;
-    private Label		line1, line2, line3;
-    private TextField		user, pass;
-    private int                 done;
-    private final static int    OK = 1, CANCEL = 0;
-
-
-    /**
-     * Constructs the popup with two lines of text above the input fields
-     */
-    BasicAuthBox()
-    {
-	super(title);
-
-        screen = getToolkit().getScreenSize();
-
-	addNotify();
-	addWindowListener(new Close());
-	setLayout(new BorderLayout());
-
-	Panel p = new Panel(new GridLayout(3,1));
-	p.add(line1 = new Label());
-	p.add(line2 = new Label());
-	p.add(line3 = new Label());
-	add("North", p);
-
-	p = new Panel(new GridLayout(2,1));
-	p.add(new Label("Username:"));
-	p.add(new Label("Password:"));
-	add("West", p);
-	p = new Panel(new GridLayout(2,1));
-	p.add(user = new TextField(30));
-	p.add(pass = new TextField(30));
-	pass.addActionListener(new Ok());
-	pass.setEchoChar('*');
-	add("East", p);
-
-	GridBagLayout gb = new GridBagLayout();
-	p = new Panel(gb);
-	GridBagConstraints constr = new GridBagConstraints();
-	Panel pp = new Panel();
-	p.add(pp);
-	constr.gridwidth = GridBagConstraints.REMAINDER;
-	gb.setConstraints(pp, constr);
-	constr.gridwidth = 1;
-	constr.weightx = 1.0;
-	Button b;
-	p.add(b = new Button("  OK  "));
-	b.addActionListener(new Ok());
-	constr.weightx = 1.0;
-	gb.setConstraints(b, constr);
-	p.add(b = new Button("Clear"));
-	b.addActionListener(new Clear());
-	constr.weightx = 2.0;
-	gb.setConstraints(b, constr);
-	p.add(b = new Button("Cancel"));
-	b.addActionListener(new Cancel());
-	constr.weightx = 1.0;
-	gb.setConstraints(b, constr);
-	add("South", p);
-
-	pack();
-	setResizable(false);
-    }
-
-
-    /**
-     * our event handlers
-     */
-    private class Ok implements ActionListener
-    {
-	public void actionPerformed(ActionEvent ae)
-	{
-	    done = OK;
-	    synchronized (BasicAuthBox.this) { BasicAuthBox.this.notifyAll(); }
-	}
-    }
-
-    private class Clear implements ActionListener
-    {
-	public void actionPerformed(ActionEvent ae)
-	{
-	    user.setText("");
-	    pass.setText("");
-	    user.requestFocus();
-	}
-    }
-
-    private class Cancel implements ActionListener
-    {
-	public void actionPerformed(ActionEvent ae)
-	{
-	    done = CANCEL;
-	    synchronized (BasicAuthBox.this) { BasicAuthBox.this.notifyAll(); }
-	}
-    }
-
-
-    private class Close extends WindowAdapter
-    {
-	public void windowClosing(WindowEvent we)
-	{
-	    new Cancel().actionPerformed(null);
-	}
-    }
-
+    private static BasicAuthBox inp = null;
 
     /**
      * the method called by DefaultAuthHandler.
      *
      * @return the username/password pair
      */
-    synchronized NVPair getInput(String l1, String l2, String l3)
+    public NVPair getUsernamePassword(AuthorizationInfo challenge, boolean forProxy)
     {
-	line1.setText(l1);
-	line2.setText(l2);
-	line3.setText(l3);
+	String line1, line2, line3;
 
-	line1.invalidate();
-	line2.invalidate();
-	line3.invalidate();
-
-	setResizable(true);
-	pack();
-	setResizable(false);
-	setLocation((screen.width-getPreferredSize().width)/2,
-		    (int) ((screen.height-getPreferredSize().height)/2*.7));
-	user.requestFocus();
-	setVisible(true);
-
-	try { wait(); } catch (InterruptedException e) { }
-
-	setVisible(false);
-
-	NVPair result = new NVPair(user.getText(), pass.getText());
-	user.setText("");
-	pass.setText("");
-
-	if (done == CANCEL)
-	    return null;
+	if (challenge.getScheme().equalsIgnoreCase("SOCKS5"))
+	{
+	    line1 = "Enter username and password for SOCKS server on host";
+	    line2 = challenge.getHost();
+	    line3 = "Authentication Method: username/password";
+	}
 	else
-	    return result;
+	{
+	    line1 = "Enter username and password for realm `" +
+		    challenge.getRealm() + "'";
+	    line2 = "on host " + challenge.getHost() + ":" +
+		    challenge.getPort();
+	    line3 = "Authentication Scheme: " + challenge.getScheme();
+	}
+
+	synchronized(getClass())
+	{
+	    if (inp == null)
+		inp = new BasicAuthBox();
+	}
+
+	return inp.getInput(line1, line2, line3, challenge.getScheme());
+    }
+
+
+    /**
+     * This class implements a simple popup that request username and password
+     * used for the "basic" and "digest" authentication schemes.
+     *
+     * @version	0.3-3  06/05/2001
+     * @author	Ronald Tschalär
+     */
+    private static class BasicAuthBox extends Frame
+    {
+	private final static String title = "Authorization Request";
+	private Dimension           screen;
+	private Label               line1, line2, line3;
+	private TextField           user, pass;
+	private int                 done;
+	private final static int    OK = 1, CANCEL = 0;
+
+
+	/**
+	 * Constructs the popup with two lines of text above the input fields
+	 */
+	BasicAuthBox()
+	{
+	    super(title);
+
+	    screen = getToolkit().getScreenSize();
+
+	    addNotify();
+	    addWindowListener(new Close());
+	    setLayout(new BorderLayout());
+
+	    Panel p = new Panel(new GridLayout(3,1));
+	    p.add(line1 = new Label());
+	    p.add(line2 = new Label());
+	    p.add(line3 = new Label());
+	    add("North", p);
+
+	    p = new Panel(new GridLayout(2,1));
+	    p.add(new Label("Username:"));
+	    p.add(new Label("Password:"));
+	    add("West", p);
+	    p = new Panel(new GridLayout(2,1));
+	    p.add(user = new TextField(30));
+	    p.add(pass = new TextField(30));
+	    pass.addActionListener(new Ok());
+	    pass.setEchoChar('*');
+	    add("East", p);
+
+	    GridBagLayout gb = new GridBagLayout();
+	    p = new Panel(gb);
+	    GridBagConstraints constr = new GridBagConstraints();
+	    Panel pp = new Panel();
+	    p.add(pp);
+	    constr.gridwidth = GridBagConstraints.REMAINDER;
+	    gb.setConstraints(pp, constr);
+	    constr.gridwidth = 1;
+	    constr.weightx = 1.0;
+	    Button b;
+	    p.add(b = new Button("  OK  "));
+	    b.addActionListener(new Ok());
+	    constr.weightx = 1.0;
+	    gb.setConstraints(b, constr);
+	    p.add(b = new Button("Clear"));
+	    b.addActionListener(new Clear());
+	    constr.weightx = 2.0;
+	    gb.setConstraints(b, constr);
+	    p.add(b = new Button("Cancel"));
+	    b.addActionListener(new Cancel());
+	    constr.weightx = 1.0;
+	    gb.setConstraints(b, constr);
+	    add("South", p);
+
+	    pack();
+	}
+
+
+	/**
+	 * our event handlers
+	 */
+	private class Ok implements ActionListener
+	{
+	    public void actionPerformed(ActionEvent ae)
+	    {
+		done = OK;
+		synchronized (BasicAuthBox.this)
+		    { BasicAuthBox.this.notifyAll(); }
+	    }
+	}
+
+	private class Clear implements ActionListener
+	{
+	    public void actionPerformed(ActionEvent ae)
+	    {
+		user.setText("");
+		pass.setText("");
+		user.requestFocus();
+	    }
+	}
+
+	private class Cancel implements ActionListener
+	{
+	    public void actionPerformed(ActionEvent ae)
+	    {
+		done = CANCEL;
+		synchronized (BasicAuthBox.this)
+		    { BasicAuthBox.this.notifyAll(); }
+	    }
+	}
+
+
+	private class Close extends WindowAdapter
+	{
+	    public void windowClosing(WindowEvent we)
+	    {
+		new Cancel().actionPerformed(null);
+	    }
+	}
+
+
+	/**
+	 * the method called by SimpleAuthPopup.
+	 *
+	 * @return the username/password pair
+	 */
+	synchronized NVPair getInput(String l1, String l2, String l3,
+				     String scheme)
+	{
+	    line1.setText(l1);
+	    line2.setText(l2);
+	    line3.setText(l3);
+
+	    line1.invalidate();
+	    line2.invalidate();
+	    line3.invalidate();
+
+	    setResizable(true);
+	    pack();
+	    setResizable(false);
+	    setLocation((screen.width-getPreferredSize().width)/2,
+			(int) ((screen.height-getPreferredSize().height)/2*.7));
+
+	    boolean user_focus = true;
+	    if (scheme.equalsIgnoreCase("NTLM"))
+	    {
+		// prefill the user field with the username
+		try
+		{
+		    user.setText(System.getProperty("user.name", ""));
+		    user_focus = false;
+		}
+		catch (SecurityException se)
+		    { }
+	    }
+
+	    setVisible(true);
+	    if (user_focus)
+		user.requestFocus();
+	    else
+		pass.requestFocus();
+
+	    try { wait(); } catch (InterruptedException e) { }
+
+	    setVisible(false);
+
+	    NVPair result = new NVPair(user.getText(), pass.getText());
+	    user.setText("");
+	    pass.setText("");
+
+	    if (done == CANCEL)
+		return null;
+	    else
+		return result;
+	}
     }
 }
 
+
+/**
+ * This class implements a simple command line prompter that request
+ * username and password used for the "basic" and "digest" authentication
+ * schemes.
+ *
+ * @version	0.3-3  06/05/2001
+ * @author	Ronald Tschalär
+ */
+class SimpleAuthPrompt implements AuthorizationPrompter
+{
+    /**
+     * the method called by DefaultAuthHandler.
+     *
+     * @return the username/password pair
+     */
+    public NVPair getUsernamePassword(AuthorizationInfo challenge, boolean forProxy)
+    {
+	String user, pass;
+
+	if (challenge.getScheme().equalsIgnoreCase("SOCKS5"))
+	{
+	    System.out.println("Enter username and password for SOCKS " +
+			       "server on host " + challenge.getHost());
+	    System.out.println("Authentication Method: username/password");
+	}
+	else
+	{
+	    System.out.println("Enter username and password for realm `" +
+			       challenge.getRealm() + "' on host " +
+			       challenge.getHost() + ":" +
+			       challenge.getPort());
+	    System.out.println("Authentication Scheme: " +
+			       challenge.getScheme());
+	}
+
+
+	// get username
+
+	BufferedReader inp =
+		    new BufferedReader(new InputStreamReader(System.in));
+	System.out.print("Username: "); System.out.flush();
+	try
+	    { user = inp.readLine(); }
+	catch (IOException ioe)
+	    { return null; }
+	if (user == null  ||  user.length() == 0)
+	    return null;		// cancel'd
+
+
+	// get password
+
+	echo(false);
+	System.out.print("Password: "); System.out.flush();
+	try
+	    { pass = inp.readLine(); }
+	catch (IOException ioe)
+	    { return null; }
+	System.out.println();
+	echo(true);
+
+	if (pass == null)
+	    return null;		// cancel'd
+
+
+	// done
+
+	return new NVPair(user, pass);
+    }
+
+
+    /*
+     * Turn command-line echoing of typed characters on or off.
+     */
+    private static void echo(boolean on)
+    {
+	String os = System.getProperty("os.name");
+	String[] cmd = null;
+
+	if (os.equalsIgnoreCase("Windows 95")  ||
+	    os.equalsIgnoreCase("Windows NT"))
+	    // I don't think this works on M$ ...
+	    cmd = new String[] { "echo", on ? "on" : "off" };
+	else if (os.equalsIgnoreCase("Windows")  ||
+		 os.equalsIgnoreCase("16-bit Windows"))
+	    ;	// ???
+	else if (os.equalsIgnoreCase("OS/2"))
+	    ;	// ???
+	else if (os.equalsIgnoreCase("Mac OS")  ||
+		 os.equalsIgnoreCase("MacOS"))
+	    ;	// ???
+	else if (os.equalsIgnoreCase("OpenVMS") ||
+		 os.equalsIgnoreCase("VMS"))
+	    cmd = new String[] { "SET TERMINAL " + (on ? "/ECHO" : "/NOECHO") };
+	else			// probably unix
+	    cmd = new String[] { "/bin/sh", "-c",
+				 "stty " + (on ? "echo" : "-echo") + " < /dev/tty" };
+
+        if (cmd != null)
+	    try
+		{ Runtime.getRuntime().exec(cmd).waitFor(); }
+	    catch (Exception e)
+		{ }
+    }
+
+    /**
+     * @return true for Unix's and VMS
+     */
+    static boolean canUseCLPrompt() {
+	String os = System.getProperty("os.name");
+
+	return (os.indexOf("Linux") >= 0    ||  os.indexOf("SunOS") >= 0  ||
+		os.indexOf("Solaris") >= 0  ||  os.indexOf("BSD") >= 0    ||
+		os.indexOf("AIX") >= 0      ||  os.indexOf("HP-UX") >= 0  ||
+		os.indexOf("IRIX") >= 0     ||  os.indexOf("OSF") >= 0    ||
+		os.indexOf("A/UX") >= 0     ||  os.indexOf("VMS") >= 0);
+    }
+}

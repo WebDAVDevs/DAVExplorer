@@ -1,8 +1,8 @@
 /*
- * @(#)ChunkedInputStream.java				0.3-2 18/06/1999
+ * @(#)ChunkedInputStream.java				0.3-3 06/05/2001
  *
  *  This file is part of the HTTPClient package
- *  Copyright (C) 1996-1999  Ronald Tschalär
+ *  Copyright (C) 1996-2001 Ronald Tschalär
  *
  *  This library is free software; you can redistribute it and/or
  *  modify it under the terms of the GNU Lesser General Public
@@ -24,6 +24,10 @@
  *
  *  ronald@innovation.ch
  *
+ *  The HTTPClient's home page is located at:
+ *
+ *  http://www.innovation.ch/java/HTTPClient/ 
+ *
  */
 
 package HTTPClient;
@@ -37,7 +41,7 @@ import java.io.FilterInputStream;
 /**
  * This class de-chunks an input stream.
  *
- * @version	0.3-2  18/06/1999
+ * @version	0.3-3  06/05/2001
  * @author	Ronald Tschalär
  */
 class ChunkedInputStream extends FilterInputStream
@@ -62,7 +66,7 @@ class ChunkedInputStream extends FilterInputStream
     }
 
 
-    private int chunk_len = -1;
+    private long chunk_len = -1;
     private boolean eof   = false;
 
     public synchronized int read(byte[] buf, int off, int len)
@@ -80,7 +84,7 @@ class ChunkedInputStream extends FilterInputStream
 
 	if (chunk_len > 0)              // it's data
 	{
-	    if (len > chunk_len)  len = chunk_len;
+	    if (len > chunk_len)  len = (int) chunk_len;
 	    int rcvd = in.read(buf, off, len);
 	    if (rcvd == -1)
 		throw new EOFException("Premature EOF encountered");
@@ -125,9 +129,8 @@ class ChunkedInputStream extends FilterInputStream
 	if (eof)  return 0;
 
 	if (chunk_len != -1)
-	    return chunk_len + in.available();
+	    return (int) chunk_len + in.available();
 	else
 	    return in.available();
     }
 }
-

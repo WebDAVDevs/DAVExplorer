@@ -1,8 +1,8 @@
 /*
- * @(#)ResponseHandler.java				0.3-2 18/06/1999
+ * @(#)ResponseHandler.java				0.3-3 06/05/2001
  *
  *  This file is part of the HTTPClient package
- *  Copyright (C) 1996-1999  Ronald Tschalär
+ *  Copyright (C) 1996-2001 Ronald Tschalär
  *
  *  This library is free software; you can redistribute it and/or
  *  modify it under the terms of the GNU Lesser General Public
@@ -24,6 +24,10 @@
  *
  *  ronald@innovation.ch
  *
+ *  The HTTPClient's home page is located at:
+ *
+ *  http://www.innovation.ch/java/HTTPClient/ 
+ *
  */
 
 package HTTPClient;
@@ -34,12 +38,11 @@ import java.io.IOException;
  * This holds various information about an active response. Used by the
  * StreamDemultiplexor and RespInputStream.
  *
- * @version	0.3-2  18/06/1999
+ * @version	0.3-3  06/05/2001
  * @author	Ronald Tschalär
  * @since	V0.2
  */
-
-final class ResponseHandler implements GlobalConstants
+final class ResponseHandler
 {
     /** the response stream */
     RespInputStream     stream;
@@ -72,11 +75,8 @@ final class ResponseHandler implements GlobalConstants
 	this.request  = request;
 	this.stream   = new RespInputStream(demux, this);
 
-	if (DebugDemux)
-	    System.err.println("Demux: Opening stream " +
-				this.stream.hashCode() + " (" +
-			       " (" + demux.hashCode() + ") (" +
-				Thread.currentThread() + ")");
+	Log.write(Log.DEMUX, "Demux: Opening stream " + this.stream.hashCode() +
+			     " for demux (" + demux.hashCode() + ")");
     }
 
 
@@ -95,7 +95,7 @@ final class ResponseHandler implements GlobalConstants
      *                      is reading.
      * @return the boundary string.
      */
-    byte[] getEndBoundary(ExtBufferedInputStream MasterStream)
+    byte[] getEndBoundary(BufferedInputStream MasterStream)
 		throws IOException, ParseException
     {
 	if (endbndry == null)
@@ -112,7 +112,7 @@ final class ResponseHandler implements GlobalConstants
      *                      is reading.
      * @return the compiled boundary string.
      */
-    int[] getEndCompiled(ExtBufferedInputStream MasterStream)
+    int[] getEndCompiled(BufferedInputStream MasterStream)
 		throws IOException, ParseException
     {
 	if (end_cmp == null)
@@ -125,16 +125,14 @@ final class ResponseHandler implements GlobalConstants
      * Gets the boundary string, compiles it for searching, and initializes
      * the buffered input stream.
      */
-    void setupBoundary(ExtBufferedInputStream MasterStream)
+    void setupBoundary(BufferedInputStream MasterStream)
 		throws IOException, ParseException
     {
 	String endstr = "--" + Util.getParameter("boundary",
 			    resp.getHeader("Content-Type")) +
 			"--\r\n";
-	endbndry = new byte[endstr.length()];
-	endstr.getBytes(0, endbndry.length, endbndry, 0);
+	endbndry = endstr.getBytes("8859_1");
 	end_cmp = Util.compile_search(endbndry);
-	MasterStream.initMark();
+	MasterStream.markForSearch();
     }
 }
-

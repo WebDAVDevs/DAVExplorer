@@ -1,8 +1,8 @@
 /*
- * @(#)ContentMD5Module.java				0.3-2 18/06/1999
+ * @(#)ContentMD5Module.java				0.3-3 06/05/2001
  *
  *  This file is part of the HTTPClient package
- *  Copyright (C) 1996-1999  Ronald Tschalär
+ *  Copyright (C) 1996-2001 Ronald Tschalär
  *
  *  This library is free software; you can redistribute it and/or
  *  modify it under the terms of the GNU Lesser General Public
@@ -24,12 +24,15 @@
  *
  *  ronald@innovation.ch
  *
+ *  The HTTPClient's home page is located at:
+ *
+ *  http://www.innovation.ch/java/HTTPClient/ 
+ *
  */
 
 package HTTPClient;
 
 import java.io.IOException;
-import java.net.ProtocolException;
 
 
 /**
@@ -40,11 +43,10 @@ import java.net.ProtocolException;
  * against the expected digest from the Content-MD5 header the stream is
  * closed. An IOException is thrown at that point if the digests don't match.
  *
- * @version	0.3-2  18/06/1999
+ * @version	0.3-3  06/05/2001
  * @author	Ronald Tschalär
  */
-
-class ContentMD5Module implements HTTPClientModule, GlobalConstants
+class ContentMD5Module implements HTTPClientModule
 {
     // Constructors
 
@@ -105,15 +107,12 @@ class ContentMD5Module implements HTTPClientModule, GlobalConstants
 	    resp.getHeader("Transfer-Encoding") != null)
 	    return;
 
-	if (DebugMods)
-	{
-	    if (md5_digest != null)
-		System.err.println("CMD5M: Received digest: " + md5_digest +
-				    " - pushing md5-check-stream");
-	    else
-		System.err.println("CMD5M: Expecting digest in trailer " +
-				    " - pushing md5-check-stream");
-	}
+	if (md5_digest != null)
+	    Log.write(Log.MODS, "CMD5M: Received digest: " + md5_digest +
+				" - pushing md5-check-stream");
+	else
+	    Log.write(Log.MODS, "CMD5M: Expecting digest in trailer " +
+				" - pushing md5-check-stream");
 
 	resp.inp_stream = new MD5InputStream(resp.inp_stream,
 					     new VerifyMD5(resp));
@@ -129,7 +128,7 @@ class ContentMD5Module implements HTTPClientModule, GlobalConstants
 }
 
 
-class VerifyMD5 implements HashVerifier, GlobalConstants
+class VerifyMD5 implements HashVerifier
 {
     RoResponse resp;
 
@@ -153,10 +152,7 @@ class VerifyMD5 implements HashVerifier, GlobalConstants
 
 	if (hdr == null)  return;
 
-	hdr = hdr.trim();
-	byte[] ContMD5 = new byte[hdr.length()];
-	hdr.getBytes(0, ContMD5.length, ContMD5, 0);
-	ContMD5 = Codecs.base64Decode(ContMD5);
+	byte[] ContMD5 = Codecs.base64Decode(hdr.trim().getBytes("8859_1"));
 
 	for (int idx=0; idx<hash.length; idx++)
 	{
@@ -166,8 +162,7 @@ class VerifyMD5 implements HashVerifier, GlobalConstants
 				      hex(hash));
 	}
 
-	if (DebugMods)
-	    System.err.println("CMD5M: hash successfully verified");
+	Log.write(Log.MODS, "CMD5M: hash successfully verified");
     }
 
 
@@ -188,4 +183,3 @@ class VerifyMD5 implements HashVerifier, GlobalConstants
 	return str.toString();
     }
 }
-

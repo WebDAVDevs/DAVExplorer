@@ -1,8 +1,8 @@
 /*
- * @(#)AuthorizationHandler.java			0.3-2 18/06/1999
+ * @(#)AuthorizationHandler.java			0.3-3 06/05/2001
  *
  *  This file is part of the HTTPClient package
- *  Copyright (C) 1996-1999  Ronald Tschalär
+ *  Copyright (C) 1996-2001 Ronald Tschalär
  *
  *  This library is free software; you can redistribute it and/or
  *  modify it under the terms of the GNU Lesser General Public
@@ -24,6 +24,10 @@
  *
  *  ronald@innovation.ch
  *
+ *  The HTTPClient's home page is located at:
+ *
+ *  http://www.innovation.ch/java/HTTPClient/ 
+ *
  */
 
 package HTTPClient;
@@ -39,10 +43,9 @@ import java.io.IOException;
  * way of getting the necessary auth info.
  *
  * @see AuthorizationInfo#setAuthHandler(HTTPClient.AuthorizationHandler)
- * @version	0.3-2  18/06/1999
+ * @version	0.3-3  06/05/2001
  * @author	Ronald Tschalär
  */
-
 public interface AuthorizationHandler
 {
     /**
@@ -70,10 +73,12 @@ public interface AuthorizationHandler
      *         cookie or any necessary params.
      * @exception AuthSchemeNotImplException if the authorization scheme
      *             in the challenge cannot be handled.
+     * @exception IOException if an exception occurs while processing the
+     *                        challenge
      */
     AuthorizationInfo getAuthorization(AuthorizationInfo challenge,
 				       RoRequest req, RoResponse resp)
-	    throws AuthSchemeNotImplException;
+	    throws AuthSchemeNotImplException, IOException;
 
 
     /**
@@ -98,10 +103,12 @@ public interface AuthorizationHandler
      *         if none is to be sent.
      * @exception AuthSchemeNotImplException if the authorization scheme
      *             in the info cannot be handled.
+     * @exception IOException if an exception occurs while fixing up the
+     *                        info
      */
     AuthorizationInfo fixupAuthInfo(AuthorizationInfo info, RoRequest req,
 				   AuthorizationInfo challenge, RoResponse resp)
-	    throws AuthSchemeNotImplException;
+	    throws AuthSchemeNotImplException, IOException;
 
 
     /**
@@ -136,10 +143,9 @@ public interface AuthorizationHandler
      * @param prxy the previous proxy auth info sent, or null if none was sent
      * @exception IOException if an exception occurs during the reading of
      *            the trailers.
-     * @see #handleAuthHeaders(RoResponse, RoRequest, AuthorizationInfo, AuthorizationInfo)
+     * @see #handleAuthHeaders(HTTPClient.Response, HTTPClient.RoRequest, HTTPClient.AuthorizationInfo, HTTPClient.AuthorizationInfo)
      */
     void handleAuthTrailers(Response resp, RoRequest req,
 			    AuthorizationInfo prev, AuthorizationInfo prxy)
 	    throws IOException;
 }
-
