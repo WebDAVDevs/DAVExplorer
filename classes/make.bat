@@ -1,7 +1,7 @@
 @echo off
 rem Makefile for DAV Explorer
 rem
-rem Copyright (c) 1999-2001 Regents of the University of California.
+rem Copyright (c) 1999-2002 Regents of the University of California.
 rem All rights reserved.
 rem
 rem Redistribution and use in source and binary forms are permitted
@@ -17,7 +17,15 @@ rem IMPLIED WARRANTIES, INCLUDING, WITHOUT LIMITATION, THE IMPLIED
 rem WARRANTIES OF MERCHANTIBILITY AND FITNESS FOR A PARTICULAR PURPOSE.
 
 set OLDCLASSPATH=%CLASSPATH%
-for /f %%i in ('cd') do set CLASSPATH=%%i;%CLASSPATH%
+
+rem The following line does not work on Win9x or WinME.
+rem for /f %%i in ('cd') do set CLASSPATH=%%i;%CLASSPATH%
+
+rem This is the ugly workaround for the above 'for /f ...' line
+call pwd.bat
+call cur.bat
+set CLASSPATH=%PWD%;%CLASSPATH%
+
 cd com
 call make.bat
 cd ..\HTTPClient
@@ -26,5 +34,7 @@ cd ..\edu
 call make.bat
 echo on
 cd ..
-jar -cfm DAVExplorer.jar DAVManifest edu\uci\ics\DAVExplorer\*.class edu\uci\ics\DAVExplorer\icons\* HTTPClient\*.class HTTPClient\http\*.class HTTPClient\https\*.class HTTPClient\shttp\*.class com\ms\xml\dso\*.class com\ms\xml\om\*.class com\ms\xml\parser\*.class com\ms\xml\util\*.class com\ms\xml\xmlstream\*.class
+jar -cfm DAVExplorer.jar DAVManifest edu\uci\ics\DAVExplorer\*.class edu\uci\ics\DAVExplorer\icons\*.GIF edu\uci\ics\DAVExplorer\icons\*.gif HTTPClient\*.class HTTPClient\http\*.class HTTPClient\https\*.class HTTPClient\shttp\*.class com\ms\xml\dso\*.class com\ms\xml\om\*.class com\ms\xml\parser\*.class com\ms\xml\util\*.class com\ms\xml\xmlstream\*.class
 set CLASSPATH=%OLDCLASSPATH%
+set OLDCLASSPATH=
+set PWD=
