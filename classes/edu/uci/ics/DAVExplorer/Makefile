@@ -24,6 +24,7 @@ classes = AsGen.class \
 	  Main.class \
 	  PropDialog.class \
 	  PropDialogEvent.class \
+          PropDialogListener.class \
 	  PutEvent.class \
 	  PutListener.class \
 	  TableMap.class \
