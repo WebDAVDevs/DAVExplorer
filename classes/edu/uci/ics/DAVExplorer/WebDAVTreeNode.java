@@ -169,9 +169,9 @@ public class WebDAVTreeNode extends DefaultMutableTreeNode
         {
             ByteArrayInputStream byte_in = new ByteArrayInputStream(byte_xml);
             //EscapeInputStream iStream = new EscapeInputStream( byte_in, true );
-            XMLInputStream xml_in = new XMLInputStream( byte_in );
+            //XMLInputStream xml_in = new XMLInputStream( byte_in );
             xml_doc = new Document();
-            xml_doc.load(xml_in);
+            xml_doc.load(byte_in);
         }
         catch (Exception inEx)
         {
@@ -782,7 +782,10 @@ public class WebDAVTreeNode extends DefaultMutableTreeNode
             {
                 Element token = (Element)treeEnum.nextElement();
                 if( (token != null) && (token.getType() == Element.PCDATA || token.getType() == Element.CDATA) )
-                    return token.getText();
+                {
+                    // TODO: get encoding
+                    return unescape( token.getText(), null, false );
+                }
             }
         }
         return "";
@@ -855,7 +858,10 @@ public class WebDAVTreeNode extends DefaultMutableTreeNode
         {
             Element token = (Element)treeEnum.nextElement();
             if( (token != null) && (token.getType() == Element.PCDATA || token.getType() == Element.CDATA) )
-                return token.getText();
+            {
+                // TODO: get encoding
+                return unescape( token.getText(), null, false );
+            }
         }
         return "";
     }
@@ -872,7 +878,10 @@ public class WebDAVTreeNode extends DefaultMutableTreeNode
         {
             Element token = (Element)treeEnum.nextElement();
             if( (token != null) && (token.getType() == Element.PCDATA || token.getType() == Element.CDATA) )
-                return token.getText();
+            {
+                // TODO: get encoding
+                return unescape( token.getText(), null, false );
+            }
         }
         return "0";
     }
@@ -889,14 +898,17 @@ public class WebDAVTreeNode extends DefaultMutableTreeNode
         {
             Element token = (Element)treeEnum.nextElement();
             if( (token != null) && (token.getType() == Element.PCDATA || token.getType() == Element.CDATA) )
-                return token.getText();
+            {
+                // TODO: get encoding
+                return unescape( token.getText(), null, false );
+            }
         }
         return "";
     }
 
     private String unescape( String text, String encoding, boolean href )
     {
-        text += "\n";
+        //text += "\n";
         ByteArrayInputStream byte_in = new ByteArrayInputStream( text.getBytes() );
         EscapeInputStream iStream = new EscapeInputStream( byte_in, true );
         try
@@ -930,7 +942,23 @@ public class WebDAVTreeNode extends DefaultMutableTreeNode
                 }
             }
             else
-                GlobalData.getGlobalData().errorMsg("String unescaping error: \n" + e);
+            {
+                // the text may already be in UTF-8, so all we need is to unescape
+                // this is a rather bad hack, but since we don't have control over
+                // what kind of data the server sends...
+                try
+                {
+                    byte_in = new ByteArrayInputStream( text.getBytes("UTF-8") );
+                    iStream = new EscapeInputStream( byte_in, true );
+                    InputStreamReader isr = new InputStreamReader( iStream, "UTF-8" );
+                    BufferedReader br = new BufferedReader( isr );
+                    return br.readLine();
+                }
+                catch( IOException e2 )
+                {
+                    GlobalData.getGlobalData().errorMsg("String unescaping error: \n" + e);
+                }
+            }
         }
         return "";
     }
