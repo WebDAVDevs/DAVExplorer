@@ -594,8 +594,9 @@ public class Main extends JFrame
 
                     String prompt = "Enter the new name of the resource:";
                     String title = "Move Resource";
+                    String defaultName = requestGenerator.getDefaultName( null );
                     //String overwrite = "Overwrite existing resource?";
-                    String fname = selectName( title, prompt );
+                    String fname = selectName( title, prompt, defaultName );
                     if( fname != null )
                     {
                         boolean retval = false;
@@ -843,15 +844,16 @@ public class Main extends JFrame
             JOptionPane pane = new JOptionPane();
             String str = null;
             String title = null;
+            String defaultName = requestGenerator.getDefaultName( null );
             if( collection )
             {
                 title = "Delete Collection";
-                str = "Delete the collection and all its contents:\nAre you sure?";
+                str = "Delete the collection " + defaultName + " and all its contents:\nAre you sure?";
             }
             else
             {
                 title = "Delete File";
-                str = "Delete: Are you sure?";
+                str = "Delete " + defaultName + ":\nAre you sure?";
             }
             int opt = pane.showConfirmDialog( GlobalData.getGlobalData().getMainFrame(), str, title, JOptionPane.YES_NO_OPTION );
             if (opt == JOptionPane.YES_OPTION)
