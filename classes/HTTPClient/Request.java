@@ -1,8 +1,8 @@
 /*
- * @(#)Request.java					0.3-2 18/06/1999
+ * @(#)Request.java					0.3-2E 16/06/2000
  *
  *  This file is part of the HTTPClient package
- *  Copyright (C) 1996-1999  Ronald Tschalär
+ *  Copyright (C) 1996-2000  Ronald Tschalär
  *
  *  This library is free software; you can redistribute it and/or
  *  modify it under the terms of the GNU Lesser General Public
@@ -33,7 +33,7 @@ package HTTPClient;
  * This class represents an http request. It's used by classes which
  * implement the HTTPClientModule interface.
  *
- * @version	0.3-2  18/06/1999
+ * @version	0.3-2E  16/06/2000
  * @author	Ronald Tschalär
  */
 
@@ -159,7 +159,8 @@ public final class Request implements RoRequest
 	if (req_uri != null  &&  req_uri.trim().length() > 0)
 	{
 	    req_uri = req_uri.trim();
-	    if (req_uri.charAt(0) != '/'  &&  !req_uri.equals("*"))
+	    if (req_uri.charAt(0) != '/'  &&  !req_uri.equals("*")  &&
+		!method.equals("CONNECT"))
 		req_uri = "/" + req_uri;
 	    this.req_uri = req_uri;
 	}
