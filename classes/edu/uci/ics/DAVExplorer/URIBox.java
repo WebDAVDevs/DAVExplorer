@@ -82,7 +82,7 @@ public class URIBox extends JPanel implements ActionListener
 
         panel.add(okButton);
 
-        urlField = new JComboBox( new Vector(URIContainer.getInstance().getURIs()) );
+        urlField = new JComboBox( (Vector)URIContainer.getInstance().getURIs().clone() );
         urlField.setEditable(true);
         Dimension d = urlField.getPreferredSize();
         d.width = 500;  // resonable width

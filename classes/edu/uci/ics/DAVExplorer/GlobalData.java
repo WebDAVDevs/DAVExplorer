@@ -389,7 +389,7 @@ class GlobalData
         Vector info = ReadConfigEntry( token, false );
         if( info.size() > 0 )
         {
-            return (String)info.get(0);
+            return (String)info.elementAt(0);
         }
         return "";
     }
@@ -423,7 +423,7 @@ class GlobalData
                     if( (filetokens.nextToken()).equals(token) )
                     {
                         String data = filetokens.nextToken(); 
-                        info.add( data );
+                        info.addElement( data );
                         found = true;
                     }
                 }
@@ -449,11 +449,11 @@ class GlobalData
         if( (data == null) || (data.size() == 0) )
             return;
         // this has the side effect of removing all old token entries
-        WriteConfigEntry( token, (String)data.get(0), true );
+        WriteConfigEntry( token, (String)data.elementAt(0), true );
         for( int i=1; i<data.size(); i++ )
         {
             // it doesn't make sense here to overwrite entries
-            WriteConfigEntry( token, (String)data.get(i), false );
+            WriteConfigEntry( token, (String)data.elementAt(i), false );
         }
     }
 
@@ -463,11 +463,11 @@ class GlobalData
         if( (data == null) || (data.size() == 0) )
             return;
         // this has the side effect of removing all old token entries
-        WriteConfigEntry( token, (String)data.get(0), overwrite );
+        WriteConfigEntry( token, (String)data.elementAt(0), overwrite );
         for( int i=1; i<data.size(); i++ )
         {
             // it doesn't make sense here to overwrite entries
-            WriteConfigEntry( token, (String)data.get(i), false );
+            WriteConfigEntry( token, (String)data.elementAt(i), false );
         }
     }
 

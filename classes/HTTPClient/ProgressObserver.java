@@ -19,8 +19,7 @@
 
 package HTTPClient;
 
-import java.util.ArrayList;
-import java.util.List;
+import java.util.Vector;
 
 /**
  * This class is a container for all registered {@link ProgressListener}.
@@ -39,7 +38,7 @@ public class ProgressObserver
 {
     protected static ProgressObserver instance = null;
     /** contains all registered ProgressListeners */
-    protected List progressListeners = new ArrayList();
+    protected Vector progressListeners = new Vector();
 
 
     /**
@@ -72,14 +71,14 @@ public class ProgressObserver
     {
         if( listener == null )
             return;
-        progressListeners.add( listener );
+        progressListeners.addElement( listener );
     }
 
 
     /**
      * Returns all known ProgressListeners.
      */
-    public List getProgressListeners()
+    public Vector getProgressListeners()
     {
         return progressListeners;
     }
@@ -102,7 +101,7 @@ public class ProgressObserver
     {
         for( int i=0; i<progressListeners.size(); i++ )
         {
-            ((ProgressListener)progressListeners.get(i)).progressAchieved( writtenBytes, len, method );
+            ((ProgressListener)progressListeners.elementAt(i)).progressAchieved( writtenBytes, len, method );
         }
     }
 }

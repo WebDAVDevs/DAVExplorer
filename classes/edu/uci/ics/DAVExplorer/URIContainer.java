@@ -36,18 +36,35 @@ import java.util.Vector;
 public class URIContainer
 {
     protected static URIContainer instance = null;
-    protected Vector uris = new Vector();
+    protected static Vector uris = new Vector();
+
+    /** an object whose finalizer will persist the URIs */
+    private static Object URISaver = null;
+
+
+    static
+    {
+        // the nearest thing to atexit() in JDK 1.2 and below
+        // JDK 1.3 and above have Runtime.getRuntime().addShutdownHook()
+        URISaver = new Object()
+        {
+            public void finalize()
+            {
+                saveURIs();
+            }
+        };
+        try
+        {
+            System.runFinalizersOnExit(true);
+        }
+        catch( Throwable t )
+        {
+        }
+    }
 
 
     protected URIContainer()
     {
-        try
-        {
-            Runtime.getRuntime().addShutdownHook(new URIContainerExitHandler());
-        }
-        catch (Exception e)
-        {
-        }
         loadURIs();
     }
 
@@ -64,11 +81,11 @@ public class URIContainer
     {
         Vector data = GlobalData.getGlobalData().ReadConfigEntry( "uri", true );
         for( int i=0; i<data.size(); i++ )
-            addURI( (String)data.get(i) );
+            addURI( (String)data.elementAt(i) );
     }
 
 
-    public void saveURIs()
+    public static void saveURIs()
     {
         GlobalData.getGlobalData().WriteConfigEntry( "uri", uris );
     }
@@ -80,22 +97,12 @@ public class URIContainer
             return;
         if( uris.contains(uri) )
             return;
-        uris.add(uri);
+        uris.addElement(uri);
     }
 
 
     public Vector getURIs()
     {
         return uris;
-    }
-
-
-    protected class URIContainerExitHandler
-        extends Thread
-    {
-        public void run()
-        {
-            saveURIs();
-        }
     }
 }

@@ -662,14 +662,7 @@ public class Codecs
     {
 	if (str == null)  return  null;
 
-    try
-    {
-        return java.net.URLEncoder.encode(str, "UTF-8");
-    }
-    catch(UnsupportedEncodingException e)
-    {
-        return str; //unencoded
-    }
+    return java.net.URLEncoder.encode(str);
     }
 
 
