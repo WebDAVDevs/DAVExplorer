@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 1999 Regents of the University of California.
+ * Copyright (c) 1999-2000 Regents of the University of California.
  * All rights reserved.
  *
  * This software was developed at the University of California, Irvine.
@@ -162,49 +162,49 @@ public class WebDAVResponseInterpreter
                     String location = res.getHeader( "Location" );
                     errorMsg("The resource requested moved to " + location + "\nPlease try connecting to the new location." );
                 }
-		else if( ( Method.equals("MOVE") || Method.equals("DELETE"))&&( (res.getStatusCode() == 412) || (res.getStatusCode() == 423)) )
-		{
-		    // Do the processing for the two kinds of Methods
-		    // That is discoverLock, but set the passed in String to
-		    // set the Extra field to be return processed
-		    if (Method.equals("MOVE"))
-		    {
-			// check if this is the second trip
-			if (Extra.startsWith("rename2:"))
-			{
-			    // Reset the name we attempted to change
-			    ActionEvent ae = new ActionEvent(this, ActionEvent.ACTION_FIRST, "reset");
-			    actionListener.actionPerformed(ae);
+        else if( ( Method.equals("MOVE") || Method.equals("DELETE"))&&( (res.getStatusCode() == 412) || (res.getStatusCode() == 423)) )
+        {
+            // Do the processing for the two kinds of Methods
+            // That is discoverLock, but set the passed in String to
+            // set the Extra field to be return processed
+            if (Method.equals("MOVE"))
+            {
+            // check if this is the second trip
+            if (Extra.startsWith("rename2:"))
+            {
+                // Reset the name we attempted to change
+                ActionEvent ae = new ActionEvent(this, ActionEvent.ACTION_FIRST, "reset");
+                actionListener.actionPerformed(ae);
 
-			    // Alert User of error
+                // Alert User of error
                             errorMsg("Rename Failed\nStatus " + res.getStatusCode() + " " + res.getReasonLine() );
-			}
-			else  // first attempt
-			{
-                	    int pos = Extra.indexOf(":");
+            }
+            else  // first attempt
+            {
+                        int pos = Extra.indexOf(":");
                             String tmp = Extra.substring(pos + 1);
 
-        		    clearStream();
+                    clearStream();
 
                             generator.DiscoverLock("rename2:" + tmp);
-			}
-		    }
-		    else
-		    {
-			// check if this is the second trip
-			if (Extra.startsWith("delete2:"))
-			{
-                	    errorMsg("Delete Failed\nStatus " + res.getStatusCode() + " " + res.getReasonLine() );
-			}
-			else  // first attempt
-			{
-        		    clearStream();
+            }
+            }
+            else
+            {
+            // check if this is the second trip
+            if (Extra.startsWith("delete2:"))
+            {
+                        errorMsg("Delete Failed\nStatus " + res.getStatusCode() + " " + res.getReasonLine() );
+            }
+            else  // first attempt
+            {
+                    clearStream();
                             generator.DiscoverLock("delete2:");
-			}
-		    }
+            }
+            }
 
 
-		}
+        }
                 else
                     errorMsg("DAV Interpreter:\n\n" + res.getStatusCode() + " " + res.getReasonLine());
                 return;
@@ -223,7 +223,7 @@ public class WebDAVResponseInterpreter
 
         if (Method.equals("PROPFIND")){
             parsePropFind();
-	}
+    }
         else if (Method.equals("PROPPATCH"))
             parsePropPatch();
         else if (Method.equals("MKCOL"))
@@ -233,9 +233,9 @@ public class WebDAVResponseInterpreter
         else if (Method.equals("PUT"))
             parsePut();
         else if (Method.equals("DELETE"))
-	{
+    {
             parseDelete();
-	}
+    }
         else if (Method.equals("COPY"))
         {
             //Original
@@ -351,9 +351,9 @@ public class WebDAVResponseInterpreter
             }
         }
         else if (Extra.equals("lock") || Extra.equals("unlock")
-	   || Extra.equals("delete") || Extra.startsWith("rename:")
-	   || Extra.equals("display") || Extra.equals("commit")
-	   || Extra.startsWith("rename2:") || Extra.startsWith("delete2:") )
+       || Extra.equals("delete") || Extra.startsWith("rename:")
+       || Extra.equals("display") || Extra.equals("commit")
+       || Extra.startsWith("rename2:") || Extra.startsWith("delete2:") )
         {
             // get lock information out of XML tree
             String lockToken = null;
@@ -497,23 +497,23 @@ public class WebDAVResponseInterpreter
                 generator.execute();
             }
             else if(Extra.startsWith("rename2:"))
-	    {
-		// gets the response to the query DiscoverLock
-		generator.setSecondTime(true);
+        {
+        // gets the response to the query DiscoverLock
+        generator.setSecondTime(true);
                 generator.GenerateMove(null, null, false, true, lockToken, "rename2:");
-		generator.setSecondTime(false);
-		clearStream();
+        generator.setSecondTime(false);
+        clearStream();
                 generator.execute();
-	    }
+        }
             else if(Extra.startsWith("delete2:"))
-	    {
-		// gets the response to the query DiscoverLock
-		generator.setSecondTime(true);
+        {
+        // gets the response to the query DiscoverLock
+        generator.setSecondTime(true);
                 generator.GenerateDelete(lockToken);
-		generator.setSecondTime(false);
-		clearStream();
+        generator.setSecondTime(false);
+        clearStream();
                 generator.execute();
-	    }
+        }
             else if (Extra.equals("display"))
             {
                 displayLock(lockType, lockScope, lockDepth, lockToken, lockTimeout, ownerInfo);
@@ -677,21 +677,21 @@ public class WebDAVResponseInterpreter
 
         clearStream();
 
-	if (Extra.equals("mkcol"))
-	{
+    if (Extra.equals("mkcol"))
+    {
             CopyResponseEvent e = new CopyResponseEvent( this, Node);
             copyListener.CopyEventResponse(e);
-	}
-	else if (Extra.equals("mkcolbelow"))
-	{
-	    // Piggy Back on Put Event,
-	    // This reloads the node on the selected collection,
-	    // but should not change the selection.
+    }
+    else if (Extra.equals("mkcolbelow"))
+    {
+        // Piggy Back on Put Event,
+        // This reloads the node on the selected collection,
+        // but should not change the selection.
             WebDAVTreeNode parent = generator.getPossibleParentOfSelectedCollectionNode();
             PutEvent e = new PutEvent( this, Node, parent);
-	    putListener.PutEventResponse(e);
+        putListener.PutEventResponse(e);
 
-	}
+    }
     }
 
     public void parseGet()
@@ -883,10 +883,10 @@ public class WebDAVResponseInterpreter
         {
             if (res.getStatusCode() >= 300)
             {
-		if( Extra.startsWith("rename")){
-		    ActionEvent ae = new ActionEvent(this, ActionEvent.ACTION_FIRST, "reset");
-		    actionListener.actionPerformed(ae);
-		}
+        if( Extra.startsWith("rename")){
+            ActionEvent ae = new ActionEvent(this, ActionEvent.ACTION_FIRST, "reset");
+            actionListener.actionPerformed(ae);
+        }
                 errorMsg("DAV Interpreter:\n\n" + res.getStatusCode() + " " + res.getReasonLine());
             }
         }

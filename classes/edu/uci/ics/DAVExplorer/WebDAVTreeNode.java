@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 1999 Regents of the University of California.
+ * Copyright (c) 1999-2000 Regents of the University of California.
  * All rights reserved.
  *
  * This software was developed at the University of California, Irvine.
@@ -177,8 +177,8 @@ public class WebDAVTreeNode extends DefaultMutableTreeNode
         catch (Exception inEx)
         {
             System.out.println("EXCEPTION:loadRemote, byte_array empty");
-	    System.out.println(inEx);
-	    System.out.println(inEx.getMessage());
+        System.out.println(inEx);
+        System.out.println(inEx.getMessage());
             //dataNode = null;
             //hasLoaded = false;
             interpreter.clearStream();
@@ -529,10 +529,10 @@ public class WebDAVTreeNode extends DefaultMutableTreeNode
                     if( generator.GeneratePropFindForNode( pathToResource, "allprop", "one", null, null, true, this ) )
                     {
                         generator.execute();
-	            }
+                }
                 }
                 else
-	        {
+            {
                     String[] props = new String[6];
                     props[0] = "displayname";
                     props[1] = "resourcetype";
@@ -543,8 +543,8 @@ public class WebDAVTreeNode extends DefaultMutableTreeNode
                     if( generator.GeneratePropFindForNode( pathToResource, "prop", "one", props, null, true, this ) )
                     {
                         generator.execute();
-	            }
-		}
+                }
+        }
                 return;
             }
             else
@@ -576,14 +576,14 @@ public class WebDAVTreeNode extends DefaultMutableTreeNode
                 if( doAllProp != null )
                 {
                     if( doAllProp.equalsIgnoreCase("allprop") )
-		    {
+            {
                         if( generator.GeneratePropFindForNode( pathToResource, "allprop", "one", null, null, true, this ) )
                         {
                             generator.execute();
-	                }
+                    }
                     }
                     else
-		    {
+            {
                         String[] props = new String[6];
                         props[0] = "displayname";
                         props[1] = "resourcetype";
@@ -594,9 +594,9 @@ public class WebDAVTreeNode extends DefaultMutableTreeNode
                         if( generator.GeneratePropFindForNode( pathToResource, "prop", "one", props, null, true, this ) )
                         {
                             generator.execute();
-	                }
-		    }
-		}
+                    }
+            }
+        }
             }
         }
         else
@@ -675,7 +675,7 @@ public class WebDAVTreeNode extends DefaultMutableTreeNode
                 Element token = (Element)treeEnum.nextElement();
                 if( (token!=null) && (token.getType() == Element.PCDATA || token.getType() == Element.CDATA) )
                     return token.getText();
-			}
+            }
         }
         return null;
     }

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 1999 Regents of the University of California.
+ * Copyright (c) 1999-2000 Regents of the University of California.
  * All rights reserved.
  *
  * This software was developed at the University of California, Irvine.
@@ -136,8 +136,8 @@ public class Main extends JFrame
         responseInterpreter.addMoveUpdateListener(new MoveUpdateListener());
         responseInterpreter.addLockListener(new LockListener());
         responseInterpreter.addActionListener(fileView); // Listens for a reset
-							// for a unsucessful
-							// Rename request
+                            // for a unsucessful
+                            // Rename request
 
         // Yuzo Add the CopyEvent Listener
         responseInterpreter.addCopyResponseListener(treeView);
@@ -229,7 +229,7 @@ public class Main extends JFrame
             // 'java -jar -Dpropfind=allprop DAVExplorer.jar'
             String doAllProp = System.getProperty( "propfind" );
             if( (doAllProp != null) && doAllProp.equalsIgnoreCase("allprop") )
-	    {
+        {
                 if( requestGenerator.GeneratePropFind( str, "allprop", "one", null, null, false ) )
                 {
                     requestGenerator.execute();
@@ -247,8 +247,8 @@ public class Main extends JFrame
                 if( requestGenerator.GeneratePropFind( str, "prop", "one", props, null, false ) )
                 {
                     requestGenerator.execute();
-	        }
-	    }
+            }
+        }
         }
     }
 
@@ -345,14 +345,14 @@ public class Main extends JFrame
                 //requestGenerator.GenerateRename( str, treeView.getCurrentPath() );
                 //requestGenerator.GenerateRename( str, fileView.getParentPath() );
                 boolean retval = false;
-		if( fileView.isSelectedLocked() ){
-		    retval = requestGenerator.GenerateMove(str, fileView.getParentPath(), false, true, fileView.getSelectedLockToken(), "rename:" );
-		} else {
-		    retval = requestGenerator.GenerateMove(str, fileView.getParentPath(), false, true, null , "rename:" );
-		}
+        if( fileView.isSelectedLocked() ){
+            retval = requestGenerator.GenerateMove(str, fileView.getParentPath(), false, true, fileView.getSelectedLockToken(), "rename:" );
+        } else {
+            retval = requestGenerator.GenerateMove(str, fileView.getParentPath(), false, true, null , "rename:" );
+        }
                 if( retval ){
                     requestGenerator.execute();
-		}
+        }
             }
         }
     }
@@ -498,7 +498,7 @@ public class Main extends JFrame
                     }
                     if( retval ){
                         requestGenerator.execute();
-		    }
+            }
                 }
             }
             else if (command.equals("Lock"))
@@ -555,7 +555,7 @@ public class Main extends JFrame
 
                     if( requestGenerator.GenerateCopy( null, true, true ) ){
                         requestGenerator.execute();
-		    }
+            }
                 }
             }
             else if (command.equals("Delete"))
@@ -607,7 +607,7 @@ public class Main extends JFrame
                         }
                         if( retval ){
                             requestGenerator.execute();
-			}
+            }
                     }
                     else
                     {
@@ -729,7 +729,7 @@ public class Main extends JFrame
     {
         if( requestGenerator.GenerateGet("view") ){
             requestGenerator.execute();
-	}
+    }
     }
 
     protected void saveAsDocument()
@@ -745,7 +745,7 @@ public class Main extends JFrame
             requestGenerator.setResource(s, n);
             if( requestGenerator.GenerateGet("saveas") ){
                 requestGenerator.execute();
-	    }
+        }
         }
     }
 
@@ -781,14 +781,14 @@ public class Main extends JFrame
                     //requestGenerator.DiscoverLock("delete");
                     requestGenerator.setExtraInfo("delete");
                     boolean retval = false;
-		    if( fileView.isSelectedLocked() ){
-			retval = requestGenerator.GenerateDelete(fileView.getSelectedLockToken());
-		    } else {
+            if( fileView.isSelectedLocked() ){
+            retval = requestGenerator.GenerateDelete(fileView.getSelectedLockToken());
+            } else {
                         retval = requestGenerator.GenerateDelete(null);
                     }
                     if( retval ){
                         requestGenerator.execute();
-		    }
+            }
                 }
                 else
                 {
@@ -825,7 +825,7 @@ public class Main extends JFrame
             requestGenerator.setExtraInfo("properties");
             if( requestGenerator.GeneratePropFind(null,"allprop","zero",null,null,false) ){
                 requestGenerator.execute();
-	    }
+        }
         }
     }
 
