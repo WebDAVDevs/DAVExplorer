@@ -126,9 +126,9 @@ public class WebDAVTreeNode extends DefaultMutableTreeNode
             remove(0);
         }
 
-	// They forgot this
-	dataNode = null;
-	
+    // They forgot this
+    dataNode = null;
+
     }
 
     public int getChildCount()
@@ -159,7 +159,7 @@ public class WebDAVTreeNode extends DefaultMutableTreeNode
         catch (Exception inEx)
         {
             System.out.println("EXCEPTION:loadRemote, byte_array empty");
-	    System.out.println(inEx);
+        System.out.println(inEx);
             //dataNode = null;
             //hasLoaded = false;
             interpreter.clearStream();
@@ -447,7 +447,7 @@ public class WebDAVTreeNode extends DefaultMutableTreeNode
         String name = full_path[1].toString();
         if (name.startsWith(WebDAVPrefix))
         {
-	    localLoad = false;
+        localLoad = false;
 
             byte[] byte_xml = interpreter.getXML();
             if (byte_xml == null)
@@ -455,11 +455,14 @@ public class WebDAVTreeNode extends DefaultMutableTreeNode
                 hasLoaded = false;
                 dataNode = null;
                 interpreter.ResetRefresh();
-		if (select){
+                if (select)
+                {
                     generator.setExtraInfo("select");
-		}else{
+                }
+                else
+                {
                     generator.setExtraInfo("index");
-		}
+                }
 
                 String pathToResource = name;
                 for (int i=2; i < full_path.length; i++)
@@ -468,11 +471,17 @@ public class WebDAVTreeNode extends DefaultMutableTreeNode
                 }
                 pathToResource = pathToResource + "/";
 
-		generator.setResource(pathToResource, null);
+                generator.setResource(pathToResource, null);
 
-                generator.GeneratePropFindForNode(pathToResource,"allprop","one",null,null, true, this);
-                generator.execute();
-                //generator.run();
+                String[] props = new String[6];
+                props[0] = "displayname";
+                props[1] = "resourcetype";
+                props[2] = "getcontenttype";
+                props[3] = "getcontentlength";
+                props[4] = "getlastmodified";
+                props[5] = "lockdiscovery";
+                if( generator.GeneratePropFindForNode( pathToResource, "prop", "one", props, null, true, this) )
+                    generator.execute();
                 return;
             }
             else
@@ -496,20 +505,26 @@ public class WebDAVTreeNode extends DefaultMutableTreeNode
                 }
                 pathToResource = pathToResource + "/";
 
-                generator.GeneratePropFindForNode(pathToResource,"allprop","one",null,null, true, this);
-                generator.execute();
-                //generator.run();
+                String[] props = new String[6];
+                props[0] = "displayname";
+                props[1] = "resourcetype";
+                props[2] = "getcontenttype";
+                props[3] = "getcontentlength";
+                props[4] = "getlastmodified";
+                props[5] = "lockdiscovery";
+                if( generator.GeneratePropFindForNode( pathToResource, "prop", "one", props, null, true, this) )
+                    generator.execute();
             }
         }
         else
         {
-	    localLoad = true;
+        localLoad = true;
             loadLocal(name,full_path);
         }
     }
 
     public boolean isLocalLoad(){
-	return localLoad;
+    return localLoad;
     }
 
     public String truncateResource(String res)

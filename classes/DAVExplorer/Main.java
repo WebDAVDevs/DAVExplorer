@@ -222,7 +222,14 @@ public class Main extends JFrame
             if (!str.endsWith("/"))
                 str += "/";
             requestGenerator.setExtraInfo("uribox");
-            if( requestGenerator.GeneratePropFind(str,"allprop","one",null,null,false) )
+            String[] props = new String[6];
+            props[0] = "displayname";
+            props[1] = "resourcetype";
+            props[2] = "getcontenttype";
+            props[3] = "getcontentlength";
+            props[4] = "getlastmodified";
+            props[5] = "lockdiscovery";
+            if( requestGenerator.GeneratePropFind( str, "prop", "one", props, null, false) )
                 requestGenerator.execute();
         }
     }

@@ -378,10 +378,11 @@ public class WebDAVRequestGenerator implements Runnable
         else
         {
             Element propElem = WebDAVXML.createElement( WebDAVXML.ELEM_PROP, Element.ELEMENT, propFind, asgen );
+            propElem.addChild( WebDAVXML.elemNewline, null );
             for (int i=0;i<props.length;i++)
             {
                 Element prop = WebDAVXML.createElement( props[i], Element.ELEMENT, propElem, asgen );
-                addChild( propElem, prop, 2, true );
+                addChild( propElem, prop, 2, false );
             }
             addChild( propFind, propElem, 1, true );
         }

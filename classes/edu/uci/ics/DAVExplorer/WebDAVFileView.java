@@ -219,7 +219,7 @@ public class WebDAVFileView implements ViewSelectionListener
                     {
                         //val = (String) table.getValueAt(row,2);
                         val = (String) table.getValueAt(selectedRow,2);
-            		//int origRow = sorter.getTrueRow(selectedRow);
+                    //int origRow = sorter.getTrueRow(selectedRow);
                     }
                     catch (Exception e)
                     {
@@ -227,7 +227,7 @@ public class WebDAVFileView implements ViewSelectionListener
 
                     if ( val != null)
                     {
-		    /*
+            /*
                     Object obj[] = parentNode.getUserObjectPath();
                         if (parentPath == null || parentPath.equals("") ){
                         for (int i = 0; i < obj.length; i++){
@@ -236,8 +236,8 @@ public class WebDAVFileView implements ViewSelectionListener
                             }
                         }
                         }
-		    */
-			
+            */
+
 
                         if (!parentPath.startsWith(WebDAVPrefix))
                             return;
@@ -307,7 +307,7 @@ public class WebDAVFileView implements ViewSelectionListener
 
     // Returns the path to the parentNode
     public String getParentPath(){
-	return parentPath;
+    return parentPath;
     }
 
     ////////////
@@ -320,21 +320,21 @@ public class WebDAVFileView implements ViewSelectionListener
     {
         table.clearSelection();
         clearTable();
-	selectedRow = -1;
+    selectedRow = -1;
 
         parentNode = (WebDAVTreeNode)e.getNode();
 
-	// set Parent Path
+    // set Parent Path
 
-	TreePath tp = e.getPath();
+    TreePath tp = e.getPath();
 
-	Object pathString[] = tp.getPath();
-	parentPath = "";
-	if( pathString.length > 0 ){
-	    for (int i = 1; i < pathString.length; i++){
-	        parentPath += pathString[i].toString() + "/";
-	    }
-	}
+    Object pathString[] = tp.getPath();
+    parentPath = "";
+    if( pathString.length > 0 ){
+        for (int i = 1; i < pathString.length; i++){
+            parentPath += pathString[i].toString() + "/";
+        }
+    }
 
         if (table.getRowCount() != 0)
         {
@@ -345,15 +345,15 @@ public class WebDAVFileView implements ViewSelectionListener
         WebDAVTreeNode tn = (WebDAVTreeNode)path.getLastPathComponent();
 
 
-	WebDAVTreeNode pn = (WebDAVTreeNode)tn.getParent();
+    WebDAVTreeNode pn = (WebDAVTreeNode)tn.getParent();
 
-	/*
+    /*
         int count = tn.getChildCount();
         for (int i=0; i < count; i++)
         {
             WebDAVTreeNode child = (WebDAVTreeNode) tn.getChildAt(i);
-	}
-	*/
+    }
+    */
 
 
         Cursor c = mainFrame.getCursor(); // save original cursor
@@ -373,7 +373,7 @@ public class WebDAVFileView implements ViewSelectionListener
 
         if (sub == null)
         {
-	//System.out.println(" No  resource");
+    //System.out.println(" No  resource");
         }
         else
         {
@@ -381,7 +381,7 @@ public class WebDAVFileView implements ViewSelectionListener
             {
                 DataNode d_node = (DataNode)sub.elementAt(i);
 
-	    }
+        }
             addFileToTable(sub);
 
         }
@@ -433,7 +433,7 @@ public class WebDAVFileView implements ViewSelectionListener
             rowObj[4] = d_node.getType();
             rowObj[5] = (new Long(d_node.getSize())).toString();
             rowObj[6] = d_node.getDate();
-	
+
             addRow(rowObj);
         }
         fireTableModuleEvent();
@@ -478,110 +478,110 @@ public class WebDAVFileView implements ViewSelectionListener
     public WebDAVTreeNode getSelectedCollection(){
 
         try {
-	    if (selectedRow < 0){
-		return null;
-	    }
-            boolean isCollection = 
-	    new Boolean(table.getValueAt(selectedRow,0).toString()).booleanValue();
-	
+        if (selectedRow < 0){
+        return null;
+        }
+            boolean isCollection =
+        new Boolean(table.getValueAt(selectedRow,0).toString()).booleanValue();
+
             if (isCollection) {
-		//Get the TreeNode and return it
-		//Integer val = (Integer)table.getValueAt(selectedRow,7);
-		//Vector row = (Vector)data.elementAt(selectedRow);
-		//Integer val = (Integer)row.elementAt(7);
-		//int i = val.intValue();
+        //Get the TreeNode and return it
+        //Integer val = (Integer)table.getValueAt(selectedRow,7);
+        //Vector row = (Vector)data.elementAt(selectedRow);
+        //Integer val = (Integer)row.elementAt(7);
+        //int i = val.intValue();
 
-		boolean found = false;
-		WebDAVTreeNode node = null;
-		Enumeration enum = parentNode.children();
+        boolean found = false;
+        WebDAVTreeNode node = null;
+        Enumeration enum = parentNode.children();
 
-		while(!found && enum.hasMoreElements()){
+        while(!found && enum.hasMoreElements()){
 
-		    node = (WebDAVTreeNode)enum.nextElement();
+            node = (WebDAVTreeNode)enum.nextElement();
 
-		    String s = (String) node.getUserObject();
-		    if (s.equals(table.getValueAt(selectedRow,2))){
-			found = true;
-		    } 
-		}
-		if (found){
-		    return node;
-		}else{
-		return null;
-		}
+            String s = (String) node.getUserObject();
+            if (s.equals(table.getValueAt(selectedRow,2))){
+            found = true;
+            }
+        }
+        if (found){
+            return node;
+        }else{
+        return null;
+        }
             } else { // a resource so send back null
-		return null;
-	    }
+        return null;
+        }
         }catch (Exception exc) {
-		System.out.println("Exception getSelectedCollection");
+        System.out.println("Exception getSelectedCollection");
                     exc.printStackTrace();
                     return null;
         }
     }
 
    public boolean isSelectedLocked(){
-	boolean b = new
+    boolean b = new
             Boolean( table.getValueAt(selectedRow,1).toString()).booleanValue();
-	return b;
+    return b;
 
    }
 
     // Attempt to get at the selected item's dataNode
     public String getSelectedLockToken(){
-	if (selectedRow < 0){
-	    return null;
-	}
+    if (selectedRow < 0){
+        return null;
+    }
 
         //Get the TreeNode and return dataNode's lockTocken
-	WebDAVTreeNode n = getSelectedCollection();
+    WebDAVTreeNode n = getSelectedCollection();
 
-	if (n != null) {
-	    // return lockToken from the Node's dataNode
-	    DataNode dn = n.getDataNode();
-	    // Get the lockToken
-	    return dn.getLockToken();
-	    
+    if (n != null) {
+        // return lockToken from the Node's dataNode
+        DataNode dn = n.getDataNode();
+        // Get the lockToken
+        return dn.getLockToken();
+
         }
-	// Must be resource
+    // Must be resource
 
-	// 1. Find the resource's data Node
-	DataNode dn = parentNode.getDataNode();
+    // 1. Find the resource's data Node
+    DataNode dn = parentNode.getDataNode();
 
-	// Do a search of the subNodes
-	String target = (String)table.getValueAt(selectedRow,2);
-	boolean found = false;
-	Vector sub = dn.getSubNodes();
-	String token = null;
-	DataNode node;
+    // Do a search of the subNodes
+    String target = (String)table.getValueAt(selectedRow,2);
+    boolean found = false;
+    Vector sub = dn.getSubNodes();
+    String token = null;
+    DataNode node;
 
-	for( int i = 0; i < sub.size() && !found; i++){
-	    node = (DataNode)sub.elementAt(i);
-	    String s = node.getName(); 
+    for( int i = 0; i < sub.size() && !found; i++){
+        node = (DataNode)sub.elementAt(i);
+        String s = node.getName();
 System.out.println("Search: Target: "+target+", node name: "+s);
-	    if(target.equals( s )){
-		found = true;
-		token = node.getLockToken();
-	    }
+        if(target.equals( s )){
+        found = true;
+        token = node.getLockToken();
+        }
         }
 
 
         // 2. Get the token
-	if (token == null)
-	{
-	    System.out.println("Error: getSelectedCollection, dataNode not found for selected item");
+    if (token == null)
+    {
+        System.out.println("Error: getSelectedCollection, dataNode not found for selected item");
 System.out.println("Target: "+target);
-	    return null;
-	}
-	else
-	    return token;
+        return null;
+    }
+    else
+        return token;
     }
 
 
     public boolean hasSelected(){
-	if (selectedRow >= 0)
-		return true;
-	else
-		return false;
+    if (selectedRow >= 0)
+        return true;
+    else
+        return false;
     }
 
 
@@ -592,17 +592,17 @@ System.out.println("Target: "+target);
             TreePath tp = new TreePath(parentNode.getPath());
 
             s =  getParentPathString() + (String)table.getValueAt( selectedRow , 2);
-		
-	    boolean isCollection =
+
+        boolean isCollection =
             new Boolean(table.getValueAt(selectedRow,0).toString()).booleanValue
 ();
 
-	    if(isCollection)
-		return s + "/";
-	    else
-            	return s;
-    	} else{
-	    // Return the parent node 
+        if(isCollection)
+        return s + "/";
+        else
+                return s;
+        } else{
+        // Return the parent node
             return getParentPathString();
         }
     }
@@ -801,11 +801,11 @@ System.out.println("Target: "+target);
         table.updateUI();
     }
 
-    public synchronized void addRow(Object[] rowData)
+    private synchronized void addRow(Object[] rowData)
     {
         Vector newRow = new Vector();
 
-        int numOfCols = table.getColumnCount(); 
+        int numOfCols = table.getColumnCount();
         for (int i=0;i<numOfCols;i++)
             newRow.addElement(rowData[i]);
 
@@ -815,7 +815,7 @@ System.out.println("Target: "+target);
         //table.updateUI();
     }
 
-    public synchronized void removeRow(int row)
+    private synchronized void removeRow(int row)
     {
         data.removeElementAt(row);
         fireTableModuleEvent();
@@ -923,14 +923,14 @@ System.out.println("Target: "+target);
     {
         Point cursorPoint = new Point(e.getX(),e.getY());
         pressRow = table.rowAtPoint(cursorPoint);
-	selectedRow = pressRow;
+    selectedRow = pressRow;
     }
 
     public void handleRelease(MouseEvent e)
     {
         Point cursorPoint = new Point(e.getX(),e.getY());
         releaseRow = table.rowAtPoint(cursorPoint);
-	selectedRow = releaseRow;
+    selectedRow = releaseRow;
 
         if (pressRow != -1)
         {
@@ -1037,8 +1037,8 @@ System.out.println("Target: "+target);
             {
                 selectedResource = (String) table.getValueAt(selRow,2);
                 String selResource = new String(selectedResource);
-            selectedRow = selRow; // set the clas golbal variable to 
-				  // be used later for Select Node
+            selectedRow = selRow; // set the clas golbal variable to
+                  // be used later for Select Node
                 try
                 {
                     boolean isColl = new Boolean(table.getValueAt(selRow,0).toString()).booleanValue();
