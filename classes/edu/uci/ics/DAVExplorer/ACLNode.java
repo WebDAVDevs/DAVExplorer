@@ -22,21 +22,24 @@ import java.util.Vector;
 
 
 /**
- * Title:       
- * Description: 
+ * Title:       ACL Node
+ * Description: Describes one access control entry
  * Copyright:   Copyright (c) 2005 Regents of the University of California. All rights reserved.
  * @author      Joachim Feise (dav-exp@ics.uci.edu)
- * @date        
+ * @date        8 Feb 2005
  */
 public class ACLNode
 {
-
+    /**
+     * Principal types
+     */
     public final static int GENERAL = 1;
     public final static int PROPERTY = 2;
     public final static int HREF = 3;
 
 
     /**
+     * Constructor
      * 
      * @param principal
      * @param principalType
@@ -52,6 +55,7 @@ public class ACLNode
 
 
     /**
+     * Constructor
      * 
      * @param principal
      * @param principalType
@@ -66,6 +70,7 @@ public class ACLNode
 
 
     /**
+     * Constructor
      * 
      * @param principal
      * @param principalType
@@ -80,6 +85,7 @@ public class ACLNode
 
 
     /**
+     * Constructor
      * 
      * @param principal
      * @param principalType
@@ -93,6 +99,7 @@ public class ACLNode
 
 
     /**
+     * Constructor
      * 
      * @param principal
      * @param principalType
@@ -106,8 +113,7 @@ public class ACLNode
 
 
     /**
-     * 
-     *
+     * Constructor
      */
     public ACLNode()
     {

@@ -1325,13 +1325,14 @@ public class Main extends JFrame
                         GlobalData.getGlobalData().errorMsg( "No resource selected." );
                         return;
                     }
-                    ACLReportPropertiesDialog dlg = new ACLReportPropertiesDialog( s );
+                    ACLReportSearchPropertyDialog dlg = new ACLReportSearchPropertyDialog( s );
                     if( !dlg.isCanceled() )
                     {
+                        Vector criteria = dlg.getSearchCriteria(); 
                         Vector props = dlg.getSelected(); 
                         WebDAVTreeNode n = fileView.getParentNode();
                         requestGenerator.setResource( s, n );
-                        if( requestGenerator.GetPrincipalMatchReport( props ) )
+                        if( requestGenerator.GetPrincipalMatchReport( criteria, props ) )
                             requestGenerator.execute();
                     }
                     break;

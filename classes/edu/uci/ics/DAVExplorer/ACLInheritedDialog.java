@@ -21,19 +21,24 @@ package edu.uci.ics.DAVExplorer;
 import com.ms.xml.om.Element;
 
 /**
- * Title:       
- * Description: 
+ * Title:       ACL Inherited dialog       
+ * Description: Show inherited ACLs for a specific resource.
  * Copyright:   Copyright (c) 2005 Regents of the University of California. All rights reserved.
  * @author      Joachim Feise (dav-exp@ics.uci.edu)
- * @date        
+ * @date        15 February 2005
  */
 public class ACLInheritedDialog extends PropDialog
 {
-
     /**
+     * Constructor
+     * Removes unused buttons from the dialog created by the superclass.
+     * 
      * @param properties
+     *      the ACL properties to show
      * @param resource
+     *      the resource the ACLs apply to
      * @param hostname
+     *      the server name
      */
     public ACLInheritedDialog( Element properties, String resource,
             String hostname )

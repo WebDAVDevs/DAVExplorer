@@ -42,16 +42,25 @@ import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
 
 /**
- * Title:       
- * Description: 
+ * Title:       ACL Change privileges dialog
+ * Description: The dialog to select privileges
  * Copyright:   Copyright (c) 2005 Regents of the University of California. All rights reserved.
  * @author      Joachim Feise (dav-exp@ics.uci.edu)
- * @date        
+ * @date        15 Feb 2005
  */
 public class ACLChangePrivilegesDialog extends JDialog
 implements ActionListener, ChangeListener, ListSelectionListener, WebDAVCompletionListener
 {
-
+    /**
+     * Constructor
+     * 
+     * @param resource
+     *      the resource the privileges are applied to
+     * @param hostname
+     *      the server name
+     * @param selected
+     *      a vector of already selected privileges
+     */
     public ACLChangePrivilegesDialog( String resource, String hostname, Vector selected )
     {
         super( GlobalData.getGlobalData().getMainFrame(), true );
@@ -63,6 +72,18 @@ implements ActionListener, ChangeListener, ListSelectionListener, WebDAVCompleti
     }
 
 
+    /**
+     * Constructor
+     * 
+     * @param resource
+     *      the resource the privileges are applied to
+     * @param hostname
+     *      the server name
+     * @param selected
+     *      a vector of already selected privileges
+     * @param title
+     *      the dialog title
+     */
     public ACLChangePrivilegesDialog( String resource, String hostname, Vector selected, String title )
     {
         super( GlobalData.getGlobalData().getMainFrame(), true );
@@ -74,6 +95,18 @@ implements ActionListener, ChangeListener, ListSelectionListener, WebDAVCompleti
     }
 
 
+    /**
+     * Creates the dialog panel
+     * 
+     * @param resource
+     *      the resource the privileges are applied to
+     * @param hostname
+     *      the server name
+     * @param selected
+     *      a vector of already selected privileges
+     * @param title
+     *      the dialog title
+     */
     protected void init( String resource, String hostname, Vector selected, String title )
     {
         GlobalData.getGlobalData().setCursor( Cursor.getPredefinedCursor( Cursor.WAIT_CURSOR ) );
@@ -122,8 +155,10 @@ implements ActionListener, ChangeListener, ListSelectionListener, WebDAVCompleti
 
 
     /**
+     * Check if the dialog was canceled.
      * 
      * @return
+     *      true if the dialog was canceled, false else 
      */
     public boolean isCanceled()
     {
@@ -132,8 +167,10 @@ implements ActionListener, ChangeListener, ListSelectionListener, WebDAVCompleti
 
 
     /**
+     * From the ChangeListener interface.
      * 
      * @param e
+     *      the change event
      */
     public void stateChanged( ChangeEvent e )
     {
@@ -141,8 +178,11 @@ implements ActionListener, ChangeListener, ListSelectionListener, WebDAVCompleti
 
 
     /**
+     * From the ActionListener interface.
+     * Handles user actions, i.e., button clicks.
      * 
      * @param e
+     *      the event describing the action
      */
     public void actionPerformed(ActionEvent e)
     {
@@ -165,7 +205,7 @@ implements ActionListener, ChangeListener, ListSelectionListener, WebDAVCompleti
                 curModel.addElement( obj );
                 selected.add( obj.toString() );
                 privModel.remove( indices[i] );
-                setChanged( true );
+                setChanged();
             }
         }
         else if( e.getActionCommand().equals("<=") )
@@ -179,15 +219,18 @@ implements ActionListener, ChangeListener, ListSelectionListener, WebDAVCompleti
                 privModel.addElement( obj );
                 curModel.remove( indices[i] );
                 selected.remove( obj.toString() );
-                setChanged( true );
+                setChanged();
             }
         }
     }
 
 
     /**
-     * 
+     * From the ListSelectionListener.
+     * Enable the buttons appropriately.
+     *  
      * @param e
+     *      the selection event
      */
     public void valueChanged(ListSelectionEvent e)
     {
@@ -203,19 +246,21 @@ implements ActionListener, ChangeListener, ListSelectionListener, WebDAVCompleti
 
 
     /**
-     * 
-     * @param enable
+     * Act on changes to the dialog, i.e., enable or disable the OK button
      */
-    public void setChanged( boolean enable )
+    public void setChanged()
     {
-        changed = enable;
+        changed = true;
         okButton.setEnabled( changed );
     }
 
 
     /**
+     * From the WebDAVCompletionListener.
+     * Inform the waiting thread that data from the server is available
      * 
      * @param e
+     *      the event
      */
     public void completion( WebDAVCompletionEvent e )
     {
@@ -228,18 +273,37 @@ implements ActionListener, ChangeListener, ListSelectionListener, WebDAVCompleti
     }
 
 
+    /**
+     * Get the selected privileges.
+     * 
+     * @return
+     *      the selected privileges
+     */
     public Vector getSelected()
     {
         return selected;
     }
 
 
+    /**
+     * Get the title of the panel. Useful for derived classes that
+     * prefer to show a different title.
+     *  
+     * @return
+     *      the dialog title string
+     */
     protected String getPanelTitle()
     {
         return  "Privileges";
     }
 
 
+    /**
+     * Create the dialog panel.
+     * 
+     * @return
+     *      the dialog panel
+     */
     protected JPanel makePanel()
     {
         JPanel panel = new JPanel(false);
@@ -332,11 +396,22 @@ implements ActionListener, ChangeListener, ListSelectionListener, WebDAVCompleti
     }
 
 
+    /**
+     * Modify the dialog panel. Useful for derived classes that want
+     * to add or remove parts of the panel.
+     * 
+     * @param panel
+     *      the panel
+     */
     protected void changePanel( JPanel panel )
     {
     }
 
 
+    /**
+     * Retrieve the available privileges from the server.
+     * Waits for the results.
+     */
     protected void getAvailable()
     {
         String prefix;
@@ -363,6 +438,12 @@ implements ActionListener, ChangeListener, ListSelectionListener, WebDAVCompleti
     }
 
 
+    /**
+     * Close the dialog.
+     *  
+     * @param cancel
+     *      true if the dialog was canceled, false else
+     */
     protected void close( boolean cancel )
     {
         setVisible(false);

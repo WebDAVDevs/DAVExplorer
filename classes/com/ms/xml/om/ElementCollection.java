@@ -1,4 +1,5 @@
-/* * @(#)ElementCollection.java 1.0 8/7/97
+/*
+ * @(#)ElementCollection.java 1.0 8/7/97
  *
  * Copyright (c) 1997 Microsoft, Corp. All Rights Reserved.
  *
@@ -7,7 +8,8 @@
 package com.ms.xml.om;
 import com.ms.xml.util.Name;
 
-/** * This class provides a collection interface to elements
+/**
+ * This class provides a collection interface to elements
  * similar to the element collections found in the Internet Explorer 4.0
  * Dynamic HTML object model.
  *
@@ -27,7 +29,8 @@ public class ElementCollection
         length = -1;
     }
 
-    /**     * Creates a new collection for iterating over the immediate children
+    /**
+     * Creates a new collection for iterating over the immediate children
      * of the given root node that have matching tag names and/or
      * element types.
      * @param root The root to form the collection around.
@@ -45,7 +48,8 @@ public class ElementCollection
         current = (Element)items.nextElement();
     }
 
-    /**     * Retrieves the number of items in the collection.
+    /**
+     * Retrieves the number of items in the collection.
      * @return the item count.
      */
     public int getLength()
@@ -66,7 +70,8 @@ public class ElementCollection
         return length;
     }
 
-    /**     * Retrieves a named item or a collection of matching items.
+    /**
+     * Retrieves a named item or a collection of matching items.
      * @param name The name of the item or collection of matching items.
      * @return the requested item. Possible types of objects
      * returned are <code>Element</code>, <code>ElementCollection</code>,
@@ -80,7 +85,8 @@ public class ElementCollection
         } catch (Exception e) {
         }
 
-        ElementCollection col = new ElementCollection(root,Name.create(name),Element.ELEMENT);        if (col.getLength() == 1)
+        ElementCollection col = new ElementCollection(root,Name.create(name),Element.ELEMENT);
+        if (col.getLength() == 1)
         {
             // only one match, so return it.
             return col.getChild(0);

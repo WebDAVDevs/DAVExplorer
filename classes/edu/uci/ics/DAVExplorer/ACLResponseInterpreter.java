@@ -30,11 +30,11 @@ import com.ms.xml.util.Name;
 
 
 /**
- * Title:       
- * Description: 
+ * Title:       ACL Response interpreter       
+ * Description: Processes ACL-specific data from a server.
  * Copyright:   Copyright (c) 2004-2005 Regents of the University of California. All rights reserved.
  * @author      Joachim Feise (dav-exp@ics.uci.edu)
- * @date        
+ * @date        14 Feb 2005
  */
 
 public class ACLResponseInterpreter extends DeltaVResponseInterpreter
@@ -184,6 +184,9 @@ public class ACLResponseInterpreter extends DeltaVResponseInterpreter
     }
 
 
+    /**
+     * 
+     */
     protected void parsePropFind()
     {
         if( GlobalData.getGlobalData().getDebugResponse() )
@@ -250,6 +253,9 @@ public class ACLResponseInterpreter extends DeltaVResponseInterpreter
     }
 
 
+    /**
+     * 
+     */
     protected void parsePropPatch()
         throws Exception
     {
@@ -357,6 +363,11 @@ public class ACLResponseInterpreter extends DeltaVResponseInterpreter
     }
 
 
+    /**
+     * 
+     * @param xml_doc
+     * @param owner
+     */
     protected void handleOwner( Document xml_doc, boolean owner )
     {
         String[] token = new String[1];
@@ -391,6 +402,11 @@ public class ACLResponseInterpreter extends DeltaVResponseInterpreter
     }
 
 
+    /**
+     * 
+     * @param xml_doc
+     * @param supported
+     */
     protected void handlePrivileges( Document xml_doc, boolean supported )
     {
         String[] token = new String[1];
@@ -435,6 +451,11 @@ public class ACLResponseInterpreter extends DeltaVResponseInterpreter
     }
 
 
+    /**
+     * 
+     * @param xml_doc
+     * @param code
+     */
     protected void handleListACLs( Document xml_doc, int code )
     {
         String[] token = new String[1];
@@ -487,6 +508,10 @@ public class ACLResponseInterpreter extends DeltaVResponseInterpreter
     }
 
 
+    /**
+     * 
+     * @param xml_doc
+     */
     protected void handlePrincipalCollectionSet( Document xml_doc )
     {
         String[] skiptoken = new String[1];
@@ -516,6 +541,10 @@ public class ACLResponseInterpreter extends DeltaVResponseInterpreter
     }
 
 
+    /**
+     * 
+     * @param xml_doc
+     */
     protected void handlePrincipalNames( Document xml_doc )
     {
         principalNames = new Vector();
@@ -566,6 +595,10 @@ public class ACLResponseInterpreter extends DeltaVResponseInterpreter
     }
 
 
+    /**
+     * 
+     * @param rootElem
+     */
     protected void handleSupportedPrivileges( Element rootElem )
     {
         supportedPrivilegeSet = new Vector();
@@ -596,6 +629,10 @@ public class ACLResponseInterpreter extends DeltaVResponseInterpreter
     }
 
 
+    /**
+     * 
+     * @param xml_doc
+     */
     protected void handlePropertyNames( Document xml_doc )
     {
         propertyNames = new Vector();
@@ -625,7 +662,10 @@ public class ACLResponseInterpreter extends DeltaVResponseInterpreter
     }
 
 
-
+    /**
+     * 
+     * @param rootElem
+     */
     protected void parsePropertyNames( Element rootElem )
     {
         if( rootElem != null )
@@ -649,7 +689,10 @@ public class ACLResponseInterpreter extends DeltaVResponseInterpreter
     }
 
 
-
+    /**
+     * 
+     * @param xml_doc
+     */
     protected void handleMultiStatus( Document xml_doc )
     {
         int status = 0;
@@ -683,8 +726,13 @@ public class ACLResponseInterpreter extends DeltaVResponseInterpreter
             GlobalData.getGlobalData().errorMsg( description );
         }
     }
-    
 
+
+    /**
+     * 
+     * @param description
+     * @return
+     */
     protected String getDescription( Element description )
     {
         if( GlobalData.getGlobalData().getDebugTreeNode() )
@@ -705,6 +753,9 @@ public class ACLResponseInterpreter extends DeltaVResponseInterpreter
     }
 
 
+    /**
+     * 
+     */
     protected int getResourceType( Element resourcetype )
     {
         if( GlobalData.getGlobalData().getDebugTreeNode() )
@@ -724,6 +775,10 @@ public class ACLResponseInterpreter extends DeltaVResponseInterpreter
     }
 
 
+    /**
+     * 
+     * @param xml_doc
+     */
     protected void handlePrincipalPropSet( Document xml_doc )
     {
         // expecting a <multistatus> tag, skipping everything up to it
@@ -754,12 +809,17 @@ public class ACLResponseInterpreter extends DeltaVResponseInterpreter
     }
 
 
+    /**
+     * 
+     * @param xml_doc
+     */
     protected void handlePrincipalMatch( Document xml_doc )
     {
         // expecting a <multistatus> tag, skipping everything up to it
         String[] token = new String[1];
         token[0] = new String( WebDAVXML.ELEM_MULTISTATUS );
         Element rootElem = skipElements( xml_doc, token );
+        Vector subtrees = new Vector();
         
         if( rootElem != null )
         {
@@ -773,14 +833,20 @@ public class ACLResponseInterpreter extends DeltaVResponseInterpreter
                     // expecting a <response> tag
                     if( currentTag.getName().equals( WebDAVXML.ELEM_RESPONSE ) )
                     {
-                        PropDialog dlg = new PropDialog( current, Resource, HostName, "View Principal Match", null, false );
+                        subtrees.add( current );
                     }
                 }
             }
+            PrincipalPropertiesModel model = new PrincipalPropertiesModel( subtrees );
+            PropDialog dlg = new PropDialog( model, Resource, HostName, "View Principal Match", null, false );
         }
     }
 
 
+    /**
+     * 
+     * @param xml_doc
+     */
     protected void handlePrincipalPropertySearch( Document xml_doc )
     {
         // expecting a <multistatus> tag, skipping everything up to it
@@ -809,6 +875,10 @@ public class ACLResponseInterpreter extends DeltaVResponseInterpreter
     }
 
 
+    /**
+     * 
+     * @param xml_doc
+     */
     protected void handlePrincipalSearchPropertySet( Document xml_doc )
     {
         // expecting a <principal-search-property-set> tag, skipping everything up to it
@@ -839,6 +909,11 @@ public class ACLResponseInterpreter extends DeltaVResponseInterpreter
     }
 
 
+    /**
+     * 
+     * @param resource
+     * @return
+     */
     public boolean isACL( String resource )
     {
         Enumeration enum = acl.keys();
@@ -852,6 +927,10 @@ public class ACLResponseInterpreter extends DeltaVResponseInterpreter
     }
 
 
+    /**
+     * 
+     * @return
+     */
     public Vector getPrincipalCollectionSet()
     {
         return principalCollectionSet;
@@ -859,18 +938,30 @@ public class ACLResponseInterpreter extends DeltaVResponseInterpreter
     }
 
 
+    /**
+     * 
+     * @return
+     */
     public Vector getPrincipalNames()
     {
         return principalNames;
     }
 
 
+    /**
+     * 
+     * @return
+     */
     public Vector getSupportedPrivilegeSet()
     {
         return supportedPrivilegeSet;
     }
 
 
+    /**
+     * 
+     * @return
+     */
     public Vector getPropertyNames()
     {
         return propertyNames;

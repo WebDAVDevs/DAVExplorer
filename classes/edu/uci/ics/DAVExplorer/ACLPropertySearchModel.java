@@ -23,16 +23,16 @@ import java.util.Vector;
 import javax.swing.table.AbstractTableModel;
 
 /**
- * Title:       
- * Description: 
+ * Title:       Property search model
+ * Description: Datamodel to use in the ACL property dialog
  * Copyright:   Copyright (c) 2005 Regents of the University of California. All rights reserved.
  * @author      Joachim Feise (dav-exp@ics.uci.edu)
- * @date        
+ * @date        11 Feb 2005
  */
 public class ACLPropertySearchModel extends AbstractTableModel
 {
     /**
-     * 
+     * Constructor 
      */
     public ACLPropertySearchModel()
     {
@@ -113,12 +113,21 @@ public class ACLPropertySearchModel extends AbstractTableModel
     }
 
 
+    /**
+     * 
+     * @return
+     */
     public int getRealRowCount()
     {
         return rows.size();
     }
 
 
+    /**
+     * 
+     * @param properties
+     * @param match
+     */
     public void addRow( Vector properties, String match )
     {
         int size = rows.size();
@@ -128,6 +137,11 @@ public class ACLPropertySearchModel extends AbstractTableModel
     }
 
 
+    /**
+     * 
+     * @param index
+     * @return
+     */
     public ACLPropertySearchNode getRow( int index )
     {
         if( index < rows.size() )

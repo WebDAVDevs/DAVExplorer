@@ -29,16 +29,16 @@ import com.ms.xml.util.XMLOutputStream;
 
 
 /**
- * Title:       
- * Description: 
+ * Title:       ACL Request generator
+ * Description: Constructs ACL requests to send to the server.
  * Copyright:   Copyright (c) 2004-2005 Regents of the University of California. All rights reserved.
  * @author      Joachim Feise (dav-exp@ics.uci.edu)
- * @date        
+ * @date        15 Feb 2005
  */
 public class ACLRequestGenerator extends DeltaVRequestGenerator
 {
     /**
-     * 
+     * Constructor
      */
     public ACLRequestGenerator()
     {
@@ -46,6 +46,10 @@ public class ACLRequestGenerator extends DeltaVRequestGenerator
     }
 
 
+    /**
+     * 
+     *
+     */
     public synchronized void GetOwner()
     {
         if( GlobalData.getGlobalData().getDebugRequest() )
@@ -63,6 +67,11 @@ public class ACLRequestGenerator extends DeltaVRequestGenerator
     }
 
 
+    /**
+     * 
+     * @param owner
+     * @param resource
+     */
     public synchronized void SetOwner( Element owner, String resource )
     {
         if( GlobalData.getGlobalData().getDebugRequest() )
@@ -74,6 +83,10 @@ public class ACLRequestGenerator extends DeltaVRequestGenerator
     }
 
 
+    /**
+     * 
+     *
+     */
     public synchronized void GetGroup()
     {
         if( GlobalData.getGlobalData().getDebugRequest() )
@@ -91,6 +104,11 @@ public class ACLRequestGenerator extends DeltaVRequestGenerator
     }
 
 
+    /**
+     * 
+     * @param group
+     * @param resource
+     */
     public synchronized void SetGroup( Element group, String resource )
     {
         if( GlobalData.getGlobalData().getDebugRequest() )
@@ -102,6 +120,10 @@ public class ACLRequestGenerator extends DeltaVRequestGenerator
     }
 
 
+    /**
+     * 
+     *
+     */
     public synchronized void GetSupportedPrivilegeSet()
     {
         if( GlobalData.getGlobalData().getDebugRequest() )
@@ -119,6 +141,10 @@ public class ACLRequestGenerator extends DeltaVRequestGenerator
     }
 
 
+    /**
+     * 
+     *
+     */
     public synchronized void GetUserPrivileges()
     {
         if( GlobalData.getGlobalData().getDebugRequest() )
@@ -136,6 +162,10 @@ public class ACLRequestGenerator extends DeltaVRequestGenerator
     }
 
 
+    /**
+     * 
+     *
+     */
     public synchronized void GetACL()
     {
         if( GlobalData.getGlobalData().getDebugRequest() )
@@ -153,6 +183,10 @@ public class ACLRequestGenerator extends DeltaVRequestGenerator
     }
 
 
+    /**
+     * 
+     *
+     */
     public synchronized void GetACLRestrictions()
     {
         if( GlobalData.getGlobalData().getDebugRequest() )
@@ -169,7 +203,11 @@ public class ACLRequestGenerator extends DeltaVRequestGenerator
         }
     }
 
-    
+
+    /**
+     * 
+     *
+     */
     public synchronized void GetInheritedACLs()
     {
         if( GlobalData.getGlobalData().getDebugRequest() )
@@ -186,7 +224,11 @@ public class ACLRequestGenerator extends DeltaVRequestGenerator
         }
     }
 
-    
+
+    /**
+     * 
+     *
+     */
     public synchronized void GetPrincipalCollections()
     {
         if( GlobalData.getGlobalData().getDebugRequest() )
@@ -204,6 +246,10 @@ public class ACLRequestGenerator extends DeltaVRequestGenerator
     }
 
 
+    /**
+     * 
+     *
+     */
     public synchronized void GetPrincipalNames()
     {
         if( GlobalData.getGlobalData().getDebugRequest() )
@@ -222,6 +268,10 @@ public class ACLRequestGenerator extends DeltaVRequestGenerator
     }
 
 
+    /**
+     * 
+     *
+     */
     public synchronized void GetPropertyNames()
     {
         if( GlobalData.getGlobalData().getDebugRequest() )
@@ -237,6 +287,11 @@ public class ACLRequestGenerator extends DeltaVRequestGenerator
     }
 
 
+    /**
+     * 
+     * @param props
+     * @return
+     */
     public synchronized boolean GetPrincipalPropSetReport( Vector props )
     {
         if( GlobalData.getGlobalData().getDebugRequest() )
@@ -291,7 +346,13 @@ public class ACLRequestGenerator extends DeltaVRequestGenerator
     }
 
 
-    public synchronized boolean GetPrincipalMatchReport( Vector props )
+    /**
+     * 
+     * @param criteria
+     * @param props
+     * @return
+     */
+    public synchronized boolean GetPrincipalMatchReport( Vector criteria, Vector props )
     {
         if( GlobalData.getGlobalData().getDebugRequest() )
         {
@@ -318,8 +379,15 @@ public class ACLRequestGenerator extends DeltaVRequestGenerator
         topElem.addChild( WebDAVXML.elemNewline, null );
         Element propElem = WebDAVXML.createElement( ACLXML.ELEM_PRINCIPAL_PROPERTY, Element.ELEMENT, topElem, asgen );
         propElem.addChild( WebDAVXML.elemNewline, null );
-        addProperties( propElem, asgen, props, 1, false );
+        for( int i=0; i<criteria.size(); i++ )
+        {
+            ACLPropertySearchNode node = (ACLPropertySearchNode)criteria.get( i );
+            Vector searchProps = node.getProperties();
+            addProperties( propElem, asgen, searchProps, 1, false );
+        }
         addChild( topElem, propElem, 1, false );
+        if( props != null && props.size() > 0 )
+            addProperties( topElem, asgen, props, 1 );
         miniDoc.addChild( topElem, null );
 
         ByteArrayOutputStream byte_str = new ByteArrayOutputStream();
@@ -348,6 +416,12 @@ public class ACLRequestGenerator extends DeltaVRequestGenerator
     }
 
 
+    /**
+     * 
+     * @param criteria
+     * @param props
+     * @return
+     */
     public synchronized boolean GetPrincipalPropertySearchReport( Vector criteria, Vector props )
     {
         if( GlobalData.getGlobalData().getDebugRequest() )
@@ -391,7 +465,6 @@ public class ACLRequestGenerator extends DeltaVRequestGenerator
         }
         if( props != null && props.size() > 0 )
             addProperties( topElem, asgen, props, 1 );
-
         miniDoc.addChild( topElem, null );
 
         ByteArrayOutputStream byte_str = new ByteArrayOutputStream();
@@ -420,6 +493,10 @@ public class ACLRequestGenerator extends DeltaVRequestGenerator
     }
 
 
+    /**
+     * 
+     * @return
+     */
     public synchronized boolean GetPrincipalSearchPropertySetReport()
     {
         if( GlobalData.getGlobalData().getDebugRequest() )
@@ -472,6 +549,11 @@ public class ACLRequestGenerator extends DeltaVRequestGenerator
     }
 
 
+    /**
+     * 
+     * @param nodes
+     * @return
+     */
     public synchronized boolean GenerateACL( Vector nodes )
     {
         if( GlobalData.getGlobalData().getDebugRequest() )
@@ -571,12 +653,27 @@ public class ACLRequestGenerator extends DeltaVRequestGenerator
     }
 
 
+    /**
+     * 
+     * @param parent
+     * @param DAVns
+     * @param props
+     * @param indent
+     */
     protected void addProperties( Element parent, AsGen DAVns, Vector props, int indent )
     {
         addProperties( parent, DAVns, props, indent, true );
     }
 
 
+    /**
+     * 
+     * @param parent
+     * @param DAVns
+     * @param props
+     * @param indent
+     * @param usePropElem
+     */
     protected void addProperties( Element parent, AsGen DAVns, Vector props, int indent, boolean usePropElem )
     {
         Element propElem;

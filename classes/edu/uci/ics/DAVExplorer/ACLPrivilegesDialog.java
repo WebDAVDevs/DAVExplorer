@@ -21,16 +21,18 @@ package edu.uci.ics.DAVExplorer;
 import com.ms.xml.om.Element;
 
 /**
- * Title:       
- * Description: 
+ * Title:       Privileges dialog
+ * Description: Dialog to view ACL privileges
  * Copyright:   Copyright (c) 2005 Regents of the University of California. All rights reserved.
  * @author      Joachim Feise (dav-exp@ics.uci.edu)
- * @date        19 January 2005
+ * @date        14 Feb 2005
  */
 public class ACLPrivilegesDialog extends PropDialog
 {
-
     /**
+     * Constructor
+     * Removes unused buttons from the dialog created by the superclass.
+     * 
      * @param properties
      * @param resource
      * @param hostname

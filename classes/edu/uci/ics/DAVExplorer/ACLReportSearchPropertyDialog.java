@@ -37,17 +37,36 @@ import javax.swing.JTable;
 import javax.swing.event.ListSelectionEvent;
 
 /**
- * Title:       
- * Description: 
+ * Title:       Report search property dialog
+ * Description: Dialog to select data for some ACL reports
  * Copyright:   Copyright (c) 2005 Regents of the University of California. All rights reserved.
  * @author      Joachim Feise (dav-exp@ics.uci.edu)
- * @date        
+ * @date        11 Feb 2005
  */
 public class ACLReportSearchPropertyDialog extends ACLReportPropertiesDialog
 {
+    /**
+     * Constructor
+     * 
+     * @param resource
+     */
     public ACLReportSearchPropertyDialog( String resource )
     {
         super( resource, "Select Search Criteria" );
+        this.match = true;
+    }
+
+
+    /**
+     * Constructor
+     * 
+     * @param resource
+     * @param match
+     */
+    public ACLReportSearchPropertyDialog( String resource, boolean match )
+    {
+        super( resource, "Select Search Criteria" );
+        this.match = match;
     }
 
 
@@ -107,6 +126,10 @@ public class ACLReportSearchPropertyDialog extends ACLReportPropertiesDialog
     }
 
 
+    /**
+     * 
+     * @return
+     */
     protected JPanel makeCriteriaPanel()
     {
         JLabel label = new JLabel( "Search Criteria" );
@@ -140,6 +163,9 @@ public class ACLReportSearchPropertyDialog extends ACLReportPropertiesDialog
     }
 
 
+    /**
+     * 
+     */
     protected String getPanelTitle()
     {
         return  "Properties";
@@ -165,7 +191,7 @@ public class ACLReportSearchPropertyDialog extends ACLReportPropertiesDialog
     {
         if( e.getActionCommand().equals("Add") )
         {
-            ACLReportChangeSearchPropertiesDialog dlg = new ACLReportChangeSearchPropertiesDialog( resource );
+            ACLReportChangeSearchPropertiesDialog dlg = new ACLReportChangeSearchPropertiesDialog( resource, match );
             if( !dlg.isCanceled() )
             {
                 ((ACLPropertySearchModel)propTable.getModel()).addRow( dlg.getSelected(), dlg.getMatch() );
@@ -200,6 +226,10 @@ public class ACLReportSearchPropertyDialog extends ACLReportPropertiesDialog
     }
 
 
+    /**
+     * 
+     * @return
+     */
     public Vector getSearchCriteria()
     {
         Vector criteria = new Vector();
@@ -213,4 +243,5 @@ public class ACLReportSearchPropertyDialog extends ACLReportPropertiesDialog
     protected JTable propTable;
     protected JButton addButton;
     protected JButton deleteButton;
+    protected boolean match;
 }

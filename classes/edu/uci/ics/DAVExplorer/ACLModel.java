@@ -27,11 +27,11 @@ import com.ms.xml.util.Name;
 
 
 /**
- * Title:       
- * Description: 
+ * Title:       ACL Model
+ * Description: The model for displaying the ACLs.
  * Copyright:   Copyright (c) 2005 Regents of the University of California. All rights reserved.
  * @author      Joachim Feise (dav-exp@ics.uci.edu)
- * @date        
+ * @date        8 Feb 2005
  */
 public class ACLModel extends AbstractTableModel
 {
@@ -153,6 +153,11 @@ public class ACLModel extends AbstractTableModel
     }
 
 
+    /**
+     * 
+     * @param index
+     * @return
+     */
     public ACLNode getRow( int index )
     {
         if( index < rows.size() )
@@ -358,7 +363,6 @@ public class ACLModel extends AbstractTableModel
                 }
             }
         }
-        
     }
 
 

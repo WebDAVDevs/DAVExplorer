@@ -49,19 +49,23 @@ import javax.swing.event.ListSelectionListener;
 
 
 /**
- * Title:       
- * Description: 
+ * Title:       ACL Add Dialog
+ * Description: Dialog to specify new ACLs to add to a resource and to change existing ACLs.
  * Copyright:   Copyright (c) 2005 Regents of the University of California. All rights reserved.
  * @author      Joachim Feise (dav-exp@ics.uci.edu)
- * @date        28 January 2005  
+ * @date        11 Feb 2005  
  */
 public class ACLAddDialog extends JDialog
     implements ActionListener, ChangeListener, ListSelectionListener, WebDAVCompletionListener
 {
     /**
      * Constructor
+     *      Create a new ACL
      * 
      * @param resource
+     *      The resource the ACL applies to
+     * @param hostname
+     *      The server hostname 
      */
     public ACLAddDialog( String resource, String hostname )
     {
@@ -77,8 +81,14 @@ public class ACLAddDialog extends JDialog
     /**
      * Constructor
      * 
+     *      Modify an existing ACL
+     * 
      * @param resource
+     *      The resource the ACL applies to
+     * @param hostname
+     *      The server hostname 
      * @param node
+     *      The ACL to change
      */
     public ACLAddDialog( String resource, String hostname, ACLNode node )
     {
@@ -93,9 +103,14 @@ public class ACLAddDialog extends JDialog
 
     /**
      * Initialization
+     *      Create the dialog panel, a multi-tabbed panel
      * 
      * @param resource
+     *      The resource the ACL applies to
+     * @param hostname
+     *      The server hostname 
      * @param node
+     *      The ACL to change, null if adding a new ACL
      */
     protected void init( String resource, String hostname, ACLNode node )
     {
@@ -167,8 +182,10 @@ public class ACLAddDialog extends JDialog
 
 
     /**
+     * Check if the dialog was canceled.
      * 
      * @return
+     *      true if the dialog was canceled, false else 
      */
     public boolean isCanceled()
     {
@@ -177,8 +194,10 @@ public class ACLAddDialog extends JDialog
 
 
     /**
-     * 
+     * Get the selected principal.
+     *  
      * @return
+     *      the selected principal
      */
     public String[] getPrincipal()
     {
@@ -187,8 +206,13 @@ public class ACLAddDialog extends JDialog
 
 
     /**
+     * Get the type of the selected principal.
+     * The type can be ACLNode.GENERAL, ACLNode.PROPERTY, and ACLNode.HREF.
+     * Currently, all ACLs created here are of type ACLNode.HREF.
+     *  @see edu.uci.ics.DAVExplorer.ACLNode
      * 
      * @return
+     *      the type of the selected principal
      */
     public int getPrincipalType()
     {
@@ -197,8 +221,10 @@ public class ACLAddDialog extends JDialog
 
 
     /**
+     * Get the selected privileges.
      * 
      * @return
+     *      the selected privileges
      */
     public Vector getPrivileges()
     {
@@ -207,8 +233,10 @@ public class ACLAddDialog extends JDialog
 
 
     /**
-     * 
+     * Get the selected grant or deny privileges value.
+     *  
      * @return
+     *      true if privileges are granted, false if they are denied
      */
     public boolean getGrant()
     {
@@ -217,29 +245,33 @@ public class ACLAddDialog extends JDialog
 
 
     /**
+     * From the ChangeListener interface.
      * 
      * @param e
+     *      the change event
      */
     public void stateChanged( ChangeEvent e )
     {
-        setChanged( true );
+        setChanged();
     }
 
 
     /**
-     * 
-     * @param enable
+     * Act on changes to the dialog, i.e., enable or disable the OK button
      */
-    public void setChanged( boolean enable )
+    protected void setChanged()
     {
-        changed = enable;
-        okButton.setEnabled( (privileges!=null) && changed );
+        changed = true;
+        okButton.setEnabled( privileges!=null );
     }
 
 
     /**
+     * From the ActionListener interface.
+     * Handles user actions, i.e., button clicks and combobox selections.
      * 
      * @param e
+     *      the event describing the action
      */
     public void actionPerformed(ActionEvent e)
     {
@@ -254,7 +286,7 @@ public class ACLAddDialog extends JDialog
             {
                 privileges = dlg.getSelected();
                 privilegesList.setListData( privileges );
-                setChanged( true );
+                setChanged();
             }
         }
         else if( e.getActionCommand().equals("Cancel") )
@@ -268,24 +300,26 @@ public class ACLAddDialog extends JDialog
             principal = (String[])(cb.getSelectedItem());
             principalType = ACLNode.HREF;
             href.setText( principal[0] );
-            setChanged( true );
+            setChanged();
         }
         else if( e.getActionCommand().equals("Grant") )
         {
             grant = true;
-            setChanged( true );
+            setChanged();
         }
         else if( e.getActionCommand().equals("Deny") )
         {
             grant = false;
-            setChanged( true );
+            setChanged();
         }
     }
 
 
     /**
-     * 
+     * From the ListSelectionListener.
+     *  
      * @param e
+     *      the selection event
      */
     public void valueChanged(ListSelectionEvent e)
     {
@@ -293,8 +327,11 @@ public class ACLAddDialog extends JDialog
 
 
     /**
+     * From the WebDAVCompletionListener.
+     * Inform the waiting thread that data from the server is available
      * 
      * @param e
+     *      the event
      */
     public void completion( WebDAVCompletionEvent e )
     {
@@ -311,8 +348,10 @@ public class ACLAddDialog extends JDialog
 
 
     /**
-     * 
+     * Create the panel for the principal selection.
+     *   
      * @return
+     *      the panel created
      */
     protected JPanel makePrincipalPanel()
     {
@@ -325,6 +364,10 @@ public class ACLAddDialog extends JDialog
                 prefix =  GlobalData.WebDAVPrefixSSL;
             else
                 prefix = GlobalData.WebDAVPrefix;
+            // get the available principals from the server, wait for it
+            // two-step method:
+            // 1. get the principal collections
+            // 2. for each collection, get the principals
             ACLRequestGenerator generator = (ACLRequestGenerator)ACLResponseInterpreter.getGenerator();
             generator.setResource( prefix+resource, null );
             waiting = true;
@@ -424,8 +467,10 @@ public class ACLAddDialog extends JDialog
 
 
     /**
-     * 
+     * Create the panel for the privilege selection.
+     *  
      * @return
+     *      the panel for the principal selection
      */
     protected JPanel makePrivilegesPanel()
     {
@@ -468,8 +513,10 @@ public class ACLAddDialog extends JDialog
 
 
     /**
-     * 
+     * Create the panel for the grant/deny selection.
+     *  
      * @return
+     *      the panel for the grant/deny selection
      */
     protected JPanel makeGrantPanel()
     {
@@ -516,8 +563,10 @@ public class ACLAddDialog extends JDialog
 
 
     /**
-     * 
+     * Close the dialog.
+     *  
      * @param cancel
+     *      true if the dialog was canceled, false else
      */
     protected void close( boolean cancel )
     {

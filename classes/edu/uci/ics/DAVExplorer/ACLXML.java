@@ -23,7 +23,7 @@
  *              Updated as necessary.
  * Copyright:   Copyright (c) 2004-2005 Regents of the University of California. All rights reserved.
  * @author      Joachim Feise (dav-exp@ics.uci.edu)
- * @date        December 2004
+ * @date        14 Feb 2005
  */
 
 package edu.uci.ics.DAVExplorer;

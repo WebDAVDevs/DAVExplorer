@@ -44,16 +44,22 @@ import javax.swing.event.ListSelectionListener;
 import com.ms.xml.om.Element;
 
 /**
- * Title:       
- * Description: 
+ * Title:       ACL dialog
+ * Description: Views or modifies ACLs for a specific resource.
  * Copyright:   Copyright (c) 2005 Regents of the University of California. All rights reserved.
  * @author      Joachim Feise (dav-exp@ics.uci.edu)
- * @date        26 Jan 2005
+ * @date        10 Feb 2005
  */
 public class ACLDialog extends JDialog
     implements ActionListener, ChangeListener, ListSelectionListener, WebDAVCompletionListener
 {
-
+    /**
+     * 
+     * @param properties
+     * @param resource
+     * @param hostname
+     * @param locktoken
+     */
     public ACLDialog( Element properties, String resource, String hostname, String locktoken )
     {
         super( GlobalData.getGlobalData().getMainFrame() );
@@ -66,6 +72,14 @@ public class ACLDialog extends JDialog
     }
 
 
+    /**
+     * 
+     * @param model
+     * @param properties
+     * @param resource
+     * @param hostname
+     * @param locktoken
+     */
     protected void init( ACLModel model, Element properties, String resource, String hostname, String locktoken )
     {
         setTitle("View/Modify ACLs");
@@ -203,6 +217,10 @@ public class ACLDialog extends JDialog
     }
 
 
+    /**
+     * 
+     * @param e
+     */
     public void handleDoubleClick( MouseEvent e )
     {
         GlobalData.methodEnter( "handleDoubleClick", "ACLDialog", GlobalData.getGlobalData().getDebugFileView() );

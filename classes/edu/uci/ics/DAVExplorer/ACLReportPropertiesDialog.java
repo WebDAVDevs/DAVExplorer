@@ -29,16 +29,18 @@ import javax.swing.JPanel;
 
 
 /**
- * Title:       
- * Description: 
+ * Title:      Report properties dialog 
+ * Description: Dialog to select data for some ACL reports
  * Copyright:   Copyright (c) 2005 Regents of the University of California. All rights reserved.
  * @author      Joachim Feise (dav-exp@ics.uci.edu)
- * @date        
+ * @date        11 Feb 2005
  */
 public class ACLReportPropertiesDialog extends ACLChangePrivilegesDialog
 {
 
     /**
+     * Constructor
+     * 
      * @param resource
      * @param hostname
      * @param current
@@ -49,12 +51,21 @@ public class ACLReportPropertiesDialog extends ACLChangePrivilegesDialog
     }
 
 
+    /**
+     * Constructor
+     * 
+     * @param resource
+     * @param title
+     */
     public ACLReportPropertiesDialog( String resource, String title )
     {
         super( resource, null, null, title );
     }
 
 
+    /**
+     * 
+     */
     protected String getPanelTitle()
     {
         return  "Properties";
@@ -78,7 +89,7 @@ public class ACLReportPropertiesDialog extends ACLChangePrivilegesDialog
                 curModel.addElement( obj );
                 selected.add( obj );
                 privModel.remove( indices[i] );
-                setChanged( true );
+                setChanged();
             }
         }
         else if( e.getActionCommand().equals("<=") )
@@ -92,7 +103,7 @@ public class ACLReportPropertiesDialog extends ACLChangePrivilegesDialog
                 privModel.addElement( obj );
                 curModel.remove( indices[i] );
                 selected.remove( obj );
-                setChanged( true );
+                setChanged();
             }
         }
         else
@@ -100,6 +111,9 @@ public class ACLReportPropertiesDialog extends ACLChangePrivilegesDialog
     }
 
 
+    /**
+     * 
+     */
     protected void getAvailable()
     {
         String prefix = "";
@@ -132,6 +146,9 @@ public class ACLReportPropertiesDialog extends ACLChangePrivilegesDialog
     }
 
 
+    /**
+     * 
+     */
     protected void changePanel( JPanel panel )
     {
         privList.setCellRenderer(

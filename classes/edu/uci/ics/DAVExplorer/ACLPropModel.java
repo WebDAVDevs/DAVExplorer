@@ -17,13 +17,6 @@
  * WARRANTIES OF MERCHANTIBILITY AND FITNESS FOR A PARTICULAR PURPOSE.
  */
 
-/**
- * Title:       ACL Property Model
- * Description: Models the ACL properties for owner, group, privileges
- * Copyright:   Copyright (c) 2005 Regents of the University of California. All rights reserved.
- * @author      Joachim Feise (dav-exp@ics.uci.edu)
- * @date        18 January 2005
- */
 
 package edu.uci.ics.DAVExplorer;
 
@@ -31,12 +24,17 @@ import com.ms.xml.om.Element;
 
 
 /**
- * 
+ * Title:       ACL Property Model
+ * Description: Models the ACL properties for owner, group, privileges
+ * Copyright:   Copyright (c) 2005 Regents of the University of California. All rights reserved.
+ * @author      Joachim Feise (dav-exp@ics.uci.edu)
+ * @date        4 Feb 2005
  */
 public class ACLPropModel extends PropModel
 {
     /**
      * Constructor
+     * 
      * @param properties
      */
     public ACLPropModel( Element properties )
@@ -52,6 +50,7 @@ public class ACLPropModel extends PropModel
 
     /**
      * The TreeTableModel interface
+     * 
      * @param node
      * @param column
      * 
@@ -76,6 +75,7 @@ public class ACLPropModel extends PropModel
 
     /**
      * The TreeTableModel interface
+     * 
      * @param node
      * @param column
      * 
@@ -100,6 +100,7 @@ public class ACLPropModel extends PropModel
 
     /**
      * The TreeTableModel interface
+     * 
      * @param node
      * 
      * @return
@@ -112,6 +113,7 @@ public class ACLPropModel extends PropModel
 
     /**
      * The TreeTableModel interface
+     * 
      * @param aValue
      * @param node
      * @param column

@@ -23,17 +23,19 @@ import java.util.Vector;
 
 
 /**
- * Title:       
- * Description: 
+ * Title:       Property search node
+ * Description: Describes one entry in the property search datamodel
  * Copyright:   Copyright (c) 2005 Regents of the University of California. All rights reserved.
  * @author      Joachim Feise (dav-exp@ics.uci.edu)
- * @date        
+ * @date        11 Feb 2005
  */
 public class ACLPropertySearchNode
 {
-
     /**
+     * Constructor
      * 
+     * @param properties
+     * @param match
      */
     public ACLPropertySearchNode( Vector properties, String match )
     {
@@ -42,30 +44,49 @@ public class ACLPropertySearchNode
     }
 
 
+    /**
+     * Constructor
+     */
     public ACLPropertySearchNode()
     {
         this.properties = new Vector();
     }
 
 
+    /**
+     * 
+     * @param properties
+     */
     public void setProperty( Vector properties )
     {
         properties = new Vector( properties );
     }
 
 
+    /**
+     * 
+     * @param match
+     */
     public void setMatch( String match )
     {
         this.match = match;
     }
 
 
+    /**
+     * 
+     * @return
+     */
     public Vector getProperties()
     {
         return properties;
     }
 
 
+    /**
+     * 
+     * @return
+     */
     public String getMatch()
     {
         return match;
