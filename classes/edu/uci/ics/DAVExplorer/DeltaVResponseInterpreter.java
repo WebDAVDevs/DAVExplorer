@@ -17,20 +17,6 @@
  * WARRANTIES OF MERCHANTIBILITY AND FITNESS FOR A PARTICULAR PURPOSE.
  */
 
-package edu.uci.ics.DAVExplorer;
-
-import javax.swing.tree.DefaultMutableTreeNode;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
-import java.util.Vector;
-import java.io.ByteArrayInputStream;
-import com.ms.xml.om.Element;
-import com.ms.xml.om.Document;
-import com.ms.xml.om.TreeEnumeration;
-import com.ms.xml.om.SiblingEnumeration;
-import com.ms.xml.util.Name;
-
-
 /**
  * Title:       DeltaVResponse Interpreter
  * Description: This is the interpreter module that parses DeltaV responses.
@@ -49,6 +35,28 @@ import com.ms.xml.util.Name;
  * @author      Joachim Feise (dav-exp@ics.uci.edu)
  * @date        08 February 2004
  * Changes:     Added Javadoc templates
+ */
+
+package edu.uci.ics.DAVExplorer;
+
+import javax.swing.tree.DefaultMutableTreeNode;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+import java.util.Vector;
+import java.util.Hashtable;
+import java.util.Enumeration;
+import java.io.ByteArrayInputStream;
+import com.ms.xml.om.Element;
+import com.ms.xml.om.Document;
+import com.ms.xml.om.TreeEnumeration;
+import com.ms.xml.om.SiblingEnumeration;
+import com.ms.xml.util.Name;
+
+
+/**
+ * This is the interpreter module that parses DeltaV responses.
+ * Some of the methods are not parsed, and the functions are left
+ * empty intentionally.
  */
 public class DeltaVResponseInterpreter extends WebDAVResponseInterpreter
 {
@@ -91,10 +99,10 @@ public class DeltaVResponseInterpreter extends WebDAVResponseInterpreter
         Extra = e.getExtraInfo();
         HostName = e.getHost();
         Port = e.getPort();
+        Charset = getCharset();
 
         // get the resource name, and unescape it
-        // TODO: get encoding
-        Resource = GlobalData.getGlobalData().unescape( e.getResource(), null, true );
+        Resource = GlobalData.getGlobalData().unescape( e.getResource(), "ISO-8859-1", null, true );
         Node = e.getNode();
 
         try
@@ -111,6 +119,10 @@ public class DeltaVResponseInterpreter extends WebDAVResponseInterpreter
                     parseCheckin();
                 else if (Method.equals("REPORT"))
                     parseReport();
+                else if (Method.equals("MKACTIVITY"))
+                    parseMkActivity();
+                else if (Method.equals("MERGE"))
+                    parseMerge();
                 else
                 {
                     super.handleResponse(e);
@@ -356,9 +368,8 @@ public class DeltaVResponseInterpreter extends WebDAVResponseInterpreter
                         Element token = (Element)enumHref.nextElement();
                         if( (token != null) && (token.getType() == Element.PCDATA || token.getType() == Element.CDATA) )
                         {
-                            // TODO: get encoding
-                            resName = new String( truncateResource(GlobalData.getGlobalData().unescape(token.getText(), null, true)) );
-                            fullName = new String( getFullResource(GlobalData.getGlobalData().unescape(token.getText(), null, true)) );
+                            resName = new String( truncateResource(GlobalData.getGlobalData().unescape(token.getText(), Charset, null, true)) );
+                            fullName = new String( getFullResource(GlobalData.getGlobalData().unescape(token.getText(), Charset, null, true)) );
                         }
                     }
                 }
@@ -695,19 +706,28 @@ public class DeltaVResponseInterpreter extends WebDAVResponseInterpreter
                 GlobalData.getGlobalData().errorMsg("DeltaV Interpreter:\n\nThe server does not support DAV\nat Resource " + Resource + ".");
                 return;
             }
-            deltaV = false;
-            deltaVReports = false;
-            deltaVActivity = false;
+            boolean deltaVBase = false;
+            boolean reports = false;
+            boolean activityFound = false;
             if( davheader.indexOf("version-control") >= 0 )
             {
-                deltaV = true;
+                deltaVBase = true;
                 if( davheader.indexOf("report") >= 0 )
-                    deltaVReports = true;
+                    reports = true;
                 if( davheader.indexOf("activity") >= 0 )
-                    deltaVActivity = true;
+                    activityFound = true;
             }
+            String full;
+            if (Port == 0 || Port == WebDAVRequestGenerator.DEFAULT_PORT)
+                full = HostName;
+            else
+                full = HostName +":" + Port;
+            full += Resource;
+            deltaV.put( full, Boolean.valueOf(deltaVBase) );
+            deltaVReports.put( full, Boolean.valueOf(reports) );
+            deltaVReports.put( full, Boolean.valueOf(activityFound) );
             
-            if( deltaVActivity )
+            if( activityFound )
             {
                 byte[] body = null;
                 body = res.getData();
@@ -834,7 +854,7 @@ public class DeltaVResponseInterpreter extends WebDAVResponseInterpreter
         token[0] = new String( DeltaVXML.ELEM_OPTIONS_RESPONSE );
         Element rootElem = skipElements( xml_doc, token );
         int count = 0;
-        activityHref = null;
+        String activityHref = null;
         
         if( rootElem != null )
         {
@@ -850,13 +870,79 @@ public class DeltaVResponseInterpreter extends WebDAVResponseInterpreter
                     {
                         // tag encloses <href>
                         activityHref = getHref( current );
+                        String full;
+                        if (Port == 0 || Port == WebDAVRequestGenerator.DEFAULT_PORT)
+                            full = HostName;
+                        else
+                            full = HostName +":" + Port;
+                        full += Resource;
+                        activityCollection.put( full, activityHref );
                     }
                 }
             }
         }
+        ((DeltaVRequestGenerator)generator).SetActivityCollection( activityCollection );
     }
 
 
+    /**
+     * Process the response to a MKACTIVITY request  
+     */
+    public void parseMkActivity()
+    {
+        try
+        {
+            int code = res.getStatusCode();
+            if ( code >= 200 && code < 300 )
+            {
+                String host;
+                if (Port == 0 || Port == WebDAVRequestGenerator.DEFAULT_PORT)
+                    host = HostName;
+                else
+                    host = HostName +":" + Port;
+                activity.put( host, Resource );
+                ((DeltaVRequestGenerator)generator).SetActivity( activity );
+
+                fireMkActivityEvent( Resource, code );
+            }
+            else
+                fireMkActivityEvent( res.getReasonLine(), code );
+        }
+        catch(Exception e)
+        {
+        }
+    }
+
+    
+    /**
+     * Process the response to a MERGE request  
+     */
+    public void parseMerge()
+    {
+        try
+        {
+            int code = res.getStatusCode();
+            if ( code >= 200 && code < 300 )
+            {
+                String host;
+                if (Port == 0 || Port == WebDAVRequestGenerator.DEFAULT_PORT)
+                    host = HostName;
+                else
+                    host = HostName +":" + Port;
+                activity.put( host, Resource );
+                ((DeltaVRequestGenerator)generator).SetActivity( activity );
+
+                fireMergeEvent( Resource, code );
+            }
+            else
+                fireMergeEvent( res.getReasonLine(), code );
+        }
+        catch(Exception e)
+        {
+        }
+    }
+
+    
     /**
      * Inform listeners of an insertion event
      * 
@@ -864,7 +950,21 @@ public class DeltaVResponseInterpreter extends WebDAVResponseInterpreter
      */
     protected void fireInsertionEvent( String str )
     {
-        if( !deltaV && !deltaVReports )
+        boolean deltaVBase = false;
+        boolean reports = false;
+        
+        Enumeration enum = deltaV.keys();
+        while( enum.hasMoreElements() )
+        {
+            String base = (String)enum.nextElement();
+            if( Resource.startsWith( base ) )
+            {
+                deltaVBase = ((Boolean)deltaV.get( base )).booleanValue();
+                reports = ((Boolean)deltaVReports.get( base )).booleanValue();
+                break;
+            }
+        }
+        if( !deltaVBase && !reports )
         {
             super.fireInsertionEvent( str );
             return;
@@ -879,7 +979,7 @@ public class DeltaVResponseInterpreter extends WebDAVResponseInterpreter
         for( int i=0; i<ls.size(); i++ )
         {
             InsertionListener l = (InsertionListener)ls.elementAt(i);
-            l.actionPerformed( e, deltaV );
+            l.actionPerformed( e, deltaVBase );
         }
     }
 
@@ -929,6 +1029,28 @@ public class DeltaVResponseInterpreter extends WebDAVResponseInterpreter
 
 
     /**
+     * Add a mkactivity listener
+     * 
+     * @param l     listener to add
+     */
+    public synchronized void addMkActivityListener(ActionListener l)
+    {
+        mkActivityListeners.addElement(l); 
+    }   
+
+
+    /**
+     * Add a merge listener
+     * 
+     * @param l     listener to add
+     */
+    public synchronized void addMergeListener(ActionListener l)
+    {
+        mergeListeners.addElement(l); 
+    }   
+
+
+    /**
      * Remove a version control listener
      * 
      * @param l     listener to remove
@@ -969,6 +1091,28 @@ public class DeltaVResponseInterpreter extends WebDAVResponseInterpreter
     public synchronized void removeCheckinListener(ActionListener l)
     {
         checkinListeners.removeElement(l);  
+    }   
+
+
+    /**
+     * Remove a mkactivity listener
+     * 
+     * @param l     listener to remove
+     */
+    public synchronized void removeMkActivityListener(ActionListener l)
+    {
+        mkActivityListeners.removeElement(l);  
+    }   
+
+
+    /**
+     * Remove a merge listener
+     * 
+     * @param l     listener to remove
+     */
+    public synchronized void removeMergeListener(ActionListener l)
+    {
+        mergeListeners.removeElement(l);  
     }   
 
 
@@ -1061,6 +1205,50 @@ public class DeltaVResponseInterpreter extends WebDAVResponseInterpreter
 
 
     /**
+     * Inform listeners of a mkactivity event
+     * 
+     * @param str       info of the event
+     */
+    protected void fireMkActivityEvent( String str, int code )
+    {
+        Vector ls;
+
+        synchronized (this)
+        {
+            ls = (Vector) mkActivityListeners.clone();
+        }
+        ActionEvent e = new ActionEvent( this, code, str );
+        for (int i=0;i<ls.size();i++)
+        {
+            ActionListener l = (ActionListener) ls.elementAt(i);
+            l.actionPerformed(e);
+        }
+    }
+
+
+    /**
+     * Inform listeners of a merge event
+     * 
+     * @param str       info of the event
+     */
+    protected void fireMergeEvent( String str, int code )
+    {
+        Vector ls;
+
+        synchronized (this)
+        {
+            ls = (Vector) mergeListeners.clone();
+        }
+        ActionEvent e = new ActionEvent( this, code, str );
+        for (int i=0;i<ls.size();i++)
+        {
+            ActionListener l = (ActionListener) ls.elementAt(i);
+            l.actionPerformed(e);
+        }
+    }
+
+
+    /**
      * Strip a resource to just the resource name
      * 
      * @param res       Resource to strip
@@ -1113,9 +1301,12 @@ public class DeltaVResponseInterpreter extends WebDAVResponseInterpreter
         int pos = res.indexOf(GlobalData.WebDAVPrefixSSL);
         if (pos >= 0)
             res = res.substring(GlobalData.WebDAVPrefixSSL.length());
-        pos = res.indexOf(GlobalData.WebDAVPrefix);
-        if (pos >= 0)
-            res = res.substring(GlobalData.WebDAVPrefix.length());
+        else
+        {
+            pos = res.indexOf(GlobalData.WebDAVPrefix);
+            if (pos >= 0)
+                res = res.substring(GlobalData.WebDAVPrefix.length());
+        }
         pos = res.indexOf("/");
         if( pos >= 0 )
             res = res.substring(pos);
@@ -1133,9 +1324,12 @@ public class DeltaVResponseInterpreter extends WebDAVResponseInterpreter
     protected static Vector checkoutListeners = new Vector();
     protected static Vector unCheckoutListeners = new Vector();
     protected static Vector checkinListeners = new Vector();
+    protected static Vector mkActivityListeners = new Vector();
+    protected static Vector mergeListeners = new Vector();
     
-    protected boolean deltaV = false;
-    protected boolean deltaVReports = false;
-    protected boolean deltaVActivity = false;
-    protected String activityHref = null;
+    protected Hashtable deltaV = new Hashtable();
+    protected Hashtable deltaVReports = new Hashtable();
+    protected Hashtable deltaVActivity = new Hashtable();
+    protected Hashtable activityCollection = new Hashtable();
+    protected Hashtable activity = new Hashtable();
 }

@@ -55,6 +55,9 @@
  * @author      Joachim Feise (dav-exp@ics.uci.edu)
  * @date        08 February 2004
  * Changes:     Added Javadoc templates
+ * @author      Joachim Feise (dav-exp@ics.uci.edu)
+ * @date        09 February 2004
+ * Changes:     Improved unescaping
  */
 
 package edu.uci.ics.DAVExplorer;
@@ -483,19 +486,26 @@ class GlobalData
     /**
      * HTTP-unescape string
      * @param text          Escaped string
-     * @param encoding      Target encoding, UTF-8 is the default if this
-     *                      parameter is null or the empty string
+     * @param sourceEncoding
+     * @param targetEncoding      Target encoding
      * @param href          Indicates if this string is a URI
      * @return              The unescaped string, or an empty string if the
      *                      function failed.
      */
-    public String unescape( String text, String encoding, boolean href )
+    public String unescape( String text, String sourceEncoding, String targetEncoding, boolean href )
     {
         ByteArrayInputStream byte_in;
         try
         {
-            // assume the text is UTF-8 encoded
-            byte_in = new ByteArrayInputStream( text.getBytes("UTF-8") );
+            if( (sourceEncoding==null) || (sourceEncoding.length()==0) )
+            {
+                // assume the text is UTF-8 encoded
+                byte_in = new ByteArrayInputStream( text.getBytes("UTF-8") );
+            }
+            else
+            {
+                byte_in = new ByteArrayInputStream( text.getBytes(sourceEncoding) );
+            }
         }
         catch( UnsupportedEncodingException e )
         {
@@ -505,10 +515,10 @@ class GlobalData
         try
         {
             InputStreamReader isr = null;
-            if( (encoding==null) || (encoding.length()==0) )
-                isr = new InputStreamReader( iStream, "UTF-8" );
+            if( (targetEncoding==null) || (targetEncoding.length()==0) )
+                isr = new InputStreamReader( iStream );
             else
-                isr = new InputStreamReader( iStream, encoding );
+                isr = new InputStreamReader( iStream, targetEncoding );
 
             BufferedReader br = new BufferedReader( isr );
             String out = br.readLine();
