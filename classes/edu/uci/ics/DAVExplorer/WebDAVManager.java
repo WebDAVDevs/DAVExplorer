@@ -152,6 +152,10 @@ public class WebDAVManager
                     ProxyPort = ProxyTempPort;
                     HTTPConnection.setProxyServer( ProxyHostname, ProxyPort );
                 }
+                else
+                    // disable proxy
+                    HTTPConnection.setProxyServer( null, 0 );
+                
                 Hostname = TempHost;
                 if (TempPort != 0)
                 {
