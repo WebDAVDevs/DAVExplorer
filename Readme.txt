@@ -95,6 +95,8 @@ Changes for version 0.82-dev:
 - Incorporated Karen Schuchardt's changes to improve the loading of images
 - Added the -Dlocal option to disable reading and showing the local
   directory structure.
+- Fixed the icon locator code to account for drive letters on Windows.
+- Special handling of PUT to support files > 2GB.
 
 Changes for version 0.81:
 - Fixed handling of default namespace in the view/modify property dialog
