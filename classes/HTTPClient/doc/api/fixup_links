@@ -1,0 +1,7 @@
+#!/bin/csh -ef
+
+foreach file ( *.html )
+  sed 's|href="\(java\.[^"]*\)|href="http://www.javasoft.com/products/JDK/1.1/docs/api/\1|g' $file > tmp
+  \mv tmp $file
+end
+

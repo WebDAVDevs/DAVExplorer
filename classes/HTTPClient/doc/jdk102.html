@@ -1,0 +1,58 @@
+
+<HTML>
+
+<HEAD>
+<TITLE>Running under JDK 1.0.2</TITLE>
+<LINK REV="made"     HREF="mailto:ronald@innovation.ch">
+<LINK REL="Previous" HREF="index.html">
+</HEAD>
+
+<BODY BGCOLOR="#FFFFFF">
+
+<H1>Running under JDK 1.0.2 (or equivalent)</H1>
+
+<P>If you wish to run the client under JDK 1.0.2 then you must unzip
+the <var>JDK_1_0_2_classes.zip</var> file (it is located in the
+<var>HTTPClient</var> directory). This file contains JDK 1.0.2
+compatible replacements for the <var>Util</var>,
+<var>HTTPResponse</var>, and <var>HttpURLConnection</var> classes and
+for the popup boxes (both sources and class files are provided).
+All the other classes will run fine as they are under JDK 1.0.2.
+However, under JDK 1.0.2 the functionality is restricted as follows:
+
+<UL>
+<P><LI>The <A HREF="api/HTTPClient.HTTPConnection.html#setTimeout">timeout</A>
+    won't influence the reading of the responses. This is because JDK
+    1.0.2 didn't support a timeout for Sockets. The timeout will still
+    work for creating connections, though.
+<P><LI><A HREF="api/HTTPClient.HTTPConnection.html#stop">stop()</A> may
+    hang on some systems for a while. This is because the socket option
+    SO_LINGER cannot be disabled (SO_LINGER controls whether a close()
+    will wait until all pending data has been sent, or whether it will 
+    return immediately).
+<P><LI>The TransferEncodingModule and ContentEncodingModule will be
+    disabled. They both use the GZIPInputStream and DeflateInputStream
+    which are only avaialble in JDK 1.1 or later.
+</UL>
+
+<P>Note also that this version of the HTTPClient won't compile under
+JDK 1.0.2. There are a few calls to methods which only exist in JDK 1.1
+or later. These are protected by try/catch statements so that the code
+will still run under JDK 1.0.2, but to compile it you'll have to
+comment these out.
+
+
+<P>
+<A HREF="index.html">
+<IMG SRC="images/back.gif" ALT="[HTTPClient]"></A>
+<HR>
+
+<ADDRESS>
+Ronald Tschal&auml;r / 30. January 1998 /
+<A HREF="mailto:ronald@innovation.ch">ronald@innovation.ch</A>.
+</ADDRESS>
+
+</BODY>
+
+</HTML>
+

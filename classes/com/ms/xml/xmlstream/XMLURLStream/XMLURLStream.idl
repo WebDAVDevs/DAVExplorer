@@ -1,0 +1,42 @@
+// XMLURLStream.idl : IDL source for XMLURLStream.dll
+//
+
+// This file will be processed by the MIDL tool to
+// produce the type library (XMLURLStream.tlb) and marshalling code.
+
+import "oaidl.idl";
+import "ocidl.idl";
+
+	[
+		object,
+		uuid(C8AB904D-4132-11D1-A2CC-00C04FD73533),
+		dual,
+		helpstring("IXMLStream Interface"),
+		pointer_default(unique)
+	]
+	interface IXMLStream : IDispatch
+	{
+		[id(1), helpstring("method Open")] HRESULT Open([in] BSTR url, [out, retval] int * outEncoding);
+		[id(2), helpstring("method Read")] HRESULT Read([out] int * buf, [in] int len, [out, retval] int * al);
+		[id(3), helpstring("method SetEncoding")] HRESULT SetEncoding([in] int encoding, [in] int offset);
+		[id(4), helpstring("method Close")] HRESULT Close();
+	};
+[
+	uuid(C8AB9040-4132-11D1-A2CC-00C04FD73533),
+	version(1.0),
+	helpstring("XMLURLStream 1.0 Type Library")
+]
+library XMLURLSTREAMLib
+{
+	importlib("stdole32.tlb");
+	importlib("stdole2.tlb");
+
+	[
+		uuid(0C97E34E-412B-11D1-A2CB-00C04FD73533),
+		helpstring("XMLStream Class")
+	]
+	coclass XMLStream
+	{
+		[default] interface IXMLStream;
+	};
+};

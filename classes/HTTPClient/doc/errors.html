@@ -1,0 +1,65 @@
+
+<HTML>
+
+<HEAD>
+<TITLE>Common Exceptions</TITLE>
+<LINK REV="made"     HREF="mailto:ronald@innovation.ch">
+<LINK REL="Previous" HREF="index.html">
+</HEAD>
+
+<BODY BGCOLOR="#FFFFFF">
+
+<H1>Common Exceptions</H1>
+
+<P>Many exceptions should be self explanatory. However here are some common
+exceptions that can be thrown by HTTPClient (they're all subclasses of
+java.io.IOException) and for which the true cause might not be obvious.
+
+<DL>
+
+<DT>java.net.SocketException: Connection refused
+<DD>(connecting to the local host) The server is not running (nobody
+    is listening on the specified port).
+
+<DT>java.net.SocketException: Invalid argument
+<DD>(connecting to a different host) The server is not running (nobody
+    is listening on the specified port).
+<DD>(connecting to a different host) The host is not reachable.
+
+<DT>java.net.UnknownHostException: <var>host</var>
+<DD>The host name <var>host</var> could not be translated to an IP-address.
+
+<DT>java.net.SocketException: Malformed reply from SOCKS server
+<DD>The SOCKS server refused the connection.
+<DD>The SOCKS server is running version 5; the JDK currently only
+    supports version 4.
+
+</DL>
+
+<P>Also note the following under JDK 1.0.2: If you try to create a new
+connection, giving an IP-address instead of a host name (e.g. <code>new
+HTTPConnection("12.34.32.127")</code>) and this fails with an
+IOException, then it might be due to the problem described in <A
+HREF="http://java.sun.com/products/jdk/1.0.2/KnownBugs.html#Net">
+http://java.sun.com/products/jdk/1.0.2/KnownBugs.html#Net</A>. A fix is
+available at <A HREF="http://www.cdt.luth.se/~peppar/java/InetAddress/">
+http://www.cdt.luth.se/~peppar/java/InetAddress/</A>.
+
+<P>If you have any further exceptions that you think should be listed here,
+please <A HREF="mailto:ronald@innovation.ch">let me know</A>.
+
+
+<P>
+<A HREF="index.html">
+<IMG SRC="images/back.gif" ALT="[HTTPClient]"></A>
+<HR>
+
+<ADDRESS>
+Ronald Tschal&auml;r / 30. January 1998 /
+<A HREF="mailto:ronald@innovation.ch">ronald@innovation.ch</A>.
+</ADDRESS>
+
+</BODY>
+
+</HTML>
+

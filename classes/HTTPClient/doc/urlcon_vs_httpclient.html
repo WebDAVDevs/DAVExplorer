@@ -1,0 +1,89 @@
+
+<HTML>
+
+<HEAD>
+<TITLE>URLConnection vs. HTTPClient</TITLE>
+<LINK REV="made"     HREF="mailto:ronald@innovation.ch">
+<LINK REL="Previous" HREF="index.html">
+</HEAD>
+
+<BODY BGCOLOR="#FFFFFF">
+
+<H1>A Comparison of java.net.URLConnection and HTTPClient</H1>
+
+<P>Since java.net.URLConnection and HTTPClient have overlapping
+functionalities, the question arises of why would you use HTTPClient.
+Here are a few of the capabilites and tradeoffs.
+
+<P><TABLE BORDER=3 BGCOLOR="#FAF0E6">
+<TR><TH></TH>
+  <TH><P>URLConnection</TH>
+  <TH><P>HTTPClient</TH>
+<TR><TH><P>Methods</TH>
+  <TD><P>JDK 1.0.2: Only has GET and POST.
+      <BR>JDK 1.1: HEAD, GET, POST, PUT, DELETE, TRACE and OPTIONS
+  <TD><P>Has HEAD, GET, POST, PUT, DELETE, TRACE and OPTIONS, plus any
+      arbitrary method.
+<TR><TH><P>Headers</TH>
+  <TD><P>You can only set request headers if you are using JDK 1.1 or doing a
+	 POST under Netscape; for GETs in Netscape and when using JDK 1.0.2
+	 you can't set any headers.
+     <BR>Under Netscape 3.0 you can read headers only if the resource was
+	 returned with a Content-length header; if no Content-length header
+	 was returned, or under previous versions of Netscape, or using the
+	 JDK 1.0.2 no headers can be read. All headers can be read in JDK 1.1.
+  <TD><P>Allows any arbitrary headers to be sent and received.
+<TR><TH><P>Proxies and SOCKS</TH>
+  <TD><P>Full support in Netscape browser, appletviewer, and applications 
+      (SOCKS: Version 4 only); no additional limitations from security
+      policies.
+  <TD><P>Full support (SOCKS: Version 4 and 5); limited in applets however by
+      security policies; in Netscape can't pick up the settings from the
+      browser.
+<TR><TH><P>Authorization</TH>
+  <TD><P>Full support for Basic Authentication in Netscape (can use info
+      given by the user for normal accesses outside of the applet); no
+      support in appletviewer or applications.
+  <TD><P>Support for Basic and Digest Authentication; other schemes can be
+      added. However cannot access info from a browser, thereby possibly
+      requiring the user to enter info (s)he has already given for a
+      previous access.
+<TR><TH><P>Automatic Redirection Handling</TH>
+  <TD><P>Yes.
+  <TD><P>Yes (as allowed by the HTTP/1.1 spec).
+<TR><TH><P>Cookies</TH>
+  <TD><P>No.
+  <TD><P>Yes.
+<TR><TH><P>Persistent Connections</TH>
+  <TD><P>HTTP/1.0 Keep-Alive's in JDK 1.1 and under Netscape; no persistence
+	 in JDK 1.0.2.
+  <TD><P>Supports HTTP/1.0 Keep-Alive's and HTTP/1.1 persistence.
+<TR><TH><P>Pipelining of Requests</TH>
+  <TD><P>No.
+  <TD><P>Yes.
+<TR><TH><P>Can handle protocols other than HTTP</TH>
+  <TD><P>Theoretically; however only http is currently implemented.
+  <TD><P>No.
+<TR><TH><P>Can do HTTP over SSL (https)</TH>
+  <TD><P>Under Netscape, yes. Using Appletviewer or in an application, no.
+  <TD><P>No (not yet).
+<TR><TH><P>Source code available</TH>
+  <TD><P>No.
+  <TD><P>Yes.
+</TABLE>
+
+
+<P>
+<A HREF="index.html">
+<IMG SRC="images/back.gif" ALT="[HTTPClient]"></A>
+<HR>
+
+<ADDRESS>
+Ronald Tschal&auml;r / 30. January 1998 /
+<A HREF="mailto:ronald@innovation.ch">ronald@innovation.ch</A>.
+</ADDRESS>
+
+</BODY>
+
+</HTML>
+

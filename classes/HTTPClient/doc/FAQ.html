@@ -1,0 +1,208 @@
+
+<HTML>
+
+<HEAD>
+<TITLE>HTTPClient FAQ</TITLE>
+<LINK REV="made"     HREF="mailto:ronald@innovation.ch">
+<LINK REL="Previous" HREF="index.html">
+</HEAD>
+
+<BODY BGCOLOR="#FFFFFF">
+
+
+<H1>HTTPClient FAQ</H1>
+
+<H2>General</H2>
+
+
+<H4>All goes fine, until I try to do a request to a site that requires
+    authorization or tries to set cookies. The dialog box either doesn't
+    appear, or it appears but then everything hangs.</H4>
+
+<BLOCKQUOTE>
+    <P>What you are probably doing is issuing the request from inside
+    an AWT event handler. <strong>Don't!</strong> The problem is that
+    while you're in an event handler no other events can get processed,
+    including any event for the popup. This leads to a deadlock: no
+    events can be processed till the popup has been closed again
+    (thereby allowing the request to finish and to return to the
+    caller), and the popup won't do anything unless it gets the
+    corresponding event (e.g.  a keyboard or mouse event).
+    <P>There are various solutions to this:
+    <OL>
+    <LI>Don't do any request from inside an event handler. This can be
+	achieved by either starting a new thread which does the request,
+	or by setting a flag and having the main thread do it (this is
+	the way it's done in the <A HREF="HTTPClientExample.html">Example
+	Applet</A>).
+    <LI>Install your own authorization and cookie policy handlers which
+	don't use the AWT (see <A
+	HREF="api/HTTPClient.AuthorizationInfo.html#setAuthHandler(HTTPClient.AuthorizationHandler)">AuthorizationInfo.setAuthHandler</A>
+	and <A
+	HREF="api/HTTPClient.CookieModule.html#setCookiePolicyHandler(HTTPClient.CookiePolicyHandler)">CookieModule.setCookiePolicyHandler</A>).
+	However, I recommend the previous solution, as in general it is
+	bad practice to do any sort of extended work inside an event
+	handler (i.e. the code in the handler should execute quickly
+	and return so that other events can be handled).
+    <LI>If the site requires authorization then make the necessary
+	authorization info availble to the HTTPClient beforehand; see
+	<A HREF="getting_started.html#auth">Authorization Handling</A>
+	for more info.
+    <LI>Use <A
+	HREF="api/HTTPClient.HTTPConnection.html#setAllowUserInteraction(boolean)">HTTPConnection.setAllowUserInteraction()</A>
+	or <A
+	HREF="api/HTTPClient.HTTPConnection.html#setDefaultAllowUserInteraction(boolean)">HTTPConnection.setDefaultAllowUserInteraction()</A>
+	to prevent the popups from being used. Note that this means that
+	cookies will be silently accepted and that authorization info
+	must be provided via the addXXXAuthorization() methods (see
+	previous point).
+    </OL>
+</BLOCKQUOTE>
+
+
+<H4>How can I display an image or play an audio file retrieved via the
+    HTTPClient? Do I have to write my own ContentHandler's?</H4>
+
+<BLOCKQUOTE>
+    <P>You certainly could write your own ContentHandler's, but there
+    is an easier way (however, it relies on undocumented sun classes):
+    <DL>
+    <DT>Sound (.au)
+    <DD>This tip is from a <A HREF="http://www.javaworld.com/javaworld/javatips/jw-javatip24.html">JavaWorld article</A> by Chong Ser Wah.
+	Assuming <var>resp</var> is the <var>HTTPResponse</var>, use the
+	following construct:
+	<PRE>
+	    import sun.audio.AudioPlayer;
+	    import sun.audio.AudioStream;
+
+	    AudioStream as = new AudioStream(resp.getStream());
+	    AudioPlayer.player.start(as);
+	</PRE>
+    <DT>Images (gif and jpeg)
+    <DD>This is from <A HREF="http://www.dtack.com/java/dtack/hinweis/imagedecode/imagedecode.html">a tip by David Erb</A>.
+	The <A HREF="ImageFromResponse.java">ImageFromResponse</A> class
+	will return an <var>Image</var> given an <var>HTTPResponse</var>
+	and a <var>java.awt.Component</var>:
+	<PRE>
+	    Image img = ImageFromResponse.create(resp, component);
+	</PRE>
+    </DL>
+</BLOCKQUOTE>
+
+
+<H4>Does HTTPClient support <var>HTTPS</var> (i.e. HTTP on top of SSL)?</H4>
+
+<BLOCKQUOTE>
+    <P>No, not yet. This is on the top of the list of things to do for
+    version 0.4. The only real problem is finding a suitable SSL
+    implementation.
+
+    <P>If you're desperate you can modify the client now to support
+    HTTPS by uncommenting (and suitably modifying) the line
+    <PRE>
+	sock = new SSLSocket(sock); </PRE>
+    in <var>HTTPConnection.java</var> and by changing the line
+    <PRE>
+	if (!prot.equals("http")) </PRE>
+    to read
+    <PRE>
+	if (!prot.equals("http")  &&  !prot.equals("https")) </PRE>.
+
+    Note that you'll need an SSL implementation with a constructor
+    which takes an already established socket (this is because the
+    HTTPClient needs to create the raw connection itself, possibly
+    going through SOCKS or http proxies, and only then can the SSL
+    handshake be invoked).
+</BLOCKQUOTE>
+
+
+<HR>
+<H2>Applet specific</H2>
+
+
+<H4>I keep getting the message "#Security Exception: properties"
+    (Netscape 3.x) or "#Security Exception: checkpropsaccess.key"
+    (Netscape 4.x) in the Java Console everytime my Applet starts.</H4>
+
+<BLOCKQUOTE>
+    <P>This can be ignored. What is happening is that the static
+    initializer of the HTTPConnection class tries to read a couple
+    properties and this results in a SecurityException (in an Applet).
+    This exception is caught inside the initializer, but Netscape's
+    AppletSecurityManager prints the above message before throwing the
+    exception. The properties that are being tried are
+    <CODE>"proxySet"</CODE> and <CODE>"socksHost"</CODE>, which can be
+    set by applications to enable proxies.
+</BLOCKQUOTE>
+
+
+<H4>I keep getting the message "#Security Exception: thread" in the
+    Java Console.</H4>
+
+<BLOCKQUOTE>
+    <P>This one is a little trickier. I assume the HTTPClient is being
+    called from an AWT event handler? Then what is happening is the
+    following. To keep a connection from staying open indefinitely when
+    using persistent connections, the HTTPClient uses a timeout thread
+    to close the connection if it's been idle for more than 10
+    seconds.  To prevent applications from hanging at exit this thread
+    is made a daemon thread when created (using
+    <code>setDaemon(true)</code>).  Furthermore, the thread is created
+    when sending a request, and is therefore created in the context of
+    whatever thread is calling HTTPClient. The problem now is that the
+    AWT event handler runs in thread of its own which belongs to the
+    main thread group java.lang.ThreadGroup, but applets are only
+    allowed to manipulate threads in the AppletThreadGroup (this
+    includes stop()'ing a thread or doing a setDaemon()). Now if the
+    HTTPClient is called from an event handler the timeout thread is
+    created belonging to the main thread group, and any attempt at
+    modifying it will therefore result in a security exception.
+
+    <P>This message can actually be ignored too, as it doesn't matter
+    whether the thread is a daemon or not in applets and the security
+    exception is caught internally. However, it's not good practice to
+    call HTTPClient from an event handler, as potentially long running
+    stuff should be done in the main thread or a thread of its own
+    (otherwise you lock up the event handling during that time). For an
+    example of how to let the main thread do things see the simple <A
+    HREF="HTTPClientExample.html">Example Applet</A>.
+</BLOCKQUOTE>
+
+
+<HR>
+<H2>Application specific</H2>
+
+
+<H4>My application reaches the end, and then instead of exiting just hangs.</H4>
+
+<BLOCKQUOTE>
+    <P>What is probably happening is that there are some (non daemon) threads
+    still around that haven't exited. An application won't exit until all
+    (non deamon) threads are dead. Here is one reason why a thread might
+    still be around (apart from any you might have started and not stopped
+    yourself):
+    <OL>
+    <LI>The AWT uses a number of (non daemon) threads which are never
+	killed.  If the authorization popup or the cookie handler popup
+	appeared then these AWT threads were started and will therefore
+	still be around at program exit time. In this case you need an
+	explicit "<CODE>System.exit(0)</CODE>" at the end of your
+	program.
+    </OL>
+</BLOCKQUOTE>
+
+
+<P>
+<A HREF="index.html">
+<IMG SRC="images/back.gif" ALT="[HTTPClient]"></A>
+<HR>
+
+<ADDRESS>
+Ronald Tschal&auml;r / 30. January 1998 /
+<A HREF="mailto:ronald@innovation.ch">ronald@innovation.ch</A>.
+</ADDRESS>
+
+</BODY>
+
+</HTML>
+
