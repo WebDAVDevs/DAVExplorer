@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 1998-2002 Regents of the University of California.
+ * Copyright (c) 1998-2003 Regents of the University of California.
  * All rights reserved.
  *
  * This software was developed at the University of California, Irvine.
@@ -37,6 +37,10 @@
  * @author      Joachim Feise (dav-exp@ics.uci.edu)
  * @date        25 June 2002
  * Changes:     Fixed the icon locator code to account for drive letters on Windows
+ * @author      Joachim Feise (dav-exp@ics.uci.edu)
+ * @date        17 March 2003
+ * Changes:     Integrated Brian Johnson's applet changes.
+ *              Added better error reporting.
  */
 
 package edu.uci.ics.DAVExplorer;
@@ -44,7 +48,6 @@ package edu.uci.ics.DAVExplorer;
 import javax.swing.JTable;
 import javax.swing.JLabel;
 import javax.swing.JScrollPane;
-import javax.swing.JOptionPane;
 import javax.swing.DefaultListSelectionModel;
 import javax.swing.ListSelectionModel;
 import javax.swing.ImageIcon;
@@ -68,12 +71,7 @@ import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
 import java.util.Vector;
 import java.util.Enumeration;
-import java.util.StringTokenizer;
-import java.util.zip.ZipFile;
-import java.util.zip.ZipEntry;
 import java.io.File;
-import java.io.IOException;
-import java.io.InputStream;
 
 public class WebDAVFileView implements ViewSelectionListener, ActionListener
 {

@@ -77,7 +77,6 @@ import javax.swing.JSplitPane;
 import javax.swing.JPanel;
 import javax.swing.JOptionPane;
 import javax.swing.JFileChooser;
-import javax.swing.*;
 import javax.swing.event.EventListenerList;
 import java.awt.GridBagLayout;
 import java.awt.GridBagConstraints;
@@ -88,8 +87,6 @@ import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
 import java.util.Hashtable;
 import java.io.File;
-import java.io.InputStream;
-import java.io.IOException;
 
 public class Main extends JFrame
 {

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 1998-2001 Regents of the University of California.
+ * Copyright (c) 1998-2003 Regents of the University of California.
  * All rights reserved.
  *
  * This software was developed at the University of California, Irvine.
@@ -42,6 +42,10 @@
  * @author      Joachim Feise (dav-exp@ics.uci.edu)
  * @date        25 June 2002
  * Changes:     Special handling of PUT to support files > 2GB
+ * @author      Joachim Feise (dav-exp@ics.uci.edu)
+ * @date        17 March 2003
+ * Changes:     Integrated Brian Johnson's applet changes.
+ *              Added better error reporting.
  */
 
 package edu.uci.ics.DAVExplorer;

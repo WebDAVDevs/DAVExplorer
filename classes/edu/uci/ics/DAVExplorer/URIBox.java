@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 1998-2002 Regents of the University of California.
+ * Copyright (c) 1998-2003 Regents of the University of California.
  * All rights reserved.
  *
  * This software was developed at the University of California, Irvine.
@@ -37,6 +37,10 @@
  * @date        2 April 2002
  * Changes:     Incorporated Karen Schuchardt's changes to improve the loading of
  *              images. Thanks!
+ * @author      Joachim Feise (dav-exp@ics.uci.edu)
+ * @date        17 March 2003
+ * Changes:     Integrated Brian Johnson's applet changes.
+ *              Added better error reporting.
  */
 
 package edu.uci.ics.DAVExplorer;
