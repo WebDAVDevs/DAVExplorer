@@ -1,4 +1,4 @@
-Changes for version 0.73-dev:
+Changes for version 0.80:
 - Makefile for HTTPClient now works with JSSE installed as "bundled" extension.
 - Fixed handling of EOF for whitespace after the final tag (interoperability
   bug with Adobe InScope).
@@ -12,8 +12,9 @@ Changes for version 0.73-dev:
   for Digest authentication.
 - Copy and Move now allow entering the target, making them more flexible.
 - For initial contact with a server, we now send an OPTIONS request.
-- Rewrite of the View Property dialog
-- PROPPATCH support implemented (finally)
+- Rewrite of the View Property dialog.
+- PROPPATCH support implemented (finally).
+- The package name of the main DAVExplorer files was changed to edu.uci.ics.DAVExplorer.
 
 Changes for version 0.72:
 - Support for operation through proxy servers
