@@ -223,6 +223,7 @@ public class WebDAVManager
                         sslContext.init( null, tm, new java.security.SecureRandom() );
                         SSLSocketFactory sf = sslContext.getSocketFactory();
                         Con.setSSLSocketFactory( sf );
+                        Con.setAllowAnyHostname( true );
                         try
                         {
                             Response = Con.Generic(MethodName, ResourceName, Body, Headers);

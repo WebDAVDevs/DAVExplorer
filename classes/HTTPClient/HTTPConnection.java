@@ -35,7 +35,7 @@ package HTTPClient;
 import java.io.OutputStream;
 import java.io.DataOutputStream;
 import java.io.FilterOutputStream;
-// 2001-May-23: jfeise@ics.uci.edu  added for logging
+// 2001-May-23: Joachim Feise (dav-dev@ics.uci.edu)  added for logging
 import java.io.FileOutputStream;
 // SSL Extensions (using Sun's JSEE)
 import javax.net.ssl.SSLSocket;
@@ -326,7 +326,7 @@ public class HTTPConnection implements GlobalConstants, HTTPClientModuleConstant
 
 
     /**
-      * Joachim Feise (jfeise@ics.uci.edu)
+      * Joachim Feise (dav-dev@ics.uci.edu)
       * Logging extension
       */
     private static boolean       logging = false;
@@ -334,16 +334,22 @@ public class HTTPConnection implements GlobalConstants, HTTPClientModuleConstant
     private static String        outboundHeader = "\r\n========= Outbound Message =========\r\n";
 
     /**
-      * Joachim Feise (jfeise@ics.uci.edu)
+      * Joachim Feise (dav-dev@ics.uci.edu)
       * Conditional SSL compilation extensions (using Sun's JSSE)
       */
     private static boolean      JSSE = true;
 
     /** JSSE's socket factory */
-    // 2001-May-25: jfeise@ics.uci.edu  Modified to allow running without JSSE
+    // 2001-May-25: Joachim Feise (dav-dev@ics.uci.edu)  Modified to allow running without JSSE
     // private SSLSocketFactory     sslFactory =
 	// (SSLSocketFactory) SSLSocketFactory.getDefault();
     private Object     sslFactory;
+
+    /**
+     * Joachim Feise (dav-dev@ics.uci.edu)
+     * Allow relaxing of hostname checking for SSL
+     */
+    private boolean allowAnyHostname = false;
 
     static
     {
@@ -678,7 +684,7 @@ public class HTTPConnection implements GlobalConstants, HTTPClientModuleConstant
 	if (noKeepAlives)
 	    setDefaultHeaders(new NVPair[] { new NVPair("Connection", "close") });
 
-    // 2001-May-25: jfeise@ics.uci.edu  Added for our JSSE support
+    // 2001-May-25: Joachim Feise (dav-dev@ics.uci.edu)  Added for our JSSE support
     if( JSSE )
     {
         try
@@ -688,6 +694,7 @@ public class HTTPConnection implements GlobalConstants, HTTPClientModuleConstant
         catch( NoClassDefFoundError e )
         {
             sslFactory = null;
+            JSSE = false;
         }
     }
     else
@@ -1464,7 +1471,7 @@ public class HTTPConnection implements GlobalConstants, HTTPClientModuleConstant
      * Set the SSL socket factory for this connection. If not set, uses the
      * default factory.
      *
-     * 2001-May-25: jfeise@ics.uci.edu  Modified to allow compilation
+     * 2001-May-25: Joachim Feise (dav-dev@ics.uci.edu)  Modified to allow compilation
      * without JSSE
      *
      * @param sslFactory the SSL socket factory
@@ -1488,7 +1495,7 @@ public class HTTPConnection implements GlobalConstants, HTTPClientModuleConstant
     /**
      * Set the current SSL socket factory for this connection.
      *
-     * 2001-May-23: jfeise@ics.uci.edu  Modified to allow compilation
+     * 2001-May-23: Joachim Feise (dav-dev@ics.uci.edu)  Modified to allow compilation
      * without JSSE
      *
      * @return the current SSL socket factory
@@ -1496,6 +1503,16 @@ public class HTTPConnection implements GlobalConstants, HTTPClientModuleConstant
     public Object getSSLSocketFactory()
     {
         return sslFactory;
+    }
+
+    /**
+     * Allow or disallow any hostname for SSL (relaxed checking)
+     * @author  Joachim Feise (dav-dev@ics.uci.edu)
+     * @param   true for allowing any hostname, false for forcing hostname check
+     */
+    public void setAllowAnyHostname( boolean anyHostname )
+    {
+        allowAnyHostname = anyHostname;
     }
 
     /**
@@ -2585,7 +2602,7 @@ public class HTTPConnection implements GlobalConstants, HTTPClientModuleConstant
 	try
 	{
 	    HTTPResponse resp = new HTTPResponse(gen_mod_insts(), Timeout, req);
-        // 2001-May-23: jfeise@ics.uci.edu: added logging
+        // 2001-May-23: Joachim Feise (dav-dev@ics.uci.edu): added logging
         resp.setLogging( logging, logFilename );
         Codecs.setLogging( logging, logFilename );
 	    handleRequest(req, resp, null, true);
@@ -2977,14 +2994,14 @@ public class HTTPConnection implements GlobalConstants, HTTPClientModuleConstant
     			}
 
                 sock.setSoTimeout(con_timeout);
-                // 2001-May-23: jfeise@ics.uci.edu  modified for our JSSE support
+                // 2001-May-23: Joachim Feise (dav-dev@ics.uci.edu)  modified for our JSSE support
                 if( JSSE )
                 {
                     try
                     {
                         //sock = ((SSLSocketFactory)SSLSocketFactory.getDefault()).createSocket(sock, Host, Port, true);
                         sock = ((SSLSocketFactory)sslFactory).createSocket(sock, Host, Port, true);
-                        checkCert(((SSLSocket)sock).getSession().getPeerCertificateChain()[0], Host);
+                        checkCert(((SSLSocket)sock).getSession().getPeerCertificateChain()[0], Host, allowAnyHostname);
                     }
                     catch( NoClassDefFoundError err )
                     {
@@ -2993,10 +3010,6 @@ public class HTTPConnection implements GlobalConstants, HTTPClientModuleConstant
                 }
                 else
                     throw new IOException( "SSL support not active" );
-
-    			//sock = sslFactory.createSocket(sock, Host, Port, true);
-    			//checkCert(((SSLSocket) sock).getSession().
-    			//		getPeerCertificateChain()[0], Host);
 		    }
 
 		    input_demux = new StreamDemultiplexor(Protocol, sock, this);
@@ -3008,7 +3021,7 @@ public class HTTPConnection implements GlobalConstants, HTTPClientModuleConstant
 		    throw new IOException("Request aborted by user");
 
 		Log.write(Log.CONN, "Conn:  Sending Request: ", hdr_buf);
-        // 2001-May-23: jfeise@ics.uci.edu  added logging
+        // 2001-May-23: Joachim Feise (dav-dev@ics.uci.edu)  added logging
         if(logging)
         {
             try
@@ -3042,7 +3055,7 @@ public class HTTPConnection implements GlobalConstants, HTTPClientModuleConstant
 			Util.hasToken(con_hdrs[1], "100-continue"))
 		    {
 			resp = new Response(req, (Proxy_Host != null && Protocol != HTTPS), input_demux);
-            // 2001-May-23: jfeise@ics.uci.edu  added logging
+            // 2001-May-23: Joachim Feise (dav-dev@ics.uci.edu)  added logging
             resp.setLogging( logging, logFilename );
 			resp.timeout = 60;
 			if (resp.getContinue() != 100)
@@ -3084,7 +3097,7 @@ public class HTTPConnection implements GlobalConstants, HTTPClientModuleConstant
 		    }
 		    else
 			sock_out.write(req.getData());
-            // 2001-May-23: jfeise@ics.uci.edu  added logging
+            // 2001-May-23: Joachim Feise (dav-dev@ics.uci.edu)  added logging
             if(logging)
             {
                 if (req.getData() != null  &&  req.getData().length > 0)
@@ -3117,7 +3130,7 @@ public class HTTPConnection implements GlobalConstants, HTTPClientModuleConstant
 		    resp = new Response(req, (Proxy_Host != null &&
 					     Protocol != HTTPS),
 					input_demux);
-            // 2001-May-23: jfeise@ics.uci.edu  added logging
+            // 2001-May-23: Joachim Feise (dav-dev@ics.uci.edu)  added logging
             resp.setLogging( logging, logFilename );
             }
 	    }
@@ -3322,7 +3335,7 @@ public class HTTPConnection implements GlobalConstants, HTTPClientModuleConstant
 
 	ByteArrayOutputStream hdr_buf = new ByteArrayOutputStream(600);
 	HTTPResponse r = new HTTPResponse(gen_mod_insts(), timeout, connect);
-    // 2001-May-23: jfeise@ics.uci.edu  added logging
+    // 2001-May-23: Joachim Feise (dav-dev@ics.uci.edu)  added logging
     r.setLogging( logging, logFilename );
 
 
@@ -3349,7 +3362,7 @@ public class HTTPConnection implements GlobalConstants, HTTPClientModuleConstant
 	    // return if successful
 
 	    resp = new Response(connect, sock[0].getInputStream());
-        // 2001-May-23: jfeise@ics.uci.edu  added logging
+        // 2001-May-23: Joachim Feise (dav-dev@ics.uci.edu)  added logging
         resp.setLogging( logging, logFilename );
 	    if (resp.getStatusCode() == 200)  return null;
 
@@ -3381,8 +3394,9 @@ public class HTTPConnection implements GlobalConstants, HTTPClientModuleConstant
     /**
      * Check whether the name in the certificate matches the host
      * we're talking to.
+     * 22 Nov 2001: Joachim Feise (dav-dev@ics.uci.edu): allowing relaxed hostname checks
      */
-    private static void checkCert(X509Certificate cert, String host)
+    private static void checkCert( X509Certificate cert, String host, boolean anyHostname )
 	    throws IOException
     {
         if( JSSE )
@@ -3399,7 +3413,12 @@ public class HTTPConnection implements GlobalConstants, HTTPClientModuleConstant
         	if (Util.wildcardMatch(name, host))
         	    return;
 
-            // 2001-Jan-12: jfeise@ics.uci.edu:
+            // 22 Nov 2001: Joachim Feise (dav-dev@ics.uci.edu):
+            // don't do hostname checking if relaxed
+            if( anyHostname )
+                return;
+
+            // 2001-Jan-12: Joachim Feise (dav-dev@ics.uci.edu):
             // account for the possibility of JSSE not being installed
             // Symptom: w/o JSSE installed, the first access to HTTPConnection (in
             // AuthorizationInfo line 102) throws NoClassDefFoundError: javax/net/ssl/SSLException
@@ -3422,6 +3441,7 @@ public class HTTPConnection implements GlobalConstants, HTTPClientModuleConstant
             catch( Throwable t )
             {
                 // class not found, SSL not available
+                JSSE = false;
                 throw new IOException( "SSL support not enabled." );
             }
             if( o != null )
@@ -3523,8 +3543,8 @@ public class HTTPConnection implements GlobalConstants, HTTPClientModuleConstant
 			       RequestProtocolVersion + "\r\n");
 
 	String h_hdr = (ho_idx >= 0) ? hdrs[ho_idx].getValue().trim() : Host;
-    // 2001-May-23: jfeise@ics.uci.edu  check if host string already contains
-    // the port
+    // 2001-May-23: Joachim Feise (dav-dev@ics.uci.edu)  check if host string
+    // already contains the port
 	if (Port != URI.defaultPort(getProtocol()) && (h_hdr.indexOf(":") == -1) )
 	    dataout.writeBytes("Host: " + h_hdr + ":" + Port + "\r\n");
 	else    // Netscape-Enterprise has some bugs...
@@ -3951,7 +3971,7 @@ public class HTTPConnection implements GlobalConstants, HTTPClientModuleConstant
     }
 
 
-    // 2001-May-23: jfeise@ics.uci.edu  added logging
+    // 2001-May-23: Joachim Feise (dav-dev@ics.uci.edu)  added logging
     public void setLogging( boolean logging, String filename )
     {
         this.logging = logging;
@@ -3959,14 +3979,14 @@ public class HTTPConnection implements GlobalConstants, HTTPClientModuleConstant
     }
 
 
-    // 2001-May-23: jfeise@ics.uci.edu  added logging
+    // 2001-May-23: Joachim Feise (dav-dev@ics.uci.edu)  added logging
     public boolean getLogging()
     {
         return logging;
     }
 
 
-    // 2001-May-23: jfeise@ics.uci.edu  added logging
+    // 2001-May-23: Joachim Feise (dav-dev@ics.uci.edu)  added logging
     public String getLogFilename()
     {
         return logFilename;
