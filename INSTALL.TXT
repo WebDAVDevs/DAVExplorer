@@ -1,6 +1,6 @@
 Installation procedure
 
-DAV Explorer requires Java 2 (aka JDK 1.2).
+DAV Explorer requires Java 2 (tested with both JDK 1.2.x and JDK 1.3.0).
 
 1. Login to the DAV Explorer CVS archive with the command
    'cvs -d :pserver:cvsguest@elysees.ics.uci.edu:/webdav'
@@ -18,16 +18,24 @@ DAV Explorer requires Java 2 (aka JDK 1.2).
    respectively.
 
 4. Compile all Java source files with Java 2 by running make in the dav_explorer
-   directly below your source directory. This also creates a DAVExplorer.jar file
-   in the dav_explorer directory.
+   directory directly below your source directory. This also creates a
+   DAVExplorer.jar file in the dav_explorer directory.
    Note that the Makefile does not work under MS Windows. Instead, running the
    make.bat file in the dav_explorer directory achieves the same result.
    Under MS Windows, you can also run the DAVjar.bat file from the dav_explorer
    directory to create the DAVExplorer.jar file.
    Under Unix, the DAVjar.sh shell script serves the same purpose.
 
-5. Run the DAV Explorer.
+5. If SSL support is required, retrieve the Java Secure Socket Extensions from
+   http://java.sun.com/products/jsse/
+   Install the JSSE files according to the JSSE documentation.
+   Make sure that the appropriate X.509 certificates are installed at the
+   Webserver.
+
+6. Run the DAV Explorer.
    Under MS Windows, run the DAVExplorer.bat file from the dav_explorer directory.
    Under Unix, run the DAVExplorer.sh shell script from the dav_explorer directory.
    You can also run DAVExplorer by using the command 'java -jar DAVExplorer.jar'.
+   For SSL support, run DAVExplorerSSL.bat or DAVExplorerSSL.sh, respectively.
+   Alternatively, the command 'java -jar -Dssl=true DAVExplorer.jar' can be used.
 
