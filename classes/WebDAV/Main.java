@@ -345,10 +345,13 @@ public class Main extends JFrame
             {
                 FileDialog fd = new FileDialog(WebDAVFrame, "Write File" , FileDialog.LOAD);
                 fd.setVisible(true);
-                String fullPath = fd.getDirectory() + fd.getFile();
-                String token = treeView.getLockToken( fd.getFile() );
-                requestGenerator.GeneratePut( fullPath, treeView.getCurrentPath(), token );
-                requestGenerator.execute();
+                if( fd.getDirectory() != null )
+                {
+                    String fullPath = fd.getDirectory() + fd.getFile();
+                    String token = treeView.getLockToken( fd.getFile() );
+                    requestGenerator.GeneratePut( fullPath, treeView.getCurrentPath(), token );
+                    requestGenerator.execute();
+                }
             }
             else if (command.equals("Lock"))
             {
@@ -385,6 +388,42 @@ public class Main extends JFrame
             else if (command.equals("Edit Lock Info"))
             {
                 WebDAVLockInfo lockInfo = new WebDAVLockInfo(WebDAVFrame, "Lock Info", true);
+            }
+            else if (command.equals("HTTP Logging"))
+            {
+                boolean logging = false;
+                String logFilename = null;
+                if( CommandMenu.getLogging() )
+                {
+                    JOptionPane pane = new JOptionPane();
+                    String message = new String( "WARNING: The logfile may get very large,\nsince all data is logged.\n" +
+                                                 "Hit Cancel now if you don't want to log the data." );
+                    int opt = pane.showConfirmDialog( WebDAVFrame, message, "HTTP Logging", JOptionPane.OK_CANCEL_OPTION );
+                    if( opt == JOptionPane.OK_OPTION )
+                    {
+                        FileDialog fd = new FileDialog( WebDAVFrame, "Select Logging File" , FileDialog.SAVE );
+                        fd.setVisible(true);
+                        if( fd.getDirectory() != null )
+                        {
+                            logFilename = fd.getDirectory() + fd.getFile();
+                            try
+                            {
+                                File f = new File( logFilename );
+                                if( f.exists() )
+                                    f.delete();
+                                logging = true;
+                            }
+                            catch( Exception exception )
+                            {
+                                System.out.println( "File could not be deleted.\n" + exception );
+                                logFilename = null;
+                            }
+                        }
+                    }
+                }
+                    
+                CommandMenu.setLogging( logging );
+                webdavManager.setLogging( logging, logFilename );
             }
             else if (command.equals("View Properties"))
             {
@@ -432,7 +471,7 @@ public class Main extends JFrame
     {
         JOptionPane pane = new JOptionPane();
         String str = new String("Are you sure?");
-        int opt = pane.showConfirmDialog(null,str,"Delete File",JOptionPane.YES_NO_OPTION);
+        int opt = pane.showConfirmDialog( WebDAVFrame, str, "Delete File", JOptionPane.YES_NO_OPTION );
         if (opt == JOptionPane.YES_OPTION)
             requestGenerator.DiscoverLock("delete");
     }
@@ -458,7 +497,7 @@ public class Main extends JFrame
     private String selectName( String title, String prompt )
     {
         JOptionPane pane = new JOptionPane();
-        String ret = pane.showInputDialog( null, prompt, title ,JOptionPane.QUESTION_MESSAGE );
+        String ret = pane.showInputDialog( WebDAVFrame, prompt, title ,JOptionPane.QUESTION_MESSAGE );
         return ret;
     }
 

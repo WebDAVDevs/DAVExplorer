@@ -22,7 +22,7 @@
 // sending all the requests.
 //
 // Version: 0.1
-// Author:  Robert Emmery 
+// Author:  Robert Emmery
 // Date:    1/20/98
 ////////////////////////////////////////////////////////////////
 // The code has been modified to include povisions for the final
@@ -45,112 +45,95 @@ package WebDAV;
 import HTTPClient.*;
 import java.io.*;
 
-public class WebDAVConnection extends HTTPConnection {
+public class WebDAVConnection extends HTTPConnection
+{
+    static final int DEFAULT_PORT = 80;
 
-  static final int DEFAULT_PORT = 80;
+    public WebDAVConnection(String HostName)
+    {
+        super(HostName, DEFAULT_PORT);
+    }
 
+    public WebDAVConnection(String HostName, int Port)
+    {
+        super(HostName, Port);
+    }
 
-  public WebDAVConnection(String HostName) {
-    
-    super(HostName, DEFAULT_PORT);
-  
-  }
+    public HTTPResponse PropFind(String file, byte[] body, NVPair[] headers) 
+        throws IOException, ModuleException
+    {
+        return ExtensionMethod("PROPFIND",file, body, headers);
+    }
 
-  public WebDAVConnection(String HostName, int Port) {
-  
-    super(HostName, Port);
+    public HTTPResponse PropPatch(String file, byte[] body, NVPair[] headers)
+        throws IOException, ModuleException
+    {
+        return ExtensionMethod("PROPPATCH", file, body, headers);
+    }
 
-  }
+    public HTTPResponse MkCol(String file, NVPair[] headers)
+        throws IOException, ModuleException
+    {
+        return ExtensionMethod("MKCOL", file, (byte []) null, headers);
+    }
 
-  public HTTPResponse PropFind(String file, byte[] body, NVPair[] headers) 
-		throws IOException, ModuleException  {
+    public HTTPResponse AddRef(String file, NVPair[] headers)
+        throws IOException, ModuleException
+    {
+        return ExtensionMethod("ADDREF", file, (byte[]) null, headers);  
+    }
 
-    return ExtensionMethod("PROPFIND",file, body, headers);
+    public HTTPResponse DelRef(String file, NVPair[] headers)
+        throws IOException, ModuleException
+    {
+        return ExtensionMethod("DELREF", file, (byte[]) null, headers); 
+    }
 
-  }
+    public HTTPResponse Copy(String file, byte[] body, NVPair[] headers)
+        throws IOException, ModuleException
+    {
+        return ExtensionMethod("COPY", file, body, headers);
+    }
 
-  public HTTPResponse PropPatch(String file, byte[] body, NVPair[] headers)
-		throws IOException, ModuleException {
+    public HTTPResponse Copy(String file, NVPair[] headers)
+        throws IOException, ModuleException
+    {
+        return Copy(file, null, headers);
+    }
 
-    return ExtensionMethod("PROPPATCH", file, body, headers);
+    public HTTPResponse Move(String file, byte[] body, NVPair[] headers)
+        throws IOException, ModuleException
+    {
+        return ExtensionMethod("MOVE", file, body, headers);
+    }
 
-  }
+    public HTTPResponse Move(String file, NVPair[] headers)
+        throws IOException, ModuleException
+    {
+        return Move(file, null, headers);
+    }
 
-  public HTTPResponse MkCol(String file, NVPair[] headers)
-		throws IOException, ModuleException {
+    public HTTPResponse Lock(String file, byte[] body, NVPair[] headers)
+        throws IOException, ModuleException
+    {
+        return ExtensionMethod("LOCK", file, body, headers);
+    }
 
-    return ExtensionMethod("MKCOL", file, (byte []) null, headers);
-  }
+    public HTTPResponse Lock(String file, NVPair[] headers) 
+        throws IOException, ModuleException
+    {
+        return Lock(file, null, headers); 
+    }
 
-  public HTTPResponse AddRef(String file, NVPair[] headers)
-		throws IOException, ModuleException {
+    public HTTPResponse Unlock(String file, NVPair[] headers)
+        throws IOException, ModuleException
+    {
+        return ExtensionMethod("UNLOCK", file, (byte[]) null, headers);
+    }
 
-   return ExtensionMethod("ADDREF", file, (byte[]) null, headers);  
-
- }
-
-  public HTTPResponse DelRef(String file, NVPair[] headers)
-		throws IOException, ModuleException {
-
-    return ExtensionMethod("DELREF", file, (byte[]) null, headers); 
-  
-  }
-
-  public HTTPResponse Copy(String file, byte[] body, NVPair[] headers)
-		throws IOException, ModuleException {
-
-    return ExtensionMethod("COPY", file, body, headers);
-
-  }
-
-  public HTTPResponse Copy(String file, NVPair[] headers)
-		throws IOException, ModuleException {
-
-    return Copy(file, null, headers);
-
-  }
-
-  public HTTPResponse Move(String file, byte[] body, NVPair[] headers)
-		throws IOException, ModuleException {
-
-    return ExtensionMethod("MOVE", file, body, headers);
-
-  }
-
-  public HTTPResponse Move(String file, NVPair[] headers)
-                throws IOException, ModuleException {
-
-    return Move(file, null, headers);
-
-  }
-
-
-  public HTTPResponse Lock(String file, byte[] body, NVPair[] headers)
-		throws IOException, ModuleException {
-
-    return ExtensionMethod("LOCK", file, body, headers);
-  
-  }
-
-  public HTTPResponse Lock(String file, NVPair[] headers) 
-		throws IOException, ModuleException {
-
-    return Lock(file, null, headers); 
-
-  }
-
-  public HTTPResponse Unlock(String file, NVPair[] headers)
-		throws IOException, ModuleException {
-
-    return ExtensionMethod("UNLOCK", file, (byte[]) null, headers);
-
-  }
-
-  public HTTPResponse Generic(String Method, String file, byte[] body, NVPair[] headers)
-                throws IOException, ModuleException {
-
-    return ExtensionMethod(Method, file, body, headers);
-
-  }
-
+    public HTTPResponse Generic(String Method, String file, byte[] body, NVPair[] headers)
+        throws IOException, ModuleException
+    {
+        return ExtensionMethod(Method, file, body, headers);
+    }
 }

@@ -47,6 +47,7 @@ import java.awt.*;
 import com.sun.java.swing.JFrame;
 import com.sun.java.swing.JMenu;
 import com.sun.java.swing.JMenuItem;
+import com.sun.java.swing.JCheckBoxMenuItem;
 import com.sun.java.swing.JMenuBar;
 
 /*--------------------------------------------------------
@@ -72,6 +73,16 @@ public class WebDAVMenu extends JMenuBar implements ActionListener
 		}
 	}
 
+	class WebDAVCheckBoxMenuItem extends JCheckBoxMenuItem
+	{
+		public WebDAVCheckBoxMenuItem( String strMenuTag, ActionListener aL, boolean enabled )
+		{
+			super( strMenuTag );
+			addActionListener( aL );
+			setEnabled( enabled );
+		}
+	}
+	
 	/*--------------------------------------------------------
 	Public attributes section
 	--------------------------------------------------------*/
@@ -126,6 +137,17 @@ public class WebDAVMenu extends JMenuBar implements ActionListener
 		menuListeners.removeElement(MenuListener);
 	}
 
+
+    public void setLogging( boolean newState )
+    {
+        logging.setState( newState );
+    }
+    
+    public boolean getLogging()
+    {
+        return logging.getState();
+    }
+    
 	/*--------------------------------------------------------
 	Protected attributes section
 	--------------------------------------------------------*/
@@ -168,9 +190,10 @@ public class WebDAVMenu extends JMenuBar implements ActionListener
 
         mnu_EditMenu.add(new WebDAVMenuItem( "Edit Lock Info",this, true ));
         mnu_EditMenu.addSeparator();
-        mnu_EditMenu.add(new WebDAVMenuItem( "Edit Properties", this, false ));
-        mnu_EditMenu.addSeparator();
         mnu_EditMenu.add(new WebDAVMenuItem( "Clear Auth Buffer", this, true ));
+        mnu_EditMenu.addSeparator();
+        logging = new WebDAVCheckBoxMenuItem( "HTTP Logging", this, true );
+        mnu_EditMenu.add( logging );
         return mnu_EditMenu;
     }
 
@@ -201,4 +224,6 @@ public class WebDAVMenu extends JMenuBar implements ActionListener
 
         return mnu_HelpMenu;
 	}
+	
+	private WebDAVCheckBoxMenuItem logging;
 }

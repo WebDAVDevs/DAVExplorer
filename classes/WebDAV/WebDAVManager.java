@@ -61,7 +61,7 @@ import com.sun.java.swing.*;
 public class WebDAVManager
 {
     public HTTPResponse Response;
-    private WebDAVConnection Con;
+    private WebDAVConnection Con = null;
     private String HostName = null;
     private int Port = -1;
     private String MethodName;
@@ -71,6 +71,10 @@ public class WebDAVManager
     private String ExtraInfo;
     private Vector Listeners = new Vector();
     private JFrame mainFrame;
+
+    private boolean logging = false;
+    private String logFilename = null;
+
 
     public WebDAVManager(JFrame mainFrame)
     {
@@ -96,6 +100,7 @@ public class WebDAVManager
                 Port = 0;
                 Con = new WebDAVConnection(HostName);
             }
+            Con.setLogging( logging, logFilename );
         }
         String user = e.getUser();
         String pass = e.getPass();
@@ -164,6 +169,17 @@ public class WebDAVManager
         }
     }
 
+    public void setLogging( boolean logging, String filename )
+    {
+        this.logging = logging;
+        this.logFilename = filename;
+        
+        if( Con != null )
+        {
+            Con.setLogging( logging, filename );
+        }
+    }
+    
     public void errorMsg(String str)
     {
         JOptionPane pane = new JOptionPane();
