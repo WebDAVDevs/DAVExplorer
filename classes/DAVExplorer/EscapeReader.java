@@ -94,9 +94,17 @@ public class EscapeReader
             int high = m_in.read();
             if( high == -1 )
                 throw new IOException( "Unexpected end of stream" );
+            if( high > 96 )
+                high -= 32;
+            if( high > 64 )
+                high -= 7;
             int low = m_in.read();
             if( low == -1 )
                 throw new IOException( "Unexpected end of stream" );
+            if( low > 96 )
+                low -= 32;
+            if( low > 64 )
+                low -= 7;
             val = ((high-48) << 4) + (low-48);
         }
         return val;
@@ -121,7 +129,11 @@ public class EscapeReader
                     m_convert = new int[2];
                     val = (int)(escape[i]);
                     m_convert[0] = (val>>4) + 48;
+                    if( m_convert[0] > 57 )
+                        m_convert[0] += 7;
                     m_convert[1] = (val&15) + 48;
+                    if( m_convert[1] > 57 )
+                        m_convert[1] += 7;
                     val = (int)'%';
                     break;
                 }
