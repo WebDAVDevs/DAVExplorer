@@ -364,6 +364,45 @@ public class WebDAVRequestGenerator implements Runnable
         return GeneratePropFind( FullPath, command, Depth, props, schemas, flag);
     }
 
+
+    public synchronized boolean GenerateOptions(String FullPath  )
+    {
+        if( GlobalData.getGlobalData().getDebugRequest() )
+        {
+            System.err.println( "WebDAVRequestGenerator::GenerateOptions" );
+        }
+
+        Headers = null;
+        Body = null;
+
+        if (FullPath != null)
+        {
+            StrippedResource = parseStripped( FullPath, true );
+        }
+        else
+        {
+            StrippedResource = parseResourceName( true );
+        }
+        boolean ok = (StrippedResource != null);
+
+        if (!ok)
+        {
+            GlobalData.getGlobalData().errorMsg( "Error Generating OPTIONS Method for " + StrippedResource );
+            return false;
+        }
+
+        Method = "OPTIONS";
+        Headers = new NVPair[1];
+        if (Port == 0 || Port == DEFAULT_PORT)
+        {
+            Headers[0] = new NVPair("Host", HostName);
+        }
+        else
+            Headers[0] = new NVPair("Host", HostName + ":" + Port);
+        return true;
+    }
+
+
     public synchronized boolean GeneratePropFind(String FullPath, String command, String Depth, String[] props, String[] schemas, boolean flagGetFilesBelow )
     {
         if( GlobalData.getGlobalData().getDebugRequest() )

@@ -29,11 +29,11 @@
 // dav-exp@ics.uci.edu
 //
 // Version: 0.4
-// Changes by: Yuzo Kanomata and Joe Feise
 // Date: 3/17/99
+// Changes by: Yuzo Kanomata and Joe Feise
 //
-// Change List:
-
+// Date: 2001-Aug-2
+//  1. Renamed Duplicate to Copy
 
 package DAVExplorer;
 

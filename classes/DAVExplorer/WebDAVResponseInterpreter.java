@@ -227,10 +227,10 @@ public class WebDAVResponseInterpreter
             throw new ResponseException( "HTTP error" );
         }
 
-        if (Method.equals("PROPFIND"))
-        {
+        if (Method.equals("OPTIONS"))
+            parseOptions();
+        else if (Method.equals("PROPFIND"))
             parsePropFind();
-        }
         else if (Method.equals("PROPPATCH"))
             parsePropPatch();
         else if (Method.equals("MKCOL"))
@@ -240,9 +240,7 @@ public class WebDAVResponseInterpreter
         else if (Method.equals("PUT"))
             parsePut();
         else if (Method.equals("DELETE"))
-        {
             parseDelete();
-        }
         else if (Method.equals("COPY"))
         {
             try
@@ -309,6 +307,67 @@ public class WebDAVResponseInterpreter
     }
 
 
+    public void parseOptions()
+    {
+        if( GlobalData.getGlobalData().getDebugResponse() )
+        {
+            System.err.println( "WebDAVResponseInterpreter::parseOptions" );
+        }
+
+        try
+        {
+            String davheader = res.getHeader( "DAV" );
+            if( davheader == null )
+            {
+                // no WebDAV support
+                GlobalData.getGlobalData().errorMsg("DAV Interpreter:\n\nThe server does not support WebDAV\nat Resource " + Resource + ".");
+                return;
+            }
+        }
+        catch (Exception e)
+        {
+            GlobalData.getGlobalData().errorMsg("DAV Interpreter:\n\nError encountered \nwhile parsing OPTIONS Response:\n" + e);
+            stream = null;
+            return;
+        }
+
+        if (Extra.equals("uribox"))
+        {
+            // we got here from entering a URI, so now we need to do a PROPFIND
+            String str = HostName;
+            if (Port > 0)
+                str += ":" + Port;
+            str += Resource;
+            // 1999-June-08, Joachim Feise (jfeise@ics.uci.edu):
+            // workaround for IBM's DAV4J, which does not handle propfind properly
+            // with the prop tag. To use the workaround, run DAV Explorer with
+            // 'java -jar -Dpropfind=allprop DAVExplorer.jar'
+            String doAllProp = System.getProperty( "propfind" );
+            if( (doAllProp != null) && doAllProp.equalsIgnoreCase("allprop") )
+            {
+                if( generator.GeneratePropFind( str, "allprop", "one", null, null, false ) )
+                {
+                    generator.execute();
+                }
+            }
+            else
+            {
+                String[] props = new String[6];
+                props[0] = "displayname";
+                props[1] = "resourcetype";
+                props[2] = "getcontenttype";
+                props[3] = "getcontentlength";
+                props[4] = "getlastmodified";
+                props[5] = "lockdiscovery";
+                if( generator.GeneratePropFind( str, "prop", "one", props, null, false ) )
+                {
+                    generator.execute();
+                }
+            }
+        }
+    }
+
+
     public void parsePropFind()
     {
         if( GlobalData.getGlobalData().getDebugResponse() )
@@ -344,6 +403,8 @@ public class WebDAVResponseInterpreter
 
         if (Extra.equals("uribox"))
         {
+            // we got here from entering a URI, so now we need to add the uri
+            // to the tree
             if( Port > 0 )
             {
                 fireInsertionEvent(HostName + ":" + Port + Resource);
@@ -493,30 +554,30 @@ public class WebDAVResponseInterpreter
                 else
                     dest = tmp;
 
-        clearStream();
-        //Old
-        generator.setNode(Node);
+                clearStream();
+                //Old
+                generator.setNode(Node);
                 generator.GenerateMove(dest, dir, false, true, lockToken, "rename");
                 generator.execute();
             }
             else if(Extra.startsWith("rename2:"))
-        {
-        // gets the response to the query DiscoverLock
-        generator.setSecondTime(true);
+            {
+                // gets the response to the query DiscoverLock
+                generator.setSecondTime(true);
                 generator.GenerateMove(null, null, false, true, lockToken, "rename2:");
-        generator.setSecondTime(false);
-        clearStream();
+                generator.setSecondTime(false);
+                clearStream();
                 generator.execute();
-        }
+            }
             else if(Extra.startsWith("delete2:"))
-        {
-        // gets the response to the query DiscoverLock
-        generator.setSecondTime(true);
+            {
+                // gets the response to the query DiscoverLock
+                generator.setSecondTime(true);
                 generator.GenerateDelete(lockToken);
-        generator.setSecondTime(false);
-        clearStream();
+                generator.setSecondTime(false);
+                clearStream();
                 generator.execute();
-        }
+            }
             else if (Extra.equals("display"))
             {
                 displayLock(lockType, lockScope, lockDepth, lockToken, lockTimeout, ownerInfo);

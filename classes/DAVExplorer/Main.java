@@ -60,6 +60,9 @@
 //
 // Date: 2001-Jan-12
 // Joe Feise: Added support for https (SSL), moved properties loading to GlobalData
+//
+// Date: 2001-Aug-2
+// Using HTTPClient authentication module
 
 
 package DAVExplorer;
@@ -217,13 +220,13 @@ public class Main extends JFrame
                 str += "/";
             requestGenerator.setExtraInfo("uribox");
 
-            // 1999-June-08, Joachim Feise (jfeise@ics.uci.edu):
+/*            // 1999-June-08, Joachim Feise (jfeise@ics.uci.edu):
             // workaround for IBM's DAV4J, which does not handle propfind properly
             // with the prop tag. To use the workaround, run DAV Explorer with
             // 'java -jar -Dpropfind=allprop DAVExplorer.jar'
             String doAllProp = System.getProperty( "propfind" );
             if( (doAllProp != null) && doAllProp.equalsIgnoreCase("allprop") )
-        {
+            {
                 if( requestGenerator.GeneratePropFind( str, "allprop", "one", null, null, false ) )
                 {
                     requestGenerator.execute();
@@ -241,8 +244,13 @@ public class Main extends JFrame
                 if( requestGenerator.GeneratePropFind( str, "prop", "one", props, null, false ) )
                 {
                     requestGenerator.execute();
+                }
             }
-        }
+*/
+            if( requestGenerator.GenerateOptions( str ) )
+            {
+                requestGenerator.execute();
+            }
         }
     }
 

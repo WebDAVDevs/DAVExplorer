@@ -27,17 +27,20 @@
 //
 // Version: 0.4
 // Changes by: Yuzo Kanomata and Joe Feise
-// Date: 3/17/99
 //
 // Change List:
+// Date: 3/17/99
 //  1. Added Create Folder menu
 //  2. Added enable/disable functionality to menu entries
 //
 // Date: 3/31/99
-// Change List:
 //  1. Changed Application menu to View menu
 //  2. Consolidated view functionality in View menu
 //  3. Added lock info view
+//
+// Date: 2001-Aug-2
+//  1. Added Move menu entry
+//  2. Renamed Duplicate to Copy
 
 package DAVExplorer;
 
