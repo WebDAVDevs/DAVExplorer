@@ -26,7 +26,7 @@
  *
  *  The HTTPClient's home page is located at:
  *
- *  http://www.innovation.ch/java/HTTPClient/ 
+ *  http://www.innovation.ch/java/HTTPClient/
  *
  */
 
@@ -98,10 +98,10 @@ public class HttpOutputStream extends OutputStream
     private static final NVPair[] empty = new NVPair[0];
 
     /** the length of the data to be sent */
-    private int length;
+    private long length;
 
     /** the length of the data received so far */
-    private int rcvd = 0;
+    private long rcvd = 0;
 
     /** the request this stream is associated with */
     private Request req = null;
@@ -146,7 +146,7 @@ public class HttpOutputStream extends OutputStream
      *
      * @param length the number of bytes which will be sent over this stream
      */
-    public HttpOutputStream(int length)
+    public HttpOutputStream(long length)
     {
 	if (length < 0)
 	   throw new IllegalArgumentException("Length must be greater equal 0");
@@ -216,7 +216,7 @@ public class HttpOutputStream extends OutputStream
      *
      * @return the number of bytes
      */
-    public int getLength()
+    public long getLength()
     {
 	return length;
     }
