@@ -36,6 +36,9 @@
 package edu.uci.ics.DAVExplorer;
 
 import java.io.ByteArrayOutputStream;
+import java.util.Hashtable;
+import java.util.Enumeration;
+
 import HTTPClient.NVPair;
 import HTTPClient.Util;
 import com.ms.xml.om.Element;
@@ -43,9 +46,12 @@ import com.ms.xml.om.Document;
 import com.ms.xml.util.XMLOutputStream;
 
 
+/**
+ * This is where all of the requests are formed. The class contains
+ * static information needed to form all DeltaV requests.
+ */
 public class DeltaVRequestGenerator extends WebDAVRequestGenerator
 {
-
     /**
      * Constructor, just initializing superclass  
      */
@@ -57,7 +63,7 @@ public class DeltaVRequestGenerator extends WebDAVRequestGenerator
 
     /**
      * Generate VERSION-CONTROL request
-     * @see RFC 3253, section 3.5
+     * @see     "RFC 3253, section 3.5"
      * 
      * @return  true if successful, false else  
      */
@@ -65,7 +71,7 @@ public class DeltaVRequestGenerator extends WebDAVRequestGenerator
     {
         if( GlobalData.getGlobalData().getDebugRequest() )
         {
-            System.err.println( "WebDAVRequestGenerator::GenerateEnableVersioning" );
+            System.err.println( "DeltaVRequestGenerator::GenerateEnableVersioning" );
         }
 
         Headers = null;
@@ -94,7 +100,7 @@ public class DeltaVRequestGenerator extends WebDAVRequestGenerator
     
     /**
      * Generate CHECKOUT request
-     * @see RFC 3253, section 4.3
+     * @see     "RFC 3253, section 4.3"
      * 
      * @return  true if successful, false else  
      */
@@ -102,7 +108,7 @@ public class DeltaVRequestGenerator extends WebDAVRequestGenerator
     {
         if( GlobalData.getGlobalData().getDebugRequest() )
         {
-            System.err.println( "WebDAVRequestGenerator::GenerateCheckOut" );
+            System.err.println( "DeltaVRequestGenerator::GenerateCheckOut" );
         }
 
         Headers = null;
@@ -116,6 +122,60 @@ public class DeltaVRequestGenerator extends WebDAVRequestGenerator
                 return false;
         }
 
+        // see if we have an activity at this host
+        String host;
+        if (Port == 0 || Port == WebDAVRequestGenerator.DEFAULT_PORT)
+            host = HostName;
+        else
+            host = HostName +":" + Port;
+        String activityResource = "";
+        Enumeration enum = activity.keys();
+        while( enum.hasMoreElements() )
+        {
+            String base = (String)enum.nextElement();
+            if( host.equals( base ) )
+            {
+                activityResource = (String)activity.get( base );
+                break;
+            }
+        }
+
+        if( activityResource.length() > 0 )
+        {
+            Document miniDoc = new Document();
+            miniDoc.setVersion("1.0");
+            miniDoc.addChild(WebDAVXML.elemNewline,null);
+
+            AsGen asgen = WebDAVXML.findNamespace( new AsGen(), null );
+            if( asgen == null )
+                asgen = WebDAVXML.createNamespace( new AsGen(), null );
+            Element options = WebDAVXML.createElement( DeltaVXML.ELEM_CHECKOUT, Element.ELEMENT, null, asgen );
+            Element activityset = WebDAVXML.createElement( DeltaVXML.ELEM_ACTIVITY_SET, Element.ELEMENT, options, asgen );
+            Element href = WebDAVXML.createElement( WebDAVXML.ELEM_HREF, Element.ELEMENT, activityset, asgen );
+            Element val = WebDAVXML.createElement( null, Element.PCDATA, activityset, asgen );
+            val.setText(activityResource);
+            // keep on same line without whitespace
+            addChild( href, val, 0, 0, false, false );
+            addChild( activityset, href, 2, 0, true, true );
+            addChild( options, activityset, 1, true );
+            miniDoc.addChild( options, null );
+            miniDoc.addChild( WebDAVXML.elemNewline, null );
+
+            ByteArrayOutputStream byte_str = new ByteArrayOutputStream();
+            XMLOutputStream xml_out = new XMLOutputStream(byte_str);
+
+            try
+            {
+                miniDoc.save(xml_out);
+                Body = byte_str.toByteArray();
+            }
+            catch (Exception e)
+            {
+                GlobalData.getGlobalData().errorMsg("XML generation error: \n" + e);
+                return false;
+            }
+        }
+
         Method = "CHECKOUT";
         Headers = new NVPair[1];
         if (Port == 0 || Port == DEFAULT_PORT)
@@ -124,13 +184,22 @@ public class DeltaVRequestGenerator extends WebDAVRequestGenerator
         }
         else
             Headers[0] = new NVPair("Host", HostName + ":" + Port);
+
+        if( Body != null )
+        {
+            int size = Headers.length;
+            Headers = Util.resizeArray( Headers, size+2 ); 
+            Headers[size] = new NVPair( "Content-Type", "text/xml" );
+            Headers[size+1] = new NVPair( "Content-Length", new Long(Body.length).toString() );
+        }
+
         return true;
     }
     
     
     /**
      * Generate UNCHECKOUT request
-     * @see RFC 3253, section 4.5
+     * @see     "RFC 3253, section 4.5"
      * 
      * @return  true if successful, false else  
      */
@@ -138,7 +207,7 @@ public class DeltaVRequestGenerator extends WebDAVRequestGenerator
     {
         if( GlobalData.getGlobalData().getDebugRequest() )
         {
-            System.err.println( "WebDAVRequestGenerator::GenerateUnCheckOut" );
+            System.err.println( "DeltaVRequestGenerator::GenerateUnCheckOut" );
         }
 
         Headers = null;
@@ -165,7 +234,7 @@ public class DeltaVRequestGenerator extends WebDAVRequestGenerator
     
     /**
      * Generate CHECKIN request
-     * @see RFC 3253, section 4.4
+     * @see     "RFC 3253, section 4.4"
      * 
      * @return  true if successful, false else  
      */
@@ -237,7 +306,7 @@ public class DeltaVRequestGenerator extends WebDAVRequestGenerator
 
     /**
      * Generate REPORT request
-     * @see RFC 3253, section 3.6
+     * @see     "RFC 3253, section 3.6"
      * 
      * @return  true if successful, false else  
      */
@@ -245,7 +314,7 @@ public class DeltaVRequestGenerator extends WebDAVRequestGenerator
     {
         if( GlobalData.getGlobalData().getDebugRequest() )
         {
-            System.err.println( "WebDAVRequestGenerator::GenerateReport" );
+            System.err.println( "DeltaVRequestGenerator::GenerateReport" );
         }
         
         Extra = extra;
@@ -323,7 +392,7 @@ public class DeltaVRequestGenerator extends WebDAVRequestGenerator
 
     /**
      * Generate OPTIONS request with XML body, asking for activity-collection-set
-     * @see RFC 3253, section 13.7
+     * @see     "RFC 3253, section 13.7"
      * 
      * @return  true if successful, false else  
      */
@@ -374,4 +443,202 @@ public class DeltaVRequestGenerator extends WebDAVRequestGenerator
             
         return true;
     }
+
+    /**
+     * Generate MKACTIVITY request
+     * @see     "RFC 3253, section 13.5"
+     * 
+     * @return  true if successful, false else  
+     */
+    public synchronized boolean GenerateMkActivity()
+    {
+        if( GlobalData.getGlobalData().getDebugRequest() )
+        {
+            System.err.println( "DeltaVRequestGenerator::GenerateMkActivity" );
+        }
+
+        StrippedResource = parseResourceName( true );
+        boolean ok = (StrippedResource != null);
+        if( !ok )
+            return false;
+
+        Headers = null;
+        Body = null;
+
+        String host;
+        if (Port == 0 || Port == WebDAVRequestGenerator.DEFAULT_PORT)
+            host = HostName;
+        else
+            host = HostName +":" + Port;
+        String root = host + StrippedResource;
+
+        String collection = "";
+        Enumeration enum = activityCollection.keys();
+        while( enum.hasMoreElements() )
+        {
+            String base = (String)enum.nextElement();
+            if( root.startsWith( base ) )
+            {
+                collection = (String)activityCollection.get( base );
+                break;
+            }
+        }
+
+        String activity = getUUID();
+        StrippedResource = collection + activity; 
+
+        Method = "MKACTIVITY";
+        Headers = new NVPair[1];
+        if (Port == 0 || Port == DEFAULT_PORT)
+        {
+            Headers[0] = new NVPair("Host", HostName);
+        }
+        else
+            Headers[0] = new NVPair("Host", HostName + ":" + Port);
+        return true;
+    }
+
+
+    /**
+     * Generate MERGE request
+     * @see     "RFC 3253, section 11.2"
+     * 
+     * @return  true if successful, false else  
+     */
+    public synchronized boolean GenerateMerge()
+    {
+        if( GlobalData.getGlobalData().getDebugRequest() )
+        {
+            System.err.println( "DeltaVRequestGenerator::GenerateMerge" );
+        }
+
+        StrippedResource = parseResourceName( true );
+        boolean ok = (StrippedResource != null);
+        if( !ok )
+            return false;
+
+        Headers = null;
+        Body = null;
+
+        String host;
+        if (Port == 0 || Port == WebDAVRequestGenerator.DEFAULT_PORT)
+            host = HostName;
+        else
+            host = HostName +":" + Port;
+
+        // TODO: how to merge subdirectories
+        // TODO: is our resource right?
+        String activityResource = "";
+        Enumeration enum = activity.keys();
+        while( enum.hasMoreElements() )
+        {
+            String base = (String)enum.nextElement();
+            if( host.startsWith( base ) )
+            {
+                activityResource = (String)activity.get( base );
+                break;
+            }
+        }
+
+        if( activityResource.length() == 0 )
+        {
+            GlobalData.getGlobalData().errorMsg("No activity found: for " + StrippedResource + "\n");
+            return false;
+        }
+
+        Document miniDoc = new Document();
+        miniDoc.setVersion("1.0");
+        miniDoc.addChild(WebDAVXML.elemNewline,null);
+
+        AsGen asgen = WebDAVXML.findNamespace( new AsGen(), null );
+        if( asgen == null )
+            asgen = WebDAVXML.createNamespace( new AsGen(), null );
+        Element options = WebDAVXML.createElement( DeltaVXML.ELEM_MERGE, Element.ELEMENT, null, asgen );
+        Element activityset = WebDAVXML.createElement( DeltaVXML.ELEM_SOURCE, Element.ELEMENT, options, asgen );
+        Element href = WebDAVXML.createElement( WebDAVXML.ELEM_HREF, Element.ELEMENT, activityset, asgen );
+        Element val = WebDAVXML.createElement( null, Element.PCDATA, activityset, asgen );
+        val.setText( host + activityResource );
+        // keep on same line without whitespace
+        addChild( href, val, 0, 0, false, false );
+        addChild( activityset, href, 2, 0, true, true );
+        addChild( options, activityset, 1, true );
+        miniDoc.addChild( options, null );
+        miniDoc.addChild( WebDAVXML.elemNewline, null );
+
+        ByteArrayOutputStream byte_str = new ByteArrayOutputStream();
+        XMLOutputStream xml_out = new XMLOutputStream(byte_str);
+
+        try
+        {
+            miniDoc.save(xml_out);
+            Body = byte_str.toByteArray();
+        }
+        catch (Exception e)
+        {
+            GlobalData.getGlobalData().errorMsg("XML generation error: \n" + e);
+            return false;
+        }
+
+        Method = "MERGE";
+        Headers = new NVPair[3];
+        if (Port == 0 || Port == DEFAULT_PORT)
+        {
+            Headers[0] = new NVPair("Host", HostName);
+        }
+        else
+            Headers[0] = new NVPair("Host", HostName + ":" + Port);
+        Headers[1] = new NVPair( "Content-Type", "text/xml" );
+        Headers[2] = new NVPair( "Content-Length", new Long(Body.length).toString() );
+
+        return true;
+    }
+
+
+    /**
+     * 
+     * @param activityCollection
+     */
+    public void SetActivityCollection( Hashtable activityCollection )
+    {
+        this.activityCollection = activityCollection;    
+    }
+
+
+    /**
+     * 
+     * @param activity
+     */
+    public void SetActivity( Hashtable activity )
+    {
+        this.activity = activity;    
+    }
+
+
+    /**
+     * 
+     * @return      UUID
+     */
+    protected String getUUID()
+    {
+        /* Needs JDK 1.5 to compile, and JDK 1.5 compilation fails elsewhere
+        try
+        {
+            // java.util.UUID only available from JDK 1.5 on
+            java.util.UUID uuid = java.util.UUID.randomUUID();
+            return uuid.toString();
+        }
+        catch( NoClassDefFoundError e )
+        {
+            java.rmi.server.UID uid = new java.rmi.server.UID();
+            return uid.toString();
+        }
+        */
+        
+        java.rmi.server.UID uid = new java.rmi.server.UID();
+        return uid.toString();
+    }
+
+
+    protected Hashtable activityCollection = new Hashtable();
+    protected Hashtable activity = new Hashtable();
 }

@@ -19,7 +19,7 @@
 
 /**
  * Title:       WebDAVXML
- * Description: Define the Generic DAV XML Elements from section 12 of the WebDAV spec
+ * Description: Defines the Generic DAV XML Elements from section 12 of the WebDAV spec
  * <draft-ietf-webdav-protocol-05>
  * Copyright:   Copyright (c) 1997-2004 Regents of the University of California. All rights reserved.
  * @author      Marc Eaddy, Jonathan Shapiro, Shao Rong
@@ -54,6 +54,8 @@ import java.util.Enumeration;
  *
  * @author      Jonathan Shapiro
  * @version     1.0, 23 Nov 1997
+ * 
+ * @see <a href="http://www.ietf.org/rfc/rfc2518.txt">RFC 2518</a>
  */
 public class WebDAVXML
 {

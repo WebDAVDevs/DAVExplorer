@@ -186,8 +186,8 @@ public class DataNode
 
 
     /**
-     *
-     * @param newName 
+     * Set the name of this node.
+     * @param newName       The new name to set 
      */
     public void setName(String newName)
     {
@@ -196,8 +196,8 @@ public class DataNode
 
 
     /**
-     *
-     * @param newDisplay 
+     * Set the display name of this node.
+     * @param newDisplay        The new display name to set
      */
     public void setDisplay(String newDisplay)
     {
@@ -206,8 +206,8 @@ public class DataNode
 
 
     /**
-     *
-     * @param newType 
+     * Set the Mime-type information of this node.
+     * @param newType       The Mime-type to set.
      */
     public void setType(String newType)
     {
@@ -216,8 +216,8 @@ public class DataNode
 
 
     /**
-     * 
-     * @param newSize
+     * Set the size information of this node.
+     * @param newSize       The size information to set.
      */
     public void setSize(long newSize)
     {
@@ -226,8 +226,11 @@ public class DataNode
 
 
     /**
-     * 
-     * @param newDate
+     * Set the last-modified date of this node.
+     * @param newDate   The last-modified date to set. Should be
+     *                  in the format specified in section 13.1 of
+     *                  RFC 2518, but we can handle several formats.
+     * @see             <a href="http://www.ietf.org/rfc/rfc2518">RFC 2518, Section 13.1</a>
      */
     public void setDate(String newDate)
     {
@@ -236,8 +239,8 @@ public class DataNode
 
 
     /**
-     *
-     * @param newDate 
+     * Set the last-modified date of this node.
+     * @param newDate   The last-modified date to set
      */
     public void setDate(Date newDate)
     {
@@ -247,8 +250,8 @@ public class DataNode
 
 
     /**
-     * 
-     * @param lockToken
+     * Set the locktoken of this node.
+     * @param lockToken     The locktoken to set
      */
     public void lock( String lockToken )
     {
@@ -268,7 +271,7 @@ public class DataNode
 
 
     /**
-     * 
+     * Indicate that this node is a collection resource. 
      */
     public void makeCollection()
     {
@@ -277,7 +280,7 @@ public class DataNode
 
 
     /**
-     * 
+     * Indicate that this node is a non-collection resource. 
      */
     public void makeNonCollection()
     {

@@ -271,6 +271,9 @@ public class WebDAVMenu extends JMenuBar implements ActionListener
         mnu_VersionMenu.add( new WebDAVMenuItem( "Check Out", this, true ) );
         mnu_VersionMenu.add( new WebDAVMenuItem( "Uncheckout", this, true ) );
         mnu_VersionMenu.add( new WebDAVMenuItem( "Check In", this, true ) );
+        //mnu_VersionMenu.addSeparator();
+        //mnu_VersionMenu.add( new WebDAVMenuItem( "Make Activity", this, true ) );
+        //mnu_VersionMenu.add( new WebDAVMenuItem( "Merge", this, true ) );
 
         return mnu_VersionMenu;
     }

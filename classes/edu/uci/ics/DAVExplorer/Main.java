@@ -168,6 +168,8 @@ public class Main extends JFrame
         responseInterpreter.addCheckoutListener(new CheckoutListener());
         responseInterpreter.addUnCheckoutListener(new UnCheckoutListener());
         responseInterpreter.addCheckinListener(new CheckinListener());
+        responseInterpreter.addMkActivityListener(new MkActivityListener());
+        responseInterpreter.addMergeListener(new MergeListener());
 
         // Add the CopyEvent Listener
         responseInterpreter.addCopyResponseListener(treeView);
@@ -660,6 +662,54 @@ public class Main extends JFrame
 
 
     /**
+     * 
+     */
+    public class MkActivityListener implements ActionListener
+    {
+        /**
+         * 
+         * @param e
+         */
+        public void actionPerformed(ActionEvent e)
+        {
+            String res = e.getActionCommand();
+            int code = e.getID();
+            String str;
+            if( code >=200 && code < 300 )
+            str = "Make Activity for " + res + " successful.";
+            else
+                str = "Make Activity failed. Error: " + res;
+
+            JOptionPane.showMessageDialog( GlobalData.getGlobalData().getMainFrame(), str );
+        }
+    }
+
+
+    /**
+     * 
+     */
+    public class MergeListener implements ActionListener
+    {
+        /**
+         * 
+         * @param e
+         */
+        public void actionPerformed(ActionEvent e)
+        {
+            String res = e.getActionCommand();
+            int code = e.getID();
+            String str;
+            if( code >=200 && code < 300 )
+            str = "Merge for " + res + " successful.";
+            else
+                str = "Merge failed. Error: " + res;
+
+            JOptionPane.showMessageDialog( GlobalData.getGlobalData().getMainFrame(), str );
+        }
+    }
+
+
+    /**
      * 04DEC03 John_Barton@hpl.hp.com move to public to allow Main to be subclassed 
      */
     public class DisplayLockListener implements ActionListener
@@ -778,15 +828,7 @@ public class Main extends JFrame
             String extra = e.getExtraInfo();
             String method = e.getMethodName();
 
-            if ( method.equals("COPY") )
-            {
-                // skip
-            }
-            else if (method.equals("PUT"))
-            {
-                // skip
-            }
-            else if (extra == null)
+            if ( method.equals("COPY") || method.equals("PUT") || extra==null )
             {
                 // skip
             }
@@ -810,18 +852,6 @@ public class Main extends JFrame
             else if ( extra.equals("uribox") )
             {
                 WebDAVTreeNode tn = e.getNode();
-            }
-            else if ( extra.equals("copy") )
-            {
-                // skip
-            }
-            else if (extra.equals("delete"))
-            {
-                // skip
-            }
-            else if (extra.equals("mkcol"))
-            {
-                // skip
             }
         }
     }
@@ -1126,6 +1156,32 @@ public class Main extends JFrame
                 WebDAVTreeNode n = fileView.getParentNode();
                 requestGenerator.setResource( s, n );
                 if( requestGenerator.GenerateCheckIn() )
+                    requestGenerator.execute();
+            }
+            else if (command.equals("Make Activity"))
+            {
+                String s = fileView.getSelected();
+                if( (s == null) || (s.length() == 0) )
+                {
+                    GlobalData.getGlobalData().errorMsg( "No resource selected." );
+                    return;
+                }
+                WebDAVTreeNode n = fileView.getParentNode();
+                requestGenerator.setResource( s, n );
+                if( requestGenerator.GenerateMkActivity() )
+                    requestGenerator.execute();
+            }
+            else if (command.equals("Merge"))
+            {
+                String s = fileView.getSelected();
+                if( (s == null) || (s.length() == 0) )
+                {
+                    GlobalData.getGlobalData().errorMsg( "No resource selected." );
+                    return;
+                }
+                WebDAVTreeNode n = fileView.getParentNode();
+                requestGenerator.setResource( s, n );
+                if( requestGenerator.GenerateMerge() )
                     requestGenerator.execute();
             }
             else if (command.equals("HTTP Logging"))

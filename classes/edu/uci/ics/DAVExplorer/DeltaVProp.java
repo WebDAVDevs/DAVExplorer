@@ -17,11 +17,6 @@
  * WARRANTIES OF MERCHANTIBILITY AND FITNESS FOR A PARTICULAR PURPOSE.
  */
 
-package edu.uci.ics.DAVExplorer;
-
-import java.util.Vector;
-import java.util.Enumeration;
-
 /**
  * Title:       DeltaV Properties
  * Description: Simple list of all DeltaV properties, based on RFC 3253
@@ -31,6 +26,20 @@ import java.util.Enumeration;
  * @author      Joachim Feise (dav-exp@ics.uci.edu)
  * @date        08 February 2004
  * Changes:     Added Javadoc templates
+ */
+
+package edu.uci.ics.DAVExplorer;
+
+import java.util.Vector;
+import java.util.Enumeration;
+
+
+/**
+ * 
+ * Simple list of DeltaV properties, based on RFC 3253.
+ * Updated as necessary.
+ * 
+ * @see <a href="http://www.ietf.org/rfc/rfc3253.txt">RFC 3253</a>
  */
 public class DeltaVProp extends WebDAVProp
 {

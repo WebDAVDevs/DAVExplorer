@@ -17,11 +17,6 @@
  * WARRANTIES OF MERCHANTIBILITY AND FITNESS FOR A PARTICULAR PURPOSE.
  */
 
-package edu.uci.ics.DAVExplorer;
-
-import java.util.Date;
-import java.util.Vector;
-
 /**
  * Title:       DeltaVDataNode
  * Description: Node holding information about versions
@@ -31,6 +26,15 @@ import java.util.Vector;
  * @author      Joachim Feise (dav-exp@ics.uci.edu)
  * @date        08 February 2004
  * Changes:     Added Javadoc templates
+ */
+
+package edu.uci.ics.DAVExplorer;
+
+import java.util.Date;
+import java.util.Vector;
+
+/**
+ * Node holding information about versions.
  */
 public class DeltaVDataNode extends DataNode
 {

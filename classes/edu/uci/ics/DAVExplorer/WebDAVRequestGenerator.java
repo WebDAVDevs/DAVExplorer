@@ -68,6 +68,7 @@ import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.IOException;
 import HTTPClient.NVPair;
+import HTTPClient.Util;
 import com.ms.xml.om.Element;
 import com.ms.xml.om.Document;
 import com.ms.xml.util.XMLOutputStream;
@@ -75,7 +76,8 @@ import com.ms.xml.util.Name;
 
 
 /**
- * Generating a WebDAV request
+ * Here are the WebDAV requests formed. The class contains
+ * static information needed to form all WebDAV requests.
  */
 public class WebDAVRequestGenerator implements Runnable
 {
@@ -403,13 +405,10 @@ public class WebDAVRequestGenerator implements Runnable
         // add our own headers: user-agent and translate
         if( userAgent != null )
         {
-            NVPair[] newHeaders = new NVPair[Headers.length+2];
-            for( int i=0; i<Headers.length; i++ )
-                newHeaders[i] = Headers[i];
-            int pos = Headers.length;
-            newHeaders[pos++] = new NVPair( "Translate", "f" );
-            newHeaders[pos++] = new NVPair( "User-Agent", userAgent );
-            Headers = newHeaders;
+            int size = Headers.length;
+            Headers = Util.resizeArray( Headers, size+2 ); 
+            Headers[size] = new NVPair( "Translate", "f" );
+            Headers[size+1] = new NVPair( "User-Agent", userAgent );
         }
 
         WebDAVRequestEvent e = new WebDAVRequestEvent(this, Method,HostName,Port,StrippedResource, Headers, Body, Extra, User, Password, Node );
@@ -446,8 +445,8 @@ public class WebDAVRequestGenerator implements Runnable
 
     /**
      * Generate a PROPFIND request to do lock discovery
-     * @see RFC 2518
-     * @param extra
+     * @see     "RFC 2518"
+     * @param   extra
      * 
      * @return  true if successful, false else  
      */
@@ -488,7 +487,7 @@ public class WebDAVRequestGenerator implements Runnable
 
     /**
      * Generate a PROPFIND request to do lock discovery
-     * @see RFC 2518
+     * @see     "RFC 2518"
      * @param FullPath
      * @param command
      * @param Depth
@@ -511,7 +510,7 @@ public class WebDAVRequestGenerator implements Runnable
 
     /**
      * Generate an OPTIONS request
-     * @see RFC 2518
+     * @see     "RFC 2518"
      * @param FullPath
      * 
      * @return  true if successful, false else  
@@ -555,7 +554,7 @@ public class WebDAVRequestGenerator implements Runnable
 
     /**
      * Generate a PROPFIND request
-     * @see RFC 2518
+     * @see     "RFC 2518"
      * @param FullPath
      * @param command
      * @param Depth
@@ -774,7 +773,7 @@ public class WebDAVRequestGenerator implements Runnable
 
     /**
      * Generate a PROPPATCH request
-     * @see RFC 2518
+     * @see     "RFC 2518"
      * @param FullPath
      * @param addProps
      * @param removeProps
@@ -878,7 +877,7 @@ public class WebDAVRequestGenerator implements Runnable
 
     /**
      * Generate a MKCOL request
-     * @see RFC 2518
+     * @see     "RFC 2518"
      * @param parentDir
      * @param dirname
      * 
@@ -919,7 +918,7 @@ public class WebDAVRequestGenerator implements Runnable
 
     /**
      * Generate a GET request
-     * @see RFC 2518
+     * @see     "RFC 2518"
      * @param localName
      * 
      * @return  true if successful, false else  
@@ -954,7 +953,7 @@ public class WebDAVRequestGenerator implements Runnable
 
     /**
      * Generate a DELETE request
-     * @see RFC 2518
+     * @see     "RFC 2518"
      * @param lockToken
      * 
      * @return  true if successful, false else  
@@ -1032,7 +1031,7 @@ public class WebDAVRequestGenerator implements Runnable
 
     /**
      * Generate a PUT request
-     * @see RFC 2518
+     * @see     "RFC 2518"
      * @param fileName
      * @param destDir
      * @param lockToken
@@ -1119,7 +1118,7 @@ public class WebDAVRequestGenerator implements Runnable
 
     /**
      * Generate a COPY request
-     * @see RFC 2518
+     * @see     "RFC 2518"
      * @param Dest
      * @param Overwrite
      * @param KeepAlive
@@ -1236,7 +1235,7 @@ public class WebDAVRequestGenerator implements Runnable
 
     /**
      * Generate a RENAME request
-     * @see RFC 2518
+     * @see     "RFC 2518"
      * @param Dest
      * @param dir
      * 
@@ -1258,7 +1257,7 @@ public class WebDAVRequestGenerator implements Runnable
 
     /**
      * Generate a MOVE request
-     * @see RFC 2518
+     * @see     "RFC 2518"
      * @param Dest
      * @param dir
      * @param Overwrite
@@ -1407,7 +1406,7 @@ public class WebDAVRequestGenerator implements Runnable
 
     /**
      * Generate a LOCK request
-     * @see RFC 2518
+     * @see     "RFC 2518"
      * @param OwnerInfo
      * @param lockToken
      * @param exclusive
@@ -1525,7 +1524,7 @@ public class WebDAVRequestGenerator implements Runnable
 
     /**
      * Generate a UNLOCK request
-     * @see RFC 2518
+     * @see     "RFC 2518"
      * @param lockToken
      * 
      * @return  true if successful, false else  
