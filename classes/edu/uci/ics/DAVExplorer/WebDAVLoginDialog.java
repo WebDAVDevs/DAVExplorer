@@ -197,6 +197,13 @@ Public methods and attributes section
         return m_strUserPassword;
     }
 
+    public void clearData()
+    {
+    	// try to get rid of any unencoded passwords in dialog
+        m_strUserPassword = null;
+        m_strUsername = null;
+    	System.gc();
+    }
 
 /*-----------------------------------------------------------------------
 Protected methods and attributes section

@@ -52,8 +52,10 @@ public class AuthDialog implements AuthorizationPrompter
         if( dlg.getUsername().equals( "" ) || dlg.getUserPassword().equals( "" ) )
             return null;
 
-        NVPair answer;
-        answer = new NVPair( dlg.getUsername(), dlg.getUserPassword() );
+        NVPair answer = new NVPair( dlg.getUsername(), dlg.getUserPassword() );
+        dlg.clearData();
+        dlg = null;
+
         return answer;
     }
 }
