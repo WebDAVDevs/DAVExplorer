@@ -439,7 +439,7 @@ public class Main extends JFrame
 
 		String fName = fd.getFile();
 
-                if(  ( !dirName.equals("") ) && ( dirName != null ) && ( fName != null ) && (!fName.equals("") ) )
+                if( (dirName!=null) && !dirName.equals("") && (fName != null ) && !fName.equals("") )
                 {
 		    writeToDir = dirName;
                     String fullPath = dirName + fName;

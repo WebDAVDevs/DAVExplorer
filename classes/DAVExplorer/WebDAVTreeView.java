@@ -212,7 +212,7 @@ public class WebDAVTreeView implements ViewSelectionListener, CopyResponseListen
     }
 
     //Yuzo: Added Copy ResposeListner stuff
-    public void CopyEventResponse(CopyResponseEvent e)
+    public synchronized void CopyEventResponse(CopyResponseEvent e)
     {
         WebDAVTreeNode tn = e.getNode();
 
