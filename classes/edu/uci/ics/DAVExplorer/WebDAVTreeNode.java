@@ -284,7 +284,7 @@ public class WebDAVTreeNode extends DefaultMutableTreeNode
                                 node.setType( curnode.getType() );          // overwrite any old value
                             if( curnode.getSize()!=0 )
                                 node.setSize( curnode.getSize() );          // overwrite any old value
-                            if( curnode.getDate().length() != 0 )
+                            if( curnode.getDate() != null )
                                 node.setDate( curnode.getDate() );          // overwrite any old value
                         }
                     }

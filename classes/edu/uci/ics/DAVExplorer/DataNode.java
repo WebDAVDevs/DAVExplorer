@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 1998-2001 Regents of the University of California.
+ * Copyright (c) 1998-2003 Regents of the University of California.
  * All rights reserved.
  *
  * This software was developed at the University of California, Irvine.
@@ -28,11 +28,18 @@
  * @author      Joachim Feise (dav-exp@ics.uci.edu)
  * @date        1 October 2001
  * Changes:     Change of package name
+ * @author      Joachim Feise (dav-exp@ics.uci.edu)
+ * @date        13 May 2003
+ * Changes:     Changed date conversion for column sorting.
  */
 
 package edu.uci.ics.DAVExplorer;
 
 import java.util.Vector;
+import java.util.Date;
+import java.text.DateFormat;
+import java.text.ParseException;
+
 
 public class DataNode
 {
@@ -46,8 +53,26 @@ public class DataNode
     protected boolean collection;
     protected Vector subNodes = null;
 
+
+    public DataNode(boolean collection, boolean locked, String lockToken, String name, String display, String type,
+                  long size, Date date, Vector subNodes)
+    {
+        DateFormat df = DateFormat.getDateTimeInstance( DateFormat.FULL, DateFormat.FULL );
+        df.setLenient( true );
+        String strDate = date==null? "" : df.format( date );
+        init( collection, locked, lockToken, name, display, type, size, strDate, subNodes );
+    }
+
+
     public DataNode(boolean collection, boolean locked, String lockToken, String name, String display, String type,
                   long size, String date, Vector subNodes)
+    {
+        init( collection, locked, lockToken, name, display, type, size, date, subNodes );
+    }
+
+
+    private void init(boolean collection, boolean locked, String lockToken, String name, String display, String type,
+                      long size, String date, Vector subNodes)
     {
         this.name = name;
         this.display = display;
@@ -60,40 +85,55 @@ public class DataNode
         this.subNodes = subNodes;
     }
 
+
     public void setSubNodes(Vector subNodes)
     {
         this.subNodes = subNodes;
     }
+
 
     public Vector getSubNodes()
     {
         return subNodes;
     }
 
+
     public void setName(String newName)
     {
         name = newName;
     }
+
 
     public void setDisplay(String newDisplay)
     {
         display = newDisplay;
     }
 
+
     public void setType(String newType)
     {
         type = newType;
     }
+
 
     public void setSize(long newSize)
     {
         size = newSize;
     }
 
+
     public void setDate(String newDate)
     {
         lastModified = newDate;
     }
+
+
+    public void setDate(Date newDate)
+    {
+        DateFormat df = DateFormat.getDateTimeInstance();
+        lastModified = df.format( newDate );
+    }
+
 
     public void lock( String lockToken )
     {
@@ -101,56 +141,115 @@ public class DataNode
         this.lockToken = lockToken;
     }
 
+
     public void unlock()
     {
         locked = false;
         lockToken = null;
     }
 
+
     public void makeCollection()
     {
         collection = true;
     }
+
 
     public void makeNonCollection()
     {
         collection = false;
     }
 
+
     public String getName()
     {
         return new String(name);
     }
+
 
     public String getDisplay()
     {
         return new String(display);
     }
 
+
     public String getType()
     {
         return new String(type);
     }
+
 
     public String getLockToken()
     {
         return lockToken;
     }
 
+
     public long getSize()
     {
         return size;
     }
 
-    public String getDate()
+
+    public Date getDate()
     {
-        return new String(lastModified);
+        if( lastModified.length() == 0 )
+            return null;
+
+        DateFormat df = DateFormat.getDateTimeInstance( DateFormat.SHORT, DateFormat.SHORT );
+        df.setLenient( true );
+        int dateStyle = DateFormat.SHORT;
+        int timeStyle = DateFormat.SHORT;
+        while( true )
+        {
+            try
+            {
+                df = DateFormat.getDateTimeInstance( dateStyle, timeStyle );
+                return df.parse(lastModified);
+            }
+            catch( ParseException e)
+            {
+                switch( timeStyle )
+                {
+                    case DateFormat.SHORT:
+                        timeStyle = DateFormat.MEDIUM;
+                        break;
+                    case DateFormat.MEDIUM:
+                        timeStyle = DateFormat.LONG;
+                        break;
+                    case DateFormat.LONG:
+                        timeStyle = DateFormat.FULL;
+                        break;
+                    case DateFormat.FULL:
+                        timeStyle = DateFormat.SHORT;
+                        switch( dateStyle )
+                        {
+                            case DateFormat.SHORT:
+                                dateStyle = DateFormat.MEDIUM;
+                                break;
+                            case DateFormat.MEDIUM:
+                                dateStyle = DateFormat.LONG;
+                                break;
+                            case DateFormat.LONG:
+                                dateStyle = DateFormat.FULL;
+                                break;
+                            case DateFormat.FULL:
+                                // all combinations tried, fallback to
+                                // old Date(String) ctor
+                                return new Date(lastModified);
+                        }
+                        break;
+                }
+            }
+        }
     }
+
 
     public boolean isLocked()
     {
         return locked;
     }
+
 
     public boolean isCollection()
     {

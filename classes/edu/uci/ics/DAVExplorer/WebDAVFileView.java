@@ -41,6 +41,12 @@
  * @date        17 March 2003
  * Changes:     Integrated Brian Johnson's applet changes.
  *              Added better error reporting.
+ * @author      Joachim Feise (dav-exp@ics.uci.edu)
+ * @date        05 May 2003
+ * Changes:     Fixed reordering of columns.
+ * @author      Joachim Feise (dav-exp@ics.uci.edu)
+ * @date        13 May 2003
+ * Changes:     Fixed column sorting.
  */
 
 package edu.uci.ics.DAVExplorer;
@@ -168,7 +174,7 @@ public class WebDAVFileView implements ViewSelectionListener, ActionListener
                         int column = table.convertColumnIndexToView(col);
                         if( column == -1 )
                             column = col;     // use default
-                        val = (String) table.getValueAt( selectedRow, column );
+                        val = (String)table.getValueAt( selectedRow, column );
                     }
                     catch (Exception e)
                     {
@@ -212,6 +218,7 @@ public class WebDAVFileView implements ViewSelectionListener, ActionListener
 
         sorter = new TableSorter(dataModel);
         table = new JTable(sorter);
+        sorter.addMouseListenerToHeaderInTable(table);
         scrPane = new JScrollPane( table );
         scrPane.setPreferredSize(new Dimension(750,400));
 
@@ -257,7 +264,7 @@ public class WebDAVFileView implements ViewSelectionListener, ActionListener
     // resetName method because there teh FileView is not accessible
     public void actionPerformed( ActionEvent e )
     {
-    resetName();
+        resetName();
     }
 
 
@@ -360,22 +367,13 @@ public class WebDAVFileView implements ViewSelectionListener, ActionListener
                 rowObj[2] = d_node.getName();
                 rowObj[3] = d_node.getDisplay();
                 rowObj[4] = d_node.getType();
-                rowObj[5] = (new Long(d_node.getSize())).toString();
+                rowObj[5] = new Long(d_node.getSize());
                 rowObj[6] = d_node.getDate();
 
                 addRow(rowObj);
             }
         }
         fireTableModuleEvent();
-        synchronized( this )
-        {
-            if( sorter != null )
-            {
-                // sort by name
-                sorter.sortByColumn( 2, true );
-            }
-        }
-        //table.updateUI();
     }
 
 
@@ -396,21 +394,12 @@ public class WebDAVFileView implements ViewSelectionListener, ActionListener
             rowObj[2] = d_node.getName();
             rowObj[3] = d_node.getDisplay();
             rowObj[4] = d_node.getType();
-            rowObj[5] = (new Long(d_node.getSize())).toString();
+            rowObj[5] = new Long(d_node.getSize());
             rowObj[6] = d_node.getDate();
 
             addRow(rowObj);
         }
         fireTableModuleEvent();
-        synchronized( this )
-        {
-            if( sorter != null )
-            {
-                // sort by name
-                sorter.sortByColumn( 2, true );
-            }
-        }
-        //table.updateUI();
     }
 
 
@@ -805,15 +794,6 @@ public class WebDAVFileView implements ViewSelectionListener, ActionListener
 
         this.data = newdata;
         fireTableModuleEvent();
-        synchronized( this )
-        {
-            if( sorter != null )
-            {
-                // sort by name
-                sorter.sortByColumn( 2, true );
-            }
-        }
-        //table.updateUI();
     }
 
 
@@ -832,15 +812,6 @@ public class WebDAVFileView implements ViewSelectionListener, ActionListener
     {
         data.removeElementAt(row);
         fireTableModuleEvent();
-        synchronized( this )
-        {
-            if( sorter != null )
-            {
-                // sort by name
-                sorter.sortByColumn( 2, true );
-            }
-        }
-        //table.updateUI();
     }
 
 
@@ -858,6 +829,15 @@ public class WebDAVFileView implements ViewSelectionListener, ActionListener
     public void clearTable()
     {
         updateTable(new Vector());
+        fireTableModuleEvent();
+        synchronized( this )
+        {
+            if( sorter != null )
+            {
+                // sort by name by default
+                sorter.sortByColumn( 2, true );
+            }
+        }
 
         selectedRow = -1;
     }
@@ -896,15 +876,6 @@ public class WebDAVFileView implements ViewSelectionListener, ActionListener
             addRow(rowObj);
         }
         fireTableModuleEvent();
-        synchronized( this )
-        {
-            if( sorter != null )
-            {
-                // sort by name
-                sorter.sortByColumn( 2, true );
-            }
-        }
-        //table.updateUI();
 
         DataNode this_data_node = t_node.getDataNode();
         if (this_data_node == null)
@@ -928,15 +899,6 @@ public class WebDAVFileView implements ViewSelectionListener, ActionListener
             addRow(rowObj);
         }
         fireTableModuleEvent();
-        synchronized( this )
-        {
-            if( sorter != null )
-            {
-                // sort by name
-                sorter.sortByColumn( 2, true );
-            }
-        }
-        //table.updateUI();
     }
 
 
@@ -1088,8 +1050,6 @@ public class WebDAVFileView implements ViewSelectionListener, ActionListener
                 ViewSelectionListener l = (ViewSelectionListener) ls.elementAt(i);
                 l.selectionChanged(selEvent);
             }
-
-            //selectionChanged( selEvent );
         }
     }
 

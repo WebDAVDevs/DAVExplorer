@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 1998-2001 Regents of the University of California.
+ * Copyright (c) 1998-2003 Regents of the University of California.
  * All rights reserved.
  *
  * This software was developed at the University of California, Irvine.
@@ -26,6 +26,9 @@
  * @author      Joachim Feise (dav-exp@ics.uci.edu)
  * @date        1 October 2001
  * Changes:     Change of package name
+ * @author      Joachim Feise (dav-exp@ics.uci.edu)
+ * @date        13 May 2003
+ * Changes:     Fixed column sorting.
  */
 
 package edu.uci.ics.DAVExplorer;
@@ -46,10 +49,12 @@ import javax.swing.table.TableColumnModel;
 
 public class TableSorter extends TableMap
 {
-    int             indexes[];
-    Vector          sortingColumns = new Vector();
-    boolean         ascending = true;
+    int indexes[];
+    Vector sortingColumns = new Vector();
+    boolean ascending = true;
+    int lastColumn;
     int compares;
+
 
     public TableSorter()
     {
@@ -196,6 +201,7 @@ public class TableSorter extends TableMap
         reallocateIndexes();
 
         super.tableChanged(e);
+        sortByColumn( lastColumn, ascending );
     }
 
     public void checkModel()
@@ -336,6 +342,7 @@ public class TableSorter extends TableMap
     public void sortByColumn(int column, boolean ascending)
     {
         this.ascending = ascending;
+        lastColumn = column;
         sortingColumns.removeAllElements();
         sortingColumns.addElement(new Integer(column));
         sort(this);
@@ -359,9 +366,9 @@ public class TableSorter extends TableMap
                 int column = tableView.convertColumnIndexToModel(viewColumn);
                 if(e.getClickCount() == 1 && column != -1)
                 {
-                    int shiftPressed = e.getModifiers()&InputEvent.SHIFT_MASK;
-                    boolean ascending = (shiftPressed == 0);
-                    sorter.sortByColumn(column, ascending);
+                    //int shiftPressed = e.getModifiers()&InputEvent.SHIFT_MASK;
+                    boolean asc = (column!=lastColumn) || (!ascending);
+                    sorter.sortByColumn(column, asc);
                 }
              }
          };
