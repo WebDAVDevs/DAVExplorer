@@ -311,8 +311,8 @@ public class HTTPConnection
       */
      private static boolean       logging = false;
      private static String        logFilename = null;
-     private static String        outboundHeader = "\r\n========= Outgoing Message Header =========\r\n";
-     private static String        outboundBody   = "\r\n========= Outgoing Message Body =========\r\n";
+     private static String        outboundHeader = "\r\n========= Outbound Message Header =========\r\n";
+     private static String        outboundBody   = "\r\n========= Outbound Message Body =========\r\n";
 
     static
     {
