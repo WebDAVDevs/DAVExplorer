@@ -1589,8 +1589,8 @@ public class Codecs
 	    throw new EOFException("Premature EOF while reading chunk length");
     // 30 October 2001: Joachim Feise (dav-exp@ics.uci.edu): changed logic for logging
 	//if (ch != '\n'  &&  (ch != '\r'  ||  input.read() != '\n'))
-    int ch1 = 0;
-	if (ch != '\n'  &&  ch != '\r' )
+    int ch1 = '\n';
+	if (ch != '\n'  &&  ch == '\r' )
     {
         ch1 = input.read();
         if( logging )

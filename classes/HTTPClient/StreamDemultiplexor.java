@@ -326,12 +326,12 @@ class StreamDemultiplexor implements GlobalConstants
 			    chunk_len -= rcvd;
 			    if (chunk_len == 0)	// got the whole chunk
 			    {
-				Stream.read();	// CR
-				Stream.read();	// LF
-				chunk_len = -1;
-                // 30 October 2001: Joachim Feise (dav-exp@ics.uci.edu): added logging
-                if( logging )
-                    logData( new byte[] {(byte)'\r', (byte)'\n'}, 0, 2 );
+    				Stream.read();	// CR
+    				Stream.read();	// LF
+    				chunk_len = -1;
+                    // 30 October 2001: Joachim Feise (dav-exp@ics.uci.edu): added logging
+                    if( logging )
+                        logData( new byte[] {(byte)'\r', (byte)'\n'}, 0, 2 );
 			    }
 			}
 			else	// the footers (trailers)
