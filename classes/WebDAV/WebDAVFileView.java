@@ -200,7 +200,7 @@ public class WebDAVFileView implements ViewSelectionListener
         sorter = new TableSorter(dataModel);
         table = new JTable(sorter);
         scrPane = JTable.createScrollPaneForTable(table);
-        scrPane.setPreferredSize(new Dimension(560,400));
+        scrPane.setPreferredSize(new Dimension(750,400));
 
         scrPane.setBorder(new BevelBorder(BevelBorder.LOWERED)); 
         MouseListener ml = new MouseAdapter()
@@ -484,13 +484,13 @@ System.out.println("in getSelected, s=" + s +", selecedResource =" + selectedRes
         resizeCol.setCellRenderer(lockIconRenderer);
 
         resizeCol = table.getColumn(colNames[2]);
-        resizeCol.setMinWidth(50);
+        resizeCol.setMinWidth(100);
 
         resizeCol = table.getColumn(colNames[3]);
-        resizeCol.setMinWidth(50);
+        resizeCol.setMinWidth(100);
 
         resizeCol = table.getColumn(colNames[4]);
-        resizeCol.setMinWidth(50);
+        resizeCol.setMinWidth(100);
         ren = new DefaultTableCellRenderer();
         ren.setHorizontalAlignment(JLabel.CENTER);
         resizeCol.setCellRenderer(ren);
@@ -502,7 +502,7 @@ System.out.println("in getSelected, s=" + s +", selecedResource =" + selectedRes
         resizeCol.setCellRenderer(ren);
 
         resizeCol = table.getColumn(colNames[6]);
-        resizeCol.setMinWidth(50);
+        resizeCol.setMinWidth(150);
         ren = new DefaultTableCellRenderer();
         ren.setHorizontalAlignment(JLabel.CENTER);
         resizeCol.setCellRenderer(ren);

@@ -118,20 +118,15 @@ public class WebDAVResponseInterpreter
 
     public void handleResponse(WebDAVResponseEvent e)
     {
-System.out.println("handleResponse");
         res = e.getResponse();
         Method = e.getMethodName();
         Extra = e.getExtraInfo();
         HostName = e.getHost();
         Port = e.getPort();
         Resource = e.getResource();
-	Node = e.getNode();
-System.out.println("handleResponse Method =" + Method + " Extra=" + Extra + 
-	" Node =" + Node );
+        Node = e.getNode();
         try
         {
-System.out.println("handleResponse:in try");
-System.out.println("StatusCode=" + res.getStatusCode() );
             if (Method.equals("MOVE"))
             {
                 parseMove();
@@ -140,17 +135,16 @@ System.out.println("StatusCode=" + res.getStatusCode() );
             }
             if (res.getStatusCode() >= 300)
             {
-System.out.println("StatusCode=" + res.getStatusCode() );
                 resetInProgress();
                 errorMsg("WebDAV Interpreter:\n\n" + res.getStatusCode() + " " + res.getReasonLine());
                 return;
             }
         }
         catch (Exception ex)
-        { System.out.println(ex); }
+        {
+            System.out.println(ex);
+        }
    
-System.out.println("handleResponse:Method=" + Method);
-
         if (Method.equals("PROPFIND"))
             parsePropFind();
         else if (Method.equals("PROPPATCH"))
@@ -163,17 +157,26 @@ System.out.println("handleResponse:Method=" + Method);
             parsePut();
         else if (Method.equals("DELETE"))
             parseDelete();
-        else if (Method.equals("COPY")){
-	    //Original
+        else if (Method.equals("COPY"))
+        {
+	        //Original
             //parseCopy();   
-	    try{
-	    	if (res.getStatusCode() == 201){
-		    executeCopy();
-	    	} else {
-		    System.out.println("COPY response=" + res.getStatusCode());	
-	    	}
-	    } catch(Exception ex){ System.out.println(ex); }
-	}
+    	    try
+    	    {
+                if (res.getStatusCode() == 201)
+                {
+    		        executeCopy();
+    	    	}
+    	    	else
+    	    	{
+    		        //System.out.println("COPY response=" + res.getStatusCode());	
+    	    	}
+    	    }
+    	    catch(Exception ex)
+    	    {
+    	        System.out.println(ex);
+    	    }
+    	}
         else if (Method.equals("LOCK"))
             parseLock();
         else if (Method.equals("UNLOCK"))
@@ -233,7 +236,6 @@ System.out.println("handleResponse:Method=" + Method);
 
     public void parsePropFind()
     {
-System.out.println("parsePropFind Extra=" + Extra);
         byte[] body = null;
         Document xml_doc = null;
 
@@ -348,8 +350,7 @@ System.out.println("parsePropFind Extra=" + Extra);
             }
             else if (Extra.equals("delete"))
             {
-System.out.println("Extra equals delete");
-		generator.setNode(Node); // sets the Node which will be operated
+                generator.setNode(Node); // sets the Node which will be operated
                 generator.GenerateDelete(lockToken);
                 generator.execute();
             }
@@ -367,7 +368,8 @@ System.out.println("Extra equals delete");
                 }
                 else
                     dest = tmp;
-		generator.setNode(Node);
+
+		        generator.setNode(Node);
                 generator.GenerateMove(dest, dir, false, true, lockToken);
                 generator.execute();
             }
@@ -404,11 +406,23 @@ System.out.println("Extra equals delete");
                 ppatchDoc.addChild(nameEl,null);
             }
 
-            String[] token = new String[4];
+            // write header
+            ByteArrayOutputStream byte_prop = new ByteArrayOutputStream();
+            XMLOutputStream  xml_prop = new XMLOutputStream(byte_prop);
+            byte[] prop_out = null;
+            try
+            {
+                ppatchDoc.save(xml_prop);
+            }
+            catch( Exception e )
+            {
+                errorMsg("WebDAV Interpreter:\n\nError encountered \nwhile parsing PROPFIND Response.\n" + e);
+                                stream = null;
+                return;
+            }
+
+            String[] token = new String[1];
             token[0] = new String( WebDAVXML.ELEM_RESPONSE );
-            token[1] = new String( WebDAVXML.ELEM_HREF );
-            token[2] = new String( WebDAVXML.ELEM_PROPSTAT );
-            token[3] = new String( WebDAVXML.ELEM_PROP );
             Element rootElem = skipElements( xml_doc, token );
             if( rootElem != null )
             {
@@ -419,53 +433,27 @@ System.out.println("Extra equals delete");
                     Name currentTag = current.getTagName();
                     if( currentTag != null )
                     {
-                        ByteArrayOutputStream byte_prop = new ByteArrayOutputStream();
-                        XMLOutputStream  xml_prop = new XMLOutputStream(byte_prop);
-                        byte[] prop_out = null;
-                        try
+                        if( currentTag.getName().equals( WebDAVXML.ELEM_PROPSTAT ) )
                         {
-                            ppatchDoc.save(xml_prop);
-
-                            // create a tree of all property tags, nicely formatted
-                            AsGen alias = new AsGen();
-                            Element outProp = WebDAVXML.createElement( WebDAVXML.ELEM_PROP, Element.ELEMENT, null, alias );
-                            outProp.addChild(WebDAVXML.elemNewline,null);
-                            Enumeration propValEnum = current.getElements();
-                            while (propValEnum.hasMoreElements())
-                            {
-                                Element propValEl = (Element) propValEnum.nextElement();
-                                if (propValEl.getType() != Element.ELEMENT)
-                                    continue;
-                                saveProps(outProp,propValEl,0);
-                            }
-                            outProp.save(xml_prop);
-
-                            prop_out = byte_prop.toByteArray();
+                            parseProperties( current, xml_prop );
                         }
-                        catch( Exception e )
-                        {
-                            errorMsg("WebDAV Interpreter:\n\nError encountered \nwhile parsing PROPFIND Response.\n" + e);
-                                            stream = null;
-                            return;
-                        }
-                        String host = HostName;
-                        if (Port > 0)
-                            host = HostName + ":" + Port;
-                        PropDialog pd = new PropDialog(Resource,host,new String(prop_out), false);
-                        pd.addPropDialogListener(new propDialogListener());
-                        break;
                     }
                 }
+                
+                prop_out = byte_prop.toByteArray();
+                String host = HostName;
+                if (Port > 0)
+                    host = HostName + ":" + Port;
+                PropDialog pd = new PropDialog(Resource,host,new String(prop_out), false);
+                pd.addPropDialogListener(new propDialogListener());
             }
         }
-	else if(Extra.equals("expand")){
-System.out.println("parseResponse of expand");
-		
+        else if(Extra.equals("expand"))
+        {
         }
-	else if(Extra.equals("index")){
-System.out.println("parseResponse of index");
-
-	}
+	    else if(Extra.equals("index"))
+	    {
+	    }
         else
         {
             //  "refresh"
@@ -507,7 +495,6 @@ System.out.println("parseResponse of index");
 
     public void setRefresh()
     {
-System.out.println("**%%setRefresh");
         refresh = true;
     }
 
@@ -525,9 +512,9 @@ System.out.println("**%%setRefresh");
         //setRefresh();
         //fireInsertionEvent(null);
 
-	clearStream();
-	CopyResponseEvent e = new CopyResponseEvent( this, Node);
-	copyListener.CopyEventResponse(e);
+    	clearStream();
+    	CopyResponseEvent e = new CopyResponseEvent( this, Node);
+    	copyListener.CopyEventResponse(e);
     }
 
     public void parseGet()
@@ -614,12 +601,10 @@ System.out.println("**%%setRefresh");
         //setRefresh();
         //fireInsertionEvent(null);
 	
-	// Piggy back on the Copy Response stuff
-	clearStream();
-	CopyResponseEvent e = new CopyResponseEvent( this, Node);
-	copyListener.CopyEventResponse(e);
-	
-
+    	// Piggy back on the Copy Response stuff
+    	clearStream();
+    	CopyResponseEvent e = new CopyResponseEvent( this, Node);
+    	copyListener.CopyEventResponse(e);
     }
 
     public void parseDelete()
@@ -629,30 +614,28 @@ System.out.println("**%%setRefresh");
         //setRefresh();
         //fireInsertionEvent(null);
 
-	// Piggy back on the Copy Response stuff
-	clearStream();
-	CopyResponseEvent e = new CopyResponseEvent( this, Node);
-	copyListener.CopyEventResponse(e);
-	
+    	// Piggy back on the Copy Response stuff
+    	clearStream();
+    	CopyResponseEvent e = new CopyResponseEvent( this, Node);
+    	copyListener.CopyEventResponse(e);
     }
 
-    public void addCopyResponseListener( CopyResponseListener l){
-	// Add only one for now
-	copyListener = l;
+    public void addCopyResponseListener( CopyResponseListener l)
+    {
+    	// Add only one for now
+    	copyListener = l;
     }
 
-    public void executeCopy(){
-	CopyResponseEvent e = new CopyResponseEvent( this, Node);
-	
-	copyListener.CopyEventResponse(e);
+    public void executeCopy()
+    {
+    	CopyResponseEvent e = new CopyResponseEvent( this, Node);
+    	
+    	copyListener.CopyEventResponse(e);
     }
 
     public void parseCopy()
     {
         // inform the user
-	System.out.println("ParseCopy");
-
-	
         setRefresh();
         fireInsertionEvent(null);
     }
@@ -675,10 +658,9 @@ System.out.println("**%%setRefresh");
         //setRefresh();
         //fireInsertionEvent(null);
 
-	clearStream();
-	CopyResponseEvent e = new CopyResponseEvent( this, Node);
-	copyListener.CopyEventResponse(e);
-	
+    	clearStream();
+    	CopyResponseEvent e = new CopyResponseEvent( this, Node);
+    	copyListener.CopyEventResponse(e);
     }
 
     public void parseLock()
@@ -793,13 +775,10 @@ System.out.println("**##@@ clearStream");
             ls = (Vector) listeners.clone();
         }
         ActionEvent e = new ActionEvent(this,0,str);
-System.out.println("fireInsertionEvent: action =" + str + " to listners=" + ls.size());
         for (int i=0;i<ls.size();i++)
         {
             ActionListener l = (ActionListener) ls.elementAt(i);
-System.out.println("fireInsertionEvent: listener=" + i+ "," + l +", str=" + str);
             l.actionPerformed(e);
-System.out.println("firedInsertionEvent: listener=" + i+ "," + l);
         }
     }
 
@@ -828,11 +807,9 @@ System.out.println("firedInsertionEvent: listener=" + i+ "," + l);
             ls = (Vector) lockListeners.clone();
         }
         ActionEvent e = new ActionEvent( this, id, str );
-System.out.println("FireLockEvent =" + str);
         for (int i=0;i<ls.size();i++)
         {
             ActionListener l = (ActionListener) ls.elementAt(i);
-System.out.println("FireLockEvent to listener" + l);
             l.actionPerformed(e);
         }
     }
@@ -1054,8 +1031,13 @@ System.out.println("FireLockEvent to listener" + l);
 
     private Element skipElements( Document xml_doc, String[] token )
     {
-        int index = 0;
         Element rootElem = (Element)xml_doc.getRoot();
+        return skipElements( rootElem, token );
+    }
+    
+    private Element skipElements( Element rootElem, String[] token )
+    {
+        int index = 0;
         TreeEnumeration enumTree =  new TreeEnumeration( rootElem );
         while( enumTree.hasMoreElements() )
         {
@@ -1084,6 +1066,50 @@ System.out.println("FireLockEvent to listener" + l);
             }
         }
         return null;
+    }
+
+
+    private void parseProperties( Element properties, XMLOutputStream xml_prop )
+    {
+        String[] token = new String[2];
+        token[0] = new String( WebDAVXML.ELEM_PROPSTAT );
+        token[1] = new String( WebDAVXML.ELEM_PROP );
+        Element rootElem = skipElements( properties, token );
+        if( rootElem != null )
+        {
+            TreeEnumeration enumTree =  new TreeEnumeration( rootElem );
+            while( enumTree.hasMoreElements() )
+            {
+                Element current = (Element)enumTree.nextElement();
+                Name currentTag = current.getTagName();
+                if( currentTag != null )
+                {
+                    try
+                    {
+                        // create a tree of all property tags, nicely formatted
+                        AsGen alias = new AsGen();
+                        Element outProp = WebDAVXML.createElement( WebDAVXML.ELEM_PROP, Element.ELEMENT, null, alias );
+                        outProp.addChild(WebDAVXML.elemNewline,null);
+                        Enumeration propValEnum = current.getElements();
+                        while (propValEnum.hasMoreElements())
+                        {
+                            Element propValEl = (Element) propValEnum.nextElement();
+                            if (propValEl.getType() != Element.ELEMENT)
+                                continue;
+                            saveProps(outProp,propValEl,0);
+                        }
+                        outProp.save(xml_prop);
+                        return;
+                    }
+                    catch( Exception e )
+                    {
+                        errorMsg("WebDAV Interpreter:\n\nError encountered \nwhile parsing PROPFIND Response.\n" + e);
+                                        stream = null;
+                        return;
+                    }
+                }
+            }
+        }
     }
 
     private void printXML( byte[] body )
