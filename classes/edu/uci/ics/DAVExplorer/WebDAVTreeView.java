@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 1998-2001 Regents of the University of California.
+ * Copyright (c) 1998-2002 Regents of the University of California.
  * All rights reserved.
  *
  * This software was developed at the University of California, Irvine.
@@ -22,7 +22,7 @@
  * Description: This class is part of the GUI module for the WebDAV
  *              Client. It provides the user with a Windows Explorer
  *              like interface.
- * Copyright:   Copyright (c) 1998-2001 Regents of the University of California. All rights reserved.
+ * Copyright:   Copyright (c) 1998-2002 Regents of the University of California. All rights reserved.
  * @author      Robert Emmery
  * @date        2 April 1998
  * @author      Yuzo Kanomata, Joachim Feise (dav-exp@ics.uci.edu)
@@ -85,7 +85,7 @@ public class WebDAVTreeView implements ViewSelectionListener, CopyResponseListen
     TreeSelectionModel selectionModel = new DefaultTreeSelectionModel();
     Vector selListeners = new Vector();
     public static String homeDirName;
-    public String startDirName = null;
+    private String startDirName = null;
     private String userAgent;
     JScrollPane sp;
 
@@ -117,7 +117,20 @@ public class WebDAVTreeView implements ViewSelectionListener, CopyResponseListen
         String os = (System.getProperty( "os.name" )).toLowerCase();
         if( os.indexOf( "windows" ) == -1 )
             startDirName = System.getProperty("user.home");
-        if (startDirName == null){
+        else
+        {
+            // On W2K, user.home is something like C:\\Documents and Settings\\user
+            // On NT4, it is C:\\WinNT\\Profiles\\user
+            // On Win ME, it is C:\\Windows
+            // This code extracts the root directory, i.e., C:\\ or whatever the
+            // system partition is
+            startDirName = System.getProperty("user.home");
+            int pos = startDirName.indexOf(new Character(File.separatorChar).toString() );
+            if( pos > -1 )
+                startDirName = startDirName.substring(0, pos+1) + File.separatorChar;
+        }
+        if( startDirName == null )
+        {
             startDirName = new Character(File.separatorChar).toString();
         }
 
@@ -483,8 +496,8 @@ public class WebDAVTreeView implements ViewSelectionListener, CopyResponseListen
     {
         // For initialization purposes.
         // This function is called when the client starts.
-        if (startDirName != null)
-        addRowToRoot(startDirName,true);
+        if( startDirName != null )
+            addRowToRoot(startDirName,true);
     }
 
     public String constructPath(TreePath the_path)
@@ -704,7 +717,7 @@ public class WebDAVTreeView implements ViewSelectionListener, CopyResponseListen
 
         TreeNode path[] = n.getPath();
 
-        String s = new String();
+        String s = "";
         for (int i = 1; i < path.length; i++)
         {
             s = s + path[i];

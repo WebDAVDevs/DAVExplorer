@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 1998-2001 Regents of the University of California.
+ * Copyright (c) 1998-2002 Regents of the University of California.
  * All rights reserved.
  *
  * This software was developed at the University of California, Irvine.
@@ -20,7 +20,7 @@
 /**
  * Title:       WebDAV Toolbae
  * Description: Implements the main toolbar
- * Copyright:   Copyright (c) 1998-2001 Regents of the University of California. All rights reserved.
+ * Copyright:   Copyright (c) 1998-2002 Regents of the University of California. All rights reserved.
  * @author      Undergraduate project team ICS 126B 1998
  * @date        1998
  * @author      Yuzo Kanomata, Joachim Feise (dav-exp@ics.uci.edu)
@@ -109,7 +109,14 @@ public class WebDAVToolBar extends JPanel implements ActionListener
 
     private static String getIconPath()
     {
-        String icons = WebDAVClassName + File.separatorChar + IconDir;
+        String icons = WebDAVClassName;
+        int pos = icons.indexOf("/");
+        while( pos >=0 )
+        {
+            icons = icons.substring( 0, pos) + File.separatorChar + icons.substring( pos+1 );
+            pos = icons.indexOf( "/" );
+        }
+        icons += File.separatorChar + IconDir;
         String classPath = System.getProperty("java.class.path");
         if (classPath == null)
         {
@@ -125,7 +132,7 @@ public class WebDAVToolBar extends JPanel implements ActionListener
             if( lowerPath.endsWith( jarExtension ) )
             {
                 jarPath = nextPath;
-                int pos = lowerPath.indexOf( jarExtension );
+                pos = lowerPath.indexOf( jarExtension );
                 nextPath = nextPath.substring( 0, pos );
             }
             if (!nextPath.endsWith(new Character(File.separatorChar).toString()))
@@ -167,14 +174,17 @@ public class WebDAVToolBar extends JPanel implements ActionListener
             {
                 ZipFile file = new ZipFile( jarPath );
                 ZipEntry entry = file.getEntry( filename );
-                InputStream is = file.getInputStream( entry );
-                int len = (int)entry.getSize();
-                if( len != -1 )
-        {
-                    byte[] ba = new byte[len];
-                    is.read( ba, 0, len );
-                    return new ImageIcon( ba, description );
-        }
+                if( entry != null )
+                {
+                    InputStream is = file.getInputStream( entry );
+                    int len = (int)entry.getSize();
+                    if( len != -1 )
+                    {
+                        byte[] ba = new byte[len];
+                        is.read( ba, 0, len );
+                        return new ImageIcon( ba, description );
+                    }
+                }
             }
             catch( IOException e )
             {

@@ -437,6 +437,7 @@ public class WebDAVTreeNode extends DefaultMutableTreeNode
             // Yuzo bug fix for empty sub dir
             try
             {
+                // Note: f.list() returns null on JDK 1.4.0
                 String[] fileList = f.list();
                 int len = fileList.length;
                 for (int i=0;i<len;i++)
@@ -508,7 +509,7 @@ public class WebDAVTreeNode extends DefaultMutableTreeNode
         String name = full_path[1].toString();
         if( name.startsWith(HTTPPrefix) || name.startsWith(HTTPSPrefix) )
         {
-        localLoad = false;
+            localLoad = false;
 
             byte[] byte_xml = interpreter.getXML();
             if (byte_xml == null)
@@ -616,13 +617,14 @@ public class WebDAVTreeNode extends DefaultMutableTreeNode
         }
         else
         {
-        localLoad = true;
+            localLoad = true;
             loadLocal(name,full_path);
         }
     }
 
-    public boolean isLocalLoad(){
-    return localLoad;
+    public boolean isLocalLoad()
+    {
+        return localLoad;
     }
 
     public String truncateResource(String res)

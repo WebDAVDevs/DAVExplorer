@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 1998-2001 Regents of the University of California.
+ * Copyright (c) 1998-2002 Regents of the University of California.
  * All rights reserved.
  *
  * This software was developed at the University of California, Irvine.
@@ -20,7 +20,7 @@
 /**
  * Title:       WebDAVFileView
  * Description: This class is part of the client's GUI.
- * Copyright:   Copyright (c) 1998-2001 Regents of the University of California. All rights reserved.
+ * Copyright:   Copyright (c) 1998-2002 Regents of the University of California. All rights reserved.
  * @author      Robert Emmery (dav-exp@ics.uci.edu)
  * @date        2 April 1998
  * @author      Yuzo Kanomata, Joachim Feise (dav-exp@ics.uci.edu)
@@ -139,43 +139,53 @@ public class WebDAVFileView implements ViewSelectionListener, ActionListener
                 unlckPath = iconPath + "unlck.gif";
                 ZipFile file = new ZipFile( jarPath );
                 ZipEntry entry = file.getEntry( folderIconPath );
-                InputStream is = file.getInputStream( entry );
-                int len = (int)entry.getSize();
-                if( len != -1 )
+                InputStream is = null;
+                if( entry != null )
                 {
-                    byte[] ba = new byte[len];
-                    is.read( ba, 0, len );
-                    FOLDER_ICON = new ImageIcon( ba );
+                    is = file.getInputStream( entry );
+                    int len = (int)entry.getSize();
+                    if( len != -1 )
+                    {
+                        byte[] ba = new byte[len];
+                        is.read( ba, 0, len );
+                        FOLDER_ICON = new ImageIcon( ba );
+                    }
                 }
-
                 entry = file.getEntry( resPath );
-                is = file.getInputStream( entry );
-                len = (int)entry.getSize();
-                if( len != -1 )
+                if( entry != null )
                 {
-                    byte[] ba = new byte[len];
-                    is.read( ba, 0, len );
-                    FILE_ICON = new ImageIcon( ba );
+                    is = file.getInputStream( entry );
+                    int len = (int)entry.getSize();
+                    if( len != -1 )
+                    {
+                        byte[] ba = new byte[len];
+                        is.read( ba, 0, len );
+                        FILE_ICON = new ImageIcon( ba );
+                    }
                 }
-
                 entry = file.getEntry( lckPath );
-                is = file.getInputStream( entry );
-                len = (int)entry.getSize();
-                if( len != -1 )
+                if( entry != null )
                 {
-                    byte[] ba = new byte[len];
-                    is.read( ba, 0, len );
-                    LOCK_ICON = new ImageIcon( ba );
+                    is = file.getInputStream( entry );
+                    int len = (int)entry.getSize();
+                    if( len != -1 )
+                    {
+                        byte[] ba = new byte[len];
+                        is.read( ba, 0, len );
+                        LOCK_ICON = new ImageIcon( ba );
+                    }
                 }
-
                 entry = file.getEntry( unlckPath );
-                is = file.getInputStream( entry );
-                len = (int)entry.getSize();
-                if( len != -1 )
+                if( entry != null )
                 {
-                    byte[] ba = new byte[len];
-                    is.read( ba, 0, len );
-                    UNLOCK_ICON = new ImageIcon( ba );
+                    is = file.getInputStream( entry );
+                    int len = (int)entry.getSize();
+                    if( len != -1 )
+                    {
+                        byte[] ba = new byte[len];
+                        is.read( ba, 0, len );
+                        UNLOCK_ICON = new ImageIcon( ba );
+                    }
                 }
             }
             catch( IOException e )
@@ -697,14 +707,21 @@ public class WebDAVFileView implements ViewSelectionListener, ActionListener
 
     private static String getIconPath()
     {
-        String icons = WebDAVClassName + File.separatorChar + IconDir;
+        String icons = WebDAVClassName;
+        int pos = icons.indexOf("/");
+        while( pos >=0 )
+        {
+            icons = icons.substring( 0, pos) + File.separatorChar + icons.substring( pos+1 );
+            pos = icons.indexOf( "/" );
+        }
+        icons += File.separatorChar + IconDir;
+
         String classPath = System.getProperty("java.class.path");
         if (classPath == null)
         {
-            errorMsg("Toolbar:\nNo Classpath set." );
+            errorMsg("Fileview:\nNo Classpath set." );
             return null;
         }
-
         StringTokenizer paths = new StringTokenizer(classPath,":;");
 
         while (paths.hasMoreTokens())
@@ -714,7 +731,7 @@ public class WebDAVFileView implements ViewSelectionListener, ActionListener
             if( lowerPath.endsWith( jarExtension ) )
             {
                 jarPath = nextPath;
-                int pos = lowerPath.indexOf( jarExtension );
+                pos = lowerPath.indexOf( jarExtension );
                 nextPath = nextPath.substring( 0, pos );
             }
             if (!nextPath.endsWith(new Character(File.separatorChar).toString()))
@@ -742,7 +759,7 @@ public class WebDAVFileView implements ViewSelectionListener, ActionListener
                 }
             }
         }
-        errorMsg("Toolbar:\nPath to icons not found." );
+        errorMsg("Fileview:\nPath to icons not found." );
         return null;
     }
 
