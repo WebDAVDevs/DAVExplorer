@@ -2,10 +2,10 @@ Manifest-Version: 1.0
 Main-Class: DAVExplorer.Main
 Name: DAVExplorer/
 Specification-Title: "UCI DAV Explorer"
-Specification-Version: "0.53"
+Specification-Version: "0.70"
 Specification-Vendor: "University of California, Irvine; Department of Information and Computer Science"
 Implementation-Title: "DAVExplorer"
-Implementation-Version: "0.53"
+Implementation-Version: "0.70"
 Implementation-Vendor: "University of California, Irvine; Department of Information and Computer Science"
 Name: HTTPClient/
 Sealed: true
