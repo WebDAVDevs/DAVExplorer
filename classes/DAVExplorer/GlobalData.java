@@ -19,10 +19,15 @@
 
 package DAVExplorer;
 
+import java.awt.Cursor;
+import javax.swing.JOptionPane;
+import javax.swing.JFrame;
+
 /**
  * This singleton class defines various global data structures
+ * and functions useful everywhere
  *
- * @version 0.1  25 May 1999
+ * @version 0.2  14 June 2000
  * @author  Joachim Feise
  * @since   V0.1
  */
@@ -36,6 +41,8 @@ class GlobalData
     boolean debugTreeView = debugAll | false;
     boolean debugTreeNode = debugAll | false;
     boolean debugFileView = debugAll | false;
+    JFrame mainFrame = null;
+    Cursor origCursor = null;
 
     private static GlobalData globalData;
 
@@ -115,6 +122,37 @@ class GlobalData
     {
         debugFileView = debug;
         init();
+    }
+
+    public JFrame getMainFrame()
+    {
+        return mainFrame;
+    }
+
+    public void setMainFrame( JFrame frame )
+    {
+        mainFrame = frame;
+        if( mainFrame != null )
+            origCursor = mainFrame.getCursor(); // save original cursor
+    }
+
+    public void errorMsg(String str)
+    {
+        JOptionPane pane = new JOptionPane();
+        Object[] options = { "OK" };
+        pane.showOptionDialog(mainFrame,str,"Error Message", JOptionPane.DEFAULT_OPTION, JOptionPane.ERROR_MESSAGE, null, options, options[0]);
+    }
+
+    public void setCursor( Cursor c )
+    {
+        if( mainFrame != null )
+            mainFrame.setCursor( c );
+    }
+
+    public void resetCursor()
+    {
+        if( mainFrame != null && origCursor != null )
+            mainFrame.setCursor( origCursor );
     }
 
     private void init()

@@ -66,7 +66,6 @@ import java.io.*;
 
 public class Main extends JFrame
 {
-    static JFrame WebDAVFrame=null;
     WebDAVFileView fileView;
     WebDAVTreeView treeView;
     WebDAVRequestGenerator requestGenerator;
@@ -92,14 +91,14 @@ public class Main extends JFrame
 //            System.out.println("Error Loading L&F");
 //        }
 
-        WebDAVFrame = this;
+        GlobalData.getGlobalData().setMainFrame( this );
 
         authTable = new Hashtable();
         //authHost = null;
 
-        treeView = new WebDAVTreeView(WebDAVFrame);
+        treeView = new WebDAVTreeView();
         treeView.setUserAgent( UserAgent );
-        fileView = new WebDAVFileView(WebDAVFrame);
+        fileView = new WebDAVFileView();
 
         CommandMenu = new WebDAVMenu();
         setJMenuBar(CommandMenu);
@@ -122,7 +121,7 @@ public class Main extends JFrame
         treeView.addViewSelectionListener( fileView );
         fileView.addViewSelectionListener( treeView );
 
-        requestGenerator = new WebDAVRequestGenerator(WebDAVFrame);
+        requestGenerator = new WebDAVRequestGenerator();
         requestGenerator.addRequestListener(new RequestListener());
 
         // Get the rename Event
@@ -131,7 +130,7 @@ public class Main extends JFrame
         requestGenerator.setUserAgent( UserAgent );
 
 
-        responseInterpreter = new WebDAVResponseInterpreter(WebDAVFrame, requestGenerator);
+        responseInterpreter = new WebDAVResponseInterpreter( requestGenerator );
         responseInterpreter.addInsertionListener(new InsertionListener());
         responseInterpreter.addMoveUpdateListener(new MoveUpdateListener());
         responseInterpreter.addLockListener(new LockListener());
@@ -143,7 +142,7 @@ public class Main extends JFrame
         responseInterpreter.addCopyResponseListener(treeView);
         responseInterpreter.addPutListener(treeView);
 
-        webdavManager = new WebDAVManager(WebDAVFrame);
+        webdavManager = new WebDAVManager();
         webdavManager.addResponseListener(new ResponseListener());
 
         JScrollPane fileScrPane = fileView.getScrollPane();
@@ -379,17 +378,21 @@ public class Main extends JFrame
         {
 
             // This call process the info from the server
-            responseInterpreter.handleResponse(e);
+            try
+            {
+                responseInterpreter.handleResponse(e);
+            }
+            catch( ResponseException ex )
+            {
+                GlobalData.getGlobalData().errorMsg( "HTTP or Server error, please retry the last operation" );
+                return;
+            }
 
-
-        // Post processing
-        // These are actions designed to take place after the
-        // response has been loaded
-
+            // Post processing
+            // These are actions designed to take place after the
+            // response has been loaded
             String extra = e.getExtraInfo();
-
             String method = e.getMethodName();
-
 
             if ( method.equals("COPY") )
             {
@@ -454,7 +457,7 @@ public class Main extends JFrame
             }
             else if (command.equals("Write File"))
             {
-                FileDialog fd = new FileDialog(WebDAVFrame, "Write File" , FileDialog.LOAD);
+                FileDialog fd = new FileDialog(GlobalData.getGlobalData().getMainFrame(), "Write File" , FileDialog.LOAD);
 
                 if (writeToDir != null)
                 {
@@ -506,7 +509,7 @@ public class Main extends JFrame
                 String s = fileView.getSelected();
                 if( s == null )
                 {
-                    errorMsg( "No file selected." );
+                    GlobalData.getGlobalData().errorMsg( "No file selected." );
                 }
                 else
                 {
@@ -521,7 +524,7 @@ public class Main extends JFrame
                 String s = fileView.getSelected();
                 if( s == null )
                 {
-                    errorMsg( "No file selected." );
+                    GlobalData.getGlobalData().errorMsg( "No file selected." );
                 }
                 else
                 {
@@ -538,7 +541,7 @@ public class Main extends JFrame
                 String s = fileView.getSelected();
                 if( s == null )
                 {
-                    errorMsg( "No file selected." );
+                    GlobalData.getGlobalData().errorMsg( "No file selected." );
                 }
                 else
                 {
@@ -564,7 +567,7 @@ public class Main extends JFrame
                 String s = fileView.getSelected();
                 if( s == null )
                 {
-                    errorMsg( "No file selected." );
+                    GlobalData.getGlobalData().errorMsg( "No file selected." );
                 }
                 else
                 {
@@ -634,7 +637,7 @@ public class Main extends JFrame
             }
             else if (command.equals("Edit Lock Info"))
             {
-                WebDAVLockInfo lockInfo = new WebDAVLockInfo(WebDAVFrame, "Lock Info", true);
+                WebDAVLockInfo lockInfo = new WebDAVLockInfo(GlobalData.getGlobalData().getMainFrame(), "Lock Info", true);
             }
             else if (command.equals("HTTP Logging"))
             {
@@ -645,7 +648,7 @@ public class Main extends JFrame
                     JOptionPane pane = new JOptionPane();
                     String message = new String( "WARNING: The logfile may get very large,\nsince all data is logged.\n" +
                                                  "Hit Cancel now if you don't want to log the data." );
-                    int opt = pane.showConfirmDialog( WebDAVFrame, message, "HTTP Logging", JOptionPane.OK_CANCEL_OPTION );
+                    int opt = pane.showConfirmDialog( GlobalData.getGlobalData().getMainFrame(), message, "HTTP Logging", JOptionPane.OK_CANCEL_OPTION );
                     if( opt == JOptionPane.OK_OPTION )
                     {
                         JFileChooser fd = new JFileChooser();
@@ -661,7 +664,7 @@ public class Main extends JFrame
                         fd.setCurrentDirectory( new File(dirName) );
                         fd.setApproveButtonMnemonic( 'U' );
                         fd.setApproveButtonToolTipText( "Use the selected file for logging" );
-                        int val = fd.showDialog( WebDAVFrame, "Use Selected" );
+                        int val = fd.showDialog( GlobalData.getGlobalData().getMainFrame(), "Use Selected" );
                         if( val == JFileChooser.APPROVE_OPTION)
                         {
                             logFilename = fd.getSelectedFile().getAbsolutePath();
@@ -694,7 +697,7 @@ public class Main extends JFrame
                 String s = fileView.getSelected();
                 if( s == null )
                 {
-                    errorMsg( "No file selected." );
+                    GlobalData.getGlobalData().errorMsg( "No file selected." );
                 }
                 else
                 {
@@ -720,7 +723,7 @@ public class Main extends JFrame
                 "of the ICS126B class Winter 1998:\n" +
                 "Gerair Balian, Mirza Baig, Robert Emmery, Thai Le, Tu Le\n");
                 Object [] options = { "OK" };
-                pane.showOptionDialog(WebDAVFrame, message, "About DAV Explorer", JOptionPane.DEFAULT_OPTION, JOptionPane.INFORMATION_MESSAGE, null, options, options[0]);
+                pane.showOptionDialog(GlobalData.getGlobalData().getMainFrame(), message, "About DAV Explorer", JOptionPane.DEFAULT_OPTION, JOptionPane.INFORMATION_MESSAGE, null, options, options[0]);
             }
         }
     }
@@ -737,7 +740,7 @@ public class Main extends JFrame
         String s = fileView.getSelected();
         if( s == null )
         {
-            errorMsg( "No file selected." );
+            GlobalData.getGlobalData().errorMsg( "No file selected." );
         }
         else
         {
@@ -754,7 +757,7 @@ public class Main extends JFrame
         String s = fileView.getSelected();
         if( !fileView.hasSelected() )
         {
-            errorMsg( "No file selected." );
+            GlobalData.getGlobalData().errorMsg( "No file selected." );
         }
         else
         {
@@ -771,7 +774,7 @@ public class Main extends JFrame
                 title = "Delete File";
                 str = "Delete: Are you sure?";
             }
-            int opt = pane.showConfirmDialog( WebDAVFrame, str, title, JOptionPane.YES_NO_OPTION );
+            int opt = pane.showConfirmDialog( GlobalData.getGlobalData().getMainFrame(), str, title, JOptionPane.YES_NO_OPTION );
             if (opt == JOptionPane.YES_OPTION)
             {
                 if( treeView.isRemote( s ) )
@@ -795,7 +798,7 @@ public class Main extends JFrame
                     WebDAVTreeNode n = fileView.getParentNode();
                     File f = new File( s );
                     if( !deleteLocal( f ) )
-                        errorMsg( "Delete Error on local filesystem." );
+                        GlobalData.getGlobalData().errorMsg( "Delete Error on local filesystem." );
                     treeView.refreshLocal( n );
                 }
             }
@@ -817,7 +820,7 @@ public class Main extends JFrame
         String s = fileView.getSelected();
         if( s == null )
         {
-            errorMsg( "No file selected." );
+            GlobalData.getGlobalData().errorMsg( "No file selected." );
         }
         else
         {
@@ -833,15 +836,8 @@ public class Main extends JFrame
     private String selectName( String title, String prompt )
     {
         JOptionPane pane = new JOptionPane();
-        String ret = pane.showInputDialog( WebDAVFrame, prompt, title ,JOptionPane.QUESTION_MESSAGE );
+        String ret = pane.showInputDialog( GlobalData.getGlobalData().getMainFrame(), prompt, title ,JOptionPane.QUESTION_MESSAGE );
         return ret;
-    }
-
-    private void errorMsg(String str)
-    {
-        JOptionPane pane = new JOptionPane();
-        Object [] options = { "OK" };
-        pane.showOptionDialog( WebDAVFrame, str, "Error Message", JOptionPane.DEFAULT_OPTION, JOptionPane.ERROR_MESSAGE, null,options, options[0]);
     }
 
     private boolean deleteLocal( File f )
@@ -865,10 +861,5 @@ public class Main extends JFrame
         {
         }
         return false;
-    }
-
-    static JFrame getMainFrame()
-    {
-        return WebDAVFrame;
     }
 }

@@ -81,7 +81,6 @@ public class WebDAVResponseInterpreter
     private final static String HTTPString = "HTTP/1.1";
     private static String WebDAVEditDir = null;
     private static boolean refresh = false;
-    private static JFrame mainFrame;
     private static String userPathDir;
 
     private WebDAVTreeNode Node;
@@ -94,11 +93,9 @@ public class WebDAVResponseInterpreter
     public WebDAVResponseInterpreter()
     { }
 
-    public WebDAVResponseInterpreter(JFrame mainFrame, WebDAVRequestGenerator rg)
+    public WebDAVResponseInterpreter( WebDAVRequestGenerator rg )
     {
         super();
-        this.mainFrame = mainFrame;
-        //generator = new WebDAVRequestGenerator(mainFrame);
         generator = rg;
         String classPath = System.getProperty("java.class.path");
         if (classPath == null)
@@ -130,6 +127,7 @@ public class WebDAVResponseInterpreter
     }
 
     public void handleResponse(WebDAVResponseEvent e)
+        throws ResponseException
     {
         if( GlobalData.getGlobalData().getDebugResponse() )
         {
@@ -142,6 +140,7 @@ public class WebDAVResponseInterpreter
         HostName = e.getHost();
         Port = e.getPort();
 
+        // get the resource name, and unescape it
         StringReader sr = new StringReader( e.getResource() + "\n" );
         EscapeReader er = new EscapeReader( sr, true );
         BufferedReader br = new BufferedReader( er );
@@ -149,6 +148,7 @@ public class WebDAVResponseInterpreter
             Resource = br.readLine();
         } catch(Exception exc) {
             System.out.println(exc);
+            throw new ResponseException( "Resource name unescape error" );
         }
         Node = e.getNode();
 
@@ -160,53 +160,50 @@ public class WebDAVResponseInterpreter
                 if( (res.getStatusCode() == 302) || (res.getStatusCode() == 301) )
                 {
                     String location = res.getHeader( "Location" );
-                    errorMsg("The resource requested moved to " + location + "\nPlease try connecting to the new location." );
+                    GlobalData.getGlobalData().errorMsg("The resource requested moved to " + location + "\nPlease try connecting to the new location." );
                 }
-        else if( ( Method.equals("MOVE") || Method.equals("DELETE"))&&( (res.getStatusCode() == 412) || (res.getStatusCode() == 423)) )
-        {
-            // Do the processing for the two kinds of Methods
-            // That is discoverLock, but set the passed in String to
-            // set the Extra field to be return processed
-            if (Method.equals("MOVE"))
-            {
-            // check if this is the second trip
-            if (Extra.startsWith("rename2:"))
-            {
-                // Reset the name we attempted to change
-                ActionEvent ae = new ActionEvent(this, ActionEvent.ACTION_FIRST, "reset");
-                actionListener.actionPerformed(ae);
+                else if( ( Method.equals("MOVE") || Method.equals("DELETE"))&&( (res.getStatusCode() == 412) || (res.getStatusCode() == 423)) )
+                {
+                    // Do the processing for the two kinds of Methods
+                    // That is discoverLock, but set the passed in String to
+                    // set the Extra field to be return processed
+                    if (Method.equals("MOVE"))
+                    {
+                    // check if this is the second trip
+                        if (Extra.startsWith("rename2:"))
+                        {
+                            // Reset the name we attempted to change
+                            ActionEvent ae = new ActionEvent(this, ActionEvent.ACTION_FIRST, "reset");
+                            actionListener.actionPerformed(ae);
 
-                // Alert User of error
-                            errorMsg("Rename Failed\nStatus " + res.getStatusCode() + " " + res.getReasonLine() );
-            }
-            else  // first attempt
-            {
-                        int pos = Extra.indexOf(":");
+                            // Alert User of error
+                            GlobalData.getGlobalData().errorMsg("Rename Failed\nStatus " + res.getStatusCode() + " " + res.getReasonLine() );
+                        }
+                        else  // first attempt
+                        {
+                            int pos = Extra.indexOf(":");
                             String tmp = Extra.substring(pos + 1);
 
-                    clearStream();
-
+                            clearStream();
                             generator.DiscoverLock("rename2:" + tmp);
-            }
-            }
-            else
-            {
-            // check if this is the second trip
-            if (Extra.startsWith("delete2:"))
-            {
-                        errorMsg("Delete Failed\nStatus " + res.getStatusCode() + " " + res.getReasonLine() );
-            }
-            else  // first attempt
-            {
-                    clearStream();
+                        }
+                    }
+                    else
+                    {
+                        // check if this is the second trip
+                        if (Extra.startsWith("delete2:"))
+                        {
+                            GlobalData.getGlobalData().errorMsg("Delete Failed\nStatus " + res.getStatusCode() + " " + res.getReasonLine() );
+                        }
+                        else  // first attempt
+                        {
+                            clearStream();
                             generator.DiscoverLock("delete2:");
-            }
-            }
-
-
-        }
+                        }
+                    }
+                }
                 else
-                    errorMsg("DAV Interpreter:\n\n" + res.getStatusCode() + " " + res.getReasonLine());
+                    GlobalData.getGlobalData().errorMsg("DAV Interpreter:\n\n" + res.getStatusCode() + " " + res.getReasonLine());
                 return;
             }
             if (Method.equals("MOVE"))
@@ -218,12 +215,19 @@ public class WebDAVResponseInterpreter
         }
         catch (Exception ex)
         {
+            // Most likely an error propagated from HTTPClient
+            // We get this error if the server closes the connection
+            // and the method is unknown to HTTPClient.
+            // HTTPClient does an automatic retry for idempotent HTTP methods,
+            // but not for our WebDAV methods, since it doesn't know about them.
             System.out.println(ex);
+            throw new ResponseException( "HTTP error" );
         }
 
-        if (Method.equals("PROPFIND")){
+        if (Method.equals("PROPFIND"))
+        {
             parsePropFind();
-    }
+        }
         else if (Method.equals("PROPPATCH"))
             parsePropPatch();
         else if (Method.equals("MKCOL"))
@@ -233,26 +237,22 @@ public class WebDAVResponseInterpreter
         else if (Method.equals("PUT"))
             parsePut();
         else if (Method.equals("DELETE"))
-    {
+        {
             parseDelete();
-    }
+        }
         else if (Method.equals("COPY"))
         {
-            //Original
-            //parseCopy();
             try
             {
                 if (res.getStatusCode() == 201)
                 {
                     executeCopy();
                 }
-                else
-                {
-                }
             }
             catch(Exception ex)
             {
                 System.out.println(ex);
+                throw new ResponseException( "Copy error" );
             }
         }
         else if (Method.equals("LOCK"))
@@ -322,7 +322,7 @@ public class WebDAVResponseInterpreter
             stream = body;
             if (body == null)
             {
-                errorMsg("DAV Interpreter:\n\nMissing XML body in\nPROPFIND response.");
+                GlobalData.getGlobalData().errorMsg("DAV Interpreter:\n\nMissing XML body in\nPROPFIND response.");
                 return;
             }
             ByteArrayInputStream byte_in = new ByteArrayInputStream(body);
@@ -332,8 +332,8 @@ public class WebDAVResponseInterpreter
         }
         catch (Exception e)
         {
-            errorMsg("DAV Interpreter:\n\nError encountered \nwhile parsing PROPFIND Response.\n" + e);
-                            stream = null;
+            GlobalData.getGlobalData().errorMsg("DAV Interpreter:\n\nError encountered \nwhile parsing PROPFIND Response.\n" + e);
+            stream = null;
             return;
         }
 
@@ -390,13 +390,13 @@ public class WebDAVResponseInterpreter
                             {
                                 if( Extra.equals("lock") || Extra.equals("unlock") )
                                 {
-                                    errorMsg( "This resource does not support locking." );
+                                    GlobalData.getGlobalData().errorMsg( "This resource does not support locking." );
                                     return;
                                 }
                             }
                             else
                             {
-                                errorMsg( "Server error: " + status );
+                                GlobalData.getGlobalData().errorMsg( "Server error: " + status );
                                 return;
                             }
                         }
@@ -525,7 +525,7 @@ public class WebDAVResponseInterpreter
                 File theFile = new File(fileName);
                 if (!theFile.exists())
                 {
-                    errorMsg("File not found!\n");
+                    GlobalData.getGlobalData().errorMsg("File not found!\n");
                     return;
                 }
                 else
@@ -558,8 +558,8 @@ public class WebDAVResponseInterpreter
             }
             catch( Exception e )
             {
-                errorMsg("DAV Interpreter:\n\nError encountered \nwhile parsing PROPFIND Response.\n" + e);
-                                stream = null;
+                GlobalData.getGlobalData().errorMsg("DAV Interpreter:\n\nError encountered \nwhile parsing PROPFIND Response.\n" + e);
+                stream = null;
                 return;
             }
 
@@ -628,7 +628,7 @@ public class WebDAVResponseInterpreter
         if (lockInfo == null)
             return new String("");
         else
-        return lockInfo;
+            return lockInfo;
     }
 
     public boolean Refreshing()
@@ -710,7 +710,7 @@ public class WebDAVResponseInterpreter
             String newRes = Resource.substring(1);
             if (Extra.equals("saveas"))
             {
-                FileDialog fd = new FileDialog(mainFrame, "Save As" , FileDialog.SAVE);
+                FileDialog fd = new FileDialog(GlobalData.getGlobalData().getMainFrame(), "Save As" , FileDialog.SAVE);
                 int pos = newRes.lastIndexOf( "/" );
                 if( pos >= 0 )
                     newRes = newRes.substring( pos + 1 );
@@ -883,16 +883,18 @@ public class WebDAVResponseInterpreter
         {
             if (res.getStatusCode() >= 300)
             {
-        if( Extra.startsWith("rename")){
-            ActionEvent ae = new ActionEvent(this, ActionEvent.ACTION_FIRST, "reset");
-            actionListener.actionPerformed(ae);
-        }
-                errorMsg("DAV Interpreter:\n\n" + res.getStatusCode() + " " + res.getReasonLine());
+                if( Extra.startsWith("rename"))
+                {
+                    ActionEvent ae = new ActionEvent(this, ActionEvent.ACTION_FIRST, "reset");
+                    actionListener.actionPerformed(ae);
+                }
+                GlobalData.getGlobalData().errorMsg("DAV Interpreter:\n\n" + res.getStatusCode() + " " + res.getReasonLine());
             }
         }
         catch( Exception e )
         {
-        System.out.println(e);
+            System.out.println(e);
+            return;
         }
 
         clearStream();
@@ -916,7 +918,7 @@ public class WebDAVResponseInterpreter
             stream = body;
             if (body == null)
             {
-                errorMsg("DAV Interpreter:\n\nMissing XML body in\nLOCK response.");
+                GlobalData.getGlobalData().errorMsg("DAV Interpreter:\n\nMissing XML body in\nLOCK response.");
                 return;
             }
             ByteArrayInputStream byte_in = new ByteArrayInputStream(body);
@@ -926,8 +928,8 @@ public class WebDAVResponseInterpreter
         }
         catch (Exception e)
         {
-            errorMsg("DAV Interpreter:\n\nError encountered \nwhile parsing LOCK Response.\n" + e);
-                            stream = null;
+            GlobalData.getGlobalData().errorMsg("DAV Interpreter:\n\nError encountered \nwhile parsing LOCK Response.\n" + e);
+            stream = null;
             return;
         }
 
@@ -1098,13 +1100,6 @@ public class WebDAVResponseInterpreter
         }
     }
 
-    public void errorMsg(String str)
-    {
-        JOptionPane pane = new JOptionPane();
-        Object[] options = { "OK" };
-        pane.showOptionDialog(mainFrame,str,"Error Message", JOptionPane.DEFAULT_OPTION, JOptionPane.ERROR_MESSAGE, null, options, options[0]);
-    }
-
     public boolean replaceFile(String fileName)
     {
         JOptionPane pane = new JOptionPane();
@@ -1147,7 +1142,7 @@ public class WebDAVResponseInterpreter
                           "\nLock Owner: " + LockOwner +
                           "\nLock Token: " + LockToken+
                           "\nTimeout:    " + LockTimeout+"\n");
-        pane.showOptionDialog(mainFrame,str, "Lock Information", JOptionPane.DEFAULT_OPTION, JOptionPane.INFORMATION_MESSAGE, null,options, options[0]);
+        pane.showOptionDialog(GlobalData.getGlobalData().getMainFrame(),str, "Lock Information", JOptionPane.DEFAULT_OPTION, JOptionPane.INFORMATION_MESSAGE, null,options, options[0]);
     }
 
 
@@ -1452,8 +1447,8 @@ public class WebDAVResponseInterpreter
                     }
                     catch( Exception e )
                     {
-                        errorMsg("DAV Interpreter:\n\nError encountered \nwhile parsing PROPFIND Response.\n" + e);
-                                        stream = null;
+                        GlobalData.getGlobalData().errorMsg("DAV Interpreter:\n\nError encountered \nwhile parsing PROPFIND Response.\n" + e);
+                        stream = null;
                         return;
                     }
                 }

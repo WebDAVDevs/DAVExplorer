@@ -86,7 +86,7 @@ Public methods and attributes section
     //Construction
     public WebDAVLoginDialog( String strCaption, boolean isModal )
     {
-        super( Main.getMainFrame(), strCaption, isModal );
+        super( GlobalData.getGlobalData().getMainFrame(), strCaption, isModal );
 
         Rectangle recthDimensions = getParent().getBounds();
         setBounds(recthDimensions.x + (recthDimensions.width - 350)/ 2,

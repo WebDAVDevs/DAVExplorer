@@ -79,9 +79,6 @@ public class WebDAVTreeView implements ViewSelectionListener, CopyResponseListen
     public static String homeDirName;
     public String startDirName = null;
     private String userAgent;
-
-    JFrame mainFrame;
-
     JScrollPane sp;
 
     // Yuzo: Changing from this to an new Selection Listener which does no
@@ -93,7 +90,7 @@ public class WebDAVTreeView implements ViewSelectionListener, CopyResponseListen
     private boolean simpleNodeExpand = false;
 
     // Constructor
-    public WebDAVTreeView(JFrame mainFrame)
+    public WebDAVTreeView()
     {
         tree = new JTree(treeModel);
 
@@ -104,8 +101,6 @@ public class WebDAVTreeView implements ViewSelectionListener, CopyResponseListen
         tree.addTreeSelectionListener(treeSelectionListener);
 
         tree.setRowHeight(-1);
-
-        this.mainFrame = mainFrame;
 
         sp = new JScrollPane(tree);
         //sp.getViewport().add(tree);
@@ -159,8 +154,7 @@ public class WebDAVTreeView implements ViewSelectionListener, CopyResponseListen
             }
 
             TreePath selectedPath = selectionModel.getSelectionPath();
-            Cursor c = mainFrame.getCursor(); // save original cursor
-            mainFrame.setCursor( Cursor.getPredefinedCursor( Cursor.WAIT_CURSOR ) );
+            GlobalData.getGlobalData().setCursor( Cursor.getPredefinedCursor( Cursor.WAIT_CURSOR ) );
 
             TreePath expansionPath = evt.getPath();
             currPath = expansionPath;
@@ -175,8 +169,7 @@ public class WebDAVTreeView implements ViewSelectionListener, CopyResponseListen
             else
             {
             }
-
-            mainFrame.setCursor( c );
+            GlobalData.getGlobalData().resetCursor();
         }
 
         public void treeCollapsed( TreeExpansionEvent evt )
@@ -314,8 +307,7 @@ public class WebDAVTreeView implements ViewSelectionListener, CopyResponseListen
 	     }
         }
 
-        Cursor c = mainFrame.getCursor(); // save original cursor
-        mainFrame.setCursor( Cursor.getPredefinedCursor( Cursor.WAIT_CURSOR ) );
+        GlobalData.getGlobalData().setCursor( Cursor.getPredefinedCursor( Cursor.WAIT_CURSOR ) );
 
         if (!tree.isExpanded(tp))
         {
@@ -345,7 +337,7 @@ public class WebDAVTreeView implements ViewSelectionListener, CopyResponseListen
 
         currPath = tp;
 
-        mainFrame.setCursor( c );
+        GlobalData.getGlobalData().resetCursor();
 
         tree.addTreeExpansionListener(treeExpListener);
         tree.addTreeSelectionListener(treeSelectionListener);
@@ -443,46 +435,39 @@ public class WebDAVTreeView implements ViewSelectionListener, CopyResponseListen
 	    
             if (!tn.hasLoadedChildren())
             {
-		Object obj = tp.getPathComponent(1);
-		if (obj != null){
-		    String s = obj.toString();
-		    
-		    if (s.startsWith(WebDAVPrefix))
-		    {
+		        Object obj = tp.getPathComponent(1);
+		        if (obj != null)
+                {
+		            String s = obj.toString();
+
+		            if (s.startsWith(WebDAVPrefix))
+		            {
                     	tn.loadChildren(true);
-		        return;
-
-		    }
-		    else
-		    {
-                        Cursor c = mainFrame.getCursor(); // save original cursor
-                        mainFrame.setCursor( Cursor.getPredefinedCursor( Cursor.WAIT_CURSOR ) );
-			refreshLocal(tn);
+		                return;
+                    }
+		            else
+		            {
+                        GlobalData.getGlobalData().setCursor( Cursor.getPredefinedCursor( Cursor.WAIT_CURSOR ) );
+			            refreshLocal(tn);
                         tn.setHasLoadedChildren(true);
-
-                        mainFrame.setCursor( c );
-		    }
-		} 
-		else
-		{
-		    //System.out.println("SelectionChangeListener obj == null");
-		}
-
+                        GlobalData.getGlobalData().resetCursor();
+                    }
+                }
+		        else
+		        {
+		            //System.out.println("SelectionChangeListener obj == null");
+                }
             }
 
             treeModel.nodeStructureChanged(tn);
 
-	    {
-		// alert the Selestion Listeners (FileView)
-            	ViewSelectionEvent event = new 
-			ViewSelectionEvent(this, tn, tp);
-            	for (int i=0; i<selListeners.size();i++)
-            	{
-               	    ViewSelectionListener l = 
-			(ViewSelectionListener)selListeners.elementAt(i);
-                    l.selectionChanged(event);
-            	}
-            }
+            // alert the Selestion Listeners (FileView)
+           	ViewSelectionEvent event = new ViewSelectionEvent(this, tn, tp);
+           	for (int i=0; i<selListeners.size();i++)
+           	{
+                ViewSelectionListener l = (ViewSelectionListener)selListeners.elementAt(i);
+                l.selectionChanged(event);
+           	}
         }
     }
 
@@ -559,7 +544,7 @@ public class WebDAVTreeView implements ViewSelectionListener, CopyResponseListen
                 return false;
             if (!file.isDirectory())
             {
-                errorMsg("TreeView Error:\n\nFile is not a directory.");
+                GlobalData.getGlobalData().errorMsg("TreeView Error:\n\nFile is not a directory.");
                 return false;
             }
         }
@@ -572,7 +557,7 @@ public class WebDAVTreeView implements ViewSelectionListener, CopyResponseListen
 
         if (rootElements.contains(newName))
         {
-            errorMsg("TreeView Error:\n\nNode already exists!");
+            GlobalData.getGlobalData().errorMsg("TreeView Error:\n\nNode already exists!");
             return false;
         }
 
@@ -596,13 +581,6 @@ public class WebDAVTreeView implements ViewSelectionListener, CopyResponseListen
         }
 
         return true;
-    }
-
-    public void errorMsg(String str)
-    {
-        JOptionPane pane = new JOptionPane();
-        Object[] options = { "OK" };
-        pane.showOptionDialog(mainFrame,str, "Error Message", JOptionPane.DEFAULT_OPTION, JOptionPane.ERROR_MESSAGE, null, options, options[0]);
     }
 
     public String getCurrentPath()

@@ -92,12 +92,9 @@ public class WebDAVFileView implements ViewSelectionListener, ActionListener
     String selectedResource;
     int selectedRow;
     int pressRow, releaseRow;
-    JFrame mainFrame;
 
-    public WebDAVFileView(JFrame mainFrame)
+    public WebDAVFileView()
     {
-        this.mainFrame = mainFrame;
-
         String iconPath = getIconPath();
 
         if (iconPath == null)
@@ -357,8 +354,7 @@ public class WebDAVFileView implements ViewSelectionListener, ActionListener
 
         WebDAVTreeNode pn = (WebDAVTreeNode)tn.getParent();
 
-        Cursor c = mainFrame.getCursor(); // save original cursor
-        mainFrame.setCursor( Cursor.getPredefinedCursor( Cursor.WAIT_CURSOR ) );
+        GlobalData.getGlobalData().setCursor( Cursor.getPredefinedCursor( Cursor.WAIT_CURSOR ) );
 
         addDirToTable(tn);
 
@@ -366,7 +362,7 @@ public class WebDAVFileView implements ViewSelectionListener, ActionListener
         if (dn == null)
         {
             table.updateUI();
-            mainFrame.setCursor( c ); //reset to original cursor
+            GlobalData.getGlobalData().resetCursor(); //reset to original cursor
             return;
         }
 
@@ -388,7 +384,7 @@ public class WebDAVFileView implements ViewSelectionListener, ActionListener
         }
 
         //table.updateUI();
-        mainFrame.setCursor( c ); //reset to original cursor
+        GlobalData.getGlobalData().resetCursor(); //reset to original cursor
 
     }
 

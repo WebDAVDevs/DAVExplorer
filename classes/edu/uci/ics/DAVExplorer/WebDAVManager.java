@@ -63,14 +63,12 @@ public class WebDAVManager
     private byte[] Body;
     private String ExtraInfo;
     private Vector Listeners = new Vector();
-    private JFrame mainFrame;
 
     private boolean logging = false;
     private String logFilename = null;
 
-    public WebDAVManager(JFrame mainFrame)
+    public WebDAVManager()
     {
-        this.mainFrame = mainFrame;
     }
 
     public void sendRequest(WebDAVRequestEvent e)
@@ -124,11 +122,11 @@ public class WebDAVManager
     	}
         catch (IOException exception)
         {
-            errorMsg("Connection error: \n" + exception);
+            GlobalData.getGlobalData().errorMsg("Connection error: \n" + exception);
         }
         catch (ModuleException exception)
         {
-            errorMsg("HTTPClient error: \n" + exception);
+            GlobalData.getGlobalData().errorMsg("HTTPClient error: \n" + exception);
         }
     }
 
@@ -172,12 +170,5 @@ public class WebDAVManager
         {
             Con.setLogging( logging, filename );
         }
-    }
-    
-    public void errorMsg(String str)
-    {
-        JOptionPane pane = new JOptionPane();
-        Object[] options = { "OK" };
-        pane.showOptionDialog(mainFrame,str,"Error Message", JOptionPane.DEFAULT_OPTION, JOptionPane.ERROR_MESSAGE, null, options, options[0]);
     }
 }
