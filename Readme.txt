@@ -1,3 +1,7 @@
+Changes for version 0.72:
+- Support for operation through proxy servers
+- Update to HTTPClient 0.3.3
+
 Changes for version 0.71:
 - Fixed bug in HTTPClient that prevented proper handling of authentication in
   case the server allows multiple possible authentication headers (thanks to Thierry
