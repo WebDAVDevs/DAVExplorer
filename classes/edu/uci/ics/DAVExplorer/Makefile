@@ -68,6 +68,7 @@ classes = AsGen.class \
           JTreeTable.class \
           PropAddDialog.class \
           PropModel.class \
+          PropNode.class \
           TreeTableModel.class \
           TreeTableModelAdapter.class \
           WebDAVCompletionEvent.class \
