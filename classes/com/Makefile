@@ -26,6 +26,5 @@ clean::
 	- cd $(SRC)/ms; make clean
 
 dist::
-	- cd $(SRC)/ms; make clean
+	- cd $(SRC)/ms; make dist
 	- rm -f $(SRC)/CVS
-

@@ -26,5 +26,5 @@ clean::
 	- cd $(SRC)/xml; make clean
 
 dist::
-	- cd $(SRC)/xml; make clean
+	- cd $(SRC)/xml; make dist
 	- rm -f $(SRC)/CVS
