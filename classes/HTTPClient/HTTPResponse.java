@@ -702,6 +702,8 @@ public class HTTPResponse implements GlobalConstants, HTTPClientModuleConstants
     /* all done, so copy data */
     if (!request.internal_subrequest)
         init(response);
+    else if( logging )
+        doBodyLogging();
 
     if (handle_trailers)
         invokeTrailerHandlers(false);
@@ -749,35 +751,8 @@ public class HTTPResponse implements GlobalConstants, HTTPClientModuleConstants
         t.printStackTrace();
         }
     }
-        if(logging)
-        {
-            if( Data == null )
-            {
-                try
-                {
-                    getData();  // required so we can log the data
-                }
-                catch( IOException eio )
-                {
-                }
-                catch( ModuleException em )
-                {
-                }
-            }
-            if (Data != null )
-            {
-                try
-                {
-                    FileOutputStream fos = new FileOutputStream( logFilename, true );
-                    fos.write( inboundBody.getBytes() );
-                    fos.write( Data );
-                    fos.close();
-                }
-                catch( IOException e )
-                {
-                }
-            }
-        }
+        if( logging )
+            doBodyLogging();
     }
 
 
@@ -970,5 +945,36 @@ public class HTTPResponse implements GlobalConstants, HTTPClientModuleConstants
             logFilename = req.getConnection().getLogFilename();
         }
     }
+
+    private void doBodyLogging()
+    {
+        if( Data == null )
+        {
+            try
+            {
+                getData();  // required so we can log the data
+            }
+            catch( IOException eio )
+            {
+            }
+            catch( ModuleException em )
+            {
+            }
+        }
+        if (Data != null )
+        {
+            try
+            {
+                FileOutputStream fos = new FileOutputStream( logFilename, true );
+                fos.write( inboundBody.getBytes() );
+                fos.write( Data );
+                fos.close();
+            }
+            catch( IOException e )
+            {
+            }
+        }
+    }
 }
+
 

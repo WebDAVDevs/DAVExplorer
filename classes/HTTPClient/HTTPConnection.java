@@ -2783,7 +2783,7 @@ public class HTTPConnection
 
         // Joachim Feise (jfeise@ics.uci.edu):
         // Hack to be able to use authentication with
-        // Microsoft Windows 2000 Beta / IIS
+        // Microsoft Windows 2000 Beta / IIS 5 Beta
         // Apparently, the data is sent through the socket as
         // soon as it is written to the stream
         // This causes the data to arrive in two chunks, the

@@ -1393,5 +1393,32 @@ public final class Response implements RoResponse, GlobalConstants
     {
         return logFilename;
     }
+
+    public void doBodyLogging()
+    {
+        if( Data == null )
+        {
+            try
+            {
+                readResponseData(inp_stream);
+            }
+            catch( IOException eio )
+            {
+            }
+        }
+        else
+        {
+            try
+            {
+                FileOutputStream fos = new FileOutputStream( logFilename, true );
+                fos.write( inboundBody.getBytes() );
+                fos.write( Data );
+                fos.close();
+            }
+            catch( IOException e )
+            {
+            }
+        }
+    }
 }
 
