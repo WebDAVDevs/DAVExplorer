@@ -415,7 +415,10 @@ public class WebDAVFileView implements ViewSelectionListener
             }
         }
         fireTableModuleEvent();
-        sorter.sortByColumn(2,true);
+        synchronized( this )
+        {
+            sorter.sortByColumn(2,true);
+        }
         table.updateUI();
     }
 
@@ -437,7 +440,10 @@ public class WebDAVFileView implements ViewSelectionListener
             addRow(rowObj);
         }
         fireTableModuleEvent();
-        sorter.sortByColumn(2,true);
+        synchronized( this )
+        {
+            sorter.sortByColumn(2,true);
+        }
         table.updateUI();
     }
 
@@ -616,7 +622,7 @@ public class WebDAVFileView implements ViewSelectionListener
         return selectedResource;
     }
 
-    public void setLock()
+    public synchronized void setLock()
     {
         int row = selectedRow;
         try
@@ -629,7 +635,7 @@ public class WebDAVFileView implements ViewSelectionListener
         update();
     }
 
-    public void resetLock()
+    public synchronized void resetLock()
     {
         int row = selectedRow;
         try
@@ -642,7 +648,7 @@ public class WebDAVFileView implements ViewSelectionListener
         update();
     }
 
-    public void update()
+    public synchronized void update()
     {
         table.clearSelection();
         updateTable(data);
@@ -788,18 +794,24 @@ public class WebDAVFileView implements ViewSelectionListener
     public void fireTableModuleEvent()
     {
         TableModelEvent e = new TableModelEvent(dataModel);
-        sorter.tableChanged(e);
+        synchronized( this )
+        {
+            sorter.tableChanged(e);
+        }
     }
 
-    public synchronized void updateTable(Vector newdata)
+    public void updateTable(Vector newdata)
     {
         this.data = newdata;
         fireTableModuleEvent();
-        sorter.sortByColumn(2,true);
+        synchronized( this )
+        {
+            sorter.sortByColumn(2,true);
+        }
         table.updateUI();
     }
 
-    private synchronized void addRow(Object[] rowData)
+    private void addRow(Object[] rowData)
     {
         Vector newRow = new Vector();
 
@@ -808,16 +820,16 @@ public class WebDAVFileView implements ViewSelectionListener
             newRow.addElement(rowData[i]);
 
         data.addElement(newRow);
-        //fireTableModuleEvent();
-        //sorter.sortByColumn(2,true);
-        //table.updateUI();
     }
 
-    private synchronized void removeRow(int row)
+    private void removeRow(int row)
     {
         data.removeElementAt(row);
         fireTableModuleEvent();
-        sorter.sortByColumn(2,true);
+        synchronized( this )
+        {
+            sorter.sortByColumn(2,true);
+        }
         table.updateUI();
     }
 
@@ -828,7 +840,7 @@ public class WebDAVFileView implements ViewSelectionListener
         selectedRow = -1;
     }
 
-    public synchronized void treeSelectionChanged(ViewSelectionEvent e)
+    public void treeSelectionChanged(ViewSelectionEvent e)
     {
         table.clearSelection();
         clearTable();
@@ -857,7 +869,10 @@ public class WebDAVFileView implements ViewSelectionListener
             addRow(rowObj);
         }
         fireTableModuleEvent();
-        sorter.sortByColumn(2,true);
+        synchronized( this )
+        {
+            sorter.sortByColumn(2,true);
+        }
         table.updateUI();
 
         DataNode this_data_node = t_node.getDataNode();
@@ -883,7 +898,10 @@ public class WebDAVFileView implements ViewSelectionListener
             addRow(rowObj);
         }
         fireTableModuleEvent();
-        sorter.sortByColumn(2,true);
+        synchronized( this )
+        {
+            sorter.sortByColumn(2,true);
+        }
         table.updateUI();
     }
 
