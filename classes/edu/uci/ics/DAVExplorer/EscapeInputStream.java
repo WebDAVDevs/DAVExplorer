@@ -71,7 +71,14 @@ public class EscapeInputStream
         {
             int val = read();
             if( val == -1 )
-                return count;
+            {
+                // if we didn't read anything at all, return -1 as EOF marker
+                // otherwise, return the number of chars read
+                if( count > 0 )
+                    return count;
+                else
+                    return -1;
+            }
             b[off+count] = (byte)val;
             count++;
         }
