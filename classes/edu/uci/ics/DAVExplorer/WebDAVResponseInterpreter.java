@@ -67,34 +67,10 @@ public class WebDAVResponseInterpreter
 {
     private final static String  HTTPPrefix = "http://";
     private final static String  HTTPSPrefix = "https://";
-    private static WebDAVRequestGenerator generator;
-    private static byte[] stream = null;
-    private static String Method;
-    private static String Extra;
-    private static HTTPResponse res;
-    private static String HostName;
-    private static int Port;
-    private static String Resource;
-    private static Vector listeners = new Vector();
-    private static Vector moveListeners = new Vector();
-    private static Vector lockListeners = new Vector();
-    private final static String EditDir = "Edit";
-    private final static String WebDAVClassName = "DAVExplorer";
-    private final static String WebDAVLockDir = "";
-    private final static String HTTPString = "HTTP/1.1";
-    private static String WebDAVEditDir = null;
-    private static boolean refresh = false;
-    private static String userPathDir;
-
-    private WebDAVTreeNode Node;
-    private static CopyResponseListener copyListener;
-    private static PutListener putListener;
-    private static ActionListener actionListener;
-
-    private boolean debugXML = false;
 
     public WebDAVResponseInterpreter()
-    { }
+    {
+    }
 
     public WebDAVResponseInterpreter( WebDAVRequestGenerator rg )
     {
@@ -159,7 +135,6 @@ public class WebDAVResponseInterpreter
         {
             if (res.getStatusCode() >= 300)
             {
-                //resetInProgress();
                 if( (res.getStatusCode() == 302) || (res.getStatusCode() == 301) )
                 {
                     String location = res.getHeader( "Location" );
@@ -212,7 +187,6 @@ public class WebDAVResponseInterpreter
             if (Method.equals("MOVE"))
             {
                 parseMove();
-                //resetInProgress();
                 return;
             }
         }
@@ -223,7 +197,9 @@ public class WebDAVResponseInterpreter
             // and the method is unknown to HTTPClient.
             // HTTPClient does an automatic retry for idempotent HTTP methods,
             // but not for our WebDAV methods, since it doesn't know about them.
-            System.out.println(ex);
+            String debugOutput = System.getProperty( "debug", "false" );
+            if( debugOutput.equals( "true" ) )
+                System.out.println(ex);
             throw new ResponseException( "HTTP error" );
         }
 
@@ -637,15 +613,15 @@ public class WebDAVResponseInterpreter
         }
         else if(Extra.equals("expand"))
         {
-        // Allow for post processing in Main ResponseListener
+            // Allow for post processing in Main ResponseListener
         }
         else if(Extra.equals("index"))
         {
-        // Allow for post processing in Main ResponseListener
+            // Allow for post processing in Main ResponseListener
         }
         else if(Extra.equals("select"))
         {
-        // Allow for post processing in Main ResponseListener
+            // Allow for post processing in Main ResponseListener
         }
         else
         {
@@ -702,21 +678,21 @@ public class WebDAVResponseInterpreter
 
         clearStream();
 
-    if (Extra.equals("mkcol"))
-    {
-            CopyResponseEvent e = new CopyResponseEvent( this, Node);
-            copyListener.CopyEventResponse(e);
-    }
-    else if (Extra.equals("mkcolbelow"))
-    {
-        // Piggy Back on Put Event,
-        // This reloads the node on the selected collection,
-        // but should not change the selection.
+        if (Extra.equals("mkcol"))
+        {
+                CopyResponseEvent e = new CopyResponseEvent( this, Node);
+                copyListener.CopyEventResponse(e);
+        }
+        else if (Extra.equals("mkcolbelow"))
+        {
+            // Piggy Back on Put Event,
+            // This reloads the node on the selected collection,
+            // but should not change the selection.
             WebDAVTreeNode parent = generator.getPossibleParentOfSelectedCollectionNode();
             PutEvent e = new PutEvent( this, Node, parent);
-        putListener.PutEventResponse(e);
+            putListener.PutEventResponse(e);
 
-    }
+        }
     }
 
     public void parseGet()
@@ -822,23 +798,26 @@ public class WebDAVResponseInterpreter
             System.err.println( "WebDAVResponseInterpreter::parsePut" );
         }
 
-    // Piggy back on the Copy Response stuff
-    clearStream();
+        // Piggy back on the Copy Response stuff
+        clearStream();
 
-    WebDAVTreeNode parent = generator.getPossibleParentOfSelectedCollectionNode();
-    if (parent != null){
-    // Need to 1. maintain the selected node on both the
-    // the Tree View and the File View.
-    // Need to 2. reload the node to which the put has taken place.
-        //   a. what if node loaded,
-    //   b. what if node is not loaded
-        PutEvent e = new PutEvent( this, Node, parent);
-    putListener.PutEventResponse(e);
-    }else{
-        CopyResponseEvent e = new CopyResponseEvent( this, Node);
-        copyListener.CopyEventResponse(e);
-    }
-    generator.resetParentNode();
+        WebDAVTreeNode parent = generator.getPossibleParentOfSelectedCollectionNode();
+        if (parent != null)
+        {
+            // Need to 1. maintain the selected node on both the
+            // the Tree View and the File View.
+            // Need to 2. reload the node to which the put has taken place.
+            //   a. what if node loaded,
+            //   b. what if node is not loaded
+            PutEvent e = new PutEvent( this, Node, parent);
+            putListener.PutEventResponse(e);
+        }
+        else
+        {
+            CopyResponseEvent e = new CopyResponseEvent( this, Node);
+            copyListener.CopyEventResponse(e);
+        }
+        generator.resetParentNode();
     }
 
     public void parseDelete()
@@ -1232,14 +1211,14 @@ public class WebDAVResponseInterpreter
         return "";
     }
 
-/**
- * Function used to retreive the owner details on a lock.
- * A small correction has been made in the code by Eric Giguere to get the owner name in cases where the parsers adds empty tags in the element tree (bug from the parser).
- *
- * @author : Joachim Feise, Eric Giguere
- * @param ownerinfo The XML node that is at the root of the owner information
- * @version 1.1
- */
+    /**
+     * Function used to retreive the owner details on a lock.
+     * A small correction has been made in the code by Eric Giguere to get the owner name in cases where the parsers adds empty tags in the element tree (bug from the parser).
+     *
+     * @author : Joachim Feise, Eric Giguere
+     * @param ownerinfo The XML node that is at the root of the owner information
+     * @version 1.1
+     */
     private String getOwnerInfo( Element ownerinfo )
     {
         if( GlobalData.getGlobalData().getDebugResponse() )
@@ -1506,4 +1485,30 @@ public class WebDAVResponseInterpreter
             }
         }
     }
+
+    private static WebDAVRequestGenerator generator;
+    private static byte[] stream = null;
+    private static String Method;
+    private static String Extra;
+    private static HTTPResponse res;
+    private static String HostName;
+    private static int Port;
+    private static String Resource;
+    private static Vector listeners = new Vector();
+    private static Vector moveListeners = new Vector();
+    private static Vector lockListeners = new Vector();
+    private final static String EditDir = "Edit";
+    private final static String WebDAVClassName = "DAVExplorer";
+    private final static String WebDAVLockDir = "";
+    private final static String HTTPString = "HTTP/1.1";
+    private static String WebDAVEditDir = null;
+    private static boolean refresh = false;
+    private static String userPathDir;
+
+    private WebDAVTreeNode Node;
+    private static CopyResponseListener copyListener;
+    private static PutListener putListener;
+    private static ActionListener actionListener;
+
+    private boolean debugXML = false;
 }

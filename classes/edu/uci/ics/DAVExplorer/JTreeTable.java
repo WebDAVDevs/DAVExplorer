@@ -62,7 +62,7 @@ public class JTreeTable extends JTable
         while( enumeration.hasMoreElements() )
         {
             TableColumn col = (TableColumn)enumeration.nextElement();
-            col.setPreferredWidth( 150 );
+            col.setPreferredWidth( 200 );
         }
         tree.setVisibleRowCount(getRowCount());
     }

@@ -81,17 +81,8 @@ import java.io.*;
 
 public class Main extends JFrame
 {
-    WebDAVFileView fileView;
-    WebDAVTreeView treeView;
-    WebDAVRequestGenerator requestGenerator;
-    WebDAVResponseInterpreter responseInterpreter;
-    WebDAVManager webdavManager;
-    WebDAVMenu CommandMenu;
-    Hashtable authTable;
-    String authHost;
     public final static String VERSION = "0.73-dev";
     public final static String UserAgent = "UCI DAV Explorer/" + VERSION;
-    String writeToDir;
 
     public Main(String frameName)
     {
@@ -316,17 +307,19 @@ public class Main extends JFrame
                 WebDAVTreeNode n = fileView.getParentNode();
                 requestGenerator.setResource(s, n);
 
-                //requestGenerator.GenerateRename( str, treeView.getCurrentPath() );
-                //requestGenerator.GenerateRename( str, fileView.getParentPath() );
                 boolean retval = false;
-        if( fileView.isSelectedLocked() ){
-            retval = requestGenerator.GenerateMove(str, fileView.getParentPath(), false, true, fileView.getSelectedLockToken(), "rename:" );
-        } else {
-            retval = requestGenerator.GenerateMove(str, fileView.getParentPath(), false, true, null , "rename:" );
-        }
-                if( retval ){
+                if( fileView.isSelectedLocked() )
+                {
+                    retval = requestGenerator.GenerateMove(str, fileView.getParentPath(), false, true, fileView.getSelectedLockToken(), "rename:" );
+                }
+                else
+                {
+                    retval = requestGenerator.GenerateMove(str, fileView.getParentPath(), false, true, null , "rename:" );
+                }
+                if( retval )
+                {
                     requestGenerator.execute();
-        }
+                }
             }
         }
     }
@@ -359,8 +352,10 @@ public class Main extends JFrame
             catch( ResponseException ex )
             {
                 GlobalData.getGlobalData().errorMsg( "HTTP error or Server timeout,\nplease retry the last operation" );
+                fireWebDAVCompletion( responseInterpreter, false );
                 return;
             }
+            fireWebDAVCompletion( responseInterpreter, true );
 
             // Post processing
             // These are actions designed to take place after the
@@ -752,6 +747,31 @@ public class Main extends JFrame
         }
     }
 
+    public void addWebDAVCompletionListener( WebDAVCompletionListener l )
+    {
+        listenerList.add( WebDAVCompletionListener.class, l );
+    }
+
+    public void removeWebDAVCompletionListener( WebDAVCompletionListener l )
+    {
+        listenerList.remove(WebDAVCompletionListener.class, l );
+    }
+
+    protected void fireWebDAVCompletion( Object source, boolean success )
+    {
+        Object[] listeners = listenerList.getListenerList();
+        WebDAVCompletionEvent e = null;
+        for (int i = listeners.length-2; i>=0; i-=2)
+        {
+            if (listeners[i]==WebDAVCompletionListener.class)
+            {
+                if (e == null)
+                    e = new WebDAVCompletionEvent( source, success );
+                ((WebDAVCompletionListener)listeners[i+1]).completion(e);
+            }
+        }
+    }
+
     protected void viewDocument()
     {
         if( requestGenerator.GenerateGet("view") ){
@@ -891,4 +911,15 @@ public class Main extends JFrame
         }
         return false;
     }
+
+    protected WebDAVFileView fileView;
+    protected WebDAVTreeView treeView;
+    protected WebDAVRequestGenerator requestGenerator;
+    protected WebDAVResponseInterpreter responseInterpreter;
+    protected WebDAVManager webdavManager;
+    protected WebDAVMenu CommandMenu;
+    protected Hashtable authTable;
+    protected String authHost;
+    protected String writeToDir;
+    protected EventListenerList listenerList = new EventListenerList();
 }

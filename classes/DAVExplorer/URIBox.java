@@ -88,10 +88,11 @@ public class URIBox extends JPanel implements ActionListener
         textField1.addActionListener(new EnterPressedListener());
         label1 = new JLabel();
         if( GlobalData.getGlobalData().doSSL() )
-            label1.setText( "https:// " );
+            label1.setText( "https://" );
         else
-            label1.setText( "http:// " );
-        label1.setForeground(Color.black);
+            label1.setText( "http://" );
+        label1.setHorizontalAlignment( SwingConstants.RIGHT );
+        label1.setForeground( Color.black );
 
         panel.add(label1);
         panel.add(textField1);

@@ -24,7 +24,6 @@ public class PropModel extends AbstractTableModel implements TreeTableModel
 
     public PropModel( Element properties )
     {
-        // TODO: scan string and build data model
         root = new PropNode( "Properties", null, null );
         parseProperties( properties, root );
     }
@@ -95,7 +94,12 @@ public class PropModel extends AbstractTableModel implements TreeTableModel
         nodeIndices[0] = getIndexOfChild( parentNode, node );
         nodes[0] = node;
         parentNode.removeChild( node );
-        fireTreeNodesRemoved( node, path.getPath(), nodeIndices, nodes );
+        fireTreeNodesRemoved( parentNode, parentPath.getPath(), nodeIndices, nodes );
+    }
+
+    public void clear()
+    {
+        clear( root );
     }
 
     protected Object nodeForRow(int row)
@@ -426,14 +430,18 @@ public class PropModel extends AbstractTableModel implements TreeTableModel
                 Element set = WebDAVXML.createElement( WebDAVXML.ELEM_SET, Element.ELEMENT, null, namespace, false, true );
                 set.addChild( WebDAVXML.elemNewline, null );
                 prop = WebDAVXML.createElement( WebDAVXML.ELEM_PROP, Element.ELEMENT, set, namespace, false, true );
-                prop.addChild( WebDAVXML.elemNewline, null );
                 set.addChild( prop, null );
                 set.addChild( WebDAVXML.elemNewline, null );
                 retval = set;
                 Object[] children = node.getChildren();
-                for( int i=0; i<children.length; i++ )
+                if( children.length==0 )
+                    set.addChild( WebDAVXML.elemNewline, null );
+                else
                 {
-                    getModified( (PropNode)children[i], prop );
+                    for( int i=0; i<children.length; i++ )
+                    {
+                        getModified( (PropNode)children[i], prop );
+                    }
                 }
             }
             else
@@ -449,7 +457,7 @@ public class PropModel extends AbstractTableModel implements TreeTableModel
             parent.addChild( prop, null );
             parent.addChild( WebDAVXML.elemNewline, null );
             Object[] children = node.getChildren();
-            if( (node.getValue().length()>0) || (children.length==0) )
+            if( (node.getValue().length()>0) )
             {
                 // need to have PCDATA if there are no children
                 Element value = WebDAVXML.createElement( null, Element.PCDATA, prop, namespace, false, true );
@@ -559,6 +567,16 @@ public class PropModel extends AbstractTableModel implements TreeTableModel
         return false;
     }
 
+    private void clear( PropNode node )
+    {
+        node.clear();
+        Object[] children = node.getChildren();
+        for( int i=0; i<children.length; i++ )
+        {
+            clear((PropNode)children[i]);
+        }
+    }
+
 
     // column names
     static protected String[]  names = { "Tag", "Namespace", "Value" };
@@ -649,6 +667,12 @@ class PropNode
     public Object[] getRemovedChildren()
     {
         return removedChildren.toArray();
+    }
+
+    public void clear()
+    {
+        modified = false;
+        removedChildren.clear();
     }
 
     Vector children = new Vector();

@@ -103,7 +103,7 @@ Public methods and attributes section
         groupPanel.add( l );
         constraints.gridwidth = 1;
         constraints.weightx = 1.0;
-        l = new JLabel( "Login name:", JLabel.LEFT );
+        l = new JLabel( "Login name: ", JLabel.LEFT );
         l.setForeground(Color.black);
         gridbag.setConstraints( l, constraints );
         groupPanel.add( l );
@@ -115,7 +115,7 @@ Public methods and attributes section
         groupPanel.add( txtUsername );
         constraints.gridwidth = 1;
         constraints.weightx = 1.0;
-        l = new JLabel( "Password:", JLabel.LEFT );
+        l = new JLabel( "Password: ", JLabel.LEFT );
         l.setForeground(Color.black);
         gridbag.setConstraints( l, constraints );
         groupPanel.add( l );

@@ -42,7 +42,8 @@ import javax.swing.tree.DefaultMutableTreeNode;
 import com.ms.xml.om.Element;
 
 
-public class PropDialog extends JDialog implements ActionListener, ChangeListener, ListSelectionListener
+public class PropDialog extends JDialog
+    implements ActionListener, ChangeListener, ListSelectionListener, WebDAVCompletionListener
 {
     public PropDialog( Element properties, String resource, String hostname, boolean changeable )
     {
@@ -54,13 +55,11 @@ public class PropDialog extends JDialog implements ActionListener, ChangeListene
             setTitle("View Properties");
         this.resource = hostname + resource;
         JLabel label = new JLabel( this.resource, JLabel.CENTER );
-        //label.setFont(new Font("SansSerif", Font.BOLD, 14));
         label.setForeground(Color.black);
         getContentPane().add( "North", label );
 
         addButton = new JButton("Add");
         addButton.addActionListener(this);
-        //addButton.setEnabled( false );  // TODO: remove when add works
         deleteButton = new JButton("Delete");
         deleteButton.addActionListener(this);
         deleteButton.setEnabled( false );
@@ -94,6 +93,7 @@ public class PropDialog extends JDialog implements ActionListener, ChangeListene
         scrollpane.setViewportView( treeTable );
         getContentPane().add( "Center", scrollpane );
 
+        ((Main)GlobalData.getGlobalData().getMainFrame()).addWebDAVCompletionListener(this);
         addWindowListener(
             new WindowAdapter()
             {
@@ -120,7 +120,8 @@ public class PropDialog extends JDialog implements ActionListener, ChangeListene
         {
             changed = enable;
             saveButton.setEnabled( changed );
-            // TODO: clear model of changed flags and removed data
+            if( !changed )
+                model.clear();
         }
     }
 
@@ -160,12 +161,27 @@ public class PropDialog extends JDialog implements ActionListener, ChangeListene
         }
     }
 
+    public void completion( WebDAVCompletionEvent e )
+    {
+        if( waiting && e.isSuccessful() )
+            setChanged( false );  // disable save button
+        waiting = false;
+    }
+
     public void add()
     {
         boolean selected = true;
         TreePath path = treeTable.getTree().getPathForRow( treeTable.getSelectedRow() );
         if( path == null )
             selected = false;
+        else
+        {
+            PropNode parentNode = (PropNode)path.getLastPathComponent();
+            // can't have child nodes if value is not empty
+            if( parentNode.getValue().length() != 0 )
+                selected = false;
+        }
+
         PropAddDialog add = new PropAddDialog( resource, selected );
         if( !add.isCanceled() )
         {
@@ -195,14 +211,15 @@ public class PropDialog extends JDialog implements ActionListener, ChangeListene
 
     public void save()
     {
-        // TODO
         Element add = model.getModified(false);
         Element remove = model.getModified(true);
         WebDAVRequestGenerator generator = WebDAVResponseInterpreter.getGenerator();
         generator.GeneratePropPatch( resource, add, remove );
         // TODO: some kind of visual indication
+        waiting = true;
         generator.execute();
-        setChanged( false );  // disable save button
+        // TODO: check for error
+        //setChanged( false );  // disable save button
     }
 
     public void cancel()
@@ -238,4 +255,5 @@ public class PropDialog extends JDialog implements ActionListener, ChangeListene
     private boolean changeable;
     private boolean changed = false;
     private String resource;
+    private boolean waiting;
 }

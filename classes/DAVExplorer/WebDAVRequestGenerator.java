@@ -601,7 +601,7 @@ public class WebDAVRequestGenerator implements Runnable
 
         if (!ok)
         {
-            //GlobalData.getGlobalData().errorMsg( "Error Generating PROPPATCH Method for " + StrippedResource );
+            GlobalData.getGlobalData().errorMsg( "Error Generating PROPPATCH Method for " + StrippedResource );
             return false;
         }
 
@@ -619,6 +619,12 @@ public class WebDAVRequestGenerator implements Runnable
             DAVNS = WebDAVXML.createNamespace( new AsGen(), null );
         Element propUpdate = WebDAVXML.createElement( WebDAVXML.ELEM_PROPERTY_UPDATE, Element.ELEMENT, null, DAVNS, true );
 
+        if( removeProps != null )
+        {
+            propUpdate.addChild( WebDAVXML.elemNewline, null );
+            propUpdate.addChild( removeProps, null );
+            propUpdate.addChild( WebDAVXML.elemNewline, null);
+        }
         if( addProps != null )
         {
             propUpdate.addChild( WebDAVXML.elemNewline, null );
@@ -626,18 +632,10 @@ public class WebDAVRequestGenerator implements Runnable
             propUpdate.addChild( WebDAVXML.elemNewline, null );
         }
 
-        if( removeProps != null )
-        {
-            propUpdate.addChild( WebDAVXML.elemNewline, null );
-            propUpdate.addChild( removeProps, null );
-            propUpdate.addChild( WebDAVXML.elemNewline, null);
-        }
-
         miniDoc.addChild( propUpdate, null );
         miniDoc.addChild( WebDAVXML.elemNewline, null );
 
         ByteArrayOutputStream byte_str = new ByteArrayOutputStream();
-        //EscapeOutputStream oStream = new EscapeOutputStream( byte_str, false );
         XMLOutputStream xml_out = new XMLOutputStream( byte_str );
         try
         {
@@ -733,17 +731,16 @@ public class WebDAVRequestGenerator implements Runnable
         Headers = null;
         Body = null;
 
-    if ( secondTime )
-    {
-        Node = Node2;
-        ResourceName= ResourceName2;
-    }
-    else
-    {
-        Node2 = Node;
-        ResourceName2 = new String(ResourceName);
-    }
-
+        if ( secondTime )
+        {
+            Node = Node2;
+            ResourceName= ResourceName2;
+        }
+        else
+        {
+            Node2 = Node;
+            ResourceName2 = new String(ResourceName);
+        }
 
         StrippedResource = parseResourceName( true );
         if( StrippedResource == null )
@@ -772,14 +769,16 @@ public class WebDAVRequestGenerator implements Runnable
 
     // Returns the parent Node , this is used to indicate which
     // Node is beeing writen to by WebDAVResponseInterpreter:parsePut
-   // Parent in case of selection of collection in file view
+    // Parent in case of selection of collection in file view
     // and the collection itself in the case of nothing selected in
     // file view window
-    public WebDAVTreeNode getPossibleParentOfSelectedCollectionNode(){
-    return parentNode;
+    public WebDAVTreeNode getPossibleParentOfSelectedCollectionNode()
+    {
+        return parentNode;
     }
 
-    public void resetParentNode(){
+    public void resetParentNode()
+    {
         parentNode= null;
     }
 
@@ -983,9 +982,8 @@ public class WebDAVRequestGenerator implements Runnable
         {
             System.err.println( "WebDAVRequestGenerator::GenerateRename" );
         }
-
-    // Why have the below when the DIscoverLock puts something else
-    // the Extra field
+        // Why have the below when the DIscoverLock puts something else
+        // the Extra field
         Extra = new String(tableResource);
 
         return DiscoverLock("rename:" + Dest + ":" + dir );
@@ -1138,7 +1136,6 @@ public class WebDAVRequestGenerator implements Runnable
         Headers = null;
         Body = null;
         // Only exclusive write lock is supported at the time
-
         StrippedResource = parseResourceName( true );
         if( StrippedResource == null )
         {
@@ -1223,7 +1220,6 @@ public class WebDAVRequestGenerator implements Runnable
                     Headers[0] = new NVPair("Host", HostName + ":" + Port);
 
                 Headers[1] = new NVPair("Timeout", "Second-86400"); // 1 day
-//                Headers[1] = new NVPair("Timeout", "Infinite");
                 Headers[2] = new NVPair("If", token);
             }
             catch (Exception e)
