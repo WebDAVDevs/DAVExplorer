@@ -3,7 +3,8 @@
 
 JC	 = $(JAVA_HOME)/bin/javac
 JDOC	 = $(JAVA_HOME)/bin/javadoc
-JFLAGS   = -O -g -deprecation
+#JFLAGS   = -O -g -deprecation
+JFLAGS   = -O
 #CLASSP   = -classpath "$(JAVA_HOME)/lib/classes.zip:.."
 #JDCLASSP = -classpath "$(JAVA_HOME)/lib/classes.zip:.."
 CLASSP   = -classpath ".."
