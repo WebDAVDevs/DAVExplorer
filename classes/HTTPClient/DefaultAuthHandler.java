@@ -635,10 +635,9 @@ public class DefaultAuthHandler implements AuthorizationHandler, GlobalConstants
 	    hash = MD5.hexDigest(req.getData() == null ? NUL : req.getData());
 	}
 
-	if (req.getStream() == null)
-	    params[response] = new NVPair("response", 
-		  calcResponseAttr(hash, extra, params, alg, uri, qop, nonce,
-				   nc, cnonce, req.getMethod()));
+    params[response] = new NVPair("response", 
+	           calcResponseAttr(hash, extra, params, alg, uri, qop, nonce,
+			   nc, cnonce, req.getMethod()));
 
 
 	// calc digest if necessary
