@@ -19,17 +19,26 @@
 
 package DAVExplorer;
 
-import java.awt.*;
-import java.awt.event.*;
-import javax.swing.*;
+import java.awt.Font;
+import java.awt.Color;
+import java.awt.Rectangle;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+import java.awt.event.WindowAdapter;
+import java.awt.event.WindowEvent;
+import java.io.IOException;
+import javax.swing.JDialog;
+import javax.swing.JButton;
+import javax.swing.JLabel;
+import javax.swing.JPanel;
+import javax.swing.JScrollPane;
+import javax.swing.JOptionPane;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
 import javax.swing.tree.TreePath;
 import javax.swing.tree.DefaultMutableTreeNode;
-import javax.swing.border.*;
-import java.util.*;
 import com.ms.xml.om.Element;
 
 
@@ -43,15 +52,15 @@ public class PropDialog extends JDialog implements ActionListener, ChangeListene
             setTitle("View/Modify Properties");
         else
             setTitle("View Properties");
-        JLabel label = new JLabel( resource + " (" + hostname + ")", JLabel.CENTER );
         this.resource = hostname + resource;
-        label.setFont(new Font("SansSerif", Font.BOLD, 14));
+        JLabel label = new JLabel( this.resource, JLabel.CENTER );
+        //label.setFont(new Font("SansSerif", Font.BOLD, 14));
         label.setForeground(Color.black);
         getContentPane().add( "North", label );
 
         addButton = new JButton("Add");
         addButton.addActionListener(this);
-        addButton.setEnabled( false );  // TODO: remove when add works
+        //addButton.setEnabled( false );  // TODO: remove when add works
         deleteButton = new JButton("Delete");
         deleteButton.addActionListener(this);
         deleteButton.setEnabled( false );
@@ -111,6 +120,7 @@ public class PropDialog extends JDialog implements ActionListener, ChangeListene
         {
             changed = enable;
             saveButton.setEnabled( changed );
+            // TODO: clear model of changed flags and removed data
         }
     }
 
@@ -152,8 +162,22 @@ public class PropDialog extends JDialog implements ActionListener, ChangeListene
 
     public void add()
     {
-        // TODO
-        setVisible(false);
+        boolean selected = true;
+        TreePath path = treeTable.getTree().getPathForRow( treeTable.getSelectedRow() );
+        if( path == null )
+            selected = false;
+        PropAddDialog add = new PropAddDialog( resource, selected );
+        if( !add.isCanceled() )
+        {
+            PropNode parentNode = null;
+            PropNode newNode = new PropNode( add.getTag(), add.getNamespace(), add.getValue(), true );
+            if( add.isAddToRoot() )
+                parentNode = (PropNode)model.getRoot();
+            else
+                parentNode = (PropNode)path.getLastPathComponent();
+            model.addNode( parentNode, newNode );
+            setChanged( true );
+        }
     }
 
     public void remove()
@@ -184,6 +208,7 @@ public class PropDialog extends JDialog implements ActionListener, ChangeListene
     public void cancel()
     {
         setVisible(false);
+        dispose();
     }
 
     protected void center()

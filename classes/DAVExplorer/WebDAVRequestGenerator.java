@@ -617,8 +617,6 @@ public class WebDAVRequestGenerator implements Runnable
         AsGen DAVNS = WebDAVXML.findNamespace( new AsGen(), null );
         if( DAVNS == null )
             DAVNS = WebDAVXML.createNamespace( new AsGen(), null );
-//        createNamespaces( addProps );
-//        createNamespaces( removeProps );
         Element propUpdate = WebDAVXML.createElement( WebDAVXML.ELEM_PROPERTY_UPDATE, Element.ELEMENT, null, DAVNS, true );
 
         if( addProps != null )
@@ -638,99 +636,9 @@ public class WebDAVRequestGenerator implements Runnable
         miniDoc.addChild( propUpdate, null );
         miniDoc.addChild( WebDAVXML.elemNewline, null );
 
-/*        Enumeration namesEnum = new_xml.getElements();
-        while (namesEnum.hasMoreElements())
-        {
-            Element nameEl = (Element) namesEnum.nextElement();
-            if (nameEl.getType() != Element.NAMESPACE)
-                continue;
-            miniDoc.addChild(nameEl,null);
-            miniDoc.addChild(WebDAVXML.elemNewline,null);
-        }
-
-        // if any of the properties were added, insert them into set elem
-        miniDoc.addChild(propUpdate,null);
-        miniDoc.addChild(WebDAVXML.elemNewline,null);
-
-        Enumeration newEnum = new_xml.getElements();
-        while (newEnum.hasMoreElements())
-        {
-            Element propElem = (Element) newEnum.nextElement();
-            Name propTag = propElem.getTagName();
-            if (propTag == null)
-                continue;
-            if (!propTag.getName().equals(WebDAVXML.ELEM_PROP))
-                continue;
-            Enumeration propEnum = propElem.getElements();
-            while (propEnum.hasMoreElements())
-            {
-                Element prop = (Element) propEnum.nextElement();
-                if (prop.getType() != Element.ELEMENT)
-                    continue;
-                if (!docContains(old_xml,prop))
-                {
-                    setUsed = true;
-                    setProp.addChild(WebDAVXML.elemTab,null);
-                    setProp.addChild(prop,null);
-                    setProp.addChild(WebDAVXML.elemNewline,null);
-                    setProp.addChild(WebDAVXML.elemTab,null);
-                    setProp.addChild(WebDAVXML.elemTab,null);
-                }
-            }
-        }
-
-        Enumeration OldEnum = old_xml.getElements();
-        while (OldEnum.hasMoreElements())
-        {
-            Element propElem = (Element) OldEnum.nextElement();
-            Name propTag = propElem.getTagName();
-            if (propTag == null)
-                continue;
-            if (!propTag.getName().equals(WebDAVXML.ELEM_PROP))
-                continue;
-            Enumeration propEnum = propElem.getElements();
-            while (propEnum.hasMoreElements())
-            {
-                Element prop = (Element) propEnum.nextElement();
-                if (prop.getType() != Element.ELEMENT)
-                    continue;
-                if (!docContains(new_xml,prop))
-                {
-                    removeUsed = true;
-                    removeProp.addChild(WebDAVXML.elemTab,null);
-                    Element remEl = new ElementImpl(prop.getTagName(),Element.ELEMENT);
-                    removeProp.addChild(remEl,null);
-                    removeProp.addChild(WebDAVXML.elemNewline,null);
-                    removeProp.addChild(WebDAVXML.elemTab,null);
-                    removeProp.addChild(WebDAVXML.elemTab,null);
-                }
-            }
-        }
-        if ( (!setUsed) && (!removeUsed))
-        {
-            return false;
-        }
-
-        if (setUsed)
-        {
-            propUpdate.addChild(WebDAVXML.elemTab,null);
-            propUpdate.addChild(setEl,null);
-            propUpdate.addChild(WebDAVXML.elemNewline,null);
-        }
-        if (removeUsed)
-        {
-            propUpdate.addChild(WebDAVXML.elemTab,null);
-            propUpdate.addChild(removeEl,null);
-            propUpdate.addChild(WebDAVXML.elemNewline,null);
-        }
-
-        StrippedResource = Res;
-        HostName = Host;
-        Port = port;
-*/
         ByteArrayOutputStream byte_str = new ByteArrayOutputStream();
-        XMLOutputStream xml_out = new XMLOutputStream(byte_str);
-
+        //EscapeOutputStream oStream = new EscapeOutputStream( byte_str, false );
+        XMLOutputStream xml_out = new XMLOutputStream( byte_str );
         try
         {
             miniDoc.save(xml_out);
@@ -751,45 +659,8 @@ public class WebDAVRequestGenerator implements Runnable
             GlobalData.getGlobalData().errorMsg("XML Generator Error: \n" + e);
             return false;
         }
-
-/*        execute(); */
         return true;
     }
-/*
-    private void createNamespaces( WebDAVProp[] props )
-    {
-        if( props != null )
-        {
-            for( int i=0; i<props.length; i++ )
-            {
-                AsGen asgen = new AsGen();
-                WebDAVXML.createNamespace( asgen, props[i].schema );
-            }
-        }
-    }
-
-
-    private boolean updateProps( Element el, WebDAVProp[] props, AsGen NS )
-    {
-        if( props != null )
-        {
-            for( int i=0; i<props.length; i++ )
-            {
-                AsGen ns = WebDAVXML.findNamespace( NS, props[i].schema );
-                if( ns == null )
-                {
-                    GlobalData.getGlobalData().errorMsg("XML Generator Error:\nNamespace " + props[i].schema + "\nnot found.");
-                    return false;
-                }
-                Element p = WebDAVXML.createElement( props[i].tag, Element.ELEMENT, el, ns );
-                if( !props[i].leaf )
-                    updateProps( p, props[i].children, NS );
-                el.addChild( p, null );
-            }
-        }
-        return true;
-    }
-*/
 
     public synchronized boolean GenerateMkCol( String parentDir, String dirname )
     {
@@ -1032,7 +903,6 @@ public class WebDAVRequestGenerator implements Runnable
             Dest = HostName + Dest;
         else
             Dest = HostName + ":" + Port + Dest ;
-            //Dest =  HostName + ":" + Port + StrippedResource + "/" + Dest + "_copy" ;
 
 
         if( !Dest.startsWith(WebDAVPrefix) && !Dest.startsWith(WebDAVPrefixSSL) )
@@ -1157,14 +1027,6 @@ public class WebDAVRequestGenerator implements Runnable
         String srcFile = ResourceName;
         ResourceName = dir;
 
-    /*
-        StrippedResource = parseResourceName( true );
-        if( StrippedResource == null )
-            dir = "/";
-        else
-            dir = StrippedResource;
-    */
-
         ResourceName = srcFile;
         StrippedResource = parseResourceName( true );
         if( StrippedResource == null )
@@ -1178,17 +1040,6 @@ public class WebDAVRequestGenerator implements Runnable
             GlobalData.getGlobalData().errorMsg( "Invalid Destination" );
             return false;
         }
-
-
-    /*
-    if( Port==0 || Port==DEFAULT_PORT )
-            Dest = HostName + Dest;
-        else
-            Dest = HostName + ":" + Port + Dest ;
-
-        if( !Dest.startsWith(WebDAVPrefix) )
-            Dest = WebDAVPrefix + Dest;
-    */
 
         // may be null if invoked from menu
         if( dir == null )
@@ -1425,53 +1276,6 @@ public class WebDAVRequestGenerator implements Runnable
         Extra = info;
     }
 
-    // TODO: fix
-/*    public void handlePropPatch(PropDialogEvent e)
-    {
-        String hostname = e.getHost();
-        String host = null;
-        String res = e.getResource();
-        byte[] old_bytes = e.getInitialData().getBytes();
-        byte[] new_bytes = e.getData().getBytes();
-
-        int pos = hostname.indexOf(":");
-        int port = 0;
-        if (pos > 0)
-        {
-            try
-            {
-                host = hostname.substring(0,pos);
-                port = Integer.parseInt(hostname.substring(pos+1));
-            }
-            catch (Exception exception)
-            {
-                return;
-            }
-        }
-
-        // Generate XML
-        Document oldProp = null;
-        Document newProp = null;
-        try
-        {
-            ByteArrayInputStream old_b = new ByteArrayInputStream(old_bytes);
-            XMLInputStream old_in = new XMLInputStream(old_b);
-            oldProp = new Document();
-            oldProp.load(old_in);
-
-            ByteArrayInputStream new_b = new ByteArrayInputStream(new_bytes);
-            XMLInputStream new_in = new XMLInputStream(new_b);
-            newProp = new Document();
-            newProp.load(new_in);
-        }
-        catch (Exception ex)
-        {
-            GlobalData.getGlobalData().errorMsg("PROPPATCH Failed! \nXML Parsing Error: \n\n" + ex);
-            return;
-        }
-        //GeneratePropPatch(host,port,res,oldProp,newProp);
-    }
-*/
 
     private String getContentType( String file )
     {

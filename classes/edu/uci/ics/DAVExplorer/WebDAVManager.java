@@ -49,6 +49,7 @@
 package DAVExplorer;
 
 import java.io.*;
+import java.net.SocketException;
 import HTTPClient.*;
 import java.util.*;
 import java.awt.event.*;

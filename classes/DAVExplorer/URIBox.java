@@ -91,6 +91,7 @@ public class URIBox extends JPanel implements ActionListener
             label1.setText( "https:// " );
         else
             label1.setText( "http:// " );
+        label1.setForeground(Color.black);
 
         panel.add(label1);
         panel.add(textField1);

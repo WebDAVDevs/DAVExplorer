@@ -94,14 +94,17 @@ Public methods and attributes section
         constraints.fill = GridBagConstraints.BOTH;
         constraints.gridwidth = GridBagConstraints.REMAINDER;
         JLabel l = new JLabel( "Realm: " + realm, JLabel.CENTER );
+        l.setForeground(Color.black);
         gridbag.setConstraints( l, constraints );
         groupPanel.add( l );
         l = new JLabel( "Scheme: " + scheme, JLabel.CENTER );
+        l.setForeground(Color.black);
         gridbag.setConstraints( l, constraints );
         groupPanel.add( l );
         constraints.gridwidth = 1;
         constraints.weightx = 1.0;
         l = new JLabel( "Login name:", JLabel.LEFT );
+        l.setForeground(Color.black);
         gridbag.setConstraints( l, constraints );
         groupPanel.add( l );
         constraints.weightx = 3.0;
@@ -113,6 +116,7 @@ Public methods and attributes section
         constraints.gridwidth = 1;
         constraints.weightx = 1.0;
         l = new JLabel( "Password:", JLabel.LEFT );
+        l.setForeground(Color.black);
         gridbag.setConstraints( l, constraints );
         groupPanel.add( l );
         constraints.weightx = 3.0;
