@@ -151,3 +151,11 @@ AuthorizationInfo.class : HashVerifier.class
 
 Codecs.class : FilenameMangler.class
 
+
+clean::
+	- find . -name '*.class' -exec rm -f {} \;
+
+dist::
+	- find . -name '*.class' -exec rm -f {} \;
+	- find . -name '*.CVS' -exec rm -rf {} \;
+
