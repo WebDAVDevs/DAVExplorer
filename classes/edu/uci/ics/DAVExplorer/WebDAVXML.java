@@ -50,13 +50,9 @@ import java.util.Enumeration;
  */
 public class WebDAVXML
 {
-    public static final ElementImpl elemNewline =
-            new ElementImpl(null, Element.WHITESPACE);
-
-    public static final ElementImpl elemTab =
-            new ElementImpl(null, Element.WHITESPACE);
-        public static final ElementImpl elemDSpace =
-            new ElementImpl(null, Element.WHITESPACE);
+    public static final ElementImpl elemNewline = new ElementImpl(null, Element.WHITESPACE);
+    public static final ElementImpl elemTab = new ElementImpl(null, Element.WHITESPACE);
+    public static final ElementImpl elemDSpace = new ElementImpl(null, Element.WHITESPACE);
 
     static
     {

@@ -58,10 +58,6 @@ public class WebDAVToolBar extends JPanel implements ActionListener
 {
     private JToolBar toolbar;
     private Vector toolbarListener;
-    private static String jarPath = null;
-    private static final String jarExtension =".jar";
-    private static final String WebDAVClassName = "edu/uci/ics/DAVExplorer";
-    private static final String IconDir = "icons";
 
     public WebDAVToolBar()
     {
@@ -77,8 +73,7 @@ public class WebDAVToolBar extends JPanel implements ActionListener
     public void addTool( JToolBar tb, String name, String description )
     {
 
-        JButton b = null;
-        b = new JButton(loadImageIcon(name + ".gif", name));
+        JButton b = new JButton(GlobalData.getGlobalData().getImageIcon(name + ".gif", name));
         b.setActionCommand( description );
         b.addActionListener(this);
         b.setToolTipText( description );
@@ -99,16 +94,6 @@ public class WebDAVToolBar extends JPanel implements ActionListener
         return toolbar;
     }
 
-
-    private ImageIcon loadImageIcon(String filename, String description)
-    {
-        try {
-            return new ImageIcon(getClass().getResource("icons/" +  filename),description);
-        } catch (Exception ex) {
-            errorMsg("Toolbar:\nIcon load error." );
-            return null;
-        }
-    }
 
     public synchronized void addActionListener(ActionListener l)
     {
@@ -139,11 +124,5 @@ public class WebDAVToolBar extends JPanel implements ActionListener
             ActionListener client = (ActionListener)v.elementAt(i);
             client.actionPerformed(evt);
         }
-    }
-
-    private static void errorMsg(String str)
-    {
-        Object[] options = { "OK" };
-		JOptionPane.showOptionDialog( null, str,"Error Message", JOptionPane.DEFAULT_OPTION, JOptionPane.ERROR_MESSAGE, null, options, options[0]);
     }
 }

@@ -179,8 +179,11 @@ public class WebDAVMenu extends JMenuBar implements ActionListener
         mnu_FileMenu.add(new WebDAVMenuItem( "Delete", this, true ));
         mnu_FileMenu.addSeparator();
         mnu_FileMenu.add(new WebDAVMenuItem( "Create Collection", this, true ));
+
+        if (!GlobalData.getGlobalData().isAppletMode()) {
         mnu_FileMenu.addSeparator();
         mnu_FileMenu.add(new WebDAVMenuItem( "Exit", this, true ));
+        }
 
         return mnu_FileMenu;
     }
@@ -192,13 +195,17 @@ public class WebDAVMenu extends JMenuBar implements ActionListener
     {
         JMenu mnu_EditMenu = new JMenu( "Edit", true );
 
-        mnu_EditMenu.add(new WebDAVMenuItem( "Edit Proxy Info",this, true ));
         mnu_EditMenu.add(new WebDAVMenuItem( "Edit Lock Info",this, true ));
+
+        if (!GlobalData.getGlobalData().isAppletMode()) {
+            mnu_EditMenu.add(new WebDAVMenuItem( "Edit Proxy Info",this, true ));
         mnu_EditMenu.addSeparator();
         mnu_EditMenu.add(new WebDAVMenuItem( "Clear Auth Buffer", this, true ));
         mnu_EditMenu.addSeparator();
         logging = new WebDAVCheckBoxMenuItem( "HTTP Logging", this, true );
         mnu_EditMenu.add( logging );
+        }
+
         return mnu_EditMenu;
     }
 

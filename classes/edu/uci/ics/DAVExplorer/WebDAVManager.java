@@ -71,7 +71,6 @@ public class WebDAVManager
     private byte[] Body;
     private String ExtraInfo;
     private Vector Listeners = new Vector();
-    private static String WebDAVPrefix = "http://";
 
     private boolean logging = false;
     private String logFilename = null;
@@ -87,10 +86,10 @@ public class WebDAVManager
         String proxy = GlobalData.getGlobalData().ReadConfigEntry("proxy");
         boolean useProxy = false;
         // find out if proxy is used
-        if( (proxy.length() > 0) || proxy.startsWith(WebDAVPrefix) )
+        if( (proxy.length() > 0) || proxy.startsWith(GlobalData.WebDAVPrefix) )
         {
-            if( proxy.startsWith(WebDAVPrefix) )
-                proxy = proxy.substring(WebDAVPrefix.length());
+            if( proxy.startsWith(GlobalData.WebDAVPrefix) )
+                proxy = proxy.substring(GlobalData.WebDAVPrefix.length());
             StringTokenizer str = new StringTokenizer( proxy, "/" );
             if( !str.hasMoreTokens() )
             {

@@ -77,13 +77,6 @@ import java.io.InputStream;
 
 public class WebDAVFileView implements ViewSelectionListener, ActionListener
 {
-    private static String jarPath = null;
-    private final static String jarExtension =".jar";
-    final static String WebDAVClassName = "edu/uci/ics/DAVExplorer";
-    final static String WebDAVPrefix = "http://";
-    final static String WebDAVPrefixSSL = "https://";
-    final static String IconDir = "icons";
-
     final String[] colNames = { " ",
                                 "  ",
                                 "Name",
@@ -109,95 +102,15 @@ public class WebDAVFileView implements ViewSelectionListener, ActionListener
     WebDAVTreeNode parentNode;
     String parentPath = new String();
     String selectedResource;
-    int selectedRow;
+    int selectedRow = -1;
     int pressRow, releaseRow;
 
     public WebDAVFileView()
     {
-        String iconPath = getIconPath();
-
-        if (iconPath == null)
-        {
-            System.exit(0);
-        }
-
-        String folderIconPath =  iconPath + File.separatorChar + "TreeClosed.gif";
-        String resPath = iconPath + File.separatorChar + "resource.gif";
-        String lckPath = iconPath + File.separatorChar + "lck.gif";
-        String unlckPath = iconPath + File.separatorChar + "unlck.gif";
-
-        if( jarPath == null )
-        {
-            FOLDER_ICON = new ImageIcon(folderIconPath);
-            FILE_ICON = new ImageIcon(resPath);
-            LOCK_ICON = new ImageIcon(lckPath);
-            UNLOCK_ICON = new ImageIcon(unlckPath);
-        }
-        else
-        {
-            try
-            {
-                folderIconPath = iconPath + "TreeClosed.gif";
-                resPath = iconPath + "resource.gif";
-                lckPath = iconPath + "lck.gif";
-                unlckPath = iconPath + "unlck.gif";
-                ZipFile file = new ZipFile( jarPath );
-                ZipEntry entry = file.getEntry( folderIconPath );
-                InputStream is = null;
-                if( entry != null )
-                {
-                    is = file.getInputStream( entry );
-                    int len = (int)entry.getSize();
-                    if( len != -1 )
-                    {
-                        byte[] ba = new byte[len];
-                        is.read( ba, 0, len );
-                        FOLDER_ICON = new ImageIcon( ba );
-                    }
-                }
-                entry = file.getEntry( resPath );
-                if( entry != null )
-                {
-                    is = file.getInputStream( entry );
-                    int len = (int)entry.getSize();
-                    if( len != -1 )
-                    {
-                        byte[] ba = new byte[len];
-                        is.read( ba, 0, len );
-                        FILE_ICON = new ImageIcon( ba );
-                    }
-                }
-                entry = file.getEntry( lckPath );
-                if( entry != null )
-                {
-                    is = file.getInputStream( entry );
-                    int len = (int)entry.getSize();
-                    if( len != -1 )
-                    {
-                        byte[] ba = new byte[len];
-                        is.read( ba, 0, len );
-                        LOCK_ICON = new ImageIcon( ba );
-                    }
-                }
-                entry = file.getEntry( unlckPath );
-                if( entry != null )
-                {
-                    is = file.getInputStream( entry );
-                    int len = (int)entry.getSize();
-                    if( len != -1 )
-                    {
-                        byte[] ba = new byte[len];
-                        is.read( ba, 0, len );
-                        UNLOCK_ICON = new ImageIcon( ba );
-                    }
-                }
-            }
-            catch( IOException e )
-            {
-                errorMsg("Icon load failure: " + e );
-            }
-        }
-
+        FOLDER_ICON = GlobalData.getGlobalData().getImageIcon("TreeClosed.gif", "");
+        FILE_ICON = GlobalData.getGlobalData().getImageIcon("resource.gif", "");
+        LOCK_ICON = GlobalData.getGlobalData().getImageIcon("lck.gif", "");
+        UNLOCK_ICON = GlobalData.getGlobalData().getImageIcon("unlck.gif", "");
 
         dataModel = new AbstractTableModel()
         {
@@ -256,7 +169,7 @@ public class WebDAVFileView implements ViewSelectionListener, ActionListener
 
                     if ( val != null)
                     {
-                        if( !parentPath.startsWith(WebDAVPrefix) && !parentPath.startsWith(WebDAVPrefixSSL) )
+                        if( !parentPath.startsWith(GlobalData.WebDAVPrefix) && !parentPath.startsWith(GlobalData.WebDAVPrefixSSL) )
                             return;
 
                         ((Vector)data.elementAt(row)).setElementAt(value,column);
@@ -323,8 +236,9 @@ public class WebDAVFileView implements ViewSelectionListener, ActionListener
 
 
     // Returns the path to the parentNode
-    public String getParentPath(){
-    return parentPath;
+    public String getParentPath()
+    {
+        return parentPath;
     }
 
     ////////////
@@ -483,26 +397,32 @@ public class WebDAVFileView implements ViewSelectionListener, ActionListener
         //table.updateUI();
     }
 
-   public WebDAVTreeNode getParentNode(){
-    return parentNode;
-   }
 
-   protected String getParentPathString(){
-    String s = "";
-    TreePath tp = new TreePath(parentNode.getPath());
-
-    if (tp.getPathCount() > 1) {
-        for ( int i = 1; i < tp.getPathCount(); i++ )
-        {
-            s = s + tp.getPathComponent(i);
-            if( s.startsWith( WebDAVPrefix ) || s.startsWith( WebDAVPrefixSSL ) )
-                s += "/";
-            else if( !s.endsWith( String.valueOf(File.separatorChar) ) )
-                s += File.separatorChar;
-        }
+    public WebDAVTreeNode getParentNode()
+    {
+        return parentNode;
     }
-    return s;
 
+
+    protected String getParentPathString()
+    {
+        String s = "";
+        if( parentNode == null )
+            return s;
+
+        TreePath tp = new TreePath(parentNode.getPath());
+
+        if (tp.getPathCount() > 1) {
+            for ( int i = 1; i < tp.getPathCount(); i++ )
+            {
+                s = s + tp.getPathComponent(i);
+                if( s.startsWith( GlobalData.WebDAVPrefix ) || s.startsWith( GlobalData.WebDAVPrefixSSL ) )
+                    s += "/";
+                else if( !s.endsWith( String.valueOf(File.separatorChar) ) )
+                    s += File.separatorChar;
+            }
+        }
+        return s;
    }
 
 
@@ -566,12 +486,14 @@ public class WebDAVFileView implements ViewSelectionListener, ActionListener
         }
     }
 
-   public boolean isSelectedLocked(){
-    boolean b = new
-            Boolean( table.getValueAt(selectedRow,1).toString()).booleanValue();
-    return b;
 
-   }
+    public boolean isSelectedLocked()
+    {
+        boolean b = new
+            Boolean( table.getValueAt(selectedRow,1).toString()).booleanValue();
+        return b;
+    }
+
 
     // Attempt to get at the selected item's dataNode
     public String getSelectedLockToken()
@@ -655,7 +577,9 @@ public class WebDAVFileView implements ViewSelectionListener, ActionListener
                 return s + "/";
             else
                 return s;
-        } else{
+        }
+        else
+        {
             // Return the parent node
             return getParentPathString();
         }
@@ -709,76 +633,6 @@ public class WebDAVFileView implements ViewSelectionListener, ActionListener
         updateTable(data);
     }
 
-    private static String getIconPath()
-    {
-        String icons = WebDAVClassName;
-        if( File.separatorChar != '/' )
-        {
-			int pos = icons.indexOf("/");
-			while( pos >=0 )
-			{
-				icons = icons.substring( 0, pos) + File.separatorChar + icons.substring( pos+1 );
-				pos = icons.indexOf( "/" );
-			}
-		}
-        icons += File.separatorChar + IconDir;
-
-        String classPath = System.getProperty("java.class.path");
-        if (classPath == null)
-        {
-            errorMsg("Fileview:\nNo Classpath set." );
-            return null;
-        }
-        String os = (System.getProperty( "os.name" )).toLowerCase();
-        StringTokenizer paths;
-        if( os.indexOf( "windows" ) == -1 )
-        {
-            paths = new StringTokenizer(classPath,":");
-        }
-        else
-        {
-            // making sure that the full drive:directory/... value is retained
-            paths = new StringTokenizer(classPath,";");
-        }
-
-        while (paths.hasMoreTokens())
-        {
-            String nextPath = paths.nextToken();
-            String lowerPath = nextPath.toLowerCase();
-            if( lowerPath.endsWith( jarExtension ) )
-            {
-                jarPath = nextPath;
-                int pos = lowerPath.indexOf( jarExtension );
-                nextPath = nextPath.substring( 0, pos );
-            }
-            if (!nextPath.endsWith(new Character(File.separatorChar).toString()))
-                nextPath += File.separatorChar;
-            nextPath += icons;
-            File iconDirFile = new File(nextPath);
-            if (iconDirFile.exists())
-                return nextPath;
-            if( jarPath != null )
-            {
-                try
-                {
-                    ZipFile zfile = new ZipFile( jarPath );
-                    icons = WebDAVClassName + "/" + IconDir + "/";
-                    ZipEntry entry = zfile.getEntry( icons + "connect.gif" );
-                    if( entry != null )
-                    {
-                        return icons;
-                    }
-                    else
-                        jarPath = null;
-                }
-                catch( IOException e )
-                {
-                }
-            }
-        }
-        errorMsg("Fileview:\nPath to icons not found." );
-        return null;
-    }
 
     public void setupTable(JTable table)
     {
@@ -1168,8 +1022,8 @@ public class WebDAVFileView implements ViewSelectionListener, ActionListener
                     boolean isColl = new Boolean(table.getValueAt(selRow,0).toString()).booleanValue();
                     if (isColl)
                     {
-                        if( parentPath.startsWith(WebDAVPrefix) || parentPath.startsWith(WebDAVPrefixSSL) ||
-                            selResource.startsWith(WebDAVPrefix) || selResource.startsWith(WebDAVPrefixSSL) )
+                        if( parentPath.startsWith(GlobalData.WebDAVPrefix) || parentPath.startsWith(GlobalData.WebDAVPrefixSSL) ||
+                            selResource.startsWith(GlobalData.WebDAVPrefix) || selResource.startsWith(GlobalData.WebDAVPrefixSSL) )
                         {
                             if( !selResource.endsWith( "/" ) )
                                 selResource += "/";
@@ -1194,11 +1048,5 @@ public class WebDAVFileView implements ViewSelectionListener, ActionListener
                 }
             }
         }
-    }
-
-    private static void errorMsg(String str)
-    {
-        Object[] options = { "OK" };
-		JOptionPane.showOptionDialog( null, str,"Error Message", JOptionPane.DEFAULT_OPTION, JOptionPane.ERROR_MESSAGE, null, options, options[0]);
     }
 }

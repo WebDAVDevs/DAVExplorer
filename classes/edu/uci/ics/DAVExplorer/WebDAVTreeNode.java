@@ -59,17 +59,21 @@ import com.ms.xml.util.Name;
 
 public class WebDAVTreeNode extends DefaultMutableTreeNode
 {
-    protected boolean hasLoaded = false;
-    protected final static String HTTPPrefix = "http://";
-    protected final static String HTTPSPrefix = "https://";
-    protected final static String WebDAVRoot = "DAV Explorer";
-    protected DataNode dataNode;
     protected static WebDAVRequestGenerator generator = new WebDAVRequestGenerator();
     protected static WebDAVResponseInterpreter interpreter = new WebDAVResponseInterpreter();
+
+    protected boolean hasLoaded = false;
+    protected final static String WebDAVRoot = "DAV Explorer";
+    protected DataNode dataNode;
     private String userAgent;
 
     protected boolean childrenLoaded = false;
     protected boolean localLoad = false;
+
+    public static void reset() {
+        generator = new WebDAVRequestGenerator();
+        interpreter = new WebDAVResponseInterpreter();
+    }
 
     public WebDAVTreeNode( Object o, String ua )
     {
@@ -298,9 +302,9 @@ public class WebDAVTreeNode extends DefaultMutableTreeNode
                 if (pathLen == 2)
                 {
                     if( GlobalData.getGlobalData().doSSL() )
-                        hostName = HTTPSPrefix + interpreter.getHost() + "/" + ResourceName;
+                        hostName = GlobalData.WebDAVPrefixSSL + interpreter.getHost() + "/" + ResourceName;
                     else
-                        hostName = HTTPPrefix + interpreter.getHost() + "/" + ResourceName;
+                        hostName = GlobalData.WebDAVPrefix + interpreter.getHost() + "/" + ResourceName;
                 }
                 // update node values
                 dataNode = new DataNode( node.isCollection(), node.isLocked(), node.getLockToken(),
@@ -332,9 +336,9 @@ public class WebDAVTreeNode extends DefaultMutableTreeNode
             if (pathLen == 2)
             {
                 if( GlobalData.getGlobalData().doSSL() )
-                    hostName = HTTPSPrefix + interpreter.getHost() + "/" + ResourceName;
+                    hostName = GlobalData.WebDAVPrefixSSL + interpreter.getHost() + "/" + ResourceName;
                 else
-                    hostName = HTTPPrefix + interpreter.getHost() + "/" + ResourceName;
+                    hostName = GlobalData.WebDAVPrefix + interpreter.getHost() + "/" + ResourceName;
             }
             // update node values
             dataNode = new DataNode( true, false, null,
@@ -491,7 +495,9 @@ public class WebDAVTreeNode extends DefaultMutableTreeNode
     public void finishLoadChildren()
     {
         byte[] byte_xml = interpreter.getXML();
+        if (byte_xml != null) {
         loadRemote(byte_xml);
+        }
         interpreter.ResetRefresh();
 
         childrenLoaded = true;
@@ -510,7 +516,7 @@ public class WebDAVTreeNode extends DefaultMutableTreeNode
             return;
 
         String name = full_path[1].toString();
-        if( name.startsWith(HTTPPrefix) || name.startsWith(HTTPSPrefix) )
+        if( name.startsWith(GlobalData.WebDAVPrefix) || name.startsWith(GlobalData.WebDAVPrefixSSL) )
         {
             localLoad = false;
 
@@ -637,12 +643,12 @@ public class WebDAVTreeNode extends DefaultMutableTreeNode
             System.err.println( "WebDAVTreeNode::truncateResource" );
         }
 
-        int pos = res.indexOf(HTTPSPrefix);
+        int pos = res.indexOf(GlobalData.WebDAVPrefixSSL);
         if (pos >= 0)
-            res = res.substring(HTTPSPrefix.length());
-        pos = res.indexOf(HTTPPrefix);
+            res = res.substring(GlobalData.WebDAVPrefixSSL.length());
+        pos = res.indexOf(GlobalData.WebDAVPrefix);
         if (pos >= 0)
-            res = res.substring(HTTPPrefix.length());
+            res = res.substring(GlobalData.WebDAVPrefix.length());
         pos = res.indexOf("/");
         if( pos >= 0 )
             res = res.substring(pos);
@@ -665,12 +671,12 @@ public class WebDAVTreeNode extends DefaultMutableTreeNode
             System.err.println( "WebDAVTreeNode::getFullResource" );
         }
 
-        int pos = res.indexOf(HTTPSPrefix);
+        int pos = res.indexOf(GlobalData.WebDAVPrefixSSL);
         if (pos >= 0)
-            res = res.substring(HTTPSPrefix.length());
-        pos = res.indexOf(HTTPPrefix);
+            res = res.substring(GlobalData.WebDAVPrefixSSL.length());
+        pos = res.indexOf(GlobalData.WebDAVPrefix);
         if (pos >= 0)
-            res = res.substring(HTTPPrefix.length());
+            res = res.substring(GlobalData.WebDAVPrefix.length());
         pos = res.indexOf("/");
         if( pos >= 0 )
             res = res.substring(pos);

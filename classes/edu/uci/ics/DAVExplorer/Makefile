@@ -31,12 +31,15 @@ JFLAGS   =
 
 ### all source files
 
-classes = AsGen.class \
+classes = AppletAuthorizationPrompter.class \
+	  AppletMain.class \
+	  AsGen.class \
 	  CopyResponseEvent.class \
 	  CopyResponseListener.class \
 	  DataNode.class \
 	  EscapeInputStream.class \
 	  EscapeReader.class \
+	  GlobalData.class \
 	  WebDAVFileView.class \
 	  PropDialog.class \
 	  PutEvent.class \

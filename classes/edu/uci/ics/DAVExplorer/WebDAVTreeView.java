@@ -77,8 +77,6 @@ public class WebDAVTreeView implements ViewSelectionListener, CopyResponseListen
 {
     JTree tree;
     final static String WebDAVRoot = "DAV Explorer";
-    final static String WebDAVPrefix = "http://";
-    final static String WebDAVPrefixSSL = "https://";
 
     DefaultMutableTreeNode root = new WebDAVTreeNode( WebDAVRoot, true, "" );
     DefaultTreeModel treeModel = new DefaultTreeModel(root);
@@ -87,7 +85,7 @@ public class WebDAVTreeView implements ViewSelectionListener, CopyResponseListen
     TreePath currPath;
     TreeSelectionModel selectionModel = new DefaultTreeSelectionModel();
     Vector selListeners = new Vector();
-    public static String homeDirName;
+    public String homeDirName;
     private String startDirName = null;
     private String userAgent;
     JScrollPane sp;
@@ -98,11 +96,10 @@ public class WebDAVTreeView implements ViewSelectionListener, CopyResponseListen
     // without having to select it.
     treeExpansionListener treeExpListener = new treeExpansionListener();
 
-    private boolean simpleNodeExpand = false;
-
     // Constructor
     public WebDAVTreeView()
     {
+        GlobalData.getGlobalData().setTree(this);
         tree = new JTree(treeModel);
 
         tree.putClientProperty("JTree.lineStyle", "Angled");
@@ -165,6 +162,11 @@ public class WebDAVTreeView implements ViewSelectionListener, CopyResponseListen
             }
         });
     }
+
+    public DefaultMutableTreeNode getRoot() {
+        return root;
+    }
+
 
     public void setUserAgent( String ua )
     {
@@ -253,6 +255,9 @@ public class WebDAVTreeView implements ViewSelectionListener, CopyResponseListen
 
         WebDAVTreeNode tn = e.getNode();
 
+        if( tn == null )
+            return;
+
         TreeNode path[] = tn.getPath();
 
         String s = new String();
@@ -322,7 +327,7 @@ public class WebDAVTreeView implements ViewSelectionListener, CopyResponseListen
         {
         Object obj = tp.getPathComponent(1);
         String indicator = obj.toString();
-        if ( indicator.startsWith(WebDAVPrefix) || indicator.startsWith(WebDAVPrefixSSL) )
+        if ( indicator.startsWith(GlobalData.WebDAVPrefix) || indicator.startsWith(GlobalData.WebDAVPrefixSSL) )
         {
                 tree.addTreeExpansionListener(treeExpListener);
                 tree.addTreeSelectionListener(treeSelectionListener);
@@ -468,7 +473,7 @@ public class WebDAVTreeView implements ViewSelectionListener, CopyResponseListen
                 {
                     String s = obj.toString();
 
-                    if( s.startsWith(WebDAVPrefix) || s.startsWith(WebDAVPrefixSSL) )
+                    if( s.startsWith(GlobalData.WebDAVPrefix) || s.startsWith(GlobalData.WebDAVPrefixSSL) )
                     {
                         tn.loadChildren(true);
                         return;
@@ -499,25 +504,48 @@ public class WebDAVTreeView implements ViewSelectionListener, CopyResponseListen
         }
     }
 
+
     public void initTree()
     {
         // For initialization purposes.
         // This function is called when the client starts.
-        if( startDirName != null )
+        if (startDirName != null && GlobalData.getGlobalData().doAddStartDir())
             addRowToRoot(startDirName,true);
+
+        String[][] initialSites = GlobalData.getGlobalData().getInitialSites();
+        for (int i = 0; i < initialSites.length; i++)
+        {
+            String is[] = initialSites[i];
+            if( is.length == 0 )
+                continue;
+            String initialSite = initialSites[i][0];
+            if (initialSite.startsWith(GlobalData.WebDAVPrefixSSL))
+                initialSite = initialSite.substring(GlobalData.WebDAVPrefixSSL.length());
+            if (initialSite.startsWith(GlobalData.WebDAVPrefix))
+                initialSite = initialSite.substring(GlobalData.WebDAVPrefix.length());
+
+            // simulate user input
+            URIBox uriBox = GlobalData.getGlobalData().getURIBox();
+            uriBox.setText(initialSite);
+            uriBox.notifyListener();
+        }
     }
+
 
     public String constructPath(TreePath the_path)
     {
         // This will iterate through the path array, and construct
         // the appropriate path for method generation purposes.
-        Object[] path = the_path.getPath();
         String newPath = "";
+        if( the_path == null )
+            return newPath;
+        Object[] path = the_path.getPath();
         if (path.length == 1)
-            return (newPath);
+            return newPath;
+
         String firstComp = path[1].toString();
 
-        if( !firstComp.startsWith(WebDAVPrefix) && !firstComp.startsWith(WebDAVPrefixSSL) )
+        if( !firstComp.startsWith(GlobalData.WebDAVPrefix) && !firstComp.startsWith(GlobalData.WebDAVPrefixSSL) )
         {
             // We're constructing local filename path
             newPath += startDirName;
@@ -580,15 +608,19 @@ public class WebDAVTreeView implements ViewSelectionListener, CopyResponseListen
         {
             if (name.endsWith("/"))
                 name = name.substring(0,name.length() - 1);
-            if( GlobalData.getGlobalData().doSSL() )
-                newName = WebDAVPrefixSSL + name;
+            if( GlobalData.getGlobalData().doSSL() && !name.startsWith(GlobalData.WebDAVPrefixSSL))
+                newName = GlobalData.WebDAVPrefixSSL + name;
+            else if ( !name.startsWith(GlobalData.WebDAVPrefix) )
+                newName = GlobalData.WebDAVPrefix + name;
             else
-                newName = WebDAVPrefix + name;
+                newName = name;
         }
 
         if (rootElements.contains(newName))
         {
-            GlobalData.getGlobalData().errorMsg("TreeView Error:\n\nNode already exists!");
+            // be quiet in applet mode
+            if (!GlobalData.getGlobalData().isAppletMode())
+                GlobalData.getGlobalData().errorMsg("TreeView Error:\n\nNode already exists!");
             return false;
         }
 
@@ -627,6 +659,8 @@ public class WebDAVTreeView implements ViewSelectionListener, CopyResponseListen
 
     public String getLockToken( String curFile )
     {
+        if( currPath == null )
+            return null;
         currNode = (WebDAVTreeNode) currPath.getLastPathComponent();
         DataNode node = ((WebDAVTreeNode)currNode).getDataNode();
         return getLockToken( node, curFile );
@@ -689,7 +723,7 @@ public class WebDAVTreeView implements ViewSelectionListener, CopyResponseListen
 
     public boolean isRemote( String curFile )
     {
-        if( curFile.startsWith(WebDAVPrefix) || curFile.startsWith(WebDAVPrefixSSL) )
+        if( curFile.startsWith(GlobalData.WebDAVPrefix) || curFile.startsWith(GlobalData.WebDAVPrefixSSL) )
             return true;
         else
             return false;
@@ -721,6 +755,9 @@ public class WebDAVTreeView implements ViewSelectionListener, CopyResponseListen
         {
             System.err.println( "WebDAVTreeView::refreshLocal" );
         }
+
+        if( n == null )
+            return;
 
         TreeNode path[] = n.getPath();
 

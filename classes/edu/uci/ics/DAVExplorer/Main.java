@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 1998-2002 Regents of the University of California.
+ * Copyright (c) 1998-2003 Regents of the University of California.
  * All rights reserved.
  *
  * This software was developed at the University of California, Irvine.
@@ -23,7 +23,7 @@
  *              instantiates the Main JFrame.
  *              The Main class creates the user interface and adds the appropriate
  *              listeners.
- * Copyright:   Copyright (c) 1998-2002 Regents of the University of California. All rights reserved.
+ * Copyright:   Copyright (c) 1998-2003 Regents of the University of California. All rights reserved.
  * @author      Robert Emmery (dav-exp@ics.uci.edu)
  * @date        2 April 1998
  * @author      Yuzo Kanomata, Joachim Feise (dav-exp@ics.uci.edu)
@@ -58,6 +58,10 @@
  * @author      Joachim Feise (dav-exp@ics.uci.edu)
  * @date        2 April 2002
  * Changes:     Updated for JDK 1.4
+ * @author      Joachim Feise (dav-exp@ics.uci.edu)
+ * @date        17 March 2003
+ * Changes:     Integrated Brian Johnson's applet changes.
+ *              Added better error reporting.
  */
 
 
@@ -73,6 +77,7 @@ import javax.swing.JSplitPane;
 import javax.swing.JPanel;
 import javax.swing.JOptionPane;
 import javax.swing.JFileChooser;
+import javax.swing.*;
 import javax.swing.event.EventListenerList;
 import java.awt.GridBagLayout;
 import java.awt.GridBagConstraints;
@@ -83,12 +88,14 @@ import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
 import java.util.Hashtable;
 import java.io.File;
+import java.io.InputStream;
+import java.io.IOException;
 
 public class Main extends JFrame
 {
     public final static String VERSION = "0.82-dev";
     public final static String UserAgent = "UCI DAV Explorer/" + VERSION;
-    public final static String COPYRIGHT = "Copyright (c) 1998-2002 Regents of the University of California";
+    public final static String COPYRIGHT = "Copyright (c) 1998-2003 Regents of the University of California";
     public final static String EMAIL = "EMail: dav-exp@ics.uci.edu";
 
     public Main(String frameName)
@@ -120,8 +127,15 @@ public class Main extends JFrame
         CommandMenu.addWebDAVMenuListener( menuListener );
 
         // Set the HTTPClient authentication handler
-        //((DefaultAuthHandler)AuthorizationInfo.getAuthHandler()).setAuthorizationPrompter(new AuthDialog());
-		DefaultAuthHandler.setAuthorizationPrompter(new AuthDialog());
+        if (GlobalData.getGlobalData().isAppletMode())
+        {
+            // applet password prompter bypass
+            DefaultAuthHandler.setAuthorizationPrompter(new AppletAuthorizationPrompter());
+        }
+        else
+        {
+            DefaultAuthHandler.setAuthorizationPrompter(new AuthDialog());
+        }
 
         // allow all cookies
         CookieModule.setCookiePolicyHandler( null );
@@ -191,15 +205,21 @@ public class Main extends JFrame
         getContentPane().add(p);
         treeView.initTree();
         pack();
-        setVisible(true);
 
-        addWindowListener(new WindowAdapter()
-        {
-            public void windowClosing(WindowEvent we_Event)
+        if (!GlobalData.getGlobalData().isAppletMode()){
+            // if we're in applet mode, the web page will hold the
+            // visible content so we don't want the frame to pop up.
+            setVisible(true);
+
+            // applets don't have a title bar so this isn't required
+            addWindowListener(new WindowAdapter()
             {
-                System.exit(0);
-            }
-        } );
+                public void windowClosing(WindowEvent we_Event)
+                {
+                    System.exit(0);
+                }
+            } );
+        }
     }
 
 
@@ -208,7 +228,7 @@ public class Main extends JFrame
         String help = System.getProperty( "help", "no" );
         if( help.equalsIgnoreCase("no") )
         {
-            Main mFrame = new Main("DAV Explorer");
+            new Main("DAV Explorer");
         }
         else
         {
@@ -221,6 +241,7 @@ public class Main extends JFrame
             System.out.println( "Gerair Balian, Mirza Baig, Robert Emmery, Thai Le, Tu Le." );
             System.out.println( "Uses the HTTPClient library (http://www.innovation.ch/java/HTTPClient/)." );
             System.out.println( "Uses Microsoft's published XML parser code from June 1997.\n" );
+            System.out.println( "For other contributors see the contributors.txt file.\n" );
             System.out.println( "Options:" );
             System.out.println( "-Dhelp=yes" );
             System.out.println( "  This help message.\n" );
@@ -504,7 +525,9 @@ public class Main extends JFrame
         public void actionPerformed(ActionEvent e)
         {
             String command = e.getActionCommand();
-            if (command.equals("Exit"))
+
+            // never allow exit from inside an applet
+            if (command.equals("Exit") && !GlobalData.getGlobalData().isAppletMode())
                 System.exit(0);
 
             else if (command.equals("Get File"))
@@ -565,7 +588,7 @@ public class Main extends JFrame
                 String s = fileView.getSelected();
                 if( s == null )
                 {
-                    GlobalData.getGlobalData().errorMsg( "No file selected." );
+                    GlobalData.getGlobalData().errorMsg( "No resource selected." );
                 }
                 else
                 {
@@ -579,7 +602,7 @@ public class Main extends JFrame
                 String s = fileView.getSelected();
                 if( s == null )
                 {
-                    GlobalData.getGlobalData().errorMsg( "No file selected." );
+                    GlobalData.getGlobalData().errorMsg( "No resource selected." );
                 }
                 else
                 {
@@ -594,9 +617,9 @@ public class Main extends JFrame
                 // we get a string if something is selected in the
                 // FileView.
                 String s = fileView.getSelected();
-                if( s == null )
+                if( (s == null) || (s.length() == 0) )
                 {
-                    GlobalData.getGlobalData().errorMsg( "No file selected." );
+                    GlobalData.getGlobalData().errorMsg( "No resource selected." );
                 }
                 else
                 {
@@ -627,9 +650,9 @@ public class Main extends JFrame
             else if (command.equals("Move"))
             {
                 String s = fileView.getSelected();
-                if( s == null )
+                if( (s == null) || (s.length() == 0) )
                 {
-                    GlobalData.getGlobalData().errorMsg( "No file selected." );
+                    GlobalData.getGlobalData().errorMsg( "No resource selected." );
                 }
                 else
                 {
@@ -667,7 +690,7 @@ public class Main extends JFrame
                 String s = fileView.getSelected();
                 if( s == null )
                 {
-                    GlobalData.getGlobalData().errorMsg( "No file selected." );
+                    GlobalData.getGlobalData().errorMsg( "No resource selected." );
                 }
                 else
                 {
@@ -708,9 +731,10 @@ public class Main extends JFrame
                             requestGenerator.setExtraInfo("mkcolbelow");
                             retval = requestGenerator.GenerateMkCol( fileView.getSelected(), dirname );
                         }
-                        if( retval ){
+                        if( retval )
+                        {
                             requestGenerator.execute();
-            }
+                        }
                     }
                     else
                     {
@@ -722,7 +746,7 @@ public class Main extends JFrame
                         boolean result = f.mkdir();
                         if ( selected == null )
                         {
-                                treeView.refreshLocal( n );
+                            treeView.refreshLocal( n );
                         }
                         else
                         {
@@ -825,7 +849,8 @@ public class Main extends JFrame
                 "of the ICS126B class Winter 1998:\n" +
                 "Gerair Balian, Mirza Baig, Robert Emmery, Thai Le, Tu Le.\n" +
                 "Uses the HTTPClient library (http://www.innovation.ch/java/HTTPClient/).\n" +
-                "Uses Microsoft's published XML parser code from June 1997.\n");
+                "Uses Microsoft's published XML parser code from June 1997.\n" +
+                "For other contributors see the contributors.txt file.");
                 Object [] options = { "OK" };
 				JOptionPane.showOptionDialog(GlobalData.getGlobalData().getMainFrame(), message, "About DAV Explorer", JOptionPane.DEFAULT_OPTION, JOptionPane.INFORMATION_MESSAGE, null, options, options[0]);
             }

@@ -1,6 +1,9 @@
 Installation procedure
 
-DAV Explorer requires Java 2 (tested with both JDK 1.2.x and JDK 1.3.0).
+The preferred Java version to run DAV Explorer is Java 2 (tested with both
+JDK 1.2.x and JDK 1.3.0).
+DAV Explorer also runs with JDK 1.1.8 and Swing 1.1.1. However, this may
+restrict the capabilities of DAV Explorer.
 
 Note: If not compiling from source, skip steps 1-3 and 5.
 If use of SSL is not required, step 4 can also be skipped.
@@ -42,4 +45,4 @@ If use of SSL is not required, step 4 can also be skipped.
    You can also run DAVExplorer by using the command 'java -jar DAVExplorer.jar'.
    For SSL support, run DAVExplorerSSL.bat or DAVExplorerSSL.sh, respectively.
    Alternatively, the command 'java -jar -Dssl=true DAVExplorer.jar' can be used.
-
+   Under MacOS 9, you can use the provided MRJ wrapper DAVExplorer.bin.

@@ -40,18 +40,9 @@
 package edu.uci.ics.DAVExplorer;
 
 import java.awt.Cursor;
-import javax.swing.JOptionPane;
-import javax.swing.JFrame;
+import javax.swing.*;
 import java.util.StringTokenizer;
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileOutputStream;
-import java.io.InputStreamReader;
-import java.io.OutputStreamWriter;
-import java.io.BufferedReader;
-import java.io.BufferedWriter;
-import java.io.ByteArrayInputStream;
-import java.io.IOException;
+import java.io.*;
 
 class GlobalData
 {
@@ -70,12 +61,36 @@ class GlobalData
     Cursor origCursor = null;
     private static final String fileName = "DAVExplorer.dat";
     private static final String tmpFileName = "DAVExplorer.tmp";
+    private boolean isAppletMode = false;
+    private boolean hideURIBox = false;
+    private String[][] initialSites = new String[][] { {} };
+    private boolean doAddStartDir = true;
+    private URIBox uriBox;
 
     private static GlobalData globalData = null;
+
+    public static final String WebDAVPrefix = "http://";
+    public static final String WebDAVPrefixSSL = "https://";
 
     protected GlobalData()
     {
         init( true );
+    }
+
+    static void reset() {
+        // RESET THIS CLASS
+        globalData = null;
+
+        // RESET ALL STATIC VARIABLES IN ALL OTHER CLASSES
+        AppletAuthorizationPrompter.reset();
+        AsGen.clear();
+        WebDAVRequestGenerator.reset();
+        WebDAVResponseInterpreter.reset();
+        WebDAVTreeNode.reset();
+
+
+        // CLEAN UP
+        System.gc();
     }
 
     static GlobalData getGlobalData()
@@ -83,6 +98,57 @@ class GlobalData
         if( globalData == null )
             globalData = new GlobalData();
         return globalData;
+    }
+
+    WebDAVTreeView tree;
+
+    public WebDAVTreeView getTree() {
+        return tree;
+    }
+
+    public void setTree(WebDAVTreeView theTree) {
+        tree = theTree;
+    }
+
+    public boolean isAppletMode() {
+        return isAppletMode;
+    }
+
+    public void setAppletMode(boolean isAnApplet) {
+        isAppletMode = isAnApplet;
+    }
+
+    public void setInitialSites(String[][] initialSiteList) {
+        if (initialSiteList != null)
+            initialSites = initialSiteList;
+    }
+
+    public String[][] getInitialSites() {
+        return initialSites;
+    }
+
+    public boolean hideURIBox() {
+        return hideURIBox;
+    }
+
+    public void setHideURIBox(boolean visible) {
+        hideURIBox = visible;
+    }
+
+    public boolean doAddStartDir() {
+        return doAddStartDir;
+    }
+
+    public void setAddStartDir(boolean doIt) {
+        doAddStartDir = doIt;
+    }
+
+    public URIBox getURIBox() {
+        return uriBox;
+    }
+
+    public void setURIBox(URIBox theURIBox) {
+        uriBox = theURIBox;
     }
 
     public boolean getDebugAll()
@@ -378,5 +444,30 @@ class GlobalData
         debugTreeNode |= debugAll;
         debugFileView |= debugAll;
 
+    }
+
+    public ImageIcon getImageIcon(String name, String description) {
+        try {
+            InputStream is = getClass().getResourceAsStream("icons/" + name);
+            return new ImageIcon( toByteArray(is), description );
+        }
+        catch( Exception e )
+        {
+            errorMsg("Icon load failure: " + e );
+        }
+        return null;
+    }
+
+    public static byte[] toByteArray(InputStream is) throws IOException {
+      ByteArrayOutputStream output = new ByteArrayOutputStream();
+      byte[] chunk = new byte[10000];
+      while (true) {
+        int bytesRead = is.read(chunk, 0, chunk.length);
+        if (bytesRead <= 0) {
+          break;
+        }
+        output.write(chunk, 0, bytesRead);
+      }
+      return output.toByteArray();
     }
 }

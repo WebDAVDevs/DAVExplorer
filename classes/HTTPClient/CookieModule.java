@@ -133,18 +133,12 @@ public class CookieModule implements HTTPClientModule
 		{
 		    public void finalize() { saveCookies(); }
 		};
-	    try
-		{ System.runFinalizersOnExit(true); }
-	    catch (Throwable t)
-		{ }
 	}
     }
 
 
     private static void loadCookies()
     {
-	// The isFile() etc need to be protected by the catch as signed
-	// applets may be allowed to read properties but not do IO
 	try
 	{
 	    cookie_jar = new File(getCookieJarName());

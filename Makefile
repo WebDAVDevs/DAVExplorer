@@ -37,3 +37,15 @@ dist::
 	- cd $(SRC)/classes; make dist
 	- rm -f $(SRC)/DAVExplorer.jar
 	- rm -rf $(SRC)/CVS
+	- tar -cf - -C .. dav_explorer | gzip -c > DAVExplorer-src.tar.gz
+
+bin-dist:	DAVExplorer DAVExplorer.jar
+	tar -cvf - DAVExplorer.bat DAVExplorer.jar DAVExplorer.sh DAVExplorerSSL.bat \
+	DAVExplorerSSL.sh DAVjar.bat DAVjar.sh INSTALL.TXT License.txt Readme.txt \
+	| gzip -c > DAVExplorer.tar.gz
+
+MacOS9: DAVExplorer DAVExplorer.jar
+	tar -cvf - DAVExplorer.bin DAVExplorer.jar INSTALL.TXT License.txt \
+	Readme.txt -C MacOS9 swingall.jar \
+	| gzip -c > DAVExplorer-MacOS9.tar.gz
+

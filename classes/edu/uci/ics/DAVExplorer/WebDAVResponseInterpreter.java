@@ -64,8 +64,6 @@ import com.ms.xml.util.Name;
 
 public class WebDAVResponseInterpreter
 {
-    private final static String  HTTPPrefix = "http://";
-    private final static String  HTTPSPrefix = "https://";
 
     public WebDAVResponseInterpreter()
     {
@@ -1356,13 +1354,13 @@ public class WebDAVResponseInterpreter
                     // TODO: get encoding
                     String HrefValue = GlobalData.getGlobalData().unescape( token.getText(), null, true );
                     // stripping https://
-                    int pos = HrefValue.indexOf( HTTPSPrefix );
+                    int pos = HrefValue.indexOf( GlobalData.WebDAVPrefixSSL );
                     if( pos >= 0 )
-                        HrefValue = HrefValue.substring( pos+HTTPSPrefix.length() );
+                        HrefValue = HrefValue.substring( pos+GlobalData.WebDAVPrefixSSL.length() );
                     // stripping http://
-                    pos = HrefValue.indexOf( HTTPPrefix );
+                    pos = HrefValue.indexOf( GlobalData.WebDAVPrefix );
                     if( pos >= 0 )
-                        HrefValue = HrefValue.substring( pos+HTTPPrefix.length() );
+                        HrefValue = HrefValue.substring( pos+GlobalData.WebDAVPrefix.length() );
                     pos = HrefValue.indexOf( "/" );
                     if( pos >= 0 )
                         HrefValue = HrefValue.substring( pos );
@@ -1489,6 +1487,26 @@ public class WebDAVResponseInterpreter
         }
     }
 
+    public static void reset() {
+         generator = null;
+         stream = null;
+          Method = null;
+          Extra = null;
+          res = null;
+          HostName = null;
+          Port = 0;
+          Resource = null;
+          listeners = new Vector();
+          moveListeners = new Vector();
+          lockListeners = new Vector();
+          WebDAVEditDir = null;
+          refresh = false;
+          userPathDir = null;
+          copyListener = null;
+          putListener = null;
+          actionListener = null;
+    }
+
     private static WebDAVRequestGenerator generator;
     private static byte[] stream = null;
     private static String Method;
@@ -1500,18 +1518,17 @@ public class WebDAVResponseInterpreter
     private static Vector listeners = new Vector();
     private static Vector moveListeners = new Vector();
     private static Vector lockListeners = new Vector();
-    private final static String EditDir = "Edit";
-    private final static String WebDAVClassName = "DAVExplorer";
-    private final static String WebDAVLockDir = "";
-    private final static String HTTPString = "HTTP/1.1";
     private static String WebDAVEditDir = null;
     private static boolean refresh = false;
     private static String userPathDir;
-
-    private WebDAVTreeNode Node;
     private static CopyResponseListener copyListener;
     private static PutListener putListener;
     private static ActionListener actionListener;
 
+    private WebDAVTreeNode Node;
     private boolean debugXML = false;
+
+    private final static String EditDir = "Edit";
+    private final static String WebDAVClassName = "DAVExplorer";
+    private final static String HTTPString = "HTTP/1.1";
 }

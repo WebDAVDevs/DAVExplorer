@@ -68,9 +68,9 @@ public class URIBox extends JPanel implements ActionListener
 
         JPanel panel = new JPanel();
 
-        okButton = new JButton(loadImageIcon("connect.gif", "Connect"));
+        okButton = new JButton(GlobalData.getGlobalData().getImageIcon("connect.gif", "Connect"));
+        //okButton = new JButton(loadImageIcon("connect.gif", "Connect"));
 
-        //okButton.setMargin(new Insets(1,1,1,1));
         okButton.setActionCommand("Connect");
         okButton.addActionListener(this);
         okButton.setToolTipText("Connect");
@@ -81,9 +81,9 @@ public class URIBox extends JPanel implements ActionListener
         textField1.addActionListener(new EnterPressedListener());
         label1 = new JLabel();
         if( GlobalData.getGlobalData().doSSL() )
-            label1.setText( "https://" );
+            label1.setText( GlobalData.WebDAVPrefixSSL );
         else
-            label1.setText( "http://" );
+            label1.setText( GlobalData.WebDAVPrefix );
         label1.setHorizontalAlignment( SwingConstants.RIGHT );
         label1.setForeground( Color.black );
 
@@ -92,6 +92,11 @@ public class URIBox extends JPanel implements ActionListener
 
         add("Center", panel);
         URIBoxListener = new Vector();
+
+        if (GlobalData.getGlobalData().hideURIBox())
+        {
+            super.setVisible(false);
+        }
     }
 
     JTextField textField1;
@@ -111,7 +116,12 @@ public class URIBox extends JPanel implements ActionListener
 
     public void actionPerformed(ActionEvent evt)
     {
-        notifyListener(evt);
+        notifyListener();
+    }
+
+    public void setText(String uri)
+    {
+        textField1.setText(uri);
     }
 
     public String getText()
@@ -124,12 +134,24 @@ public class URIBox extends JPanel implements ActionListener
         URIBoxListener.addElement(l);
     }
 
+    /**
+     * If we are say don't include then never let it be visible,
+     * otherwise have it work normally.
+     * @param visible
+     */
+    public void setVisible(boolean visible) {
+        if (GlobalData.getGlobalData().hideURIBox()) {
+            return;
+        }
+        super.setVisible(visible);
+    }
+
     public synchronized void removeActionListener(ActionListener l)
     {
         URIBoxListener.removeElement(l);
     }
 
-    protected void notifyListener(ActionEvent e)
+    protected void notifyListener()
     {
         ActionEvent evt = new ActionEvent(this, ActionEvent.ACTION_PERFORMED, getText());
         Vector v;
@@ -155,7 +177,7 @@ public class URIBox extends JPanel implements ActionListener
     {
         public void actionPerformed(ActionEvent e)
         {
-            notifyListener(e);
+            notifyListener();
         }
     }
 }
