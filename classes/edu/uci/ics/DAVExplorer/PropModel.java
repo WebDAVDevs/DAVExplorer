@@ -55,6 +55,34 @@ public class PropModel extends AbstractTableModel implements TreeTableModel
         return 0;
     }
 
+    public Element getModified( boolean removed )
+    {
+        if( removed )
+            return getRemoved( root, null );
+        else
+            return getModified( root, null );
+    }
+
+    public void addNode( PropNode parentNode, PropNode node )
+    {
+        parentNode.addChild( node );
+    }
+
+    public void removeNode( TreePath path )
+    {
+        TreePath parentPath = path.getParentPath();
+        PropNode parentNode = (PropNode)parentPath.getLastPathComponent();
+        PropNode node = (PropNode)path.getLastPathComponent();
+
+        Object[] children = parentNode.getChildren();
+        int[] nodeIndices = new int[1];
+        PropNode[] nodes = new PropNode[1];
+        nodeIndices[0] = getIndexOfChild( parentNode, node );
+        nodes[0] = node;
+        parentNode.removeChild( node );
+        fireTreeNodesRemoved( node, path.getPath(), nodeIndices, nodes );
+    }
+
     protected Object nodeForRow(int row)
     {
         if( tree != null )
@@ -122,6 +150,14 @@ public class PropModel extends AbstractTableModel implements TreeTableModel
         catch  (SecurityException se)
         {
         }
+        return true;
+    }
+
+    public boolean isNodeRemovable( Object node )
+    {
+        // removal of DAV properties not allowed
+        if(((PropNode)node).getNamespace().equals("DAV:"))
+            return false;
         return true;
     }
 
@@ -360,6 +396,105 @@ public class PropModel extends AbstractTableModel implements TreeTableModel
         }
     }
 
+    private Element getModified( PropNode node, Element parent )
+    {
+        Element prop = null;
+        Element retval = null;
+        if( parent == null )
+        {
+            // root
+            if( childrenModified(node) )
+            {
+                AsGen namespace = WebDAVXML.findNamespace( new AsGen(), WebDAVProp.DAV_SCHEMA );
+                if( namespace == null )
+                    namespace = WebDAVXML.createNamespace( new AsGen(), WebDAVProp.DAV_SCHEMA );
+                Element set = WebDAVXML.createElement( WebDAVXML.ELEM_SET, Element.ELEMENT, null, namespace, false, true );
+                set.addChild( WebDAVXML.elemNewline, null );
+                prop = WebDAVXML.createElement( WebDAVXML.ELEM_PROP, Element.ELEMENT, set, namespace, false, true );
+                prop.addChild( WebDAVXML.elemNewline, null );
+                set.addChild( prop, null );
+                retval = set;
+                Object[] children = node.getChildren();
+                for( int i=0; i<children.length; i++ )
+                {
+                    getModified( (PropNode)children[i], prop );
+                }
+            }
+            else
+                return null;
+        }
+        else if( childrenModified(node) )
+        {
+            AsGen namespace = WebDAVXML.findNamespace( new AsGen(), node.getNamespace() );
+            if( namespace == null )
+                namespace = WebDAVXML.createNamespace( new AsGen(), node.getNamespace() );
+            prop = WebDAVXML.createElement( node.getTag(), Element.ELEMENT, parent, namespace, false, true );
+            parent.addChild( prop, null );
+            if( node.isModified() && (node.getValue().length() > 0) )
+            {
+                Element value = WebDAVXML.createElement( null, Element.PCDATA, prop, namespace, false, true );
+                value.setText(node. getValue() );
+                prop.addChild( value, null );
+            }
+            prop.addChild( WebDAVXML.elemNewline, null );
+            retval = prop;
+            Object[] children = node.getChildren();
+            for( int i=0; i<children.length; i++ )
+            {
+                getModified( (PropNode)children[i], prop );
+            }
+        }
+
+        return retval;
+    }
+
+    private Element getRemoved( PropNode node, Element parent )
+    {
+        Element prop = null;
+        Element retval = null;
+        if( parent == null )
+        {
+            // root
+            if( childrenRemoved(node) )
+            {
+                AsGen namespace = WebDAVXML.findNamespace( new AsGen(), WebDAVProp.DAV_SCHEMA );
+                if( namespace == null )
+                    namespace = WebDAVXML.createNamespace( new AsGen(), WebDAVProp.DAV_SCHEMA );
+                Element set = WebDAVXML.createElement( WebDAVXML.ELEM_REMOVE, Element.ELEMENT, null, namespace, false, true );
+                set.addChild( WebDAVXML.elemNewline, null );
+                prop = WebDAVXML.createElement( WebDAVXML.ELEM_PROP, Element.ELEMENT, set, namespace, false, true );
+                prop.addChild( WebDAVXML.elemNewline, null );
+                set.addChild( prop, null );
+                retval = set;
+                Object[] children = node.getRemovedChildren();
+                for( int i=0; i<children.length; i++ )
+                {
+                    getRemoved( (PropNode)children[i], prop );
+                }
+            }
+            else
+                return null;
+        }
+        else
+        {
+            AsGen namespace = WebDAVXML.findNamespace( new AsGen(), node.getNamespace() );
+            if( namespace == null )
+                namespace = WebDAVXML.createNamespace( new AsGen(), node.getNamespace() );
+            prop = WebDAVXML.createElement( node.getTag(), Element.ELEMENT, parent, namespace, false, true );
+            prop.addChild( WebDAVXML.elemNewline, null );
+            parent.addChild( prop, null );
+            retval = prop;
+/*            Object[] children = node.getRemovedChildren();
+            for( int i=0; i<children.length; i++ )
+            {
+                getRemoved( (PropNode)children[i], prop );
+            }
+*/
+        }
+
+        return retval;
+    }
+
     private Element getChildElement( Element el )
     {
         TreeEnumeration treeEnum = new TreeEnumeration( el );
@@ -385,6 +520,34 @@ public class PropModel extends AbstractTableModel implements TreeTableModel
     }
 
 
+    private boolean childrenModified( PropNode node )
+    {
+        if( node.isModified() )
+            return true;
+        Object[] children = node.getChildren();
+        for( int i=0; i<children.length; i++ )
+        {
+            if( childrenModified((PropNode)children[i]) )
+                return true;
+        }
+        return false;
+    }
+
+    private boolean childrenRemoved( PropNode node )
+    {
+        Object[] children = node.getRemovedChildren();
+        if( children.length > 0 )
+            return true;
+        children = node.getChildren();
+        for( int i=0; i<children.length; i++ )
+        {
+            if( childrenRemoved((PropNode)children[i]) )
+                return true;
+        }
+        return false;
+    }
+
+
     // column names
     static protected String[]  names = { "Tag", "Namespace", "Value" };
 
@@ -400,13 +563,21 @@ public class PropModel extends AbstractTableModel implements TreeTableModel
 
 class PropNode
 {
+    public PropNode( String tag, String ns, String value, boolean modified )
+    {
+        this.tag = tag;
+        this.ns = ns;
+        this.value = value;
+        this.modified = modified;
+    }
+
     public PropNode( String tag, String ns, String value )
     {
         this.tag = tag;
         this.ns = ns;
         this.value = value;
+        this.modified = false;
     }
-
 
     public String getTag()
     {
@@ -421,6 +592,7 @@ class PropNode
     public void setNamespace( String ns )
     {
         this.ns = ns;
+        modified = true;
     }
 
     public String getValue()
@@ -433,6 +605,7 @@ class PropNode
     public void setValue( String value )
     {
         this.value = value;
+        modified = true;
     }
 
     public String toString()
@@ -445,14 +618,32 @@ class PropNode
         children.add( child );
     }
 
-    protected Object[] getChildren()
+    public void removeChild( Object child )
+    {
+        children.remove(child);
+        removedChildren.add(child);
+    }
+
+    public boolean isModified()
+    {
+        return modified;
+    }
+
+    public Object[] getChildren()
     {
         return children.toArray();
     }
 
+    public Object[] getRemovedChildren()
+    {
+        return removedChildren.toArray();
+    }
+
     Vector children = new Vector();
+    Vector removedChildren = new Vector();
     String tag;
     String ns;
     String value;
     JTree tree;
+    boolean modified;
 }

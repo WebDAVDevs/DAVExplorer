@@ -24,12 +24,16 @@ import java.awt.event.*;
 import javax.swing.*;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
+import javax.swing.event.ListSelectionEvent;
+import javax.swing.event.ListSelectionListener;
+import javax.swing.tree.TreePath;
+import javax.swing.tree.DefaultMutableTreeNode;
 import javax.swing.border.*;
 import java.util.*;
 import com.ms.xml.om.Element;
 
 
-public class PropDialog extends JDialog implements ActionListener, ChangeListener
+public class PropDialog extends JDialog implements ActionListener, ChangeListener, ListSelectionListener
 {
     public PropDialog( Element properties, String resource, String hostname, boolean changeable )
     {
@@ -40,24 +44,33 @@ public class PropDialog extends JDialog implements ActionListener, ChangeListene
         else
             setTitle("View Properties");
         JLabel label = new JLabel( resource + " (" + hostname + ")", JLabel.CENTER );
+        this.resource = hostname + resource;
         label.setFont(new Font("SansSerif", Font.BOLD, 14));
         label.setForeground(Color.black);
         getContentPane().add( "North", label );
 
         addButton = new JButton("Add");
         addButton.addActionListener(this);
+        addButton.setEnabled( false );  // TODO: remove when add works
+        deleteButton = new JButton("Delete");
+        deleteButton.addActionListener(this);
+        deleteButton.setEnabled( false );
         saveButton = new JButton("Save");
         saveButton.addActionListener(this);
         closeButton  = new JButton("Close");
         closeButton.addActionListener(this);
         JPanel buttonPanel = new JPanel();
         buttonPanel.add(addButton);
+        buttonPanel.add(deleteButton);
         buttonPanel.add(saveButton);
         buttonPanel.add(closeButton);
         getRootPane().setDefaultButton( closeButton );
         closeButton.grabFocus();
         if( !changeable )
+        {
             addButton.setEnabled( false );
+            deleteButton.setEnabled( false );
+        }
         saveButton.setEnabled( false );
 
         getContentPane().add( "South", buttonPanel );
@@ -66,6 +79,7 @@ public class PropDialog extends JDialog implements ActionListener, ChangeListene
         model = new PropModel( properties );
         model.addChangeListener(this);
         treeTable = new JTreeTable( model );
+        treeTable.getSelectionModel().addListSelectionListener(this);
 
         JScrollPane scrollpane = new JScrollPane();
         scrollpane.setViewportView( treeTable );
@@ -88,11 +102,15 @@ public class PropDialog extends JDialog implements ActionListener, ChangeListene
 
     public void stateChanged( ChangeEvent e )
     {
+        setChanged( true );
+    }
+
+    public void setChanged( boolean enable )
+    {
         if( changeable )
         {
-            changed = true;
-            if( saveButton != null )
-                saveButton.setEnabled( true );
+            changed = enable;
+            saveButton.setEnabled( changed );
         }
     }
 
@@ -101,6 +119,10 @@ public class PropDialog extends JDialog implements ActionListener, ChangeListene
         if( e.getActionCommand().equals("Add") )
         {
             add();
+        }
+        else if( e.getActionCommand().equals("Delete") )
+        {
+            remove();
         }
         else if( e.getActionCommand().equals("Save") )
         {
@@ -112,16 +134,51 @@ public class PropDialog extends JDialog implements ActionListener, ChangeListene
         }
     }
 
+    public void valueChanged(ListSelectionEvent e)
+    {
+        if( changeable )
+        {
+            TreePath path = treeTable.getTree().getPathForRow( treeTable.getSelectedRow() );
+            if( path == null )
+            {
+                deleteButton.setEnabled( false );
+                return;
+            }
+
+            PropNode node = (PropNode)path.getLastPathComponent();
+            deleteButton.setEnabled( model.isNodeRemovable(node) );
+        }
+    }
+
     public void add()
     {
         // TODO
         setVisible(false);
     }
 
+    public void remove()
+    {
+        String title = "Delete Property";
+        String text = "Do you really want to delete the selected property?";
+        if( ConfirmationDialog( title, text ) )
+        {
+            TreePath path = treeTable.getTree().getPathForRow( treeTable.getSelectedRow() );
+            model.removeNode( path );
+            treeTable.updateUI();
+            setChanged( true );
+        }
+    }
+
     public void save()
     {
         // TODO
-        setVisible(false);
+        Element add = model.getModified(false);
+        Element remove = model.getModified(true);
+        WebDAVRequestGenerator generator = WebDAVResponseInterpreter.getGenerator();
+        generator.GeneratePropPatch( resource, add, remove );
+        // TODO: some kind of visual indication
+        generator.execute();
+        setChanged( false );  // disable save button
     }
 
     public void cancel()
@@ -137,11 +194,23 @@ public class PropDialog extends JDialog implements ActionListener, ChangeListene
              recthDimensions.y + (recthDimensions.height - bounds.height)/2, bounds.width, bounds.height );
     }
 
-    private PropModel model;
+
+    protected boolean ConfirmationDialog( String title, String text )
+    {
+        JOptionPane pane = new JOptionPane();
+        int opt = pane.showConfirmDialog( GlobalData.getGlobalData().getMainFrame(), text, title, JOptionPane.YES_NO_OPTION );
+        if (opt == JOptionPane.YES_OPTION)
+            return true;
+        return false;
+    }
+
     private JTreeTable treeTable;
+    private PropModel model;
     private JButton addButton;
+    private JButton deleteButton;
     private JButton saveButton;
     private JButton closeButton;
     private boolean changeable;
     private boolean changed = false;
+    private String resource;
 }

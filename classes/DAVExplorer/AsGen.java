@@ -46,9 +46,9 @@ class AsNode
     {
         m_schema = schema;
         m_alias = alias;
-        m_next = next;
         if( next != null )
-            next.m_prev = this;
+            next.m_next = this;
+        m_prev = next;
     }
 
     public String getAlias()
@@ -95,14 +95,21 @@ public class AsGen
     {
     }
 
-    public AsGen( AsNode node )
+    protected AsGen( AsNode node )
     {
+        if( m_first == null )
+            m_first = node;
+        if( m_last == null )
+            m_last = node;
         m_current = node;
     }
 
     public void createNamespace( String schema )
     {
-        AsNode node = new AsNode( schema, getNextAs(), m_current );
+        AsNode node = new AsNode( schema, getNextAs(), m_last );
+        m_last = node;
+        if( m_first == null )
+            m_first = node;
         m_current = node;
     }
 
@@ -111,7 +118,8 @@ public class AsGen
         if( m_current == null )
             return null;
         else
-            return new AsGen( m_current.getNext() );
+            m_current = m_current.getNext();
+        return new AsGen( m_current );
     }
 
     public AsGen getPrev()
@@ -119,22 +127,16 @@ public class AsGen
         if( m_current == null )
             return null;
         else
-            return new AsGen( m_current.getPrev() );
+            m_current = m_current.getPrev();
+        return new AsGen( m_current );
     }
 
     public AsGen getFirst()
     {
-        if( m_current == null )
+        if( m_first == null )
             return null;
-
-        AsNode current = m_current;
-        AsNode prev = current.getPrev();
-        while( prev != null )
-        {
-            current = prev;
-            prev = current.getPrev();
-        }
-        return new AsGen( current );
+        else
+            return new AsGen( m_first );
     }
 
     public String getAlias()
@@ -166,6 +168,12 @@ public class AsGen
         // set when the namespace is declared
         if( m_current != null )
             m_current.setAttribute();
+    }
+
+    public static void clear()
+    {
+        m_current = m_first = m_last = null;
+        m_lastGenerated = "@";
     }
 
     private String getNextAs()
@@ -206,6 +214,8 @@ public class AsGen
         return str;
     }
 
-    AsNode m_current = null;
+    private static AsNode m_first;
+    private static AsNode m_last;
+    private static AsNode m_current;
     private static String m_lastGenerated = "@";
 }

@@ -133,7 +133,6 @@ public class Main extends JFrame
         URIBox uribox = new URIBox();
         uribox.addActionListener(new URIBoxListener_Gen());
 
-        // Yuzo: Radical design change
         treeView.addViewSelectionListener( fileView );
         fileView.addViewSelectionListener( treeView );
 
@@ -151,10 +150,10 @@ public class Main extends JFrame
         responseInterpreter.addMoveUpdateListener(new MoveUpdateListener());
         responseInterpreter.addLockListener(new LockListener());
         responseInterpreter.addActionListener(fileView); // Listens for a reset
-                            // for a unsucessful
-                            // Rename request
+                                                        // for a unsucessful
+                                                        // Rename request
 
-        // Yuzo Add the CopyEvent Listener
+        // Add the CopyEvent Listener
         responseInterpreter.addCopyResponseListener(treeView);
         responseInterpreter.addPutListener(treeView);
 
@@ -220,34 +219,6 @@ public class Main extends JFrame
             if (!str.endsWith("/"))
                 str += "/";
             requestGenerator.setExtraInfo("uribox");
-
-/*            // 1999-June-08, Joachim Feise (jfeise@ics.uci.edu):
-            // workaround for IBM's DAV4J, which does not handle propfind properly
-            // with the prop tag. To use the workaround, run DAV Explorer with
-            // 'java -jar -Dpropfind=allprop DAVExplorer.jar'
-            String doAllProp = System.getProperty( "propfind" );
-            if( (doAllProp != null) && doAllProp.equalsIgnoreCase("allprop") )
-            {
-                if( requestGenerator.GeneratePropFind( str, "allprop", "one", null, null, false ) )
-                {
-                    requestGenerator.execute();
-                }
-            }
-            else
-            {
-                String[] props = new String[6];
-                props[0] = "displayname";
-                props[1] = "resourcetype";
-                props[2] = "getcontenttype";
-                props[3] = "getcontentlength";
-                props[4] = "getlastmodified";
-                props[5] = "lockdiscovery";
-                if( requestGenerator.GeneratePropFind( str, "prop", "one", props, null, false ) )
-                {
-                    requestGenerator.execute();
-                }
-            }
-*/
             if( requestGenerator.GenerateOptions( str ) )
             {
                 requestGenerator.execute();
@@ -380,7 +351,6 @@ public class Main extends JFrame
     {
         public void responseFormed(WebDAVResponseEvent e)
         {
-
             // This call process the info from the server
             try
             {
@@ -889,9 +859,6 @@ public class Main extends JFrame
 
     private String selectName( String title, String prompt )
     {
-//        JOptionPane pane = new JOptionPane();
-//        String ret = pane.showInputDialog( GlobalData.getGlobalData().getMainFrame(), prompt, title ,JOptionPane.QUESTION_MESSAGE );
-//        return ret;
         return selectName( title, prompt, null );
     }
 

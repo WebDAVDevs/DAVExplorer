@@ -412,7 +412,7 @@ public class JTreeTable extends JTable
 
     	/**
     	 * Class responsible for calling updateSelectedPathsFromSelectedRows
-    	 * when the selection of the list changse.
+    	 * when the selection of the list changes
     	 */
     	class ListSelectionHandler implements ListSelectionListener
         {

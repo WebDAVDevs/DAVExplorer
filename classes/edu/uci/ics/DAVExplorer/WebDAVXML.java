@@ -82,7 +82,7 @@ public class WebDAVXML
     {
     }
 
-    public static void createNamespace( AsGen alias, String schema )
+    public static AsGen createNamespace( AsGen alias, String schema )
     {
         if( schema == null )
         {
@@ -92,53 +92,55 @@ public class WebDAVXML
         {
             alias.createNamespace( schema );
         }
+        return alias;
     }
 
 
     public static AsGen findNamespace( AsGen alias, String schema )
     {
-        if( schema != null )
+        if( schema == null )
+            schema = WebDAVProp.DAV_SCHEMA;
+
+        alias = alias.getFirst();
+        while( (alias!=null) && (alias.getSchema()!=null) )
         {
-            alias = alias.getFirst();
-            while( alias != null )
-            {
-                if( alias.getSchema().equals( schema ) )
-                    return alias;
-                alias = alias.getNext();
-            }
+            if( alias.getSchema().equals( schema ) )
+                return alias;
+            alias = alias.getNext();
         }
         return null;
     }
 
 
-    public static Element createElement( String tag, int type, Element parent, AsGen alias )
+    public static Element createElement( String tag, int type, Element parent, AsGen namespace )
     {
-        return createElement( tag, type, parent, alias, false );
+        return createElement( tag, type, parent, namespace, false, false );
     }
 
     public static Element createElement( String tag, int type, Element parent, AsGen namespace, boolean declareNamespaces )
     {
-        Element element = null;
+        return createElement( tag, type, parent, namespace, declareNamespaces, false );
+    }
 
-        // make sure we have the namespace declared
-        if( namespace.isAttributeSet() )
-        {
-            element = new ElementImpl(createName(tag, namespace.getAlias()), type );
-        }
-        else
-        {
-            element = new ElementImpl(createName(tag, namespace.getAlias()), type );
-            setNSAttribute( element, namespace );
-        }
+    public static Element createElement( String tag, int type, Element parent, AsGen namespace, boolean declareNamespaces, boolean neverdeclare )
+    {
+        Element element = new ElementImpl(createName(tag, namespace.getAlias()), type );
+
         if( declareNamespaces )
         {
             // declare all our namespaces
-            AsGen currentNS = namespace;
+            AsGen currentNS = namespace.getFirst();
             while( currentNS != null )
             {
                 setNSAttribute( element, currentNS );
                 currentNS = currentNS.getNext();
             }
+        }
+
+        // make sure we have the namespace declared
+        if( !namespace.isAttributeSet() && !neverdeclare )
+        {
+            setNSAttribute( element, namespace );
         }
 
         return element;

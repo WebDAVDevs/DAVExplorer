@@ -268,6 +268,7 @@ public class WebDAVRequestGenerator implements Runnable
 
     public void execute()
     {
+        AsGen.clear();
         Thread th = new Thread(this);
         th.start();
     }
@@ -473,8 +474,9 @@ public class WebDAVRequestGenerator implements Runnable
         miniDoc.setVersion("1.0");
         miniDoc.addChild(WebDAVXML.elemNewline,null);
 
-        AsGen asgen = new AsGen();
-        WebDAVXML.createNamespace( asgen, null );
+        AsGen asgen = WebDAVXML.findNamespace( new AsGen(), null );
+        if( asgen == null )
+            asgen = WebDAVXML.createNamespace( new AsGen(), null );
         Element propFind = WebDAVXML.createElement( WebDAVXML.ELEM_PROPFIND, Element.ELEMENT, null, asgen );
         if (com.equals("allprop"))
         {
@@ -580,7 +582,7 @@ public class WebDAVRequestGenerator implements Runnable
         return false;
     }
 
-    public synchronized boolean GeneratePropPatch(String FullPath, WebDAVProp[] addProps, WebDAVProp[] removeProps )
+    public synchronized boolean GeneratePropPatch(String FullPath, Element addProps, Element removeProps )
     {
         if( GlobalData.getGlobalData().getDebugRequest() )
         {
@@ -612,35 +614,29 @@ public class WebDAVRequestGenerator implements Runnable
         miniDoc.setVersion("1.0");
         miniDoc.addChild(WebDAVXML.elemNewline,null);
 
-        AsGen DAVNS = new AsGen();
-        WebDAVXML.createNamespace( DAVNS, null );
-        createNamespaces( addProps );
-        createNamespaces( removeProps );
+        AsGen DAVNS = WebDAVXML.findNamespace( new AsGen(), null );
+        if( DAVNS == null )
+            DAVNS = WebDAVXML.createNamespace( new AsGen(), null );
+//        createNamespaces( addProps );
+//        createNamespaces( removeProps );
         Element propUpdate = WebDAVXML.createElement( WebDAVXML.ELEM_PROPERTY_UPDATE, Element.ELEMENT, null, DAVNS, true );
 
         if( addProps != null )
         {
-            Element setEl = WebDAVXML.createElement( WebDAVXML.ELEM_SET, Element.ELEMENT, propUpdate, DAVNS );
-            Element setProp = WebDAVXML.createElement( WebDAVXML.ELEM_PROP, Element.ELEMENT, setEl, DAVNS );
-            addChild( setEl, setProp, 2, true );
-            if( !updateProps( setProp, addProps, DAVNS ) )
-                return false;
-            propUpdate.addChild( WebDAVXML.elemTab, null );
-            propUpdate.addChild( setEl, null );
+            propUpdate.addChild( WebDAVXML.elemNewline, null );
+            propUpdate.addChild( addProps, null );
             propUpdate.addChild( WebDAVXML.elemNewline, null );
         }
 
         if( removeProps != null )
         {
-            Element removeEl = WebDAVXML.createElement( WebDAVXML.ELEM_REMOVE, Element.ELEMENT, propUpdate, DAVNS );
-            Element remProp = WebDAVXML.createElement( WebDAVXML.ELEM_PROP, Element.ELEMENT, removeEl, DAVNS );
-            addChild( removeEl, remProp, 2, true );
-            if( !updateProps( remProp, removeProps, DAVNS ) )
-                return false;
-            propUpdate.addChild(WebDAVXML.elemTab,null);
-            propUpdate.addChild(removeEl,null);
-            propUpdate.addChild(WebDAVXML.elemNewline,null);
+            propUpdate.addChild( WebDAVXML.elemNewline, null );
+            propUpdate.addChild( removeProps, null );
+            propUpdate.addChild( WebDAVXML.elemNewline, null);
         }
+
+        miniDoc.addChild( propUpdate, null );
+        miniDoc.addChild( WebDAVXML.elemNewline, null );
 
 /*        Enumeration namesEnum = new_xml.getElements();
         while (namesEnum.hasMoreElements())
@@ -759,7 +755,7 @@ public class WebDAVRequestGenerator implements Runnable
 /*        execute(); */
         return true;
     }
-
+/*
     private void createNamespaces( WebDAVProp[] props )
     {
         if( props != null )
@@ -793,7 +789,7 @@ public class WebDAVRequestGenerator implements Runnable
         }
         return true;
     }
-
+*/
 
     public synchronized boolean GenerateMkCol( String parentDir, String dirname )
     {
@@ -1055,8 +1051,9 @@ public class WebDAVRequestGenerator implements Runnable
             miniDoc.setVersion("1.0");
             miniDoc.addChild(WebDAVXML.elemNewline,null);
 
-            AsGen asgen = new AsGen();
-            WebDAVXML.createNamespace( asgen, null );
+            AsGen asgen = WebDAVXML.findNamespace( new AsGen(), null );
+            if( asgen == null )
+                asgen = WebDAVXML.createNamespace( new AsGen(), null );
             Element propBehavior = WebDAVXML.createElement( WebDAVXML.ELEM_PROPERTY_BEHAVIOR, Element.ELEMENT, null, asgen );
             propBehavior.addChild( WebDAVXML.elemNewline, null );
 
@@ -1217,8 +1214,9 @@ public class WebDAVRequestGenerator implements Runnable
             miniDoc.setVersion("1.0");
             miniDoc.addChild(WebDAVXML.elemNewline,null);
 
-            AsGen asgen = new AsGen();
-            WebDAVXML.createNamespace( asgen, null );
+            AsGen asgen = WebDAVXML.findNamespace( new AsGen(), null );
+            if( asgen == null )
+                asgen = WebDAVXML.createNamespace( new AsGen(), null );
             Element propBehavior = WebDAVXML.createElement( WebDAVXML.ELEM_PROPERTY_BEHAVIOR, Element.ELEMENT, null, asgen );
             propBehavior.addChild( WebDAVXML.elemNewline, null );
             Element keepAlv = WebDAVXML.createElement( WebDAVXML.ELEM_KEEP_ALIVE, Element.ELEMENT, propBehavior, asgen );
@@ -1308,8 +1306,9 @@ public class WebDAVRequestGenerator implements Runnable
             miniDoc.setVersion("1.0");
             miniDoc.addChild(WebDAVXML.elemNewline,null);
 
-            AsGen asgen = new AsGen();
-            WebDAVXML.createNamespace( asgen, null );
+            AsGen asgen = WebDAVXML.findNamespace( new AsGen(), null );
+            if( asgen == null )
+                asgen = WebDAVXML.createNamespace( new AsGen(), null );
             Element lockInfoElem = WebDAVXML.createElement( WebDAVXML.ELEM_LOCK_INFO, Element.ELEMENT, null, asgen );
 
             Element lockTypeElem = WebDAVXML.createElement( WebDAVXML.ELEM_LOCK_TYPE, Element.ELEMENT, lockInfoElem, asgen );

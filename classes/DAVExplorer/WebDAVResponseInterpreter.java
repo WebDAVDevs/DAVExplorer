@@ -628,7 +628,7 @@ public class WebDAVResponseInterpreter
                                 String host = HostName;
                                 if (Port != 0)
                                     host = HostName + ":" + Port;
-                                PropDialog pd = new PropDialog( rootElem, Resource, host, false );
+                                PropDialog pd = new PropDialog( rootElem, Resource, host, true );
                             }
                         }
                     }
@@ -691,10 +691,6 @@ public class WebDAVResponseInterpreter
         {
             System.err.println( "WebDAVResponseInterpreter::parsePropPatch" );
         }
-
-        // inform the user
-        setRefresh( Node );
-        fireInsertionEvent(null);
     }
 
     public void parseMkCol()
@@ -1121,14 +1117,6 @@ public class WebDAVResponseInterpreter
         return HostName;
     }
 
-//    class propDialogListener implements PropDialogListener
-//    {
-//        public void propDialog(PropDialogEvent e)
-//        {
-//            generator.handlePropPatch(e);
-//        }
-//    }
-
     public boolean replaceFile(String fileName)
     {
         JOptionPane pane = new JOptionPane();
@@ -1172,6 +1160,15 @@ public class WebDAVResponseInterpreter
                           "\nLock Token: " + LockToken+
                           "\nTimeout:    " + LockTimeout+"\n");
         pane.showOptionDialog(GlobalData.getGlobalData().getMainFrame(),str, "Lock Information", JOptionPane.DEFAULT_OPTION, JOptionPane.INFORMATION_MESSAGE, null,options, options[0]);
+    }
+
+
+    // singleton access
+    public static WebDAVRequestGenerator getGenerator()
+    {
+        if( generator == null )
+            generator = new WebDAVRequestGenerator();
+        return generator;
     }
 
 
