@@ -12,7 +12,6 @@ import com.ms.xml.om.ElementImpl;
 import com.ms.xml.util.Name;
 import com.ms.xml.util.Atom;
 import com.ms.xml.util.XMLOutputStream;
-import com.ms.xml.parser.ElementDecl;
 import com.ms.xml.parser.Entity;
 
 import java.lang.String;
@@ -224,7 +223,7 @@ public class ContentModel
                 break;
             case Parser.OR:
                 parser.nextToken();
-                if (parser.token == parser.NAME) {
+                if (parser.token == Parser.NAME) {
                     if (symbols.contains(parser.name))
                         parser.error("Warning: Repeated element in content model: " + parser.name );
                     else symbols.put(parser.name, parser.name);
@@ -249,7 +248,7 @@ public class ContentModel
             else if (cpType == Parser.OR && parser.token == Parser.OR)
             {
                 parser.nextToken();
-                if (parser.token == parser.NAME) {
+                if (parser.token == Parser.NAME) {
                     if (symbols.contains(parser.name))
                         parser.error("Repeated element in content model: " + parser.name );
                     else symbols.put(parser.name, parser.name);
@@ -360,7 +359,7 @@ public class ContentModel
                     if (parser.token == Parser.OR)
                     {
                         parser.nextToken();
-                        if (parser.token == parser.NAME) {
+                        if (parser.token == Parser.NAME) {
                             if (symbols.contains(parser.name))
                                 parser.error("Repeated element in content model: " + parser.name);
                             else symbols.put(parser.name, parser.name);

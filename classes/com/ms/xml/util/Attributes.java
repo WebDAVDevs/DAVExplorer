@@ -7,7 +7,6 @@
 package com.ms.xml.util;
 
 import java.util.Vector;
-import java.util.Enumeration;
 
 /**
  * A class that encapsulates a list of attribute/value pairs.

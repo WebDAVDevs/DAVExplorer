@@ -7,7 +7,6 @@
 
 package com.ms.xml.om;
 
-import com.ms.xml.util.Name;
 import java.util.Enumeration;
 
 /**

@@ -14,7 +14,6 @@ import com.ms.xml.util.Atom;
 import com.ms.xml.util.XMLOutputStream;
 import com.ms.xml.util.EnumWrapper;
 
-import java.util.Vector;
 import java.lang.String;
 import java.util.Hashtable;
 import java.util.Enumeration;

@@ -150,7 +150,7 @@ public class AttDef
 
 	private void reportEmpty(Parser parser, String s) throws ParseException
 	{
-		parser.error("Expected " + parser.tokenString(parser.NAME, s) + " insteadof " + parser.tokenString(parser.token, null));
+		parser.error("Expected " + parser.tokenString(Parser.NAME, s) + " insteadof " + parser.tokenString(parser.token, null));
 	}
 
 	/**
@@ -174,9 +174,9 @@ public class AttDef
 			break;
 		case ID:
 			parser.simplename++;
-			parser.parseToken(parser.NAME, "ID");
+			parser.parseToken(Parser.NAME, "ID");
 			parser.simplename--;
-			parser.parseToken(parser.QUOTE, "string");
+			parser.parseToken(Parser.QUOTE, "string");
 			if (!inDTD)
 			{
 				if (presence == FIXED && (Name)def != parser.name)
@@ -285,10 +285,10 @@ public class AttDef
 		case ENUMERATION:
 			if (type == ENUMERATION)
 				parser.nametoken++;
-			parser.parseToken(parser.NAME, "name");
+			parser.parseToken(Parser.NAME, "name");
 			if (type == ENUMERATION)
 				parser.nametoken--;
-			parser.parseToken(parser.QUOTE, "string");
+			parser.parseToken(Parser.QUOTE, "string");
 			for (i = values.size() - 1; i >= 0; i--)
 			{
 				if ((Name)values.elementAt(i) == parser.name)

@@ -46,7 +46,6 @@
 
 package edu.uci.ics.DAVExplorer;
 
-import javax.swing.JFrame;
 import javax.swing.JMenu;
 import javax.swing.JMenuItem;
 import javax.swing.JCheckBoxMenuItem;

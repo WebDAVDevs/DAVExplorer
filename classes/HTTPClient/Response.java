@@ -1477,8 +1477,8 @@ public final class Response implements RoResponse, GlobalConstants, Cloneable
     // 2001-May-23: jfeise@ics.uci.edu  added logging
     public void setLogging( boolean logging, String filename )
     {
-        this.logging = logging;
-        this.logFilename = filename;
+        Response.logging = logging;
+        Response.logFilename = filename;
         if( http_resp != null )
             http_resp.setLogging( logging, filename );
         if( stream_handler != null )

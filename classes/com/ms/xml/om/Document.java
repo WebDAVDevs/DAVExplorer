@@ -12,15 +12,10 @@ import com.ms.xml.parser.Parser;
 import com.ms.xml.parser.ParseException;
 import com.ms.xml.parser.DTD;
 import com.ms.xml.util.Name;
-import com.ms.xml.util.Attributes;
 import com.ms.xml.util.XMLOutputStream;
-import com.ms.xml.util.Attribute;
-import com.ms.xml.util.EnumWrapper;
 import com.ms.xml.util.Atom;
 
-import java.util.Vector;
 import java.lang.String;
-import java.util.Hashtable;
 import java.util.Enumeration;
 import java.io.*;
 import java.net.URL;

@@ -63,7 +63,7 @@
 
 package edu.uci.ics.DAVExplorer;
 
-import HTTPClient.AuthorizationInfo;
+//import HTTPClient.AuthorizationInfo;
 import HTTPClient.DefaultAuthHandler;
 import HTTPClient.CookieModule;
 
@@ -74,7 +74,6 @@ import javax.swing.JPanel;
 import javax.swing.JOptionPane;
 import javax.swing.JFileChooser;
 import javax.swing.event.EventListenerList;
-import javax.swing.text.Keymap;
 import java.awt.GridBagLayout;
 import java.awt.GridBagConstraints;
 import java.awt.FileDialog;
@@ -121,7 +120,8 @@ public class Main extends JFrame
         CommandMenu.addWebDAVMenuListener( menuListener );
 
         // Set the HTTPClient authentication handler
-        ((DefaultAuthHandler)AuthorizationInfo.getAuthHandler()).setAuthorizationPrompter(new AuthDialog());
+        //((DefaultAuthHandler)AuthorizationInfo.getAuthHandler()).setAuthorizationPrompter(new AuthDialog());
+		DefaultAuthHandler.setAuthorizationPrompter(new AuthDialog());
 
         // allow all cookies
         CookieModule.setCookiePolicyHandler( null );
@@ -749,10 +749,9 @@ public class Main extends JFrame
                 String logFilename = null;
                 if( CommandMenu.getLogging() )
                 {
-                    JOptionPane pane = new JOptionPane();
                     String message = new String( "WARNING: The logfile may get very large,\nsince all data is logged.\n" +
                                                  "Hit Cancel now if you don't want to log the data." );
-                    int opt = pane.showConfirmDialog( GlobalData.getGlobalData().getMainFrame(), message, "HTTP Logging", JOptionPane.OK_CANCEL_OPTION );
+                    int opt = JOptionPane.showConfirmDialog( GlobalData.getGlobalData().getMainFrame(), message, "HTTP Logging", JOptionPane.OK_CANCEL_OPTION );
                     if( opt == JOptionPane.OK_OPTION )
                     {
                         JFileChooser fd = new JFileChooser();
@@ -818,7 +817,6 @@ public class Main extends JFrame
             }
             else if (command.equals("About DAV Explorer..."))
             {
-                JOptionPane pane = new JOptionPane( this );
                 String message = new String("DAV Explorer Version "+ VERSION + "\n" +
                 COPYRIGHT + "\n" +
                 "Authors: Yuzo Kanomata, Joachim Feise\n" +
@@ -829,7 +827,7 @@ public class Main extends JFrame
                 "Uses the HTTPClient library (http://www.innovation.ch/java/HTTPClient/).\n" +
                 "Uses Microsoft's published XML parser code from June 1997.\n");
                 Object [] options = { "OK" };
-                pane.showOptionDialog(GlobalData.getGlobalData().getMainFrame(), message, "About DAV Explorer", JOptionPane.DEFAULT_OPTION, JOptionPane.INFORMATION_MESSAGE, null, options, options[0]);
+				JOptionPane.showOptionDialog(GlobalData.getGlobalData().getMainFrame(), message, "About DAV Explorer", JOptionPane.DEFAULT_OPTION, JOptionPane.INFORMATION_MESSAGE, null, options, options[0]);
             }
         }
     }
@@ -892,7 +890,6 @@ public class Main extends JFrame
         }
         else
         {
-            JOptionPane pane = new JOptionPane();
             String str = null;
             String title = null;
             String defaultName = null;
@@ -914,7 +911,7 @@ public class Main extends JFrame
                 title = "Delete File";
                 str = "Delete " + defaultName + ":\nAre you sure?";
             }
-            int opt = pane.showConfirmDialog( GlobalData.getGlobalData().getMainFrame(), str, title, JOptionPane.YES_NO_OPTION );
+            int opt = JOptionPane.showConfirmDialog( GlobalData.getGlobalData().getMainFrame(), str, title, JOptionPane.YES_NO_OPTION );
             if (opt == JOptionPane.YES_OPTION)
             {
                 if( treeView.isRemote( s ) )
@@ -980,8 +977,7 @@ public class Main extends JFrame
 
     private String selectName( String title, String prompt, String defaultValue )
     {
-        JOptionPane pane = new JOptionPane();
-        String ret = (String)pane.showInputDialog( GlobalData.getGlobalData().getMainFrame(), prompt, title, JOptionPane.QUESTION_MESSAGE, null, null, defaultValue );
+        String ret = (String)JOptionPane.showInputDialog( GlobalData.getGlobalData().getMainFrame(), prompt, title, JOptionPane.QUESTION_MESSAGE, null, null, defaultValue );
         return ret;
     }
 

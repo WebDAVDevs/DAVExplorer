@@ -42,7 +42,6 @@ import java.awt.event.MouseEvent;
 import java.awt.event.InputEvent;
 import javax.swing.JTable;
 import javax.swing.table.JTableHeader;
-import javax.swing.table.TableColumn;
 import javax.swing.table.TableColumnModel;
 
 public class TableSorter extends TableMap

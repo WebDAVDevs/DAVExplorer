@@ -8,9 +8,7 @@
 package com.ms.xml.parser;
 
 import com.ms.xml.om.Element;
-import com.ms.xml.om.ElementImpl;
 import com.ms.xml.om.ElementFactory;
-import com.ms.xml.om.ElementFactoryImpl;
 import com.ms.xml.util.EnumWrapper;
 import com.ms.xml.util.Name;
 import com.ms.xml.util.Atom;
@@ -19,8 +17,6 @@ import com.ms.xml.util.XMLOutputStream;
 
 import java.lang.String;
 import java.util.Hashtable;
-import java.util.Stack;
-import java.util.Enumeration;
 import java.util.Vector;
 import java.io.*;
 import java.net.*;

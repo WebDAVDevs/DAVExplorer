@@ -268,7 +268,7 @@ public class XMLOutputStream extends OutputStream
 		}
         if (sns != null)
         {
-		    if (dtd != null && ! dtd.isReservedNameSpace(sns))
+		    if (dtd != null && ! DTD.isReservedNameSpace(sns))
 		    {
 			    shortName = nameSpaceContext.findNameSpace(sns);
 			    if (shortName == null)

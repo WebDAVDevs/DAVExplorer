@@ -165,9 +165,8 @@ class GlobalData
 
     public void errorMsg(String str)
     {
-        JOptionPane pane = new JOptionPane();
         Object[] options = { "OK" };
-        pane.showOptionDialog(mainFrame,str,"Error Message", JOptionPane.DEFAULT_OPTION, JOptionPane.ERROR_MESSAGE, null, options, options[0]);
+		JOptionPane.showOptionDialog(mainFrame,str,"Error Message", JOptionPane.DEFAULT_OPTION, JOptionPane.ERROR_MESSAGE, null, options, options[0]);
     }
 
     public void setCursor( Cursor c )

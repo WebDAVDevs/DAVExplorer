@@ -33,7 +33,6 @@
 
 package edu.uci.ics.DAVExplorer;
 
-import java.awt.Font;
 import java.awt.Color;
 import java.awt.Rectangle;
 import java.awt.GridBagLayout;

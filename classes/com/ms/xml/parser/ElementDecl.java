@@ -9,7 +9,6 @@ package com.ms.xml.parser;
 
 import com.ms.xml.om.ElementImpl;
 import com.ms.xml.om.Element;
-import com.ms.xml.om.ElementFactoryImpl;
 import com.ms.xml.util.Name;
 import com.ms.xml.util.Atom;
 import com.ms.xml.util.XMLOutputStream;
@@ -17,7 +16,6 @@ import com.ms.xml.util.XMLOutputStream;
 import java.lang.String;
 import java.util.Vector;
 import java.util.Enumeration;
-import java.net.URL;
 import java.io.IOException;
 
 /**
@@ -149,8 +147,8 @@ public class ElementDecl extends ElementImpl
             Name n = parser.name;
 
             // make sure XML-SPACE belongs to the XML namespace.
-            if (n.getName().equals(parser.nameXMLSpace.getName()))
-                n = parser.nameXMLSpace;
+            if (n.getName().equals(Parser.nameXMLSpace.getName()))
+                n = Parser.nameXMLSpace;
 
             parser.parseKeyword(0, "Attdef");
             switch (parser.token)
@@ -236,7 +234,7 @@ public class ElementDecl extends ElementImpl
     final void initContent(Context context, Parser parser) throws ParseException
     {
         context.ed = this;
-        AttDef attdef = findAttDef(parser.nameXMLSpace);
+        AttDef attdef = findAttDef(Parser.nameXMLSpace);
         if (attdef != null) {
             Object defval = attdef.getDefault();
             if (defval != null) {

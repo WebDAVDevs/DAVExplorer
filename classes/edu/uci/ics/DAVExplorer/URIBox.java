@@ -44,13 +44,7 @@ package edu.uci.ics.DAVExplorer;
 import java.awt.Color;
 import java.awt.event.ActionListener;
 import java.awt.event.ActionEvent;
-import java.io.File;
-import java.io.IOException;
-import java.io.InputStream;
 import java.util.Vector;
-import java.util.StringTokenizer;
-import java.util.zip.ZipFile;
-import java.util.zip.ZipEntry;
 import javax.swing.JPanel;
 import javax.swing.JTextField;
 import javax.swing.JLabel;
@@ -153,9 +147,8 @@ public class URIBox extends JPanel implements ActionListener
 
     private static void errorMsg(String str)
     {
-        JOptionPane pane = new JOptionPane();
         Object[] options = { "OK" };
-        pane.showOptionDialog( null, str,"Error Message", JOptionPane.DEFAULT_OPTION, JOptionPane.ERROR_MESSAGE, null, options, options[0]);
+		JOptionPane.showOptionDialog( null, str,"Error Message", JOptionPane.DEFAULT_OPTION, JOptionPane.ERROR_MESSAGE, null, options, options[0]);
     }
 
     class EnterPressedListener implements ActionListener

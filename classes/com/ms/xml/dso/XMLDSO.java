@@ -12,7 +12,6 @@ import com.ms.xml.parser.*;
 import com.ms.xml.om.*;
 import com.ms.xml.util.Name;
 import com.ms.xml.util.XMLOutputStream;
-import com.ms.xml.util.Attribute;
 import com.ms.xml.util.StringInputStream;
 
 /**

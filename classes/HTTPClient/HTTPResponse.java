@@ -979,8 +979,8 @@ public class HTTPResponse implements HTTPClientModuleConstants, GlobalConstants
     // 2001-May-23: jfeise@ics.uci.edu  added logging
     public void setLogging( boolean logging, String filename )
     {
-        this.logging = logging;
-        this.logFilename = filename;
+        HTTPResponse.logging = logging;
+        HTTPResponse.logFilename = filename;
     }
 
 

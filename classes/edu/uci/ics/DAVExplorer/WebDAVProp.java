@@ -35,7 +35,6 @@ package edu.uci.ics.DAVExplorer;
 
 import java.util.Vector;
 import java.util.Enumeration;
-import com.ms.xml.util.Name;
 
 public class WebDAVProp
 {

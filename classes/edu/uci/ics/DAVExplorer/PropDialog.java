@@ -30,14 +30,12 @@
 
 package edu.uci.ics.DAVExplorer;
 
-import java.awt.Font;
 import java.awt.Color;
 import java.awt.Rectangle;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
-import java.io.IOException;
 import javax.swing.JDialog;
 import javax.swing.JButton;
 import javax.swing.JLabel;
@@ -49,7 +47,6 @@ import javax.swing.event.ChangeListener;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
 import javax.swing.tree.TreePath;
-import javax.swing.tree.DefaultMutableTreeNode;
 import com.ms.xml.om.Element;
 
 
@@ -250,8 +247,7 @@ public class PropDialog extends JDialog
 
     protected boolean ConfirmationDialog( String title, String text )
     {
-        JOptionPane pane = new JOptionPane();
-        int opt = pane.showConfirmDialog( GlobalData.getGlobalData().getMainFrame(), text, title, JOptionPane.YES_NO_OPTION );
+        int opt = JOptionPane.showConfirmDialog( GlobalData.getGlobalData().getMainFrame(), text, title, JOptionPane.YES_NO_OPTION );
         if (opt == JOptionPane.YES_OPTION)
             return true;
         return false;

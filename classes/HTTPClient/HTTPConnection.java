@@ -39,7 +39,6 @@ import java.io.FilterOutputStream;
 import java.io.FileOutputStream;
 // SSL Extensions (using Sun's JSEE)
 import javax.net.ssl.SSLSocket;
-import javax.net.ssl.SSLException;
 import javax.net.ssl.SSLSocketFactory;
 import javax.security.cert.X509Certificate;
 import java.lang.reflect.Constructor;
@@ -3974,8 +3973,8 @@ public class HTTPConnection implements GlobalConstants, HTTPClientModuleConstant
     // 2001-May-23: Joachim Feise (dav-dev@ics.uci.edu)  added logging
     public void setLogging( boolean logging, String filename )
     {
-        this.logging = logging;
-        this.logFilename = filename;
+        HTTPConnection.logging = logging;
+        HTTPConnection.logFilename = filename;
     }
 
 

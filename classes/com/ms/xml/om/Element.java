@@ -6,7 +6,6 @@
 
 package com.ms.xml.om;
 import com.ms.xml.util.Name;
-import com.ms.xml.util.Attributes;
 import com.ms.xml.util.XMLOutputStream;
 
 import java.lang.String;import java.util.Enumeration;

@@ -51,8 +51,6 @@ import java.util.Enumeration;
 import java.util.StringTokenizer;
 import java.io.StringReader;
 import java.io.BufferedReader;
-import java.io.FileInputStream;
-import java.io.DataInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.IOException;

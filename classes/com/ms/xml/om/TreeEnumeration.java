@@ -8,7 +8,6 @@
 package com.ms.xml.om;
 
 import com.ms.xml.util.EnumWrapper;
-import com.ms.xml.util.Name;
 import com.ms.xml.util.Queue;
 import java.util.Enumeration;
 import java.util.Stack;

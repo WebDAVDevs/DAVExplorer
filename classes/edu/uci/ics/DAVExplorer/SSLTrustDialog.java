@@ -46,10 +46,9 @@ public class SSLTrustDialog
      */
     public boolean getTrust( String host )
     {
-        JOptionPane pane = new JOptionPane();
         String prompt = "The Security Certificate from host " + host + " could not be verified!\nTrust host " + host + " anyway?";
         String title = "SSL Security Alert";
-        int ret = pane.showConfirmDialog( GlobalData.getGlobalData().getMainFrame(), prompt, title, JOptionPane.YES_NO_OPTION );
+        int ret = JOptionPane.showConfirmDialog( GlobalData.getGlobalData().getMainFrame(), prompt, title, JOptionPane.YES_NO_OPTION );
         if( ret == JOptionPane.YES_OPTION )
             return true;
         return false;

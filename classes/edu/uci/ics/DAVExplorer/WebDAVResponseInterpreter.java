@@ -54,7 +54,6 @@ import java.io.File;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.FileOutputStream;
-import java.io.IOException;
 import HTTPClient.HTTPResponse;
 import com.ms.xml.om.Element;
 import com.ms.xml.om.ElementImpl;
@@ -1097,9 +1096,8 @@ public class WebDAVResponseInterpreter
 
     public boolean replaceFile(String fileName)
     {
-        JOptionPane pane = new JOptionPane();
         String str = new String(fileName + " exists.\nReplace?\n");
-        int opt = pane.showConfirmDialog(null,str,"File Exists",JOptionPane.YES_NO_OPTION);
+        int opt = JOptionPane.showConfirmDialog(null,str,"File Exists",JOptionPane.YES_NO_OPTION);
         if (opt == JOptionPane.YES_OPTION)
             return true;
         else
@@ -1108,9 +1106,8 @@ public class WebDAVResponseInterpreter
 
     public boolean launchAnyway()
     {
-        JOptionPane pane = new JOptionPane();
         String str = new String("View in application?");
-        int opt = pane.showConfirmDialog(null,str,"Launch Application?",JOptionPane.YES_NO_OPTION);
+        int opt = JOptionPane.showConfirmDialog(null,str,"Launch Application?",JOptionPane.YES_NO_OPTION);
         if (opt == JOptionPane.YES_OPTION)
             return true;
         else
@@ -1119,15 +1116,13 @@ public class WebDAVResponseInterpreter
 
     public String selectApplication()
     {
-        JOptionPane pane = new JOptionPane();
         String str = new String("Select the application to show this file");
-        String ret = pane.showInputDialog(null,str,"Select Application",JOptionPane.QUESTION_MESSAGE);
+        String ret = JOptionPane.showInputDialog(null,str,"Select Application",JOptionPane.QUESTION_MESSAGE);
         return ret;
     }
 
     public void displayLock(String LockType, String LockScope, String LockDepth, String LockToken, String LockTimeout, String LockOwner )
     {
-        JOptionPane pane = new JOptionPane();
         Object [] options = { "OK" };
         if (LockToken == null)
             LockToken = "";
@@ -1137,7 +1132,7 @@ public class WebDAVResponseInterpreter
                           "\nLock Owner: " + LockOwner +
                           "\nLock Token: " + LockToken+
                           "\nTimeout:    " + LockTimeout+"\n");
-        pane.showOptionDialog(GlobalData.getGlobalData().getMainFrame(),str, "Lock Information", JOptionPane.DEFAULT_OPTION, JOptionPane.INFORMATION_MESSAGE, null,options, options[0]);
+		JOptionPane.showOptionDialog(GlobalData.getGlobalData().getMainFrame(),str, "Lock Information", JOptionPane.DEFAULT_OPTION, JOptionPane.INFORMATION_MESSAGE, null,options, options[0]);
     }
 
 

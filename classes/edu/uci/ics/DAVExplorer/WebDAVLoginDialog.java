@@ -51,7 +51,6 @@
 package edu.uci.ics.DAVExplorer;
 
 import javax.swing.JDialog;
-import javax.swing.JFrame;
 import javax.swing.JPanel;
 import javax.swing.JLabel;
 import javax.swing.JTextField;

@@ -46,14 +46,13 @@
 package edu.uci.ics.DAVExplorer;
 
 import java.io.IOException;
-import java.net.SocketException;
 import HTTPClient.HTTPConnection;
 import HTTPClient.HTTPResponse;
 import HTTPClient.NVPair;
 import HTTPClient.ModuleException;
 import java.util.Vector;
 import java.util.StringTokenizer;
-import com.sun.net.ssl.KeyManager;
+//import com.sun.net.ssl.KeyManager;
 import com.sun.net.ssl.TrustManager;
 import com.sun.net.ssl.SSLContext;
 import javax.net.ssl.SSLSocketFactory;

@@ -7,7 +7,6 @@
  
 package com.ms.xml.util;
 
-import java.io.*;
 import java.util.Hashtable;
 
 /**

@@ -8,7 +8,6 @@
 package com.ms.xml.parser;
 
 import com.ms.xml.om.Element;
-import com.ms.xml.util.Name;
 import java.util.Enumeration;
 
 

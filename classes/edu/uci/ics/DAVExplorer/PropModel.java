@@ -37,7 +37,6 @@
 
 package edu.uci.ics.DAVExplorer;
 
-import java.util.Vector;
 import java.util.Enumeration;
 import javax.swing.JButton;
 import javax.swing.JTree;

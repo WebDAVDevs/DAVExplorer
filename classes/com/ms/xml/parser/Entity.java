@@ -12,12 +12,10 @@ import com.ms.xml.util.Atom;
 import com.ms.xml.util.XMLOutputStream;
 import com.ms.xml.om.Element;
 import com.ms.xml.om.ElementImpl;
-import com.ms.xml.util.EnumWrapper;
 import com.ms.xml.util.StringInputStream;
 
 import java.io.*;
 import java.util.Enumeration;
-import java.util.Vector;
 
 /**
  * This class implements an <code>Entity</code> object representing an XML internal
