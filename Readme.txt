@@ -22,11 +22,34 @@ also be used for remote namespace management, and has collaboration support
 for groups which employ a lock-download-work-upload-unlock authoring
 process.
 
-DAV Explorer is a Java application which uses Java 2 (tested with both
-JDK 1.2 and JDK 1.3). and has successfully been run on Windows
-95/98/ME/NT/2000 machines, Solaris and Linux. It has been reported to run on
-Macintosh computers, with MacOS 9 and MRJ 2.2.3, and with Mac OS X.
+DAV Explorer is a Java application which uses Java 2 and has successfully
+been run on Windows 95/98/ME/NT/2000/XP machines, Solaris and Linux.
+It has been reported to run on Macintosh computers, with MacOS 9 and MRJ 2.2.3,
+and with Mac OS X.
 DAV Explorer may run on other platforms, but this has not been verified.
+
+DAV Explorer also works as applet. Usage:
+<APPLET	ARCHIVE="DAVExplorer.jar"
+        CODE="edu.uci.ics.DAVExplorer.AppletMain.class"
+        WIDTH=800
+        HEIGHT=400>
+        <PARAM NAME=uri VALUE="http://dav.somewhere.com/webdav/">
+        <PARAM NAME=username VALUE="username">
+        <PARAM NAME=password VALUE="password">
+</APPLET>
+Alternative Usage:
+<EMBED TYPE     = "application/x-java-applet"
+	   WIDTH    = "800"
+	   HEIGHT   = "400"
+	   code     = "edu.uci.ics.DAVExplorer.AppletMain.class"
+	   archive  = "DAVExplorer.jar"
+	   uri      = "http://dav.somewhere.com/webdav/"
+	   username = "username"
+	   password = "password">
+</EMBED>
+The username and password parameters are optional for security reasons.
+If they are not specified on the webpage, they are requested interactively.
+The applet code also supports the use of SSL. It has been tested with JRE 1.4.
 
 
 2. LICENSE
@@ -87,7 +110,12 @@ DAV Explorer accepts the following command line options:
   main DAV Explorer window.
 
 
-5. CHANGELOG
+5. Contributors
+The file contributors.txt contains a list of all contributors.
+Thanks to everybody.
+
+
+6. CHANGELOG
 
 Changes for version 0.82-dev:
 - Made sure that DAV Explorer runs with JDK 1.1.x, for MacOS 9 compatibility
@@ -98,6 +126,7 @@ Changes for version 0.82-dev:
 - Fixed the icon locator code to account for drive letters on Windows.
 - Special handling of PUT to support files > 2GB.
 - Added Translate header to better support IIS
+- Incorporated Brian Johnson's changes for applet support
 
 Changes for version 0.81:
 - Fixed handling of default namespace in the view/modify property dialog
@@ -127,7 +156,7 @@ Changes for version 0.80:
   and its contents are requested and the server doesn't send properties for
   the collection itself.
 - Modified the authentication code to make use of the HTTPClient
-  functionality   for Digest authentication.
+  functionality for Digest authentication.
 - Copy and Move now allow entering the target, making them more flexible.
 - For initial contact with a server, we now send an OPTIONS request.
 - Rewrite of the View Property dialog.
