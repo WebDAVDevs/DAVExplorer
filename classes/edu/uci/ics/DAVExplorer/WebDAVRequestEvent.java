@@ -53,8 +53,9 @@ public class WebDAVRequestEvent extends EventObject
     private WebDAVTreeNode node;
 
 
-    public WebDAVRequestEvent(Object module, String MethodName, String HostName, int Port, String ResourceName,
-                              NVPair[] Headers, byte[] Body, String Extra, String User, String Pass, WebDAVTreeNode n )
+    public WebDAVRequestEvent( Object module, String MethodName, String HostName, int Port,
+                               String ResourceName, NVPair[] Headers, byte[] Body,
+                               String Extra, String User, String Pass, WebDAVTreeNode n )
     {
         super(module);
 

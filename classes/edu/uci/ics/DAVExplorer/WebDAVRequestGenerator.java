@@ -39,6 +39,9 @@
  * @author      Joachim Feise (dav-exp@ics.uci.edu)
  * @date        2 November 2001
  * Changes:     Added locktoken support to proppatch code
+ * @author      Joachim Feise (dav-exp@ics.uci.edu)
+ * @date        25 June 2002
+ * Changes:     Special handling of PUT to support files > 2GB
  */
 
 package edu.uci.ics.DAVExplorer;
@@ -845,10 +848,10 @@ public class WebDAVRequestGenerator implements Runnable
 
         try
         {
-            FileInputStream file_in = new FileInputStream(file);
-            DataInputStream in = new DataInputStream(file_in);
+            //FileInputStream file_in = new FileInputStream(file);
+            long fileSize = file.length();
             Method = "PUT";
-
+/*
             int off = 0;
             int fileSize = (int) file.length();
             Body = new byte[fileSize];
@@ -859,6 +862,8 @@ public class WebDAVRequestGenerator implements Runnable
                 rcvd = file_in.read(Body, off, fileSize-off);
             }
             while (rcvd != -1 && off+rcvd < fileSize);
+*/
+            Extra = fileName;
 
             if (lockToken != null)
             {
@@ -876,7 +881,7 @@ public class WebDAVRequestGenerator implements Runnable
                 Headers[0] = new NVPair("Host",HostName + ":" + Port);
 
             Headers[1] = new NVPair( "Content-Type", getContentType(fileName) );
-            Headers[2] = new NVPair( "Content-Length", new Integer(fileSize).toString() );
+            Headers[2] = new NVPair( "Content-Length", new Long(fileSize).toString() );
         }
         catch (Exception e)
         {

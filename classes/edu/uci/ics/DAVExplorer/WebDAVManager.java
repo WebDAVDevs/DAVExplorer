@@ -38,6 +38,9 @@
  * @author      Joachim Feise (dav-exp@ics.uci.edu)
  * @date        19 November 2001
  * Changes:     Added handling of untrusted certificates by asking user
+ * @author      Joachim Feise (dav-exp@ics.uci.edu)
+ * @date        25 June 2002
+ * Changes:     Special handling of PUT to support files > 2GB
  */
 
 package edu.uci.ics.DAVExplorer;
@@ -199,7 +202,15 @@ public class WebDAVManager
         Body = e.getBody();
         ExtraInfo = e.getExtraInfo();
         try {
-            Response = Con.Generic(MethodName, ResourceName, Body, Headers);
+            if( e.getMethod().equals("PUT") )
+            {
+                // special handling of PUT to allow for files > 2GB
+                Response = Con.Put( ResourceName, ExtraInfo, Headers );
+            }
+            else
+            {
+                Response = Con.Generic(MethodName, ResourceName, Body, Headers);
+            }
 
             WebDAVResponseEvent webdavResponse  = GenerateWebDAVResponse(Response,tn);
             fireResponse(webdavResponse);

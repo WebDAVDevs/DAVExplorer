@@ -33,6 +33,9 @@
  * @author      Joachim Feise (dav-exp@ics.uci.edu)
  * @date        1 October 2001
  * Changes:     Change of package name
+ * @author      Joachim Feise (dav-exp@ics.uci.edu)
+ * @date        25 June 2002
+ * Changes:     Added a Put method to support files > 2GB
  */
 
 package edu.uci.ics.DAVExplorer;
@@ -40,7 +43,10 @@ package edu.uci.ics.DAVExplorer;
 import HTTPClient.HTTPConnection;
 import HTTPClient.HTTPResponse;
 import HTTPClient.NVPair;
+import HTTPClient.HttpOutputStream;
 import HTTPClient.ModuleException;
+import java.io.File;
+import java.io.FileInputStream;
 import java.io.IOException;
 
 public class WebDAVConnection extends HTTPConnection
@@ -102,6 +108,31 @@ public class WebDAVConnection extends HTTPConnection
         {
             // just ignore it
         }
+    }
+
+
+    public HTTPResponse Put( String filename, String source, NVPair[] headers )
+        throws IOException, ModuleException
+    {
+        HttpOutputStream out = new HttpOutputStream();
+        HTTPResponse response = Put( filename, out, headers );
+
+        File file = new File( source );
+        long fileSize = file.length();
+        FileInputStream file_in = new FileInputStream( file );
+        byte[] b = new byte[1048576];
+        long off = 0;
+        int rcvd = 0;
+        do
+        {
+            off += rcvd;
+            rcvd = file_in.read(b);
+            if( rcvd != -1 )
+                out.write(b, 0, rcvd);
+        }
+        while (rcvd != -1 && off+rcvd < fileSize);
+        out.close();
+        return response;
     }
 
 
