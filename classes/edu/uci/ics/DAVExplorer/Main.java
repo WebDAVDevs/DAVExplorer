@@ -81,7 +81,7 @@ import java.io.File;
 
 public class Main extends JFrame
 {
-    public final static String VERSION = "0.80";
+    public final static String VERSION = "0.81-dev";
     public final static String UserAgent = "UCI DAV Explorer/" + VERSION;
 
     public Main(String frameName)
@@ -210,9 +210,45 @@ public class Main extends JFrame
             if (!str.endsWith("/"))
                 str += "/";
             requestGenerator.setExtraInfo("uribox");
-            if( requestGenerator.GenerateOptions( str ) )
+            // For easier debugging, the commandline option "options=no"
+            // disables the initial sending of an OPTIONS request
+            String options = System.getProperty( "options", "yes" );
+            if( options.equalsIgnoreCase("no") )
             {
-                requestGenerator.execute();
+                // 1999-June-08, Joachim Feise (jfeise@ics.uci.edu):
+                // workaround for IBM's DAV4J, which does not handle propfind properly
+                // with the prop tag. To use the workaround, run DAV Explorer with
+                // 'java -jar -Dpropfind=allprop DAVExplorer.jar'
+                String doAllProp = System.getProperty( "propfind" );
+                if( (doAllProp != null) && doAllProp.equalsIgnoreCase("allprop") )
+                {
+                    if( requestGenerator.GeneratePropFind( str, "allprop", "one", null, null, false ) )
+                    {
+                        requestGenerator.execute();
+                    }
+                }
+                else
+                {
+                    String[] props = new String[6];
+                    props[0] = "displayname";
+                    props[1] = "resourcetype";
+                    props[2] = "getcontenttype";
+                    props[3] = "getcontentlength";
+                    props[4] = "getlastmodified";
+                    props[5] = "lockdiscovery";
+                    if( requestGenerator.GeneratePropFind( str, "prop", "one", props, null, false ) )
+                    {
+                        requestGenerator.execute();
+                    }
+                }
+            }
+            else
+            {
+
+                if( requestGenerator.GenerateOptions( str ) )
+                {
+                    requestGenerator.execute();
+                }
             }
         }
     }
@@ -483,7 +519,6 @@ public class Main extends JFrame
                 else
                 {
                     WebDAVTreeNode n = fileView.getParentNode();
-                    //WebDAVTreeNode n2 = fileView.getSelectedCollection();
                     requestGenerator.setResource(s, n);
                     lockDocument();
                 }
@@ -733,7 +768,7 @@ public class Main extends JFrame
             {
                 JOptionPane pane = new JOptionPane( this );
                 String message = new String("DAV Explorer Version "+ VERSION + "\n" +
-                "Copyright (c) 1999-2001 Regents of the University of California\n" +
+                "Copyright (c) 1998-2001 Regents of the University of California\n" +
                 "Authors: Yuzo Kanomata, Joachim Feise\n" +
                 "EMail: dav-exp@ics.uci.edu\n\n" +
                 "Based on code from the UCI WebDAV Client Group\n" +
