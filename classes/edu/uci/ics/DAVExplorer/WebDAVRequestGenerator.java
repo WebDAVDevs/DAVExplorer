@@ -470,20 +470,26 @@ public class WebDAVRequestGenerator implements Runnable
 
     private void addChild( Element parent, Element child, int tabcount, boolean leadingCR )
     {
+        addChild( parent, child, tabcount, tabcount, leadingCR, true );
+    }
+
+    private void addChild( Element parent, Element child, int leadingTabcount, int trailingTabcount, boolean leadingCR, boolean trailingCR )
+    {
         if( parent != null )
         {
             // format nicely
             if( child.numElements() > 0 )
             {
-                for( int i=0; i<tabcount; i++ )
+                for( int i=0; i<trailingTabcount; i++ )
                     child.addChild( WebDAVXML.elemDSpace, null );
             }
             if( leadingCR )
                 parent.addChild( WebDAVXML.elemNewline, null );
-            for( int i=0; i<tabcount; i++ )
+            for( int i=0; i<leadingTabcount; i++ )
                 parent.addChild( WebDAVXML.elemDSpace, null );
             parent.addChild( child, null );
-            parent.addChild( WebDAVXML.elemNewline, null );
+            if( trailingCR )
+              parent.addChild( WebDAVXML.elemNewline, null );
         }
     }
 
@@ -552,7 +558,6 @@ public class WebDAVRequestGenerator implements Runnable
         }
 
         // if any of the properties were added, insert them into set elem
-
         miniDoc.addChild(propUpdate,null);
         miniDoc.addChild(WebDAVXML.elemNewline,null);
 
@@ -923,8 +928,9 @@ public class WebDAVRequestGenerator implements Runnable
             Element keepAlv = WebDAVXML.createElement( WebDAVXML.ELEM_KEEP_ALIVE, Element.ELEMENT, propBehavior, asgen );
             Element val = WebDAVXML.createElement( null, Element.PCDATA, keepAlv, asgen );
             val.setText("*");
-            addChild( keepAlv, val, 2, true );
-            addChild( propBehavior, keepAlv, 1, false );
+            // keep on same line without whitespace
+            addChild( keepAlv, val, 0, 0, false, false );
+            addChild( propBehavior, keepAlv, 1, 0, false, true );
 
             miniDoc.addChild(propBehavior, null);
             miniDoc.addChild(WebDAVXML.elemNewline, null);
@@ -1065,8 +1071,9 @@ public class WebDAVRequestGenerator implements Runnable
             Element keepAlv = WebDAVXML.createElement( WebDAVXML.ELEM_KEEP_ALIVE, Element.ELEMENT, propBehavior, asgen );
             Element val = WebDAVXML.createElement( null, Element.PCDATA, keepAlv, asgen );
             val.setText("*");
-            addChild( keepAlv, val, 2, true );
-            addChild( propBehavior, keepAlv, 1, false );
+            // keep on same line without whitespace
+            addChild( keepAlv, val, 0, 0, false, false );
+            addChild( propBehavior, keepAlv, 1, 0, false, true );
 
             miniDoc.addChild(propBehavior, null);
             miniDoc.addChild(WebDAVXML.elemNewline, null);
@@ -1160,8 +1167,9 @@ public class WebDAVRequestGenerator implements Runnable
             Element ownerHref = WebDAVXML.createElement( WebDAVXML.ELEM_HREF, Element.ELEMENT, ownerElem, asgen );
             Element ownerVal = WebDAVXML.createElement( null, Element.PCDATA, ownerElem, asgen );
             ownerVal.setText(OwnerInfo);
-            addChild( ownerHref, ownerVal, 3, true );
-            addChild( ownerElem, ownerHref, 2, true );
+            // keep on same line without whitespace
+            addChild( ownerHref, ownerVal, 0, 0, false, false );
+            addChild( ownerElem, ownerHref, 2, 0, true, true );
             addChild( lockTypeElem, typeValue, 2, true );
             addChild( scopeElem, scopeVal, 2, true );
             addChild( lockInfoElem, lockTypeElem, 1, true );
