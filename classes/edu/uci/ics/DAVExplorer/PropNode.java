@@ -27,6 +27,7 @@
 
 package edu.uci.ics.DAVExplorer;
 
+import java.util.Enumeration;
 import java.util.Vector;
 import javax.swing.JTree;
 
@@ -82,6 +83,16 @@ public class PropNode
         return getTag();
     }
 
+    public PropNode getParent()
+    {
+        return parent;
+    }
+
+    public void setParent( PropNode parent )
+    {
+        this.parent = parent;
+    }
+
     public void addChild( Object child )
     {
         children.add( child );
@@ -114,11 +125,32 @@ public class PropNode
         removedChildren.clear();
     }
 
-    Vector children = new Vector();
-    Vector removedChildren = new Vector();
-    String tag;
-    String ns;
-    String value;
-    JTree tree;
-    boolean modified;
+    public boolean isDAVProp()
+    {
+        // check if the property is defined in RFC2518 or if it is part of
+        // a defined property hierarchy (e.g., lockdiscovery)
+        if( (ns!=null) && ns.equals(WebDAVProp.DAV_SCHEMA) )
+        {
+            Enumeration props = WebDAVProp.getDavProps();
+            while( props.hasMoreElements() )
+            {
+                String prop = (String)props.nextElement();
+                if( tag.equals(prop) )
+                    return true;
+                if( (parent!=null) && parent.isDAVProp() )
+                    return true;
+            }
+        }
+        return false;
+    }
+
+
+    private Vector children = new Vector();
+    private Vector removedChildren = new Vector();
+    private String tag;
+    private String ns;
+    private String value;
+    private JTree tree;
+    private boolean modified;
+    private PropNode parent;
 }

@@ -98,6 +98,7 @@ public class PropModel extends AbstractTableModel implements TreeTableModel
     public void addNode( PropNode parentNode, PropNode node, boolean root )
     {
         parentNode.addChild( node );
+        node.setParent( parentNode );
         Object[] pathToRoot = null;
         if( root )
         {
@@ -194,9 +195,7 @@ public class PropModel extends AbstractTableModel implements TreeTableModel
             case 1:
             case 2:
                 // modification of DAV properties not allowed
-                if(((PropNode)node).getNamespace().equals("DAV:"))
-                    return false;
-                break;
+                return !((PropNode)node).isDAVProp();
             }
         }
         catch  (SecurityException se)
@@ -208,9 +207,7 @@ public class PropModel extends AbstractTableModel implements TreeTableModel
     public boolean isNodeRemovable( Object node )
     {
         // removal of DAV properties not allowed
-        if( (((PropNode)node).getNamespace()==null) || ((PropNode)node).getNamespace().equals("DAV:") )
-            return false;
-        return true;
+        return !((PropNode)node).isDAVProp();
     }
 
     public void setValueAt( Object aValue, Object node, int column )
@@ -436,13 +433,15 @@ public class PropModel extends AbstractTableModel implements TreeTableModel
                         {
                             PropNode node = new PropNode( tagname.getName(), ns, getValue(propValEl) );
                             // add to tree
-                            currentNode.addChild(node);
+                            currentNode.addChild( node );
+                            node.setParent( currentNode );
                         }
                         else
                         {
                             PropNode node = new PropNode( tagname.getName(), ns, null );
                             // add to tree
-                            currentNode.addChild(node);
+                            currentNode.addChild( node );
+                            node.setParent( currentNode );
                             parseProperties( propValEl, node );     // add child nodes
                         }
                     }
@@ -624,8 +623,9 @@ public class PropModel extends AbstractTableModel implements TreeTableModel
     // column types
     static protected Class[]  types = { TreeTableModel.class, String.class, String.class };
 
+    protected EventListenerList listenerList = new EventListenerList();
+
     private PropNode root;
     private JTree tree;
     private JButton saveButton;
-    protected EventListenerList listenerList = new EventListenerList();
 }

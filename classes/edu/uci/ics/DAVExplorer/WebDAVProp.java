@@ -39,12 +39,7 @@ import com.ms.xml.util.Name;
 
 public class WebDAVProp
 {
-    public WebDAVProp()
-    {
-    }
-
-
-    public static final String DAV_SCHEMA   = new String("DAV:");
+    public static final String DAV_SCHEMA = "DAV:";
     public static final String PROP_CREATIONDATE = "creationdate";
     public static final String PROP_DISPLAYNAME = "displayname";
     public static final String PROP_GETCONTENTLANGUAGE = "getcontentlanguage";
@@ -57,21 +52,26 @@ public class WebDAVProp
     public static final String PROP_SOURCE = "source";
     public static final String PROP_SUPPORTEDLOCK = "supportedlock";
 
+
+    public WebDAVProp()
+    {
+    }
+
     public static Enumeration getDavProps()
     {
         Vector prop_list = new Vector();
 
-        prop_list.addElement( Name.create( PROP_CREATIONDATE ) );
-        prop_list.addElement( Name.create( PROP_DISPLAYNAME ) );
-        prop_list.addElement( Name.create( PROP_GETCONTENTLANGUAGE ) );
-        prop_list.addElement( Name.create( PROP_GETCONTENTLENGTH ) );
-        prop_list.addElement( Name.create( PROP_GETCONTENTTYPE ) );
-        prop_list.addElement( Name.create( PROP_GETETAG ) );
-        prop_list.addElement( Name.create( PROP_GETLASTMODIFIED ) );
-        prop_list.addElement( Name.create( PROP_LOCKDISCOVERY ) );
-        prop_list.addElement( Name.create( PROP_RESOURCETYPE ) );
-        prop_list.addElement( Name.create( PROP_SOURCE ) );
-        prop_list.addElement( Name.create( PROP_SUPPORTEDLOCK ) );
+        prop_list.addElement( PROP_CREATIONDATE );
+        prop_list.addElement( PROP_DISPLAYNAME );
+        prop_list.addElement( PROP_GETCONTENTLANGUAGE );
+        prop_list.addElement( PROP_GETCONTENTLENGTH );
+        prop_list.addElement( PROP_GETCONTENTTYPE );
+        prop_list.addElement( PROP_GETETAG );
+        prop_list.addElement( PROP_GETLASTMODIFIED );
+        prop_list.addElement( PROP_LOCKDISCOVERY );
+        prop_list.addElement( PROP_RESOURCETYPE );
+        prop_list.addElement( PROP_SOURCE );
+        prop_list.addElement( PROP_SUPPORTEDLOCK );
 
         return (prop_list.elements());
     }

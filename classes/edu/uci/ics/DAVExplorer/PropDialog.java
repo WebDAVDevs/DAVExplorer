@@ -189,7 +189,7 @@ public class PropDialog extends JDialog
         {
             PropNode parentNode = (PropNode)path.getLastPathComponent();
             // can't have child nodes if value is not empty
-            if( parentNode.getValue().length() != 0 )
+            if( (parentNode.getValue().length() != 0) || parentNode.isDAVProp() )
                 selected = false;
         }
 
