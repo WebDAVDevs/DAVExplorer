@@ -48,12 +48,13 @@ import java.util.Enumeration;
  * basically a wrapper around the Response class which first lets all
  * the modules handle the response before finally giving the info to
  * the user.
+ * Joachim Feise (dav-exp@ics.uci.edu): now implementing GlobalConstants
  *
  * @version	0.3-3  06/05/2001
  * @author	Ronald Tschalär
  * @since	0.3
  */
-public class HTTPResponse implements HTTPClientModuleConstants
+public class HTTPResponse implements HTTPClientModuleConstants, GlobalConstants
 {
     /** the list of modules */
     private HTTPClientModule[]  modules;
@@ -121,8 +122,6 @@ public class HTTPResponse implements HTTPClientModuleConstants
      */
     private static boolean logging = false;
     private static String  logFilename = null;
-    private static String  inboundHeader = "\r\n========= Inbound Message Header =========\r\n";
-    private static String  inboundBody   = "\r\n========= Inbound Message Body =========\r\n";
 
 
     // Constructors
@@ -802,7 +801,7 @@ public class HTTPResponse implements HTTPClientModuleConstants
 	    init(response);
     // 2001-May-23: jfeise@ics.uci.edu  added logging
     else if( logging )
-        doBodyLogging();
+        doBodyLogging(response.cd_type);
 
 	if (handle_trailers)
 	    invokeTrailerHandlers(false);
@@ -833,7 +832,7 @@ public class HTTPResponse implements HTTPClientModuleConstants
 
     // 2001-May-23: jfeise@ics.uci.edu  added logging
     if( logging )
-        doBodyLogging();
+        doBodyLogging(resp.cd_type);
     }
 
 
@@ -1005,18 +1004,18 @@ public class HTTPResponse implements HTTPClientModuleConstants
 
 
     // 2001-May-23: jfeise@ics.uci.edu  added logging
-    private void doBodyLogging()
+    private void doBodyLogging(int cd_type)
     {
         if( Data == null )
         {
             try
             {
-                getData();  // required so we can log the data
+        	    if( cd_type != CD_CHUNKED )
+                {
+                    getData();  // required so we can log the data
+                }
             }
-            catch( IOException eio )
-            {
-            }
-            catch( ModuleException em )
+            catch( Exception e )
             {
             }
         }
@@ -1024,12 +1023,15 @@ public class HTTPResponse implements HTTPClientModuleConstants
         {
             try
             {
-                FileOutputStream fos = new FileOutputStream( logFilename, true );
-                fos.write( inboundBody.getBytes() );
-                fos.write( Data );
-                fos.close();
+                // encoded body is logged elsewhere
+        	    if( cd_type != CD_CHUNKED )
+                {
+                    FileOutputStream fos = new FileOutputStream( logFilename, true );
+                    fos.write( Data );
+                    fos.close();
+                }
             }
-            catch( IOException e )
+            catch( Exception e )
             {
             }
         }

@@ -331,8 +331,7 @@ public class HTTPConnection implements GlobalConstants, HTTPClientModuleConstant
       */
     private static boolean       logging = false;
     private static String        logFilename = null;
-    private static String        outboundHeader = "\r\n========= Outbound Message Header =========\r\n";
-    private static String        outboundBody   = "\r\n========= Outbound Message Body =========\r\n";
+    private static String        outboundHeader = "\r\n========= Outbound Message =========\r\n";
 
     /**
       * Joachim Feise (jfeise@ics.uci.edu)
@@ -2588,6 +2587,7 @@ public class HTTPConnection implements GlobalConstants, HTTPClientModuleConstant
 	    HTTPResponse resp = new HTTPResponse(gen_mod_insts(), Timeout, req);
         // 2001-May-23: jfeise@ics.uci.edu: added logging
         resp.setLogging( logging, logFilename );
+        Codecs.setLogging( logging, logFilename );
 	    handleRequest(req, resp, null, true);
 	    return resp;
 	}
@@ -3092,7 +3092,6 @@ public class HTTPConnection implements GlobalConstants, HTTPClientModuleConstant
                     try
                     {
                         FileOutputStream fos = new FileOutputStream( logFilename, true );
-                        fos.write( outboundBody.getBytes() );
                         fos.write( req.getData() );
                         fos.close();
                     }

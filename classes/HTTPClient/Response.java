@@ -146,8 +146,7 @@ public final class Response implements RoResponse, GlobalConstants, Cloneable
       */
     private static boolean logging = false;
     private static String  logFilename = null;
-    private static String  inboundHeader = "\r\n========= Inbound Message Header =========\r\n";
-    private static String  inboundBody   = "\r\n========= Inbound Message Body =========\r\n";
+    private static String  inboundHeader = "\r\n========= Inbound Message =========\r\n";
 
     static
     {
@@ -616,7 +615,6 @@ public final class Response implements RoResponse, GlobalConstants, Cloneable
         try
         {
             FileOutputStream fos = new FileOutputStream( logFilename, true );
-            fos.write( inboundBody.getBytes() );
             fos.write( Data );
             fos.close();
         }
@@ -1148,6 +1146,7 @@ public final class Response implements RoResponse, GlobalConstants, Cloneable
             FileOutputStream fos = new FileOutputStream( logFilename, true );
             fos.write( inboundHeader.getBytes() );
             fos.write( headers.getBytes() );
+            fos.write( new byte[] {(byte)'\r', (byte)'\n'});
             fos.close();
         }
         catch( IOException e )
@@ -1424,10 +1423,13 @@ public final class Response implements RoResponse, GlobalConstants, Cloneable
     {
         try
         {
-            FileOutputStream fos = new FileOutputStream( logFilename, true );
-            fos.write( inboundBody.getBytes() );
-            fos.write( Data );
-            fos.close();
+            // encoded body is logged elsewhere
+    	    if (getHeader("Transfer-Encoding") == null)
+            {
+                FileOutputStream fos = new FileOutputStream( logFilename, true );
+                fos.write( Data );
+                fos.close();
+            }
         }
         catch( IOException e )
         {
@@ -1479,6 +1481,8 @@ public final class Response implements RoResponse, GlobalConstants, Cloneable
         this.logFilename = filename;
         if( http_resp != null )
             http_resp.setLogging( logging, filename );
+        if( stream_handler != null )
+            stream_handler.setLogging( logging, filename );
     }
 
 
@@ -1493,34 +1497,5 @@ public final class Response implements RoResponse, GlobalConstants, Cloneable
     public String getLogFilename()
     {
         return logFilename;
-    }
-
-
-    // 2001-May-23: jfeise@ics.uci.edu  added logging
-    public void doBodyLogging()
-    {
-        if( Data == null )
-        {
-            try
-            {
-                readResponseData(inp_stream);
-            }
-            catch( IOException eio )
-            {
-            }
-        }
-        else
-        {
-            try
-            {
-                FileOutputStream fos = new FileOutputStream( logFilename, true );
-                fos.write( inboundBody.getBytes() );
-                fos.write( Data );
-                fos.close();
-            }
-            catch( IOException e )
-            {
-            }
-        }
     }
 }

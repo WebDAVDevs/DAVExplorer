@@ -26,7 +26,7 @@
  *
  *  The HTTPClient's home page is located at:
  *
- *  http://www.innovation.ch/java/HTTPClient/ 
+ *  http://www.innovation.ch/java/HTTPClient/
  *
  */
 
@@ -37,6 +37,8 @@ import java.io.EOFException;
 import java.io.InterruptedIOException;
 import java.net.Socket;
 import java.net.SocketException;
+// 31 October 2001: Joachim Feise (dav-exp@ics.uci.edu): added for logging
+import java.io.FileOutputStream;
 
 /**
  * This class handles the demultiplexing of input stream. This is needed
@@ -79,6 +81,13 @@ class StreamDemultiplexor implements GlobalConstants
 
     /** the currently set timeout for the socket */
     private int                    cur_timeout = 0;
+
+    /**
+      * Joachim Feise (dav-exp@ics.uci.edu)
+      * Logging extension
+      */
+    private static boolean logging = false;
+    private static String  logFilename = null;
 
 
     static
@@ -310,12 +319,19 @@ class StreamDemultiplexor implements GlobalConstants
 			    rcvd = Stream.read(b, off, len);
 			    if (rcvd == -1)
 				throw new EOFException("Premature EOF encountered");
+                // 30 October 2001: Joachim Feise (dav-exp@ics.uci.edu): added logging
+                if( logging )
+                    logData( b, off, rcvd );
+
 			    chunk_len -= rcvd;
 			    if (chunk_len == 0)	// got the whole chunk
 			    {
 				Stream.read();	// CR
 				Stream.read();	// LF
 				chunk_len = -1;
+                // 30 October 2001: Joachim Feise (dav-exp@ics.uci.edu): added logging
+                if( logging )
+                    logData( new byte[] {(byte)'\r', (byte)'\n'}, 0, 2 );
 			    }
 			}
 			else	// the footers (trailers)
@@ -373,6 +389,27 @@ class StreamDemultiplexor implements GlobalConstants
 		throw resph.exception;		// set by retry_requests
 	    }
 	}
+    }
+
+    // 31 October 2001: Joachim Feise (dav-exp@ics.uci.edu): added logging
+    public void setLogging( boolean logging, String filename )
+    {
+        this.logging = logging;
+        this.logFilename = filename;
+    }
+
+    // 31 October 2001: Joachim Feise (dav-exp@ics.uci.edu): added logging
+    public void logData( byte[] buf, int off, int len )
+    {
+        try
+        {
+            FileOutputStream fos = new FileOutputStream( logFilename, true );
+            fos.write( buf, off, len );
+            fos.close();
+        }
+        catch( IOException e )
+        {
+        }
     }
 
     /**
@@ -842,7 +879,7 @@ class SocketTimeout extends Thread
 		next = time_list[current];
 		prev = time_list[current].prev;
 		prev.next = this;
-		next.prev = this; 
+		next.prev = this;
 	    }
 	}
 
@@ -897,7 +934,7 @@ class SocketTimeout extends Thread
 	    entry.next = time_list[current];
 	    entry.prev = time_list[current].prev;
 	    entry.prev.next = entry;
-	    entry.next.prev = entry; 
+	    entry.next.prev = entry;
 	}
 
 	return entry;
@@ -930,7 +967,7 @@ class SocketTimeout extends Thread
 		if (current >= time_list.length)
 		    current = 0;
 
-		// remove all expired timers 
+		// remove all expired timers
 		for (TimeoutEntry entry = time_list[current].next;
 		     entry != time_list[current];
 		     entry = entry.next)

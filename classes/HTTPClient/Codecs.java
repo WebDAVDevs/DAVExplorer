@@ -26,7 +26,7 @@
  *
  *  The HTTPClient's home page is located at:
  *
- *  http://www.innovation.ch/java/HTTPClient/ 
+ *  http://www.innovation.ch/java/HTTPClient/
  *
  */
 
@@ -67,6 +67,12 @@ public class Codecs
     private final static String ContType = "\r\nContent-Type: ";
     private final static String Boundary = "\r\n----------ieoau._._+2_8_GoodLuck8.3-dskdfJwSJKl234324jfLdsjfdAuaoei-----";
 
+    /**
+      * Joachim Feise (dav-exp@ics.uci.edu)
+      * Logging extension
+      */
+    private static boolean logging = false;
+    private static String  logFilename = null;
 
     // Class Initializer
 
@@ -1533,23 +1539,64 @@ public class Codecs
 
 
 	// read chunk length
-
-	while ((ch = input.read()) > 0  &&  (ch == ' '  ||  ch == '\t')) ;
+    // 30 October 2001: Joachim Feise (dav-exp@ics.uci.edu): changed logic for logging
+	while( (ch = input.read()) > 0 )
+    {
+        // skipping ws, but logging
+        // 30 October 2001: Joachim Feise (dav-exp@ics.uci.edu): logging ws
+        if( logging )
+            logChar(ch);
+        if( ch != ' '  &&  ch != '\t' )
+            break;
+    }
 	if (ch < 0)
 	    throw new EOFException("Premature EOF while reading chunk length");
 	hex_len[off++] = (byte) ch;
-	while ((ch = input.read()) > 0  &&  ch != '\r'  &&  ch != '\n'  &&
-		ch != ' '  &&  ch != '\t'  &&  ch != ';'  &&
-		off < hex_len.length)
-	    hex_len[off++] = (byte) ch;
 
-	while ((ch == ' '  ||  ch == '\t')  &&  (ch = input.read()) > 0) ;
+	while( (ch = input.read()) > 0 )
+    {
+        // 30 October 2001: Joachim Feise (dav-exp@ics.uci.edu): added logging
+        if( logging )
+            logChar(ch);
+        if( ch != '\r'  &&  ch != '\n'  && ch != ' '  &&  ch != '\t'  &&  ch != ';'  &&
+		    off < hex_len.length)
+        {
+    	    hex_len[off++] = (byte) ch;
+        }
+        else
+            break;
+    }
+
+	while ((ch == ' '  ||  ch == '\t')  &&  (ch = input.read()) > 0)
+    {
+        // skipping ws, but logging
+         // 30 October 2001: Joachim Feise (dav-exp@ics.uci.edu): added logging
+        if( logging )
+            logChar(ch);
+    }
+
 	if (ch == ';')		// chunk-ext (ignore it)
-	    while ((ch = input.read()) > 0  &&  ch != '\r'  &&  ch != '\n') ;
+	    while( (ch = input.read()) > 0 )
+        {
+            // 30 October 2001: Joachim Feise (dav-exp@ics.uci.edu): added logging
+            if( logging )
+                logChar(ch);
+            if( ch == '\r'  ||  ch == '\n')
+                break;
+        }
 
 	if (ch < 0)
 	    throw new EOFException("Premature EOF while reading chunk length");
-	if (ch != '\n'  &&  (ch != '\r'  ||  input.read() != '\n'))
+    // 30 October 2001: Joachim Feise (dav-exp@ics.uci.edu): changed logic for logging
+	//if (ch != '\n'  &&  (ch != '\r'  ||  input.read() != '\n'))
+    int ch1 = 0;
+	if (ch != '\n'  &&  ch != '\r' )
+    {
+        ch1 = input.read();
+        if( logging )
+            logChar(ch1);
+    }
+	if (ch != '\n'  &&  (ch != '\r'  ||  ch1 != '\n'))
 	    throw new ParseException("Didn't find valid chunk length: " +
 				     new String(hex_len, 0, off, "8859_1"));
 
@@ -1563,4 +1610,23 @@ public class Codecs
 					new String(hex_len, 0, off, "8859_1") ); }
     }
 
+    private static void logChar( int c )
+    {
+        try
+        {
+            FileOutputStream fos = new FileOutputStream( logFilename, true );
+            fos.write( c );
+            fos.close();
+        }
+        catch( IOException e )
+        {
+        }
+    }
+
+    // 30 October 2001: Joachim Feise (dav-exp@ics.uci.edu): added logging
+    public static void setLogging( boolean log, String filename )
+    {
+        logging = log;
+        logFilename = filename;
+    }
 }
