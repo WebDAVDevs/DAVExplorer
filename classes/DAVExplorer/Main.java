@@ -65,7 +65,7 @@ public class Main extends JFrame
     WebDAVLoginDialog ld;
     Hashtable authTable;
     String authHost;
-    public final static String VERSION = "0.56";
+    public final static String VERSION = "0.57";
     public final static String UserAgent = "UCI DAV Explorer/" + VERSION;
     String writeToDir;
 
@@ -242,15 +242,32 @@ public class Main extends JFrame
             if (!str.endsWith("/"))
                 str += "/";
             requestGenerator.setExtraInfo("uribox");
-            String[] props = new String[6];
-            props[0] = "displayname";
-            props[1] = "resourcetype";
-            props[2] = "getcontenttype";
-            props[3] = "getcontentlength";
-            props[4] = "getlastmodified";
-            props[5] = "lockdiscovery";
-            if( requestGenerator.GeneratePropFind( str, "prop", "one", props, null, false) ){
-                requestGenerator.execute();
+
+            // 1999-June-08, Joachim Feise (jfeise@ics.uci.edu):
+            // workaround for IBM's DAV4J, which does not handle propfind properly
+            // with the prop tag. To use the workaround, run DAV Explorer with
+            // 'java -jar -Dpropfind=allprop DAVExplorer.jar'
+            String doAllProp = System.getProperty( "propfind" );
+            if( (doAllProp != null) && doAllProp.equalsIgnoreCase("allprop") )
+	    {
+                if( requestGenerator.GeneratePropFind( str, "allprop", "one", null, null, false ) )
+                {
+                    requestGenerator.execute();
+                }
+            }
+            else
+            {
+                String[] props = new String[6];
+                props[0] = "displayname";
+                props[1] = "resourcetype";
+                props[2] = "getcontenttype";
+                props[3] = "getcontentlength";
+                props[4] = "getlastmodified";
+                props[5] = "lockdiscovery";
+                if( requestGenerator.GeneratePropFind( str, "prop", "one", props, null, false ) )
+                {
+                    requestGenerator.execute();
+	        }
 	    }
         }
     }

@@ -281,15 +281,18 @@ public class WebDAVRequestGenerator implements Runnable
         }
     }
 
+
     public synchronized void addRequestListener(WebDAVRequestListener l)
     {
         listeners.addElement(l);
     }
 
+
     public synchronized void removeRequestListener(WebDAVRequestListener l)
     {
         listeners.removeElement(l);
     }
+
 
     public synchronized boolean DiscoverLock(String method)
     {
@@ -302,14 +305,29 @@ public class WebDAVRequestGenerator implements Runnable
         String[] prop = new String[1];
         String[] schema = new String[1];
 
-        prop[0] = new String("lockdiscovery");
-        schema[0] = new String(WebDAVProp.DAV_SCHEMA);
-        boolean retval = GeneratePropFind(null,"prop","zero",prop,schema, false);
-        if( retval ){
+        // 1999-June-08, Joachim Feise (jfeise@ics.uci.edu):
+        // workaround for IBM's DAV4J, which does not handle propfind properly
+        // with the prop tag. To use the workaround, run DAV Explorer with
+        // 'java -jar -Dpropfind=allprop DAVExplorer.jar'
+        boolean retval = false;
+        String doAllProp = System.getProperty( "propfind" );
+        if( (doAllProp != null) && doAllProp.equalsIgnoreCase("allprop") )
+        {
+            retval = GeneratePropFind( null, "allprop", "zero", null, schema, false );
+        }
+        else
+        {
+            prop[0] = new String("lockdiscovery");
+            schema[0] = new String(WebDAVProp.DAV_SCHEMA);
+            retval = GeneratePropFind(null, "prop", "zero", prop, schema, false );
+	}
+        if( retval )
+        {
             execute();
 	}
         return retval;
     }
+
 
     public synchronized boolean GeneratePropFindForNode(   String FullPath,
                             String command,
