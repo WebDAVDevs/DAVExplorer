@@ -882,7 +882,7 @@ public class Main extends JFrame
             {
                 WebDAVLockInfo lockInfo = new WebDAVLockInfo(GlobalData.getGlobalData().getMainFrame(), "Lock Info", true);
             }
-            else if (command.equals("Create Version"))
+            else if (command.equals("Put Under Version Control"))
             {
                 String s = fileView.getSelected();
                 if( (s == null) || (s.length() == 0) )

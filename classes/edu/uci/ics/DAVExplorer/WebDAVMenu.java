@@ -228,9 +228,9 @@ public class WebDAVMenu extends JMenuBar implements ActionListener
     */
     protected JMenu generateVersionMenu()
     {
-        JMenu mnu_VersionMenu = new JMenu( "Versions", true );
+        JMenu mnu_VersionMenu = new JMenu( "Versioning", true );
 
-        mnu_VersionMenu.add( new WebDAVMenuItem( "Create Version",this, true ) );
+        mnu_VersionMenu.add( new WebDAVMenuItem( "Put Under Version Control",this, true ) );
         mnu_VersionMenu.addSeparator();
         mnu_VersionMenu.add( new WebDAVMenuItem( "Version Report",this, true ) );
         mnu_VersionMenu.addSeparator();

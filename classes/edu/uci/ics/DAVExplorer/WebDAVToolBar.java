@@ -102,6 +102,13 @@ public class WebDAVToolBar extends JPanel implements ActionListener
         addTool( toolbar, "exclusiveLock", "lock", "Exclusive Lock" );
         addTool( toolbar, "unlock", "Unlock" );
         addTool( toolbar, "propfind", "View/Modify Properties" );
+        // DeltaV support
+        toolbar.addSeparator();
+        addTool( toolbar, "versioning", "Put Under Version Control");
+        addTool( toolbar, "checkout", "Check Out");
+        addTool( toolbar, "uncheckout", "Uncheckout");
+        addTool( toolbar, "checkin", "Check In");
+        addTool( toolbar, "versions", "Version Report");
         return toolbar;
     }
 
