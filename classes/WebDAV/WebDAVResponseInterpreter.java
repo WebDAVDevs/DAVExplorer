@@ -169,7 +169,6 @@ public class WebDAVResponseInterpreter
     	    	}
     	    	else
     	    	{
-    		        //System.out.println("COPY response=" + res.getStatusCode());	
     	    	}
     	    }
     	    catch(Exception ex)
@@ -654,10 +653,6 @@ public class WebDAVResponseInterpreter
 	    System.out.println(e);
         }
 	
-	//old
-        //setRefresh();
-        //fireInsertionEvent(null);
-
     	clearStream();
     	CopyResponseEvent e = new CopyResponseEvent( this, Node);
     	copyListener.CopyEventResponse(e);
@@ -727,7 +722,6 @@ public class WebDAVResponseInterpreter
 
     public void clearStream()
     {
-System.out.println("**##@@ clearStream");
         stream = null;
     }
 
@@ -1011,8 +1005,6 @@ System.out.println("**##@@ clearStream");
                 if( token.getType() == Element.PCDATA )
                 {
                     String HrefValue = token.getText();
-                    System.out.println();
-                    System.out.println( "checkHrefValue: " + HrefValue );
                     int pos = HrefValue.indexOf( HTTPPrefix );
                     if( pos >= 0 )
                         HrefValue = HrefValue.substring( pos+HTTPPrefix.length() );

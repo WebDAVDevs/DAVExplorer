@@ -106,7 +106,6 @@ public class WebDAVRequestGenerator implements Runnable
     
     public void tableSelectionChanged(ViewSelectionEvent e)
     {
-System.out.println("In tableSelectionChanged");
         if (e.getNode() != null)
         {
             return;
@@ -114,49 +113,41 @@ System.out.println("In tableSelectionChanged");
         else
         {
             tableResource = (String)e.getPath().toString();
-System.out.println("tableResource =" + tableResource +", Path length=" + Path.length() );
             if (Path.length() == 0)
             {
                 ResourceName = tableResource;
             }
             ResourceName = Path + tableResource;
-System.out.println("ResouceName =" + ResourceName );
         }
     }
 
-//Yuzo
-//SetResourceName to the value
-    public void setResource(String name, WebDAVTreeNode node){
-	tableResource = name;
-	if (Path.length() == 0){
-	    ResourceName = new String(name);
-	} else {
-	    ResourceName = Path + new String(name);
-	}
+    //Yuzo
+    //SetResourceName to the value
+    public void setResource(String name, WebDAVTreeNode node)
+    {
+        tableResource = name;
+        if (Path.length() == 0)
+        {
+            ResourceName = new String(name);
+        }
+        else
+        {
+            ResourceName = Path + new String(name);
+        }
 
-	Node = node;
-System.out.println("in setResourceName, ResourceName =" + ResourceName
-	+ "Path=" + Path +", node =" + node);
-
+        Node = node;
     }
 
-    public void setNode( WebDAVTreeNode node ) {
-	Node = node;
+    public void setNode( WebDAVTreeNode node )
+    {
+	    Node = node;
     }
-
 
     public void treeSelectionChanged(ViewSelectionEvent e)
     {
         String Item;
         Path = (String)e.getPath().toString();
         ResourceName = Path + "/";
-
-System.out.println("***treeSelectionChanged: path is=" + Path);
-        if (Path.startsWith(WebDAVPrefix))
-        {
-System.out.println("***treeSelectionChanged, WebDAVPrefix: path is=" + Path);
-        }
-
     }
 
     public boolean parseResourceName()
@@ -172,7 +163,6 @@ System.out.println("***treeSelectionChanged, WebDAVPrefix: path is=" + Path);
             return false;
         }
         String stripped = ResourceName.substring(WebDAVPrefix.length());
-System.out.println("calling parseStripped on:" + stripped);
         return parseStripped( stripped );
     }
 
@@ -263,12 +253,10 @@ System.out.println("calling parseStripped on:" + stripped);
             Headers = newHeaders;
         }
         WebDAVRequestEvent e = new WebDAVRequestEvent(this, Method,HostName,Port,StrippedResource, Headers, Body, Extra, User, Password, Node);
-	Node = null;
+        Node = null;
         for (int i=0;i<ls.size();i++)
         {
             WebDAVRequestListener l = (WebDAVRequestListener) ls.elementAt(i);
-System.out.println("RUN in WebDAVRequestGenerator:WebDAVRequestListener:"
-		+ l + ":number" + i);
             l.requestFormed(e); 
         }
     }
@@ -312,24 +300,28 @@ System.out.println("RUN in WebDAVRequestGenerator:WebDAVRequestListener:"
         Headers = null;
         Body = null;
 
-System.out.println("ResourceName at begin of Propfind=" + ResourceName);
         boolean ok;
-	if (flagGetFilesBelow){  // In this case, loadChildren Flags 
-				// this boolean in order to have 
-				// the ResourceName be set to the FullPath.
-				// This is to ensure that Expanding a non
-				// selected tree node will actually have the 
-				// properties of the children of the node
-				// loaded into our tree.
-	    if (ResourceName.equals(FullPath)){
-		Extra = "index";
-	    } else {
-		Extra = "expand";
-	    }
-	    ResourceName = FullPath;
-	    parseResourceName();
-	    ok = true;
-        } else if (FullPath != null)
+        if (flagGetFilesBelow)
+        {   // In this case, loadChildren Flags 
+    		// this boolean in order to have 
+    		// the ResourceName be set to the FullPath.
+    		// This is to ensure that Expanding a non
+    		// selected tree node will actually have the 
+    		// properties of the children of the node
+    		// loaded into our tree.
+            if (ResourceName.equals(FullPath))
+            {
+                Extra = "index";
+            }
+            else
+            {
+                Extra = "expand";
+            }
+            ResourceName = FullPath;
+            parseResourceName();
+            ok = true;
+        }
+        else if (FullPath != null)
         {
             ok = parseStripped( FullPath );
         }
@@ -342,7 +334,6 @@ System.out.println("ResourceName at begin of Propfind=" + ResourceName);
             ok = parseResourceName();
         }
 
-System.out.println("ResourceName=" + ResourceName);
         if (!ok)
         {
             errorMsg( "Error Generating PROPFIND Method for " + StrippedResource );
@@ -556,7 +547,6 @@ System.out.println("ResourceName=" + ResourceName);
         }
         if ( (!setUsed) && (!removeUsed))
         {
-            //System.out.println("No changes.");      
             return;
         }
 
@@ -651,8 +641,6 @@ System.out.println("ResourceName=" + ResourceName);
   
     public synchronized void GenerateDelete(String lockToken)
     {
-System.out.println("GenerateDlete for token =" + lockToken );
-
         Headers = null;
         Body = null;
 
@@ -754,12 +742,7 @@ System.out.println("GenerateDlete for token =" + lockToken );
     {
         Headers = null;
         Body = null;
-	System.out.println("GenerateCopy: ResourceName =" + ResourceName );
-	System.out.println("GenerateCopy: StrippedResource =" + StrippedResource);
-	System.out.println("GenerateCopy: Host =" + HostName);
-	System.out.println("GenerateCopy: Port =" + Port);
-	System.out.println("GenerateCopy: Dest =" + Dest );
-	Extra = "copy"; //Yuzo added
+	    Extra = "copy"; //Yuzo added
 
         if (!parseResourceName())
         {
@@ -788,9 +771,6 @@ System.out.println("GenerateDlete for token =" + lockToken );
         if( !Dest.startsWith(WebDAVPrefix) )
             Dest = WebDAVPrefix + Dest;
 
-	System.out.println("GenerateCopy: Dest=" + Dest);
-	System.out.println("GenerateCopy: KeepAlive=" + KeepAlive);
-	
         Method = "COPY";
         Body = null;
         if (KeepAlive)
@@ -819,19 +799,6 @@ System.out.println("GenerateDlete for token =" + lockToken );
             try
             {
                 miniDoc.save(xml_out);
-	/*
-		
-	XMLOutputStream out = new XMLOutputStream(System.out);
-            try
-            {
-                miniDoc.save(out);
-            }
-            catch (Exception e)
-            {
-            }
-*/
-
-		
 
                 Body = byte_str.toByteArray();
 

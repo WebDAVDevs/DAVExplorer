@@ -228,63 +228,57 @@ public class WebDAVFileView implements ViewSelectionListener
         table.updateUI();
     }
 
-////////////
-// This implements the View Selection Listener Interface
-// The purpose of this listners is to respond to the 
-// Selection of a node on the TreeView.  This means 
-// that the Table should become populated with the directories 
-// and files in the Selected Node.  
-
-    public void selectionChanged(ViewSelectionEvent e){
-    	System.out.println("$$**$$In WebDAVFile View: got ViewSelectionEvent=" + e);
-
+    ////////////
+    // This implements the View Selection Listener Interface
+    // The purpose of this listners is to respond to the 
+    // Selection of a node on the TreeView.  This means 
+    // that the Table should become populated with the directories 
+    // and files in the Selected Node.  
+    public void selectionChanged(ViewSelectionEvent e)
+    {
         table.clearSelection();
         clearTable();
 
-	parentNode = (WebDAVTreeNode)e.getNode();
+        parentNode = (WebDAVTreeNode)e.getNode();
 
-        if (table.getRowCount() != 0){
-System.out.println("ERROR:WebDAvFileView:ViewSelectionListener:Table Not cleared");
+        if (table.getRowCount() != 0)
+        {
             return;
-	}
+        }
 
-	TreePath path = e.getPath();
-	WebDAVTreeNode tn = (WebDAVTreeNode)path.getLastPathComponent();
+        TreePath path = e.getPath();
+        WebDAVTreeNode tn = (WebDAVTreeNode)path.getLastPathComponent();
 
-Cursor c = mainFrame.getCursor(); // save original cursor
-mainFrame.setCursor( Cursor.getPredefinedCursor( Cursor.WAIT_CURSOR ) );
+        Cursor c = mainFrame.getCursor(); // save original cursor
+        mainFrame.setCursor( Cursor.getPredefinedCursor( Cursor.WAIT_CURSOR ) );
 
+        addDirToTable(tn);
 
-	addDirToTable(tn);
-	
         DataNode dn = tn.getDataNode();
-        if (dn == null){
-System.out.println("ERROR:WebDAvFileView:ViewSelectionListener:No dataNode for Node");
-mainFrame.setCursor( c ); //reset to original cursor
+        if (dn == null)
+        {
+            mainFrame.setCursor( c ); //reset to original cursor
             return;
-	}
+        }
 
         Vector sub = dn.getSubNodes();
 
-	if (sub == null){
-	}else{
-	    addFileToTable(sub);
-	}
-            table.updateUI(); 
-mainFrame.setCursor( c ); //reset to original cursor
-System.out.println("WebDAVFileView:ViewSelectionListener:End Processing");
+        if (sub == null)
+        {
+        }
+        else
+        {
+    	    addFileToTable(sub);
+        }
+        table.updateUI(); 
+        mainFrame.setCursor( c ); //reset to original cursor
     }
 
+    protected void addDirToTable(WebDAVTreeNode n)
+    {
+        // Add the directories to the Table
 
-
-
-
-
-    protected void addDirToTable(WebDAVTreeNode n){
-	// Add the directories to the Table
-
-	int count = n.getChildCount();
-System.out.println("addDirToTable, count =" + count);
+        int count = n.getChildCount();
         for (int i=0; i < count; i++)
         {
             WebDAVTreeNode child = (WebDAVTreeNode) n.getChildAt(i);
@@ -302,11 +296,10 @@ System.out.println("addDirToTable, count =" + count);
 
             addRow(rowObj);
         }
-
     }
 
-    protected void addFileToTable(Vector v){
-
+    protected void addFileToTable(Vector v)
+    {
         for (int i=0; i < v.size(); i++)
         {
             Object[] rowObj = new Object[7];
@@ -321,48 +314,38 @@ System.out.println("addDirToTable, count =" + count);
             rowObj[6] = d_node.getDate();
             addRow(rowObj);
         }
-
     }
 
-   public WebDAVTreeNode getParentNode(){
-	return parentNode;
-   }
-
-   
-
-    public String getSelected(){
-	String s = new String();
-
-	System.out.println("getSelection row =" + selectedRow );
-
-	if ( selectedRow >= 0 ){
-	System.out.println("Selected resource =" + table.getValueAt( selectedRow, 2) );
-	TreePath tp = new TreePath(parentNode.getPath());
-	System.out.println("TreePath =" + tp.toString());
-
-	if (tp.getPathCount() > 1) {
-		for ( int i = 1; i < tp.getPathCount(); i++ ) {
-		    System.out.print( tp.getPathComponent(i) + "/" );
-		    s = s + tp.getPathComponent(i) + "/";
-		}
-		System.out.println();
-
-	}
-
-
-	s = s + (String)table.getValueAt( selectedRow , 2);
-System.out.println("in getSelected, s=" + s +", selecedResource =" + selectedResource);
-	return s;
-	}
-	else{
-	System.out.println("No Seleced resource");
-	return null;
-	}
-
-	
+    public WebDAVTreeNode getParentNode()
+    {
+    	return parentNode;
     }
 
-    
+    public String getSelected()
+    {
+        String s = new String();
+
+        if ( selectedRow >= 0 )
+        {
+            TreePath tp = new TreePath(parentNode.getPath());
+
+            if (tp.getPathCount() > 1)
+            {
+                for ( int i = 1; i < tp.getPathCount(); i++ )
+                {
+                    s = s + tp.getPathComponent(i) + "/";
+                }
+            }
+
+            s = s + (String)table.getValueAt( selectedRow , 2);
+            return s;
+        }
+        else
+        {
+            return null;
+        }
+    }
+
     public void resetName()
     {
         table.setValueAt(selectedResource, selectedRow,2);
@@ -558,15 +541,12 @@ System.out.println("in getSelected, s=" + s +", selecedResource =" + selectedRes
 
     public void treeSelectionChanged(ViewSelectionEvent e)
     {
-System.out.println("WebDAVFileView:treeSelectionChanged");
         table.clearSelection();
         clearTable();
         WebDAVTreeNode t_node = (WebDAVTreeNode) e.getNode();
         parentNode = t_node;
         parentPath = e.getPath().toString();
-System.out.println("!!WebDAVFileView:treeSelectionChanged: getChildCount()");
         int cnt = t_node.getChildCount();
-System.out.println("WebDAVFileView:treeSelectionChanged: child count=" + cnt );
         if (table.getRowCount() != 0)
             return;
         for (int i=0;i<cnt;i++)
@@ -605,7 +585,6 @@ System.out.println("WebDAVFileView:treeSelectionChanged: child count=" + cnt );
             rowObj[6] = d_node.getDate();
             addRow(rowObj);
         }
-System.out.println("WebDAVFileView:treeSelectionChanged: done building Table");
     }
 
     public synchronized void addViewSelectionListener(ViewSelectionListener l)
@@ -707,10 +686,10 @@ System.out.println("WebDAVFileView:treeSelectionChanged: done building Table");
         }
 
         Vector ls;
-	if (selListeners == null){
-	    System.out.println("selListners == null");
-	    return;
-	}
+        if (selListeners == null)
+        {
+            return;
+        }
         synchronized (this)
         {
             ls = (Vector) selListeners.clone();
@@ -720,50 +699,25 @@ System.out.println("WebDAVFileView:treeSelectionChanged: done building Table");
         if (selRow != -1)
         {
             int origRow = sorter.getTrueRow(selRow);
-            if (origRow == -1) {
-	       return;
-	    }
-System.out.println("In WebDAVFileView: handleDoubleClick: parentNode=" +  (String)parentNode.getUserObject());
-System.out.println("In WebDAVFileView: handleDoubleClick: parentNode.getChildCount()" +  parentNode.getChildCount());
-System.out.println("In WebDAVFileView: handleDoubleClick: origRow =" + origRow);
-
+            if (origRow == -1)
+            {
+	            return;
+            }
 
             if (origRow > parentNode.getChildCount()-1)
                 return;
 
-WebDAVTreeNode tempNode = (WebDAVTreeNode)parentNode.getChildAt(origRow);
-System.out.println("In WebDAVFileView: handleDoubleClick: selected Directory =" + (String)tempNode.getUserObject() );
+            WebDAVTreeNode tempNode = (WebDAVTreeNode)parentNode.getChildAt(origRow);
+            TreePath path = new TreePath(tempNode.getPath());
 
-
-/*
-            ViewSelectionEvent selEvent = new ViewSelectionEvent(this,new Integer(origRow),null);
-            for (int i=0; i<ls.size();i++)
-            {
-System.out.println("In WebDAVFileView: handleDoubleClick: for loop ");
-                ViewSelectionListener l = (ViewSelectionListener) ls.elementAt(i);
-		System.out.println("FileView: handleDoubleClick: listener(" 
-			+ i + ") =" + l);
-                l.selectionChanged(selEvent);
-            }
-*/
-
-	    //WebDAVTreeNode[] nodePath = new WebDAV((WebDAVTreeNode)tempNode.getPath());
-	    TreePath path = new TreePath(tempNode.getPath());
-
-            ViewSelectionEvent selEvent = 
-		new ViewSelectionEvent(this, tempNode, path );
+            ViewSelectionEvent selEvent = new ViewSelectionEvent(this, tempNode, path );
             for (int i=0; i<ls.size();i++)
             {
                 ViewSelectionListener l = (ViewSelectionListener) ls.elementAt(i);
-		System.out.println("FileView: handleDoubleClick: listener(" 
-			+ i + ") =" + l);
                 l.selectionChanged(selEvent);
             }
 
-	    selectionChanged( selEvent );
-
-	    
-	   
+            selectionChanged( selEvent );
         }
     }
 
@@ -771,7 +725,6 @@ System.out.println("In WebDAVFileView: handleDoubleClick: for loop ");
     {
         public void valueChanged(ListSelectionEvent e)
         {
-System.out.println("in FileView, ListSelection event = " + e );
             Vector ls;
             synchronized (this)
             {
@@ -788,8 +741,6 @@ System.out.println("in FileView, ListSelection event = " + e );
                     boolean isColl = new Boolean(table.getValueAt(selRow,0).toString()).booleanValue();
                     if (isColl)
                     {
-System.out.println("in SelectionChangeListener, parentPath=" + parentPath +
-		", selResource=" + selResource);
                         if (parentPath.startsWith(WebDAVPrefix) || selResource.startsWith(WebDAVPrefix) )
                         {
                             if( !selResource.endsWith( "/" ) )
@@ -808,15 +759,10 @@ System.out.println("in SelectionChangeListener, parentPath=" + parentPath +
 
 
 
-		// Old ViewSelectionEvent
-                //ViewSelectionEvent selEvent = new ViewSelectionEvent(this,null,selResource);
-System.out.println("selection event, would set event with:" + selResource);
                 ViewSelectionEvent selEvent = new ViewSelectionEvent(this,null,null);
                 for (int i=0; i<ls.size();i++)
                 {
                     ViewSelectionListener l = (ViewSelectionListener) ls.elementAt(i);
-System.out.println("Sending View Selection Event to:" +l);
-                    //l.selectionChanged(selEvent);
                 }
             }
         }

@@ -52,10 +52,10 @@ import java.util.*;
 import java.awt.event.*;
 import com.sun.java.swing.*;
 
-public class WebDAVManager {
-
+public class WebDAVManager
+{
     public HTTPResponse Response;
-    private WebDAVConnection Con ;
+    private WebDAVConnection Con;
     private String HostName = null;
     private int Port;
     private String MethodName;
@@ -69,18 +69,16 @@ public class WebDAVManager {
     private boolean logging = false;
     private String logFilename = null;
 
-  public WebDAVManager(JFrame mainFrame) {
-    this.mainFrame = mainFrame;
-  }
+    public WebDAVManager(JFrame mainFrame)
+    {
+        this.mainFrame = mainFrame;
+    }
 
-  public void sendRequest(WebDAVRequestEvent e) {
-
-WebDAVTreeNode tn = e.getNode();
-if (tn != null){
-System.out.println("In WebDAVManager treeNode =" + (String)tn.getUserObject() );
-}else {System.out.println("In WebDAVManager treeNode = NULL");}
-    String TempHost = e.getHost();
-    int TempPort = e.getPort();
+    public void sendRequest(WebDAVRequestEvent e)
+    {
+        WebDAVTreeNode tn = e.getNode();
+        String TempHost = e.getHost();
+        int TempPort = e.getPort();
 
         if( ((TempHost!=null) && (TempHost.length()>0) && !TempHost.equals(HostName))
             || (TempPort!=Port) )
@@ -98,23 +96,27 @@ System.out.println("In WebDAVManager treeNode =" + (String)tn.getUserObject() );
             }
             Con.setLogging( logging, logFilename );
         }
-    String user = e.getUser();
-    String pass = e.getPass();
-    
-    if (user.length() > 0) {
-      try {
-        Con.addDigestAuthorization(HostName,user, pass);
-        Con.addBasicAuthorization(HostName,user,pass);
-      } catch (Exception exc) { System.out.println(exc); }
-    }
-    
-    MethodName = e.getMethod();
-    ResourceName = e.getResource();
-    Headers = e.getHeaders();
-    Body = e.getBody();
-    ExtraInfo = e.getExtraInfo();
-System.out.println("WebDAV Manager before connect,Method=" +
-		MethodName + ", Extra=" + ExtraInfo);
+        String user = e.getUser();
+        String pass = e.getPass();
+
+        if (user.length() > 0)
+        {
+            try
+            {
+                Con.addDigestAuthorization(HostName,user, pass);
+                Con.addBasicAuthorization(HostName,user,pass);
+            }
+            catch (Exception exc)
+            {
+                System.out.println(exc);
+            }
+        }
+
+        MethodName = e.getMethod();
+        ResourceName = e.getResource();
+        Headers = e.getHeaders();
+        Body = e.getBody();
+        ExtraInfo = e.getExtraInfo();
     	try {
       	    Response = Con.Generic(MethodName, ResourceName, Body, Headers);
       	    WebDAVResponseEvent webdavResponse  = GenerateWebDAVResponse(Response,tn);
@@ -128,35 +130,37 @@ System.out.println("WebDAV Manager before connect,Method=" +
         {
             errorMsg("HTTPClient error: \n" + exception);
         }
-  }
+    }
 
-  public synchronized void addResponseListener(WebDAVResponseListener l) {
-    Listeners.addElement(l);
-  }
-  public synchronized void removeResponseListener(WebDAVResponseListener l) {
-    Listeners.removeElement(l);
-  }
-  public WebDAVResponseEvent GenerateWebDAVResponse(HTTPResponse Response, WebDAVTreeNode Node) {
-
-      WebDAVResponseEvent e = new WebDAVResponseEvent(this,HostName, Port, ResourceName,MethodName,Response,ExtraInfo, Node);
-      return e; 
-  }
-
-  public void fireResponse(WebDAVResponseEvent e) {
+    public synchronized void addResponseListener(WebDAVResponseListener l)
+    {
+        Listeners.addElement(l);
+    }
     
-    Vector ls;
-    synchronized (this) {
-      ls = (Vector) Listeners.clone();
+    public synchronized void removeResponseListener(WebDAVResponseListener l)
+    {
+        Listeners.removeElement(l);
     }
 
-System.out.println("fireResponse:WebDAVResponseEvent to:" + ls.size() +" responseListeners");
-
-    for (int i=0; i<ls.size();i++) {
-       WebDAVResponseListener l = (WebDAVResponseListener) ls.elementAt(i);
-System.out.println("Sending WebDAVResponseEvent to:" + l);
-      l.responseFormed(e);
+    public WebDAVResponseEvent GenerateWebDAVResponse(HTTPResponse Response, WebDAVTreeNode Node)
+    {
+        WebDAVResponseEvent e = new WebDAVResponseEvent(this,HostName, Port, ResourceName,MethodName,Response,ExtraInfo, Node);
+        return e;
     }
-  }
+
+    public void fireResponse(WebDAVResponseEvent e)
+    {
+        Vector ls;
+        synchronized (this)
+        {
+            ls = (Vector) Listeners.clone();
+        }
+
+        for (int i=0; i<ls.size();i++) {
+            WebDAVResponseListener l = (WebDAVResponseListener) ls.elementAt(i);
+            l.responseFormed(e);
+        }
+    }
 
     public void setLogging( boolean logging, String filename )
     {

@@ -64,7 +64,6 @@ import java.awt.event.*;
 import java.io.*;
 
 // Yuzo: This should be a Model
-
 public class WebDAVTreeView implements ViewSelectionListener, CopyResponseListener
 {
     JTree tree;
@@ -85,23 +84,22 @@ public class WebDAVTreeView implements ViewSelectionListener, CopyResponseListen
 
     JScrollPane sp;
 
-// Yuzo: Changing from this to an new Selection Listener which does no 
+    // Yuzo: Changing from this to an new Selection Listener which does no 
     SelectionChangeListener treeSelectionListener = 
 				new SelectionChangeListener();
-// Adding an Expansion Event Listener so as to expand a node
-// without having to select it.
+    // Adding an Expansion Event Listener so as to expand a node
+    // without having to select it.
     treeExpansionListener treeExpListener =
     				new treeExpansionListener();
 
     private boolean simpleNodeExpand = false;
 
-// Constructor
-
+    // Constructor
     public WebDAVTreeView(JFrame mainFrame)
     {
         tree = new JTree(treeModel);
 
-	tree.putClientProperty("JTree.lineStyle", "Angled");
+	    tree.putClientProperty("JTree.lineStyle", "Angled");
 
         tree.setSelectionModel(selectionModel);
         selectionModel.setSelectionMode(TreeSelectionModel.SINGLE_TREE_SELECTION);
@@ -120,94 +118,80 @@ public class WebDAVTreeView implements ViewSelectionListener, CopyResponseListen
             startDirName = new Character(File.separatorChar).toString();
     	}
 
-	// Listen for expansion Events
-// Yuzo Adding Expansion Event listner for testing purposes:
-tree.addTreeExpansionListener( treeExpListener);
+        // Listen for expansion Events
+        // Yuzo Adding Expansion Event listner for testing purposes:
+        tree.addTreeExpansionListener( treeExpListener);
 
 
+        treeModel.addTreeModelListener( new TreeModelListener()
+        {
+        	public void treeNodesChanged(TreeModelEvent e)
+        	{
+        	}
 
+        	public void treeNodesInserted(TreeModelEvent e)
+        	{
+        	}
 
-treeModel.addTreeModelListener( new TreeModelListener(){
-	public void treeNodesChanged(TreeModelEvent e){
-System.out.println("TreeModelListener.treeNodesChanged");
-	}
-	public void treeNodesInserted(TreeModelEvent e){
-System.out.println("TreeModelListener.treeNodesInserted");
-	}
-	public void treeNodesRemoved(TreeModelEvent e){
-System.out.println("TreeModelListener.treeNodesRemoved");
-	}
-	public void treeStructureChanged(TreeModelEvent e){
-System.out.println("TreeModelListener.treeStructureChanged");
-	}
+        	public void treeNodesRemoved(TreeModelEvent e)
+        	{
+        	}
 
-});
-
-
+        	public void treeStructureChanged(TreeModelEvent e)
+        	{
+        	}
+        });
     }
   
-
-
-class treeExpansionListener implements TreeExpansionListener{
-        public void treeExpanded( TreeExpansionEvent evt ){
-            System.out.println("***Expansion Event, path=" + evt.getPath());
-
+    class treeExpansionListener implements TreeExpansionListener
+    {
+        public void treeExpanded( TreeExpansionEvent evt )
+        {
             TreePath selectedPath = selectionModel.getSelectionPath();
-            System.out.println("***Currently selected Path=" + selectedPath.toString());
             Cursor c = mainFrame.getCursor(); // save original cursor
             mainFrame.setCursor( Cursor.getPredefinedCursor( Cursor.WAIT_CURSOR ) );
 
             TreePath expansionPath = evt.getPath();
-	    currPath = expansionPath;
-            WebDAVTreeNode tn =
-                (WebDAVTreeNode)expansionPath.getLastPathComponent();
-            if(!tn.hasLoadedChildren()){
-                System.out.println("loading Children");
+            currPath = expansionPath;
+            WebDAVTreeNode tn = (WebDAVTreeNode)expansionPath.getLastPathComponent();
+            if(!tn.hasLoadedChildren())
+            {
                 tn.loadChildren();
-
 
                 tn.setHasLoadedChildren(true);
                 treeModel.nodeStructureChanged(tn);
-            }else{
-	    System.out.println("treeNode has loaded Children");
-	    }
+            }
+            else
+            {
+    	    }
 
-           mainFrame.setCursor( c );
-
+            mainFrame.setCursor( c );
         }
 
-        public void treeCollapsed( TreeExpansionEvent evt ){
-            System.out.println("***Collapse Event, path=" + evt.getPath());
+        public void treeCollapsed( TreeExpansionEvent evt )
+        {
+        }
+    }
+
+    //Yuzo: Added Copy ResposeListner stuff
+    public void CopyEventResponse(CopyResponseEvent e)
+    {
+        WebDAVTreeNode tn = e.getNode();
+
+        TreeNode path[] = tn.getPath();
+
+        String s = new String();
+        for (int i = 1; i < path.length; i++)
+        {
+            s = s + path[i] + "/";
         }
 
-}
+        // Now then reload the Tree from this node
+        // This means that we have to unload this node
+        // then reload load it with the updated info making 
+        // a call to the server
 
-
-//Yuzo: Added Copy ResposeListner stuff
-
-    public void CopyEventResponse(CopyResponseEvent e){
-	WebDAVTreeNode tn = e.getNode();
-
-	System.out.println("In WebDAVTreeView, CopyEventResponse");
-	System.out.println("In WebDAVTreeView, Node=" + tn);
-
-
-	TreeNode path[] = tn.getPath();
-
-	String s = new String();
-	for (int i = 1; i < path.length; i++){
-	    System.out.println("    path[" + i + "]=" + path[i] );
-	    s = s + path[i] + "/";
-	}
-
-	
-
-	// Now then reload the Tree from this node
-	// This means that we have to unload this node
-	// then reload load it with the updated info making 
-	// a call to the server
-
-	tn.removeAllChildren();
+        tn.removeAllChildren();
 
         TreePath tp = new TreePath(path);
 
@@ -216,95 +200,75 @@ class treeExpansionListener implements TreeExpansionListener{
         treeModel.nodeStructureChanged(tn);
         tn.setHasLoadedChildren(true);
 
-        ViewSelectionEvent event = new ViewSelectionEvent(this,
-                                			tn,
-                                                         tp);
-System.out.println("TreeSelectionListener: WebDAVTreeView, selListner size=" + selListeners.size());
-            for (int i=0; i<selListeners.size();i++)
-            {
-              ViewSelectionListener l = (ViewSelectionListener)selListeners.elementAt(i);
-System.out.println("TreeSelectionListener: WebDAVTreeView, sending Selection Event to:" + l + " Which is listener=" + i);
-                    l.selectionChanged(event);
-System.out.println("TreeSelectionListener: WebDAVTreeView, AFTER sending Selection Event to:" + l + " Which is listener=" + i);
-            }
-
-
-	// Now call get prop for this node.
-
-	/*
-	tn.loadChildren();
-        tn.setHasLoadedChildren(true);
-        treeModel.nodeStructureChanged(tn);
-        */
-
-	
-	
-	
+        ViewSelectionEvent event = new ViewSelectionEvent(this, tn, tp);
+        for (int i=0; i<selListeners.size();i++)
+        {
+            ViewSelectionListener l = (ViewSelectionListener)selListeners.elementAt(i);
+            l.selectionChanged(event);
+        }
     }
-
 
 
     public JScrollPane getScrollPane()
     {
         // We package the whole TreeView inside a Scroll Pane, returned
         // by this function.
-
         return(sp);
     }
 
-//Yuzo Added: Get the Selection Event from TableView
-// This means that a folder(dir) was double clicked.
-// Now handle this event as an open of that partictular dir
-
-    public void selectionChanged(ViewSelectionEvent e){
-	tableSelectionChanged(e);
+    //Yuzo Added: Get the Selection Event from TableView
+    // This means that a folder(dir) was double clicked.
+    // Now handle this event as an open of that partictular dir
+    public void selectionChanged(ViewSelectionEvent e)
+    {
+        tableSelectionChanged(e);
     }
 
     //  This is where selection event from the table View are routed to.
     //  The Event includes the information needed to expand/select
     //  the particular row. 
-    protected void tableSelectionChanged(ViewSelectionEvent e){
-	WebDAVTreeNode tn = (WebDAVTreeNode)e.getNode();
-	TreePath tp = (TreePath)e.getPath();
+    protected void tableSelectionChanged(ViewSelectionEvent e)
+    {
+        WebDAVTreeNode tn = (WebDAVTreeNode)e.getNode();
+        TreePath tp = (TreePath)e.getPath();
 
-	tree.removeTreeExpansionListener(treeExpListener);
-	tree.removeTreeSelectionListener(treeSelectionListener);
+        tree.removeTreeExpansionListener(treeExpListener);
+        tree.removeTreeSelectionListener(treeSelectionListener);
 
-	Cursor c = mainFrame.getCursor(); // save original cursor
-	mainFrame.setCursor( Cursor.getPredefinedCursor( Cursor.WAIT_CURSOR ) );
+        Cursor c = mainFrame.getCursor(); // save original cursor
+        mainFrame.setCursor( Cursor.getPredefinedCursor( Cursor.WAIT_CURSOR ) );
 
-
-	if(!tn.hasLoadedChildren()){
-            System.out.println("loading Children");
+        if(!tn.hasLoadedChildren())
+        {
             tn.loadChildren();
 
             tn.setHasLoadedChildren(true);
             treeModel.nodeStructureChanged(tn);
         }
 
-	if (!tree.isExpanded(tp)){
-	    tree.expandPath(tp);
-	}
+        if (!tree.isExpanded(tp))
+        {
+            tree.expandPath(tp);
+        }
 
-	tree.setSelectionPath(tp);
-	tree.revalidate();         // Attempt to validate the new tree
-				// This does not work becuase the vaildate
-				// is invoked later.  This causes
-				// the scrollPathToVisible not to work
-	tree.makeVisible(tp);
-	tree.scrollPathToVisible(tp);
-	tree.scrollPathToVisible(tp); // Sun Bug Id 4180658  -- does not work
-					// but this second call is a "fix"
-					// according to the bug report
-	tree.treeDidChange();
+        tree.setSelectionPath(tp);
+        tree.revalidate();          // Attempt to validate the new tree
+                                    // This does not work becuase the vaildate
+                                    // is invoked later.  This causes
+                                    // the scrollPathToVisible not to work
+        tree.makeVisible(tp);
+        tree.scrollPathToVisible(tp);
+        tree.scrollPathToVisible(tp);   // Sun Bug Id 4180658  -- does not work
+                                        // but this second call is a "fix"
+                                        // according to the bug report
+        tree.treeDidChange();
 
-	currPath = tp;
+        currPath = tp;
 
-	mainFrame.setCursor( c );
-	
-	tree.addTreeExpansionListener(treeExpListener);
-	tree.addTreeSelectionListener(treeSelectionListener);
+        mainFrame.setCursor( c );
 
+        tree.addTreeExpansionListener(treeExpListener);
+        tree.addTreeSelectionListener(treeSelectionListener);
     }
 
     public void refresh()
@@ -318,7 +282,6 @@ System.out.println("TreeSelectionListener: WebDAVTreeView, AFTER sending Selecti
     public synchronized void addViewSelectionListener(ViewSelectionListener l)
     {
         // Register a listener 
-System.out.println("adding listener =" + l);
         selListeners.addElement(l);
     }
 
@@ -327,53 +290,39 @@ System.out.println("adding listener =" + l);
         selListeners.removeElement(l);
     }
 
-
-
-
-
-
-
-//Yuzo New Selection Listener
+    //Yuzo New Selection Listener
     class SelectionChangeListener implements TreeSelectionListener
     {
         // This is where we handle the tree selection event. 
-        public void valueChanged(TreeSelectionEvent e) {
-	    //Need to make sure that the newly selected node (dir)
-	    //has its children's children loaded.  This is needed to
-	    // ensure that handles on the files are correct.
+        public void valueChanged(TreeSelectionEvent e)
+        {
+            //Need to make sure that the newly selected node (dir)
+            //has its children's children loaded.  This is needed to
+            // ensure that handles on the files are correct.
+            TreePath tp = e.getPath();
 
-	    TreePath tp = e.getPath();
+            currPath = tp;
 
-	    currPath = tp;
-	    System.out.println("***SelectionChangeListener Path=" + tp);
+            // Get the last node, then check if all the Children are
+            // loaded.  
+            WebDAVTreeNode tn = (WebDAVTreeNode)tp.getLastPathComponent();
+            if (!tn.hasLoadedChildren())
+            {
+                // Load all the Children of this Node.
+                tn.loadChildren();
+                treeModel.nodeStructureChanged(tn);
+                tn.setHasLoadedChildren(true);
+            }
 
-	    // Get the last node, then check if all the Children are
-	    // loaded.  
-
-	    WebDAVTreeNode tn = (WebDAVTreeNode)tp.getLastPathComponent();
-	    if (!tn.hasLoadedChildren()){
-		// Load all the Children of this Node.
-		tn.loadChildren();
-		treeModel.nodeStructureChanged(tn);
-		tn.setHasLoadedChildren(true);
-	    }
-	
-	    ViewSelectionEvent event = new ViewSelectionEvent(this,
-				(WebDAVTreeNode)tp.getLastPathComponent(),
-							 tp);
-System.out.println("TreeSelectionListener: WebDAVTreeView, selListner size=" + selListeners.size());
+            ViewSelectionEvent event = new ViewSelectionEvent(this,
+				            (WebDAVTreeNode)tp.getLastPathComponent(), tp);
             for (int i=0; i<selListeners.size();i++)
             {
-              ViewSelectionListener l = (ViewSelectionListener)selListeners.elementAt(i);
-System.out.println("TreeSelectionListener: WebDAVTreeView, sending Selection Event to:" + l + " Which is listener=" + i);
+                ViewSelectionListener l = (ViewSelectionListener)selListeners.elementAt(i);
                     l.selectionChanged(event);
-System.out.println("TreeSelectionListener: WebDAVTreeView, AFTER sending Selection Event to:" + l + " Which is listener=" + i);
-	    }
-	}
+            }
+        }
     }
-
-
-
 
     public void initTree()
     {
@@ -423,10 +372,8 @@ System.out.println("TreeSelectionListener: WebDAVTreeView, AFTER sending Selecti
 
     public boolean addRowToRoot(String name, boolean local)
     {
-System.out.println("*addRowToRoot:" + name + "local=" + local);
         // Add item to the tree. If local == true, the item is
         // considered to be a file on a local file system.
-
         String newName = "";
 
         if ( (name == null) || (name.equals("")) )
@@ -466,17 +413,19 @@ System.out.println("*addRowToRoot:" + name + "local=" + local);
         WebDAVTreeNode newNode = new WebDAVTreeNode(newName);
         treeModel.insertNodeInto(newNode,root,0);
 
-	if (local){
-        tree.clearSelection();
-        tree.setSelectionRow(1);
-        tree.expandPath(tree.getPathForRow(0));
-	} else {
-	// Now finish the Processing for the root.
-	
-	newNode.finishLoadChildren();
-	newNode.setHasLoadedChildren(true);
-	tree.setSelectionRow(1);
-	}
+        if (local)
+        {
+            tree.clearSelection();
+            tree.setSelectionRow(1);
+            tree.expandPath(tree.getPathForRow(0));
+        }
+        else
+        {
+            // Now finish the Processing for the root.
+            newNode.finishLoadChildren();
+            newNode.setHasLoadedChildren(true);
+            tree.setSelectionRow(1);
+        }
 
         return true;
     }
@@ -493,9 +442,10 @@ System.out.println("*addRowToRoot:" + name + "local=" + local);
         return constructPath( currPath );
     }
 
-// Yuzo: This is to allow Main to add fileView as a Tree Listener
-    public void addTreeSelectionListener(TreeSelectionListener tsl){
-	tree.addTreeSelectionListener(tsl);
+    // Yuzo: This is to allow Main to add fileView as a Tree Listener
+    public void addTreeSelectionListener(TreeSelectionListener tsl)
+    {
+	    tree.addTreeSelectionListener(tsl);
     }
 
     public String getLockToken( String curFile )

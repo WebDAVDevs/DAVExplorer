@@ -43,28 +43,31 @@ package WebDAV;
 import java.util.*;
 import com.sun.java.swing.tree.*;
 
-public class ViewSelectionEvent extends EventObject {
-   
-        TreePath strPath;
-        Object Node;
+public class ViewSelectionEvent extends EventObject
+{
+    TreePath strPath;
+    Object Node;
 
-  public ViewSelectionEvent(Object module, Object Node, TreePath Path) {
+    public ViewSelectionEvent(Object module, Object Node, TreePath Path)
+    {
+        super(module);
+        this.strPath = Path;
+        this.Node = Node;
+    }
 
-    super(module);
-System.out.println("**$$**ViewSelectionEvent");
-    this.strPath = Path;
-    this.Node = Node;
-  }
-  public ViewSelectionEvent(Object module, TreePath Path) {
-    super(module);
-System.out.println("**$$**ViewSelectionEvent");
-    this.strPath = Path;
-   }
+    public ViewSelectionEvent(Object module, TreePath Path)
+    {
+        super(module);
+        this.strPath = Path;
+    }
 
-  public TreePath getPath() {
-    return strPath;
-  }
-  public Object getNode() {
-    return Node;
-  }
+    public TreePath getPath()
+    {
+        return strPath;
+    }
+
+    public Object getNode()
+    {
+        return Node;
+    }
 }

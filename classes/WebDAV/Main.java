@@ -66,7 +66,7 @@ public class Main extends JFrame
     WebDAVLoginDialog ld;
     Hashtable authTable;
     String authHost;
-    public final static String VERSION = "0.4";
+    public final static String VERSION = "0.5";
     public final static String UserAgent = "UCI DAV Explorer/" + VERSION;
 
     public Main(String frameName)
@@ -102,26 +102,15 @@ public class Main extends JFrame
         URIBox uribox = new URIBox();
         uribox.addActionListener(new URIBoxListener_Gen());
 
-        //CommandMenu.addWebDAVMenuListener(new MenuListener_Gen());
-
-//        fileView.addViewSelectionListener(new TableSelectListener_Gen());
-//        fileView.addViewSelectionListener(new TableSelectListener_Tree());
-
-//        treeView.addViewSelectionListener(new TreeSelectListener_Gen());
-//        treeView.addViewSelectionListener(new TreeSelectListener_Table());
-
-
-// Yuzo: Radical design change
-//	treeView.addTreeSelectionListener( fileView );
+        // Yuzo: Radical design change
         treeView.addViewSelectionListener( fileView );
         fileView.addViewSelectionListener( treeView );
 
         requestGenerator = new WebDAVRequestGenerator(WebDAVFrame);
         requestGenerator.addRequestListener(new RequestListener());
 
-// Get the rename Event
+        // Get the rename Event
         fileView.addRenameListener(new RenameListener());
-//        fileView.addDisplayLockListener(new DisplayLockListener());
 
         requestGenerator.setUserAgent( UserAgent );
 
@@ -131,8 +120,8 @@ public class Main extends JFrame
         responseInterpreter.addMoveUpdateListener(new MoveUpdateListener());
         responseInterpreter.addLockListener(new LockListener());
 
-	// Yuzo Add the CopyEvent Listener
-	responseInterpreter.addCopyResponseListener(treeView);
+        // Yuzo Add the CopyEvent Listener
+        responseInterpreter.addCopyResponseListener(treeView);
 
         webdavManager = new WebDAVManager(WebDAVFrame);
         webdavManager.addResponseListener(new ResponseListener());
@@ -187,8 +176,6 @@ public class Main extends JFrame
         String host = null;
         String authInfo = null;
 
-//        if (pos < 0)
-//            pos = in.indexOf("/");
         if (pos < 0)
             host = in;
         else
@@ -232,7 +219,6 @@ public class Main extends JFrame
         public void actionPerformed(ActionEvent e)
         {
             String str = e.getActionCommand();
-System.out.println("URIBoxListener_Gen: str=" + str);
             checkAuth(str);
             if (!str.endsWith("/"))
                 str += "/";
@@ -249,11 +235,8 @@ System.out.println("URIBoxListener_Gen: str=" + str);
             String str = e.getActionCommand();
             if (str == null)
             {
-System.out.println("InsertionListener, str == null");
             	treeView.refresh();
             } else{
-System.out.println("InsertionListener, str=" + str);
-System.out.println("InsertionListener, Adding DAV SERVER=" + str);
                 treeView.addRowToRoot(str,false);
 		
 	    }
@@ -278,7 +261,6 @@ System.out.println("InsertionListener, Adding DAV SERVER=" + str);
     {
         public void selectionChanged(ViewSelectionEvent e)
         {
-System.out.println("Main.TableSelectListener_Gen");
             requestGenerator.tableSelectionChanged(e);
         }
     }
@@ -295,7 +277,6 @@ System.out.println("Main.TableSelectListener_Gen");
     {
         public void selectionChanged(ViewSelectionEvent e)
         {
-System.out.println("**$$%% TreeSelectListener_Gen:" + e);
             requestGenerator.treeSelectionChanged(e);
         }
     }
@@ -363,37 +344,37 @@ System.out.println("**$$%% TreeSelectListener_Gen:" + e);
         {
             responseInterpreter.handleResponse(e);
 
+    	    // The above loads the Response into memory
+    	    // The post event processing Should be below!
+    	    
+    	    String extra = e.getExtraInfo();
 
-
-	    // The above loads the Response into memory
-	    // The post event processing Should be below!
-	    
-	    String extra = e.getExtraInfo();
-
-	    String method = e.getMethodName();
-System.out.println("in Main:ResponseListener extra=" + extra + ", method=" + method);
-
-
-
-	    if ( method.equals("COPY") ){
-
-		System.out.println("In MAIN.RESPONSELISTENER, method copy");
-	    }else if (extra == null) {
-		// Skip
-	    }else if( extra.equals("expand") || extra.equals("index") ){
-		WebDAVTreeNode tn = e.getNode();
-		System.out.println("In MAIN.RESPONSELISTENER, node =" + 
-			(String)tn.getUserObject() );
-		if (tn != null){
-		    tn.finishLoadChildren();
-		}
-	    } else if ( extra.equals("uribox") ){
-		System.out.println("In MAIN.RESPONSELISTENER, uribox");
-	    } else if ( extra.equals("copy") ) {
-		System.out.println("In MAIN.RESPONSELISTENER, extra copy");
-	    } else if (extra.equals("delete")){
-		System.out.println("Got delete in Main:ResponseListener");
-	    }
+    	    String method = e.getMethodName();
+    	    if ( method.equals("COPY") )
+    	    {
+    		    // Skip
+    	    }
+    	    else if (extra == null)
+    	    {
+    		    // Skip
+    	    }
+    	    else if( extra.equals("expand") || extra.equals("index") )
+    	    {
+        		WebDAVTreeNode tn = e.getNode();
+        		if (tn != null)
+        		{
+        		    tn.finishLoadChildren();
+        		}
+    	    }
+    	    else if ( extra.equals("uribox") )
+    	    {
+    	    }
+    	    else if ( extra.equals("copy") )
+    	    {
+    	    }
+    	    else if (extra.equals("delete"))
+    	    {
+    	    }
         }
     }
 
@@ -419,50 +400,46 @@ System.out.println("in Main:ResponseListener extra=" + extra + ", method=" + met
                     String fullPath = fd.getDirectory() + fd.getFile();
                     String token = treeView.getLockToken( fd.getFile() );
 
-		// Get the current Node so that we can update it later
-		    String s = "";
-		    WebDAVTreeNode n = fileView.getParentNode();
-		    requestGenerator.setResource(s, n);
-
-System.out.println("*********in calling Generate Put, node =" + n + ", path =" +
-		 treeView.getCurrentPath() + ", token =" +token);
+                    // Get the current Node so that we can update it later
+                    String s = "";
+                    WebDAVTreeNode n = fileView.getParentNode();
+                    requestGenerator.setResource(s, n);
 
                     requestGenerator.GeneratePut( fullPath, treeView.getCurrentPath(), token );
                     requestGenerator.execute();
                 }
-
             }
             else if (command.equals("Lock"))
             {
-		String s = fileView.getSelected();
-		WebDAVTreeNode n = fileView.getParentNode();
-		requestGenerator.setResource(s, n);
+                String s = fileView.getSelected();
+                WebDAVTreeNode n = fileView.getParentNode();
+                requestGenerator.setResource(s, n);
                 lockDocument();
             }
             else if (command.equals("Unlock"))
             {
-		String s = fileView.getSelected();
-		WebDAVTreeNode n = fileView.getParentNode();
-		requestGenerator.setResource(s, n);
+                String s = fileView.getSelected();
+                WebDAVTreeNode n = fileView.getParentNode();
+                requestGenerator.setResource(s, n);
                 unlockDocument();
             }
             else if (command.equals("Duplicate"))
             {
-		// Yuzo: I have the semantics set so that
-		// we get a string if something is selected in the 
-		// FileView.
-		String s = fileView.getSelected();
-		WebDAVTreeNode n = fileView.getParentNode();
+                // Yuzo: I have the semantics set so that
+                // we get a string if something is selected in the 
+                // FileView.
+                String s = fileView.getSelected();
+                WebDAVTreeNode n = fileView.getParentNode();
 
-		// This sets the resource name to s and the node to n
-		// This is neccessary so that n is passed to 
-		// response interpretor, whc then routes a 
-		// message to the Tree Model.
-		// This will then call for a rebuild of the Model at the 
-		// Parent node n.
+                // This sets the resource name to s and the node to n
+                // This is neccessary so that n is passed to 
+                // response interpretor, whc then routes a 
+                // message to the Tree Model.
+                // This will then call for a rebuild of the Model at the 
+                // Parent node n.
 
-		requestGenerator.setResource(s, n);
-		
+                requestGenerator.setResource(s, n);
+
                 requestGenerator.GenerateCopy( null, true, true );
                 requestGenerator.execute();
             }
@@ -477,9 +454,9 @@ System.out.println("*********in calling Generate Put, node =" + n + ", path =" +
                 String dirname = selectName( title, prompt );
                 if( dirname != null )
                 {
-		    WebDAVTreeNode n = fileView.getParentNode();
-		    requestGenerator.setNode(n);
-		    
+                    WebDAVTreeNode n = fileView.getParentNode();
+                    requestGenerator.setNode(n);
+
                     requestGenerator.GenerateMkCol( treeView.getCurrentPath(), dirname );
                     requestGenerator.execute();
                 }
@@ -534,11 +511,11 @@ System.out.println("*********in calling Generate Put, node =" + n + ", path =" +
             }
             else if (command.equals("View Lock Properties"))
             {
-// Yuzo test to stop repeat 
-		String s = fileView.getSelected();
-		WebDAVTreeNode n = fileView.getParentNode();
-		requestGenerator.setResource(s, n);
-		
+                // Yuzo test to stop repeat 
+                String s = fileView.getSelected();
+                WebDAVTreeNode n = fileView.getParentNode();
+                requestGenerator.setResource(s, n);
+
                 requestGenerator.DiscoverLock("display");
             }
             else if (command.equals("Refresh"))
@@ -549,8 +526,9 @@ System.out.println("*********in calling Generate Put, node =" + n + ", path =" +
             else if (command.equals("About WebDAV..."))
             {
                 JOptionPane pane = new JOptionPane();
-                String message = new String("WebDAV Explorer Version: "+ VERSION + "\n\nUCI WebDAV Client Group is:\nUniversity of California, Irvine\n\tGerair Balian\n\tMirza Baig\n\tRobert Emmery\n\tThai Le\n\tTu Le\n" +
-                                "Update for the final WebDAV Specification and Namespaces:\nYuzo Kanomata and Joachim Feise\n");
+                String message = new String("WebDAV Explorer Version: "+ VERSION + "\n\nYuzo Kanomata, Joachim Feise\n" +
+                "EMail: dav-exp@ics.uci.edu\n\n" +
+                "Based on code from the UCI WebDAV Client Group of the ICS 125 class Winter 1998\n" );
                 Object [] options = { "OK" };
                 pane.showOptionDialog(WebDAVFrame, message, "About WebDAV Client", JOptionPane.DEFAULT_OPTION, JOptionPane.INFORMATION_MESSAGE, null, options, options[0]);
             }
