@@ -29,6 +29,9 @@
  * @author      Joachim Feise (dav-exp@ics.uci.edu)
  * @date        13 May 2003
  * Changes:     Fixed column sorting.
+ * @author      Joachim Feise (dav-exp@ics.uci.edu)
+ * @date        28 October 2003
+ * Changes:     Keep quiet about model changes, except when debugAll is set.
  */
 
 package edu.uci.ics.DAVExplorer;
@@ -207,7 +210,8 @@ public class TableSorter extends TableMap
     {
         if (indexes.length != model.getRowCount())
         {
-            System.err.println("Sorter not informed of a change in model.");
+            if( GlobalData.getGlobalData().getDebugAll() )
+                System.err.println("Sorter not informed of a change in model.");
         }
     }
 

@@ -39,6 +39,9 @@ import com.ms.xml.util.Name;
  * Copyright:   Copyright (c) 2003 Regents of the University of California. All rights reserved.
  * @author      Joachim Feise (dav-exp@ics.uci.edu)
  * @date        23 September 2003
+ * @author      Joachim Feise (dav-exp@ics.uci.edu)
+ * @date        28 October 2003
+ * Changes:     Fixed double insertion listener firing.
  */
 public class DeltaVResponseInterpreter extends WebDAVResponseInterpreter
 {
@@ -677,7 +680,10 @@ public class DeltaVResponseInterpreter extends WebDAVResponseInterpreter
     public void fireInsertionEvent( String str )
     {
         if( !deltaV && !deltaVReports )
+        {
             super.fireInsertionEvent( str );
+            return;
+        }
 
         Vector ls;
         synchronized( this )
