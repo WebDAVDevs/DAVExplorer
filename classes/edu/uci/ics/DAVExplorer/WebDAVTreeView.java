@@ -117,24 +117,28 @@ public class WebDAVTreeView implements ViewSelectionListener, CopyResponseListen
         //sp.getViewport().add(tree);
         sp.setPreferredSize(new Dimension(240,400));
 
-        String os = (System.getProperty( "os.name" )).toLowerCase();
-        if( os.indexOf( "windows" ) == -1 )
-            startDirName = System.getProperty("user.home");
-        else
+        String showLocal = System.getProperty( "local", "yes" );
+        if( !showLocal.equalsIgnoreCase("no") )
         {
-            // On W2K, user.home is something like C:\\Documents and Settings\\user
-            // On NT4, it is C:\\WinNT\\Profiles\\user
-            // On Win ME, it is C:\\Windows
-            // This code extracts the root directory, i.e., C:\\ or whatever the
-            // system partition is
-            startDirName = System.getProperty("user.home");
-            int pos = startDirName.indexOf(new Character(File.separatorChar).toString() );
-            if( pos > -1 )
-                startDirName = startDirName.substring(0, pos+1) + File.separatorChar;
-        }
-        if( startDirName == null )
-        {
-            startDirName = new Character(File.separatorChar).toString();
+            String os = (System.getProperty( "os.name" )).toLowerCase();
+            if( os.indexOf( "windows" ) == -1 )
+                startDirName = System.getProperty("user.home");
+            else
+            {
+                // On W2K, user.home is something like C:\\Documents and Settings\\user
+                // On NT4, it is C:\\WinNT\\Profiles\\user
+                // On Win ME, it is C:\\Windows
+                // This code extracts the root directory, i.e., C:\\ or whatever the
+                // system partition is
+                startDirName = System.getProperty("user.home");
+                int pos = startDirName.indexOf(new Character(File.separatorChar).toString() );
+                if( pos > -1 )
+                    startDirName = startDirName.substring(0, pos+1) + File.separatorChar;
+            }
+            if( startDirName == null )
+            {
+                startDirName = new Character(File.separatorChar).toString();
+            }
         }
 
         // Listen for expansion Events
