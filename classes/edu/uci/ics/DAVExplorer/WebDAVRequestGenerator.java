@@ -36,6 +36,9 @@
  * @author      Joachim Feise (dav-exp@ics.uci.edu)
  * @date        1 October 2001
  * Changes:     Change of package name
+ * @author      Joachim Feise (dav-exp@ics.uci.edu)
+ * @date        2 November 2001
+ * Changes:     Added locktoken support to proppatch code
  */
 
 package edu.uci.ics.DAVExplorer;

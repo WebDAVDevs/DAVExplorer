@@ -52,6 +52,9 @@
  * @author      Joachim Feise (dav-exp@ics.uci.edu)
  * @date        1 October 2001
  * Changes:     Change of package name
+ * @author      Joachim Feise (dav-exp@ics.uci.edu)
+ * @date        22 November 2001
+ * Changes:     Improved copy and move operations
  */
 
 
@@ -81,7 +84,7 @@ import java.io.File;
 
 public class Main extends JFrame
 {
-    public final static String VERSION = "0.81-dev";
+    public final static String VERSION = "0.81";
     public final static String UserAgent = "UCI DAV Explorer/" + VERSION;
 
     public Main(String frameName)
@@ -100,7 +103,6 @@ public class Main extends JFrame
         GlobalData.getGlobalData().setMainFrame( this );
 
         authTable = new Hashtable();
-        //authHost = null;
 
         treeView = new WebDAVTreeView();
         treeView.setUserAgent( UserAgent );
@@ -964,7 +966,6 @@ public class Main extends JFrame
     protected WebDAVManager webdavManager;
     protected WebDAVMenu CommandMenu;
     protected Hashtable authTable;
-    protected String authHost;
     protected String writeToDir;
     protected EventListenerList listenerList = new EventListenerList();
 }

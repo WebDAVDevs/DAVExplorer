@@ -82,7 +82,7 @@ DAV Explorer accepts the following command line options:
 
 5. CHANGELOG
 
-Changes for version 0.81-dev:
+Changes for version 0.81:
 - Fixed handling of default namespace in the view/modify property dialog
 - Fixed menu selection of view/modify properties dialog
 - Fixed problems with property addition to root
@@ -91,7 +91,7 @@ Changes for version 0.81-dev:
   -DApache=yes
 - Made the MS SharePoint workaround optional. It is activated with the
   following command line: java -jar -DSharePoint=true DAVExplorer.jar
-- Fixed handling problems of non-ASCII UTF-8 characters.
+- Improved handling of non-ASCII UTF-8 characters.
 - Improved the logging of chunked data.
 - Now allowing untrusted certificates by presenting a choice to the user.
 - Fixed problems with modifying nested properties.

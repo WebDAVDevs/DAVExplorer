@@ -43,6 +43,9 @@
  * @author      Joachim Feise (dav-exp@ics.uci.edu)
  * @date        1 October 2001
  * Changes:     Change of package name
+ * @author      Joachim Feise (dav-exp@ics.uci.edu)
+ * @date        17 December 2001
+ * Changes:     Better handling of ok button enable/disable
  */
 
 package edu.uci.ics.DAVExplorer;

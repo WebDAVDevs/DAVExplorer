@@ -30,6 +30,9 @@
  * @author      Joachim Feise (dav-exp@ics.uci.edu)
  * @date        1 October 2001
  * Changes:     Change of package name
+ * @author      Joachim Feise (dav-exp@ics.uci.edu)
+ * @date        17 December 2001
+ * Changes:     Fixed handling of adding and removing nested properties
  */
 
 package edu.uci.ics.DAVExplorer;
