@@ -36,7 +36,7 @@
 // Date: 3/17/99
 //
 // Change List:
-
+//  1. Added support for nested namespaces
 
 package WebDAV;
 

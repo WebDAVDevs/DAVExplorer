@@ -40,7 +40,9 @@
 // Date: 3/17/99
 //
 // Change List:
-
+//  1. Updated namespace support for all requests
+//  2. Fixed GeneratePut, GenerateCopy, GenerateMove to send the
+//      correct HTTP header
 
 package WebDAV;
 
@@ -533,8 +535,6 @@ public class WebDAVRequestGenerator implements Runnable
             dest = dest.substring( pos + 1 );
         StrippedResource = StrippedResource + "/" + dest;
 
-        System.out.println("Generating MKCOL Method...");
-
         Method = "MKCOL";
         Headers = new NVPair[1];
         if (Port == 0 || Port == DEFAULT_PORT)
@@ -609,13 +609,11 @@ public class WebDAVRequestGenerator implements Runnable
             dest = dest.substring( pos + 1 );
         StrippedResource = StrippedResource + "/" + dest;
 
-        System.out.println("Generating PUT Method...");
         if ( (fileName == null) || (fileName.equals("")) )
         {
             errorMsg("WebDAV Generator:\nFile not found!\n");
             return;
         }
-        System.out.println("filename: " + fileName);
         File file = new File(fileName);
         if (!file.exists())
         {
@@ -849,7 +847,6 @@ public class WebDAVRequestGenerator implements Runnable
             System.out.println("Error Generating LOCK Method for " + StrippedResource);
             return;
         }  
-        System.out.println("Generating LOCK Method for: " + StrippedResource);
 
         Method = "LOCK";
         Body = null;
@@ -1026,14 +1023,18 @@ public class WebDAVRequestGenerator implements Runnable
     
     private void printXML( Document miniDoc )
     {
-        System.out.println("generated xml: " );
-        XMLOutputStream out = new XMLOutputStream(System.out);
-        try
+        String debugOutput = System.getProperty( "debug", "false" );
+        if( debugOutput.equals( "true" ) )
         {
-            miniDoc.save(out);
-        }
-        catch (Exception e)
-        {
+            System.out.println("generated xml: " );
+            XMLOutputStream out = new XMLOutputStream(System.out);
+            try
+            {
+                miniDoc.save(out);
+            }
+            catch (Exception e)
+            {
+            }
         }
     }
 }

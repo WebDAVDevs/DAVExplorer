@@ -30,6 +30,7 @@
 // Date: 3/17/99
 //
 // Change List:
+//  Added Create Folder menu
 
 package WebDAV;
 
@@ -49,10 +50,10 @@ built in.
 
 public class WebDAVMenu extends JMenuBar implements ActionListener
 {
-	/*--------------------------------------------------------
-	Internal class that takes care of adding listeners to the
-	menu items.
-	--------------------------------------------------------*/
+    /*--------------------------------------------------------
+    Internal class that takes care of adding listeners to the
+    menu items.
+    --------------------------------------------------------*/
 
 	class WebDAVMenuItem extends JMenuItem
 	{
@@ -71,10 +72,9 @@ public class WebDAVMenu extends JMenuBar implements ActionListener
 	Public methods section
 	--------------------------------------------------------*/
 
-	/*________________________________________________________
+	/*
 	The constructor
-	________________________________________________________*/
-
+	*/
 	public WebDAVMenu()
 	{
 		this.add(generateFileMenu());
@@ -84,43 +84,39 @@ public class WebDAVMenu extends JMenuBar implements ActionListener
 		menuListeners = new Vector();
 	}
 
-	/*________________________________________________________
+	/*
 	This method will take care of catching the events created
 	by the menuitems.
-	________________________________________________________*/
-
-	public void actionPerformed(ActionEvent Event) {
-	
-          Vector ls;
-          synchronized (this) {
+	*/
+	public void actionPerformed(ActionEvent Event)
+	{
+        Vector ls;
+        synchronized (this)
+        {
             ls = (Vector) menuListeners.clone();
-	  }
-          for (int i=0; i<ls.size();i++) {
+	    }
+        for (int i=0; i<ls.size();i++)
+        {
             WebDAVMenuListener l = (WebDAVMenuListener) ls.elementAt(i);
             l.actionPerformed(Event);
-          }
         }
+    }
 	
-	/*________________________________________________________
+	/*
 	Add new menu event listeners to the vector
-	________________________________________________________*/
-
+	*/
 	public synchronized void addWebDAVMenuListener(WebDAVMenuListener MenuListener)
 	{
 		menuListeners.addElement(MenuListener);
 	}
 
-	/*________________________________________________________
+	/*
 	Remove a menu event listener from the vector
-	________________________________________________________*/
-
+	*/
 	public synchronized void removeWebDAVMenuListener(WebDAVMenuListener MenuListener)
 	{
 		menuListeners.removeElement(MenuListener);
-	
 	}
-
-
 
 	/*--------------------------------------------------------
 	Protected attributes section
@@ -132,32 +128,35 @@ public class WebDAVMenu extends JMenuBar implements ActionListener
 	Protected methods section
 	--------------------------------------------------------*/
 
-	/*________________________________________________________
+	/*
 	Generate the File menu
-	________________________________________________________*/
-
+	*/
     protected JMenu generateFileMenu()
     {
         JMenu mnu_FileMenu = new JMenu("File", true);
 
         mnu_FileMenu.add(new WebDAVMenuItem("View", this));
-	mnu_FileMenu.add(new WebDAVMenuItem("Save", this));
+        mnu_FileMenu.add(new WebDAVMenuItem("Save", this));
         mnu_FileMenu.add(new WebDAVMenuItem("Save As...", this));
         mnu_FileMenu.add(new WebDAVMenuItem("Export File...",this));
+        mnu_FileMenu.addSeparator();
         mnu_FileMenu.add(new WebDAVMenuItem("Lock", this));
         mnu_FileMenu.add(new WebDAVMenuItem("Unlock", this));
+        mnu_FileMenu.addSeparator();
         mnu_FileMenu.add(new WebDAVMenuItem("Duplicate", this));
-	mnu_FileMenu.add(new WebDAVMenuItem("Delete", this));
+//        mnu_FileMenu.add(new WebDAVMenuItem("Rename", this));
+        mnu_FileMenu.add(new WebDAVMenuItem("Delete", this));
+        mnu_FileMenu.addSeparator();
+        mnu_FileMenu.add(new WebDAVMenuItem("Create Folder", this));
         mnu_FileMenu.addSeparator();
         mnu_FileMenu.add(new WebDAVMenuItem("Exit", this));
 
         return mnu_FileMenu;
     }
 
-    /*________________________________________________________
+    /*
 	Generate the Edit menu
-	________________________________________________________*/
-
+	*/
     protected JMenu generateEditMenu()
     {
         JMenu mnu_EditMenu = new JMenu("Edit", true);
@@ -171,14 +170,13 @@ public class WebDAVMenu extends JMenuBar implements ActionListener
         mnu_EditMenu.addSeparator();
         mnu_EditMenu.add(new WebDAVMenuItem("Lock Info...",this));
         mnu_EditMenu.addSeparator();
-	mnu_EditMenu.add(new WebDAVMenuItem("Refresh",this));
+	    mnu_EditMenu.add(new WebDAVMenuItem("Refresh",this));
         return mnu_EditMenu;
     }
 
-    /*________________________________________________________
+    /*
 	Generate the Application menu
-	________________________________________________________*/
-
+	*/
     protected JMenu generateApplicationMenu()
     {
         JMenu mnu_ApplicationMenu = new JMenu("Application", true);
@@ -188,14 +186,12 @@ public class WebDAVMenu extends JMenuBar implements ActionListener
         return mnu_ApplicationMenu;
     }
 
-    /*________________________________________________________
+    /*
 	Generate the Help Menu
-	________________________________________________________*/
-
+	*/
     protected JMenu generateHelpMenu()
     {
         JMenu mnu_HelpMenu = new JMenu("Help", true);
-
 
         mnu_HelpMenu.add(new WebDAVMenuItem("WebDAV Help", this));
         mnu_HelpMenu.add(new WebDAVMenuItem("About WebDAV...", this));

@@ -39,7 +39,9 @@
 // Date: 3/17/99
 //
 // Change List:
-
+//  1. Fixed truncateResource and fullResource to properly remove
+//      the 'http://' part of the URL
+//  2. Added safeguards for empty directory
 
 package WebDAV;
 
@@ -62,7 +64,6 @@ public class WebDAVTreeNode extends DefaultMutableTreeNode {
   protected static WebDAVResponseInterpreter interpreter = new WebDAVResponseInterpreter();
   public WebDAVTreeNode (Object o) {
     super(o);
-//    System.out.println("child " + o.toString() + " created..");
   }
   public WebDAVTreeNode (Object o, boolean isRoot) {
     super(o);
@@ -91,15 +92,9 @@ public class WebDAVTreeNode extends DefaultMutableTreeNode {
   }
 
   public int getChildCount() {
-// Yuzo: What the heck is this supposed to be doing?
-     
-System.out.println("WebDAVTreeNode: getChildCount: hasLoaded ="
-	+ hasLoaded + ", interpreter.Refreshing()=" + interpreter.Refreshing());
      if ( (hasLoaded) && (interpreter.Refreshing()) ) {
-System.out.println("*PATH 1");
        Object[] full_path = getPath();
        if (full_path.length > 1) {      
-System.out.println("*PATH 1.1, full_path.length=" + full_path.length);
          removeChildren();
          dataNode = null;
          hasLoaded = false;
@@ -108,13 +103,11 @@ System.out.println("*PATH 1.1, full_path.length=" + full_path.length);
        interpreter.ResetRefresh();
      }
      else if (hasLoaded){
-System.out.println("*PATH 2");
        return super.getChildCount();
      }
 
     if( !hasLoaded )
     {
-        System.out.println("*PATH 3, getchildCount=" + super.getChildCount());
       	loadChildren();
     }
 
@@ -122,8 +115,6 @@ System.out.println("*PATH 2");
   }
 
   protected void loadRemote(byte[] byte_xml) {
-
-    System.out.println("#loadRemote called");
     Vector nodesChildren = new Vector();
     Document xml_doc = null; 
     Element multiElem = null;
@@ -185,11 +176,7 @@ System.out.println("*PATH 2");
 
 
   public void parseResponse(Element respElem, String ResourceName, Vector nodesChildren) {
-
-
     Enumeration respEnum = respElem.getElements();
-    
-    
     while (respEnum.hasMoreElements()) {     
 
 
@@ -373,17 +360,13 @@ System.out.println("*PATH 2");
             WebDAVTreeNode childNode = new WebDAVTreeNode(resName);
             childNode.setDataNode(newNode);
             insert(childNode,0);
-//            System.out.println("inserting collection: " + resName);
         }
         else {
             nodesChildren.addElement(newNode);
-//            System.out.println("inserting non-collection: " + resName);
         }
       }
   }
   protected void loadLocal(String name, Object[] full_path) {
-
-System.out.println("&&loadLocal called");
      String fileName = name;
      for (int i=2;i<full_path.length;i++)
        fileName += File.separator + full_path[i];
