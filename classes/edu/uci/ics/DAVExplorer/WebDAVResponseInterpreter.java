@@ -152,7 +152,7 @@ public class WebDAVResponseInterpreter
         Charset = getCharset();
 
         // get the resource name, and unescape it
-        Resource = GlobalData.getGlobalData().unescape( e.getResource(), "ISO-8859-1", null, true );
+        Resource = GlobalData.getGlobalData().unescape( e.getResource(), "ISO-8859-1", null );
         Node = e.getNode();
 
         try
@@ -1217,7 +1217,7 @@ public class WebDAVResponseInterpreter
                 Element token = (Element)treeEnum.nextElement();
                 if( (token != null) && (token.getType() == Element.PCDATA || token.getType() == Element.CDATA) )
                 {
-                    return GlobalData.getGlobalData().unescape( token.getText(), Charset, null, false );
+                    return GlobalData.getGlobalData().unescape( token.getText(), Charset, null );
                 }
             }
         }
@@ -1313,7 +1313,7 @@ public class WebDAVResponseInterpreter
             Element token = (Element)treeEnum.nextElement();
             if( (token != null) && (token.getType() == Element.PCDATA || token.getType() == Element.CDATA) )
             {
-                return GlobalData.getGlobalData().unescape( token.getText(), Charset, null, false );
+                return GlobalData.getGlobalData().unescape( token.getText(), Charset, null );
             }
         }
         return "";
@@ -1339,7 +1339,7 @@ public class WebDAVResponseInterpreter
             Element token = (Element)treeEnum.nextElement();
             if( (token != null) && (token.getType() == Element.PCDATA || token.getType() == Element.CDATA) )
             {
-                return GlobalData.getGlobalData().unescape( token.getText(), Charset, null, false );
+                return GlobalData.getGlobalData().unescape( token.getText(), Charset, null );
             }
         }
         return "0";
@@ -1365,7 +1365,7 @@ public class WebDAVResponseInterpreter
             Element token = (Element)treeEnum.nextElement();
             if( (token != null) && (token.getType() == Element.PCDATA || token.getType() == Element.CDATA) )
             {
-                return GlobalData.getGlobalData().unescape( token.getText(), Charset, null, false );
+                return GlobalData.getGlobalData().unescape( token.getText(), Charset, null );
             }
         }
         return "";
@@ -1662,7 +1662,7 @@ public class WebDAVResponseInterpreter
                 Element token = (Element)treeEnum.nextElement();
                 if( (token != null) && (token.getType() == Element.PCDATA || token.getType() == Element.CDATA) )
                 {
-                    return GlobalData.getGlobalData().unescape( token.getText(), Charset, null, false );
+                    return GlobalData.getGlobalData().unescape( token.getText(), Charset, null );
                 }
             }
         }
@@ -1769,7 +1769,7 @@ public class WebDAVResponseInterpreter
                 // of its sub-element, if any
                 else if ( (href!=null) && (current.getType()==Element.PCDATA || current.getType() == Element.CDATA) )
                 {
-                    return GlobalData.getGlobalData().unescape( current.getText(), Charset, null, true );
+                    return GlobalData.getGlobalData().unescape( current.getText(), Charset, null );
                 }
             }
         }
@@ -1887,7 +1887,7 @@ public class WebDAVResponseInterpreter
                 Element token = (Element)treeEnum.nextElement();
                 if( token.getType() == Element.PCDATA || token.getType() == Element.CDATA )
                 {
-                    String HrefValue = GlobalData.getGlobalData().unescape( token.getText(), Charset, null, true );
+                    String HrefValue = GlobalData.getGlobalData().unescape( token.getText(), Charset, null );
                     // stripping https://
                     int pos = HrefValue.indexOf( GlobalData.WebDAVPrefixSSL );
                     if( pos >= 0 )
@@ -2038,8 +2038,8 @@ public class WebDAVResponseInterpreter
                             //    fullName += "&";
                             //fullName += new String(getFullResource(token.getText()));
 
-                            resName = new String( truncateResource(GlobalData.getGlobalData().unescape(token.getText(), Charset, null, true)) );
-                            fullName = new String( getFullResource(GlobalData.getGlobalData().unescape(token.getText(), Charset, null, true)) );
+                            resName = new String( truncateResource(GlobalData.getGlobalData().unescape(token.getText(), Charset, null)) );
+                            fullName = new String( getFullResource(GlobalData.getGlobalData().unescape(token.getText(), Charset, null)) );
                         }
                     }
                 }
@@ -2272,6 +2272,8 @@ public class WebDAVResponseInterpreter
         try
         {
             String contenttype = res.getHeader("Content-type");
+            if( contenttype == null )
+                return "UTF-8";
             StringTokenizer t = new StringTokenizer( contenttype, ";" );
             while( t.hasMoreTokens() )
             {
@@ -2292,7 +2294,7 @@ public class WebDAVResponseInterpreter
         {
             // ignored
         }
-        return null;
+        return "UTF-8";
     }
 
 

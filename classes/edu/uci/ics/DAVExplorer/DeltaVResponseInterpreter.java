@@ -102,7 +102,7 @@ public class DeltaVResponseInterpreter extends WebDAVResponseInterpreter
         Charset = getCharset();
 
         // get the resource name, and unescape it
-        Resource = GlobalData.getGlobalData().unescape( e.getResource(), "ISO-8859-1", null, true );
+        Resource = GlobalData.getGlobalData().unescape( e.getResource(), "ISO-8859-1", null );
         Node = e.getNode();
 
         try
@@ -368,8 +368,8 @@ public class DeltaVResponseInterpreter extends WebDAVResponseInterpreter
                         Element token = (Element)enumHref.nextElement();
                         if( (token != null) && (token.getType() == Element.PCDATA || token.getType() == Element.CDATA) )
                         {
-                            resName = new String( truncateResource(GlobalData.getGlobalData().unescape(token.getText(), Charset, null, true)) );
-                            fullName = new String( getFullResource(GlobalData.getGlobalData().unescape(token.getText(), Charset, null, true)) );
+                            resName = truncateResource(GlobalData.getGlobalData().unescape(token.getText(), Charset, null ) );
+                            fullName = getFullResource(GlobalData.getGlobalData().unescape(token.getText(), Charset, null ) );
                         }
                     }
                 }

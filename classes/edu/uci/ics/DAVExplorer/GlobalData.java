@@ -488,35 +488,66 @@ class GlobalData
      * @param text          Escaped string
      * @param sourceEncoding
      * @param targetEncoding      Target encoding
-     * @param href          Indicates if this string is a URI
      * @return              The unescaped string, or an empty string if the
      *                      function failed.
      */
-    public String unescape( String text, String sourceEncoding, String targetEncoding, boolean href )
+    public String unescape( String text, String sourceEncoding, String targetEncoding )
     {
         ByteArrayInputStream byte_in;
+        ByteArrayInputStream byte_test;
         try
         {
             if( (sourceEncoding==null) || (sourceEncoding.length()==0) )
             {
                 // assume the text is UTF-8 encoded
                 byte_in = new ByteArrayInputStream( text.getBytes("UTF-8") );
+                byte_test = new ByteArrayInputStream( text.getBytes("UTF-8") );
             }
             else
             {
                 byte_in = new ByteArrayInputStream( text.getBytes(sourceEncoding) );
+                byte_test = new ByteArrayInputStream( text.getBytes(sourceEncoding) );
             }
         }
         catch( UnsupportedEncodingException e )
         {
             byte_in = new ByteArrayInputStream( text.getBytes() );
+            byte_test = new ByteArrayInputStream( text.getBytes() );
         }
-        EscapeInputStream iStream = new EscapeInputStream( byte_in, true );
+        
+        EscapeInputStream iStream;
+        boolean uni = true;
+        if( (targetEncoding==null) || (targetEncoding.length()==0) )
+        {
+            iStream = new EscapeInputStream( byte_test, true );
+            try
+            {
+                int i;
+                do
+                {
+                    i = iStream.read();
+                    if( i == -1)
+                        break;
+                    uni = checkUTFFormed( i, iStream );
+                }
+                while( uni && i != -1 );
+            }
+            catch(IOException e)
+            {
+            }
+        }
+        iStream = new EscapeInputStream( byte_in, true );
+
         try
         {
             InputStreamReader isr = null;
             if( (targetEncoding==null) || (targetEncoding.length()==0) )
-                isr = new InputStreamReader( iStream );
+            {
+                if( uni )
+                    isr = new InputStreamReader( iStream, "UTF-8" );
+                else
+                    isr = new InputStreamReader( iStream );
+            }
             else
                 isr = new InputStreamReader( iStream, targetEncoding );
 
@@ -526,47 +557,127 @@ class GlobalData
         }
         catch( IOException e )
         {
-            if( href )
-            {
-                // the <href> tag doesn't necessarily need to be encoded in
-                // the specified encoding
-                try
-                {
-                    byte_in.reset();
-                    iStream.reset();
-                    InputStreamReader isr = new InputStreamReader( iStream );
-                    BufferedReader br = new BufferedReader( isr );
-                    String out = br.readLine();
-                    return (out == null)? "" : out;
-                }
-                catch( IOException e2 )
-                {
-                    GlobalData.getGlobalData().errorMsg("String unescaping error: \n" + e);
-                }
-            }
-            else
-            {
-                // the text may already be in UTF-8, so all we need is to unescape
-                // this is a rather bad hack, but since we don't have control over
-                // what kind of data the server sends...
-                try
-                {
-                    byte_in = new ByteArrayInputStream( text.getBytes("UTF-8") );
-                    iStream = new EscapeInputStream( byte_in, true );
-                    InputStreamReader isr = new InputStreamReader( iStream, "UTF-8" );
-                    BufferedReader br = new BufferedReader( isr );
-                    String out = br.readLine();
-                    return (out == null)? "" : out;
-                }
-                catch( IOException e2 )
-                {
-                    GlobalData.getGlobalData().errorMsg("String unescaping error: \n" + e);
-                }
-            }
+            GlobalData.getGlobalData().errorMsg("String unescaping error: \n" + e);
         }
         return "";
     }
 
+
+    /**
+     * Determine if the current character in a stream represents an allowed
+     * Unicode character.
+     * 
+     * @param i         The character to check
+     * @param stream    The stream to read additional characters from to
+     *                  make the determination
+     * @return          True if the current character is a Unicode character
+     * 
+     * @see <a href"http://www.unicode.org/versions/Unicode4.0.0/ch03.pdf">The
+     * Unicode Standard, Section 3.10, Table 3.6</a>
+     */
+    private boolean checkUTFFormed( int i, InputStream stream )
+    {
+        try
+        {
+            if( i < 128 )                   // 00..7F
+                return true;
+            else if( i >= 194 && i <= 223 ) // C2..DF
+            {
+                i = stream.read();
+                if( i >= 128 && i <= 191 )  // 80..BF
+                    return true;
+            }
+            else if( i == 224 )             // E0
+            {
+                i = stream.read();
+                if( i >= 160 && i <= 191 )  // A0..BF
+                {
+                    i = stream.read();
+                    if( i >= 128 && i <= 191 )  // 80..BF
+                        return true;
+                }
+            }
+            else if( i >= 225 && i <= 236 ) // E1..EC
+            {
+                i = stream.read();
+                if( i >= 128 && i <= 191 )  // 80..BF
+                {
+                    i = stream.read();
+                    if( i >= 128 && i <= 191 )  // 80..BF
+                        return true;
+                }
+            }
+            else if( i == 237 )             // ED
+            {
+                i = stream.read();
+                if( i >= 128 && i <= 159 )  // 80..9F
+                {
+                    i = stream.read();
+                    if( i >= 128 && i <= 191 )  // 80..BF
+                        return true;
+                }
+            }
+            else if( i >= 238 && i <= 239 ) // EE..EF
+            {
+                i = stream.read();
+                if( i >= 128 && i <= 191 )  // 80..BF
+                {
+                    i = stream.read();
+                    if( i >= 128 && i <= 191 )  // 80..BF
+                        return true;
+                }
+            }
+            else if( i == 240 )             // F0
+            {
+                i = stream.read();
+                if( i >= 144 && i <= 191 )  // 90..BF
+                {
+                    i = stream.read();
+                    if( i >= 128 && i <= 191 )  // 80..BF
+                    {
+                        i = stream.read();
+                        if( i >= 128 && i <= 191 )  // 80..BF
+                            return true;
+                    }
+                }
+            }
+            else if( i >=241 && i<=243 )    // F1..F3
+            {
+                i = stream.read();
+                if( i >= 128 && i <= 191 )  // 80..BF
+                {
+                    i = stream.read();
+                    if( i >= 128 && i <= 191 )  // 80..BF
+                    {
+                        i = stream.read();
+                        if( i >= 128 && i <= 191 )  // 80..BF
+                            return true;
+                    }
+                }
+            }
+            else if( i == 244 )
+            {
+                i = stream.read();
+                if( i >= 128 && i <= 143 )  // 90..8F
+                {
+                    i = stream.read();
+                    if( i >= 128 && i <= 191 )  // 80..BF
+                    {
+                        i = stream.read();
+                        if( i >= 128 && i <= 191 )  // 80..BF
+                            return true;
+                    }
+                }
+            }
+        }
+        catch( IOException e )
+        {
+            return false;
+        }
+
+        return false;
+    }
+    
 
     /**
      * 
