@@ -15,6 +15,10 @@ http://mie.paichai.ac.kr/users/Frog0214/workshop/xml/msxml/xmlparse.htm
 This includes the EULA for the parser:
 http://mie.paichai.ac.kr/users/Frog0214/workshop/xml/msxml/License.htm
 
+Max Slabyak, Matt Story and Hyung Kim of the UCI ICS125 class Spring 2003
+developed the basic DeltaV functionality, which was integrated into
+the base line by Joachim Feise.
+
 Joachim Feise and Yuzo Kanomata maintain DAV Explorer since 1999.
 The contact is dav-exp@ics.uci.edu
 
