@@ -6,6 +6,8 @@ Changes for version 0.81-dev:
   the port number. The workaround is activated with the option -DApache=yes
 - Made the MS SharePoint workaround optional. It is activated with the following
   command line: java -jar -DSharePoint=true DAVExplorer.jar
+- Fixed handling problems of non-ASCII UTF-8 characters
+- Improved the logging of chunked data
 
 Changes for version 0.80:
 - Makefile for HTTPClient now works with JSSE installed as "bundled" extension.
