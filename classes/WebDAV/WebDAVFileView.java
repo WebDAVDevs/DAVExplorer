@@ -217,13 +217,22 @@ public class WebDAVFileView implements ViewSelectionListener
                     String val = null;
                     try
                     {
-                        val = (String) table.getValueAt(row,2);
+                        val = (String) table.getValueAt(row-1,2);
                     }
                     catch (Exception e)
                     {
                     }
                     if ( val != null)
                     {
+	                Object obj[] = parentNode.getUserObjectPath();
+                        if (parentPath == null || parentPath.equals("") ){
+	                    for (int i = 0; i < obj.length; i++){
+		                if (i > 0){
+		                    parentPath = parentPath + obj[i];
+		                 }
+	                    }
+                        }
+			
                         if (!parentPath.startsWith(WebDAVPrefix))
                             return;
 
@@ -377,34 +386,45 @@ public class WebDAVFileView implements ViewSelectionListener
         }
     }
 
-    public WebDAVTreeNode getParentNode()
-    {
-    	return parentNode;
-    }
+   public WebDAVTreeNode getParentNode(){
+	return parentNode;
+   }
 
-    public String getSelected()
-    {
-        String s = new String();
+   protected String getParentPathString(){
+	String s = "";
+	TreePath tp = new TreePath(parentNode.getPath());
+
+	if (tp.getPathCount() > 1) {
+		for ( int i = 1; i < tp.getPathCount(); i++ ) {
+		    s = s + tp.getPathComponent(i) + "/";
+		}
+
+	}
+	return s;
+
+   }
+
+
+   /* Yuzo Added: purpose, to get Selected Resource which is the 
+      old full name of a renamed item. */
+
+    public String getOldSelectedResource(){
+	return getParentPathString() + selectedResource;
+    }
+   
+
+    public String getSelected(){
+        String s = "";
 
         if ( selectedRow >= 0 )
         {
             TreePath tp = new TreePath(parentNode.getPath());
 
-            if (tp.getPathCount() > 1)
-            {
-                for ( int i = 1; i < tp.getPathCount(); i++ )
-                {
-                    s = s + tp.getPathComponent(i) + "/";
-                }
-            }
-
-            s = s + (String)table.getValueAt( selectedRow , 2);
-            return s;
-        }
-        else
-        {
-            return null;
-        }
+	    s =  getParentPathString() + (String)table.getValueAt( selectedRow , 2);
+	    return s;
+	} else{
+	    return null;
+	}
     }
 
     public void resetName()
@@ -756,7 +776,6 @@ public class WebDAVFileView implements ViewSelectionListener
 
         if ( (col == 1) && (row != -1) )
         {
-            System.out.println("handleDoubleClick: col = 1, row = " + row);
             Boolean locked = null;
             try
             {
@@ -769,11 +788,9 @@ public class WebDAVFileView implements ViewSelectionListener
             }
             if ( (locked != null) && (locked.booleanValue()) )
             {
-                System.out.println("calling displayLock");
                 displayLock();
                 return;
             }
-            System.out.println("handleDoubleClick: End ");
         }
 
         Vector ls;
@@ -808,7 +825,7 @@ public class WebDAVFileView implements ViewSelectionListener
                 l.selectionChanged(selEvent);
             }
 
-            selectionChanged( selEvent );
+	    selectionChanged( selEvent );
         }
     }
 

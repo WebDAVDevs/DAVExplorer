@@ -218,8 +218,9 @@ public class WebDAVTreeNode extends DefaultMutableTreeNode
                             // update node values as necessary
                             if( curnode.getDisplay()!="" )
                                 node.setDisplay( curnode.getDisplay() );    // overwrite any old value
-                            if( curnode.isLocked() && !node.isLocked() )
+                            if( curnode.isLocked() && !node.isLocked() ){
                                 node.lock( curnode.getLockToken() );        // never change back to unlocked here
+			    }
                             if( curnode.isCollection() )
                                 node.makeCollection();                      // never change back to normal node
                             if( curnode.getType()!="" )
@@ -603,7 +604,7 @@ public class WebDAVTreeNode extends DefaultMutableTreeNode
                 }
             }
         }
-        return "";
+        return null;
     }
 
     private boolean getResourceType( Element resourcetype )

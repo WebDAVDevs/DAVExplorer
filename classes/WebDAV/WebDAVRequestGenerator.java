@@ -834,7 +834,9 @@ public class WebDAVRequestGenerator implements Runnable
     public synchronized void GenerateRename( String Dest, String dir )
     {
         Extra = new String(tableResource);
+
         DiscoverLock("rename:" + Dest + ":" + dir );
+	
     }
   
     public synchronized void GenerateMove(String Dest, String dir, boolean Overwrite, boolean KeepAlive, String lockToken)
@@ -842,13 +844,15 @@ public class WebDAVRequestGenerator implements Runnable
         Headers = null;
         Body = null;
         Extra = Dest;
-        
+
         String srcFile = ResourceName;
         ResourceName = dir;
+        /*
         if (!parseResourceName())
             dir = "/";
         else
             dir = StrippedResource;
+	*/
 
         ResourceName = srcFile;
         if (!parseResourceName())
@@ -862,10 +866,23 @@ public class WebDAVRequestGenerator implements Runnable
             errorMsg( "Invalid Destination" );
             return;
         }
+
+
+	/*
+	if( Port==0 || Port==DEFAULT_PORT )
+            Dest = HostName + Dest;
+        else            
+            Dest = HostName + ":" + Port + Dest ;
+
+        if( !Dest.startsWith(WebDAVPrefix) )
+            Dest = WebDAVPrefix + Dest;
+	*/
+
         Dest = dir + Dest;
         
         Method = "MOVE";
         Body = null;
+	KeepAlive = false;
         if (KeepAlive)
         {
             Document miniDoc = new Document();

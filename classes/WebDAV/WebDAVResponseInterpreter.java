@@ -86,11 +86,12 @@ public class WebDAVResponseInterpreter
     public WebDAVResponseInterpreter()
     { }
 
-    public WebDAVResponseInterpreter(JFrame mainFrame)
+    public WebDAVResponseInterpreter(JFrame mainFrame, WebDAVRequestGenerator rg)
     {
         super();
         this.mainFrame = mainFrame;
-        generator = new WebDAVRequestGenerator(mainFrame);
+        //generator = new WebDAVRequestGenerator(mainFrame);
+        generator = rg;
         String classPath = System.getProperty("java.class.path");
         if (classPath == null)
         {
@@ -367,8 +368,10 @@ public class WebDAVResponseInterpreter
                 }
                 else
                     dest = tmp;
-
-		        generator.setNode(Node);
+		
+		clearStream();
+		//Old
+		generator.setNode(Node);
                 generator.GenerateMove(dest, dir, false, true, lockToken);
                 generator.execute();
             }
@@ -529,7 +532,7 @@ public class WebDAVResponseInterpreter
             {
                 FileDialog fd = new FileDialog(mainFrame, "Save As" , FileDialog.SAVE);
                 fd.setVisible(true);
-                fileName = fd.getDirectory() + File.separatorChar + fd.getFile();
+                fileName = fd.getDirectory() + fd.getFile();
             }
             else
             {
@@ -543,6 +546,7 @@ public class WebDAVResponseInterpreter
                 }
                 fileName = fName.toString();
             }
+
             // create all subdirectories as necessary
             String dir = fileName.substring( 0, fileName.lastIndexOf( File.separatorChar ) );
             File theDir = new File( dir );
@@ -552,7 +556,8 @@ public class WebDAVResponseInterpreter
             boolean bSave = true;
             if (theFile.exists())
             {
-                if (!replaceFile(newRes))
+                //if (!replaceFile(newRes))
+                if (!replaceFile(fileName))
                 {
                     bSave = false;
                     if ( (Extra.equals("view")) || (Extra.equals("edit")) )
@@ -600,10 +605,10 @@ public class WebDAVResponseInterpreter
         //setRefresh();
         //fireInsertionEvent(null);
 	
-    	// Piggy back on the Copy Response stuff
-    	clearStream();
-    	CopyResponseEvent e = new CopyResponseEvent( this, Node);
-    	copyListener.CopyEventResponse(e);
+	// Piggy back on the Copy Response stuff
+	clearStream();
+	CopyResponseEvent e = new CopyResponseEvent( this, Node);
+	copyListener.CopyEventResponse(e);
     }
 
     public void parseDelete()

@@ -115,7 +115,7 @@ public class Main extends JFrame
         requestGenerator.setUserAgent( UserAgent );
 
 
-        responseInterpreter = new WebDAVResponseInterpreter(WebDAVFrame);
+        responseInterpreter = new WebDAVResponseInterpreter(WebDAVFrame, requestGenerator);
         responseInterpreter.addInsertionListener(new InsertionListener());
         responseInterpreter.addMoveUpdateListener(new MoveUpdateListener());
         responseInterpreter.addLockListener(new LockListener());
@@ -313,9 +313,8 @@ public class Main extends JFrame
         {
             String str = e.getActionCommand();
             if (str != null){
-		String s = fileView.getSelected();
+		String s = fileView.getOldSelectedResource();
 		WebDAVTreeNode n = fileView.getParentNode();
-
 		requestGenerator.setResource(s, n);
                 requestGenerator.GenerateRename( str, treeView.getCurrentPath() );
 	    }
@@ -343,7 +342,6 @@ public class Main extends JFrame
         public void responseFormed(WebDAVResponseEvent e)
         {
             responseInterpreter.handleResponse(e);
-
     	    // The above loads the Response into memory
     	    // The post event processing Should be below!
     	    
@@ -525,6 +523,7 @@ public class Main extends JFrame
             }
             else if (command.equals("About DAV Explorer..."))
             {
+		JOptionPane pane = new JOptionPane();
                 String message = new String("DAV Explorer Version "+ VERSION + "\n\nYuzo Kanomata, Joachim Feise\n" +
                 "EMail: dav-exp@ics.uci.edu\n\n" +
                 "Based on code from the UCI WebDAV Client Group\nof the ICS126B class Winter 1998\n\n" );
@@ -542,12 +541,21 @@ public class Main extends JFrame
 
     protected void saveDocument()
     {
+	/*
+        String s = fileView.getSelected();
+        WebDAVTreeNode n = fileView.getParentNode();
+        requestGenerator.setResource(s, n);
+	*/
+
         requestGenerator.GenerateGet("save");
         requestGenerator.execute();
     }
 
     protected void saveAsDocument()
     {
+        String s = fileView.getSelected();
+        WebDAVTreeNode n = fileView.getParentNode();
+        requestGenerator.setResource(s, n);
         requestGenerator.GenerateGet("saveas");
         requestGenerator.execute();
     }
