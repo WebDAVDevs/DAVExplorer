@@ -817,7 +817,10 @@ public class AuthorizationInfo implements GlobalConstants, Cloneable
         beg = Util.skipSpace(buf, beg);
         if (beg == len)  break;
 
-        end = Util.findSpace(buf, beg+1);
+        end = beg + 1;
+        while (end < len  &&  !Character.isSpace(buf[end]) &&
+               buf[end] != ',')
+            end++;
 
         int sts;
         try
@@ -882,7 +885,7 @@ public class AuthorizationInfo implements GlobalConstants, Cloneable
 
         if (beg < len  &&  buf[beg] != '='  &&  buf[beg] != ',')
         {       // It's not a param, but another challenge
-            beg = pstart;
+            beg = pstart+1;
             break;
         }
 
@@ -1101,9 +1104,12 @@ public class AuthorizationInfo implements GlobalConstants, Cloneable
         {
         field.append(',');
         field.append(auth_params[idx].getName());
-        field.append("=\"");
-        field.append(
-            Util.quoteString(auth_params[idx].getValue(), "\\\""));
+        if( auth_params[idx].getValue() != null )
+        {
+            field.append("=\"");
+            field.append(
+                Util.quoteString(auth_params[idx].getValue(), "\\\""));
+        }
         field.append('"');
         }
     }
