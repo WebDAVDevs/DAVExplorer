@@ -5,6 +5,9 @@ Changes for version 0.73-dev:
 - Changed the parser code to allow tag names starting with a digit
   (interoperability problem with Microsoft SharePoint).
 - Removed whitespace in the created XML for lockowner and keepalive properties.
+- Interoperability problem fixed for cases when properties for a collection
+  and its contents are requested and the server doesn't send properties for the
+  collection itself.
 
 Changes for version 0.72:
 - Support for operation through proxy servers
