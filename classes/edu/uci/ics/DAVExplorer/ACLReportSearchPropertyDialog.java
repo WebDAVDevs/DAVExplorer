@@ -19,36 +19,22 @@
 package edu.uci.ics.DAVExplorer;
 
 import java.awt.Color;
-import java.awt.Component;
 import java.awt.Cursor;
-import java.awt.Dialog;
-import java.awt.Frame;
 import java.awt.BorderLayout;
-import java.awt.GraphicsConfiguration;
-import java.awt.GridBagConstraints;
-import java.awt.GridBagLayout;
-import java.awt.HeadlessException;
+import java.awt.Dimension;
 import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
 import java.awt.event.KeyEvent;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
 import java.util.Vector;
 
-import javax.swing.DefaultListCellRenderer;
 import javax.swing.JButton;
-import javax.swing.JComboBox;
-import javax.swing.JDialog;
 import javax.swing.JLabel;
-import javax.swing.JList;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JTabbedPane;
 import javax.swing.JTable;
-import javax.swing.event.ChangeEvent;
-import javax.swing.event.ChangeListener;
 import javax.swing.event.ListSelectionEvent;
-import javax.swing.event.ListSelectionListener;
 
 /**
  * Title:       
@@ -57,17 +43,11 @@ import javax.swing.event.ListSelectionListener;
  * @author      Joachim Feise (dav-exp@ics.uci.edu)
  * @date        
  */
-public class ACLReportSearchPropertyDialog extends JDialog
-implements ActionListener, ChangeListener, ListSelectionListener, WebDAVCompletionListener
+public class ACLReportSearchPropertyDialog extends ACLReportPropertiesDialog
 {
     public ACLReportSearchPropertyDialog( String resource )
     {
-        super( GlobalData.getGlobalData().getMainFrame(), true );
-        init( resource );
-        pack();
-        setSize( getPreferredSize() );
-        GlobalData.getGlobalData().center( this );
-        show();
+        super( resource, "Select Search Criteria" );
     }
 
 
@@ -77,11 +57,13 @@ implements ActionListener, ChangeListener, ListSelectionListener, WebDAVCompleti
      * @param resource
      * @param node
      */
-    protected void init( String resource )
+    protected void init( String resource, String hostname, Vector reserved, String title )
     {
         GlobalData.getGlobalData().setCursor( Cursor.getPredefinedCursor( Cursor.WAIT_CURSOR ) );
         this.resource = resource;
-        setTitle("Select Search Criteria");
+        available = new Vector();
+        selected = new Vector();
+        setTitle( title );
         ((Main)GlobalData.getGlobalData().getMainFrame()).addWebDAVCompletionListener(this);
 
         JLabel label = new JLabel( this.resource, JLabel.CENTER );
@@ -95,7 +77,7 @@ implements ActionListener, ChangeListener, ListSelectionListener, WebDAVCompleti
         cancelButton  = new JButton("Cancel");
         cancelButton.addActionListener(this);
         cancelButton.setMnemonic( KeyEvent.VK_C );
-        buttonPanel = new JPanel();
+        JPanel buttonPanel = new JPanel();
         buttonPanel.add(okButton);
         buttonPanel.add(cancelButton);
         getRootPane().setDefaultButton( cancelButton );
@@ -108,7 +90,7 @@ implements ActionListener, ChangeListener, ListSelectionListener, WebDAVCompleti
         JPanel panel1 = makeCriteriaPanel();
         tabbedPane.addTab( "Search Criteria", panel1 );
         tabbedPane.setMnemonicAt( 0, KeyEvent.VK_S );
-        JPanel panel2 = makePropertiesPanel();
+        JPanel panel2 = makePanel();
         tabbedPane.addTab( "Properties", panel2 );
         tabbedPane.setMnemonicAt( 1, KeyEvent.VK_P );
         getContentPane().add( "Center", tabbedPane );
@@ -130,36 +112,37 @@ implements ActionListener, ChangeListener, ListSelectionListener, WebDAVCompleti
         JLabel label = new JLabel( "Search Criteria" );
         JPanel panel = new JPanel(false);
         label.setForeground(Color.black);
+        label.setHorizontalAlignment( JLabel.CENTER );
         BorderLayout layout = new BorderLayout();
         panel.setLayout( new BorderLayout() );
         panel.add( label, BorderLayout.NORTH );
 
-        JTable table = new JTable( model );
-        table.getSelectionModel().addListSelectionListener(this);
+        propTable = new JTable( new ACLPropertySearchModel() );
+        propTable.getSelectionModel().addListSelectionListener(this);
+        propTable.setPreferredScrollableViewportSize( new Dimension( 400, 100 ) );
         JScrollPane scrollpane = new JScrollPane();
-        scrollpane.setViewportView( table );
+        scrollpane.setViewportView( propTable );
         panel.add( scrollpane, BorderLayout.CENTER );
 
-        JButton addButton = new JButton("Add");
+        addButton = new JButton("Add");
         addButton.addActionListener(this);
         addButton.setMnemonic( KeyEvent.VK_A );
-        JButton deleteButton  = new JButton("Delete");
+        deleteButton  = new JButton("Delete");
         deleteButton.addActionListener(this);
         deleteButton.setMnemonic( KeyEvent.VK_D );
-        panel.add( addButton, BorderLayout.SOUTH );
-        panel.add( deleteButton, BorderLayout.SOUTH );
+        deleteButton.setEnabled( false );
+        JPanel buttonPanel = new JPanel();
+        buttonPanel.add( addButton );
+        buttonPanel.add( deleteButton );
+        panel.add( buttonPanel, BorderLayout.SOUTH );
 
         return panel;
     }
 
 
-    /**
-     * 
-     * @param e
-     */
-    public void stateChanged( ChangeEvent e )
+    protected String getPanelTitle()
     {
-        setChanged( true );
+        return  "Properties";
     }
 
 
@@ -170,7 +153,7 @@ implements ActionListener, ChangeListener, ListSelectionListener, WebDAVCompleti
     public void setChanged( boolean enable )
     {
         changed = enable;
-        okButton.setEnabled( (privileges!=null) && changed );
+        okButton.setEnabled( (searchProps!=null) && (searchProps.size()>0)&& changed );
     }
 
 
@@ -180,17 +163,22 @@ implements ActionListener, ChangeListener, ListSelectionListener, WebDAVCompleti
      */
     public void actionPerformed(ActionEvent e)
     {
-        if( e.getActionCommand().equals("OK") )
+        if( e.getActionCommand().equals("Add") )
         {
-            close( false );
+            ACLReportChangeSearchPropertiesDialog dlg = new ACLReportChangeSearchPropertiesDialog( resource );
+            if( !dlg.isCanceled() )
+            {
+                ((ACLPropertySearchModel)propTable.getModel()).addRow( dlg.getSelected(), dlg.getMatch() );
+            }
         }
-        else if( e.getActionCommand().equals("Change") )
+        else if( e.getActionCommand().equals("Delete") )
         {
+            int pos = propTable.getSelectedRow();
+            ((ACLPropertySearchModel)propTable.getModel()).removeRow( pos );
+            deleteButton.setEnabled( false );
         }
-        else if( e.getActionCommand().equals("Cancel") )
-        {
-            close( true );
-        }
+        else
+            super.actionPerformed( e );
     }
 
 
@@ -200,46 +188,18 @@ implements ActionListener, ChangeListener, ListSelectionListener, WebDAVCompleti
      */
     public void valueChanged(ListSelectionEvent e)
     {
-    }
-
-
-    /**
-     * 
-     * @param e
-     */
-    public void completion( WebDAVCompletionEvent e )
-    {
-        if( waiting )
+        if( propTable.isShowing() )
         {
-            interpreter = (ACLResponseInterpreter)e.getSource();
-            synchronized( this )
-            {
-                waiting = false;
-                notify();
-            }
+            if( ((ACLPropertySearchModel)propTable.getModel()).getRealRowCount() > 0 )
+                deleteButton.setEnabled( true );
         }
+        else
+            super.valueChanged( e );
     }
 
 
-    /**
-     * 
-     * @param cancel
-     */
-    protected void close( boolean cancel )
-    {
-        setVisible(false);
-        canceled = cancel;
-    }
-
-
-    protected String resource;
-    protected JPanel buttonPanel;
-    protected JButton okButton;
-    protected JButton cancelButton;
-    protected JList privilegesList;
-    protected JLabel href;
-    protected boolean changed = false;
-    protected boolean waiting;
-    protected boolean canceled;
-    protected ACLResponseInterpreter interpreter;
+    protected JTable propTable;
+    protected JButton addButton;
+    protected JButton deleteButton;
+    protected Vector searchProps; 
 }

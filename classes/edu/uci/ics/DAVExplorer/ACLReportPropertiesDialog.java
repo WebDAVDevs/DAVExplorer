@@ -25,6 +25,8 @@ import java.awt.event.ActionEvent;
 import javax.swing.DefaultListCellRenderer;
 import javax.swing.DefaultListModel;
 import javax.swing.JList;
+import javax.swing.JPanel;
+
 
 /**
  * Title:       
@@ -44,6 +46,12 @@ public class ACLReportPropertiesDialog extends ACLChangePrivilegesDialog
     public ACLReportPropertiesDialog( String resource )
     {
         super( resource, null, null, "Select Properties" );
+    }
+
+
+    public ACLReportPropertiesDialog( String resource, String title )
+    {
+        super( resource, null, null, title );
     }
 
 
@@ -124,7 +132,7 @@ public class ACLReportPropertiesDialog extends ACLChangePrivilegesDialog
     }
 
 
-    protected void changePanel()
+    protected void changePanel( JPanel panel )
     {
         privList.setCellRenderer(
             new DefaultListCellRenderer()
@@ -136,7 +144,7 @@ public class ACLReportPropertiesDialog extends ACLChangePrivilegesDialog
                         boolean isSelected,
                         boolean cellHasFocus)
                     {
-                        setText( ((String[])value)[0] );
+                        setText( ((String[])value)[0] );    // property name
                         setBackground( isSelected ? Color.black : Color.white );
                         setForeground( isSelected ? Color.white : Color.black );
                         return this;
@@ -152,7 +160,7 @@ public class ACLReportPropertiesDialog extends ACLChangePrivilegesDialog
                         boolean isSelected,
                         boolean cellHasFocus)
                     {
-                        setText( ((String[])value)[0] );
+                        setText( ((String[])value)[0] );    // property name
                         setBackground( isSelected ? Color.black : Color.white );
                         setForeground( isSelected ? Color.white : Color.black );
                         return this;

@@ -1345,9 +1345,13 @@ public class Main extends JFrame
                         GlobalData.getGlobalData().errorMsg( "No resource selected." );
                         return;
                     }
-                    WebDAVTreeNode n = fileView.getParentNode();
-                    requestGenerator.setResource( s, n );
-                    ///requestGenerator.GetPrincipalPropertySearchReport();
+                    ACLReportSearchPropertyDialog dlg = new ACLReportSearchPropertyDialog( s );
+                    if( !dlg.isCanceled() )
+                    {
+                        WebDAVTreeNode n = fileView.getParentNode();
+                        requestGenerator.setResource( s, n );
+                        ///requestGenerator.GetPrincipalPropertySearchReport();
+                    }
                     break;
                 }
                 

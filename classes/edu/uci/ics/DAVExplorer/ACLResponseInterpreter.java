@@ -28,7 +28,6 @@ import com.ms.xml.om.Element;
 import com.ms.xml.om.TreeEnumeration;
 import com.ms.xml.util.Name;
 
-import edu.uci.ics.DAVExplorer.DeltaVResponseInterpreter.GetVersionListener;
 
 /**
  * Title:       
@@ -93,8 +92,6 @@ public class ACLResponseInterpreter extends DeltaVResponseInterpreter
             {
                 if( Method.equals("PROPFIND"))
                     parsePropFind();
-                else if( Method.equals("ACL"))
-                    parseACL();
                 else if( Method.equals("REPORT"))
                     parseReport();
                 else if( Method.equals("PROPPATCH"))

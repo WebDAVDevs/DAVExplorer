@@ -98,7 +98,7 @@ implements ActionListener, ChangeListener, ListSelectionListener, WebDAVCompleti
         cancelButton  = new JButton("Cancel");
         cancelButton.addActionListener(this);
         cancelButton.setMnemonic( KeyEvent.VK_C );
-        buttonPanel = new JPanel();
+        JPanel buttonPanel = new JPanel();
         buttonPanel.add(okButton);
         buttonPanel.add(cancelButton);
         getRootPane().setDefaultButton( cancelButton );
@@ -251,7 +251,7 @@ implements ActionListener, ChangeListener, ListSelectionListener, WebDAVCompleti
                     model.addElement( available.get(i) );
         }
         privList = new JList( model );
-        privList.setFixedCellWidth(200);    // wild guess
+        privList.setFixedCellWidth(200);    // wild guess, but looks ok here
         JScrollPane privScroll = new JScrollPane();
         privScroll.setViewportView( privList );
         privList.addListSelectionListener( this );
@@ -261,7 +261,7 @@ implements ActionListener, ChangeListener, ListSelectionListener, WebDAVCompleti
             model.addElement( selected.get(i) );
         }
         curList = new JList( model ); 
-        curList.setFixedCellWidth(200);    // wild guess
+        curList.setFixedCellWidth(200);
         JScrollPane curScroll = new JScrollPane();
         curScroll.setViewportView( curList );
         curList.addListSelectionListener( this );
@@ -327,12 +327,12 @@ implements ActionListener, ChangeListener, ListSelectionListener, WebDAVCompleti
         c.gridwidth = GridBagConstraints.REMAINDER;
         gridbag.setConstraints( curScroll, c );
         panel.add( curScroll );
-        changePanel();
+        changePanel( panel );
         return panel;
     }
 
 
-    protected void changePanel()
+    protected void changePanel( JPanel panel )
     {
     }
 
@@ -374,7 +374,6 @@ implements ActionListener, ChangeListener, ListSelectionListener, WebDAVCompleti
     protected String resource;
     protected JList privList;
     protected JList curList;
-    protected JPanel buttonPanel;
     protected JButton okButton;
     protected JButton cancelButton;
     protected JButton leftButton;
