@@ -34,7 +34,7 @@ dist::
 	- cd $(SRC)/classes; make dist
 	- rm -f $(SRC)/DAVExplorer.jar
 	- rm -rf $(SRC)/.svn
-	- tar -cf - -C .. . | gzip -c > ../DAVExplorer-src-latest.tar.gz
+	- tar -cf - -X exclude.src -C .. . | gzip -c > ../DAVExplorer-src-latest.tar.gz
 
 bin-dist:	DAVExplorer DAVExplorer.jar
 	tar -cf - -X exclude -C .. . | gzip -c > ../DAVExplorer-latest.tar.gz
