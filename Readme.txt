@@ -1,3 +1,12 @@
+Changes for version 0.70:
+- Support for SSL (https protocol)
+  The SSL package supported is Sun's Java Secure Socket Extensions 1.0.2 (JSSE),
+  available at http://java.sun.com/products/jsse/
+  SSL is activated with the following command line:
+  java -jar -Dssl=true DAVExplorer.jar
+- Compatibility with JDK 1.3 was confirmed. The DAVExplorer.jar file is now
+  created with JDK 1.3.0
+
 Changes for version 0.62:
 - Improved recovery after server timeout
 

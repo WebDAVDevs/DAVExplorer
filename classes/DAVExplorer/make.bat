@@ -1,3 +1,3 @@
 @echo on
-c:\jdk1.3\bin\javac *.java
+javac *.java
 @echo off
