@@ -25,8 +25,8 @@
  *  ronald@innovation.ch
  *
  * Modified by Joachim Feise (jfeise@ics.uci.edu) for DAV Explorer
- * logging purposes, also supporting conditional compilation for SSL
- * NOTE: SSL support not testes yet!
+ * logging purposes
+ * Added code to allow using the class without JSSE installed
  */
 
 package HTTPClient;
@@ -41,6 +41,7 @@ import javax.net.ssl.SSLSocket;
 import javax.net.ssl.SSLException;
 import javax.net.ssl.SSLSocketFactory;
 import javax.security.cert.X509Certificate;
+import java.lang.reflect.Constructor;
 // End SSL Extensions
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
@@ -1939,7 +1940,7 @@ public class HTTPConnection
      */
     static Object getDefaultContext()
     {
-    return dflt_context;
+        return dflt_context;
     }
 
 
@@ -3283,7 +3284,33 @@ public class HTTPConnection
             if (name.charAt(0) == '*'  &&  host.endsWith(name.substring(1)))
                 return;
 
-            throw new SSLException("Name in certificate `" + name + "' does not " + "match host name `" + host + "'");
+            // 2001-Jan-12: jfeise@ics.uci.edu:
+            // account for the possibility of JSSE not being installed
+            // Symptom: w/o JSSE installed, the first access to HTTPConnection (in
+            // AuthorizationInfo line 102) throws NoClassDefFoundError: javax/net/ssl/SSLException
+            // Solution: This dynamic creation using reflection prevents the
+            // NoClassDefFoundError when HTTPConnection is first accessed
+            // The code replaces this construction:
+            // throw new SSLException("Name in certificate `" + name + "' does not " + "match host name `" + host + "'");
+            Object o = null;
+            try
+            {
+                Class c = Class.forName( "javax.net.ssl.SSLException" );
+                Class[] s = new Class[1];
+                s[0] = Class.forName( "java.lang.String" );
+
+                Constructor constructor = c.getConstructor( s );
+                String[] initargs = new String[1];
+                initargs[0] = "Name in certificate `" + name + "' does not " + "match host name `" + host + "'";
+                o = constructor.newInstance( initargs );
+            }
+            catch( Throwable t )
+            {
+                // class not found, SSL not available
+                throw new IOException( "SSL support not enabled." );
+            }
+            if( o != null )
+                throw (IOException)o;
         }
         else
         {
