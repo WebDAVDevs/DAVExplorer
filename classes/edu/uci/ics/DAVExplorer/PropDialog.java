@@ -22,161 +22,54 @@ package DAVExplorer;
 import java.awt.*;
 import java.awt.event.*;
 import javax.swing.*;
+import javax.swing.event.ChangeEvent;
+import javax.swing.event.ChangeListener;
 import javax.swing.border.*;
 import java.util.*;
+import com.ms.xml.om.Element;
 
-public class PropDialog
+
+public class PropDialog extends JDialog implements ActionListener, ChangeListener
 {
-    protected String data;
-    protected String initial_data;
-    String host;
-    String resource;
-    GUI gui;
-    private Vector PropDialogListeners = new Vector();
-
-    public PropDialog(String Resource, String Host, String xml, boolean changeable)
+    public PropDialog( Element properties, String resource, String hostname, boolean changeable )
     {
-        data = new String(xml);
-        initial_data = new String(xml);
-        host = Host;
-        resource = Resource;
-        gui = new GUI(this, changeable);
-        gui.setVisible(true);
-    }
-
-    public static final void main(String[] argv)
-    {
-        PropDialog d = new PropDialog("Hostname","Resource","Text..", true );
-    }
-
-    public String getHost()
-    {
-        return host;
-    }
-
-    public void setData(String newData)
-    {
-        this.data = newData;
-    }
-
-    public String getResource()
-    {
-        return resource;
-    }
-
-    public void ok()
-    {
-        notifyPropDialogChange();
-        gui.setVisible(false);
-        gui = null;
-    }
-
-    public void cancel()
-    {
-        gui.setVisible(false);
-        gui = null;
-    }
-
-    public void addPropDialogListener(PropDialogListener pl)
-    {
-        if (!PropDialogListeners.contains(pl))
-        {
-            PropDialogListeners.addElement(pl);
-        }
-    }
-
-    public void removePropDialogListener(PropDialogListener pl)
-    {
-        if (PropDialogListeners.contains(pl))
-            PropDialogListeners.removeElement(pl);
-    }
-
-    public void notifyPropDialogChange()
-    {
-        PropDialogEvent evt = new PropDialogEvent(this, host, resource, initial_data,data);
-        Vector v;
-        synchronized(this)
-        {
-            v = (Vector)PropDialogListeners.clone();
-        }
-
-        int cnt = v.size();
-        for (int i = 0; i < cnt; i++)
-        {
-            PropDialogListener client = (PropDialogListener)v.elementAt(i);
-            client.propDialog(evt);
-        }
-    }
-}
-
-
-class GUI extends Frame implements ActionListener
-{
-    PropDialog pd = null;
-    JTextArea textArea = null;
-
-    public GUI( PropDialog pd, boolean changeable )
-    {
-        super();
+        super( GlobalData.getGlobalData().getMainFrame() );
+        this.changeable = changeable;
         if( changeable )
-            setTitle("Modify Properties");
+            setTitle("View/Modify Properties");
         else
             setTitle("View Properties");
-        this.pd = (PropDialog) pd;
-        setSize(500,600);
-        Label label = new Label(pd.getResource() + " (" + pd.getHost() + ")",Label.CENTER);
-        label.setFont(new Font("Dialog", Font.PLAIN, 14));
-        add("North",label);
+        JLabel label = new JLabel( resource + " (" + hostname + ")", JLabel.CENTER );
+        label.setFont(new Font("SansSerif", Font.BOLD, 14));
+        label.setForeground(Color.black);
+        getContentPane().add( "North", label );
 
-        Panel buttonPanel=new Panel();
-        textArea = new JTextArea(pd.data);
-        if( changeable )
-        {
-            Button okButton = new Button("Submit");
-            Button cancelButton  = new Button("Cancel");
-            cancelButton.addActionListener(this);
-            buttonPanel.add(okButton);
-            buttonPanel.add(cancelButton);
-        }
-        else
-        {
-            Button okButton = new Button("OK");
-            buttonPanel.add(okButton);
-            okButton.addActionListener(this);
-        }
+        addButton = new JButton("Add");
+        addButton.addActionListener(this);
+        saveButton = new JButton("Save");
+        saveButton.addActionListener(this);
+        closeButton  = new JButton("Close");
+        closeButton.addActionListener(this);
+        JPanel buttonPanel = new JPanel();
+        buttonPanel.add(addButton);
+        buttonPanel.add(saveButton);
+        buttonPanel.add(closeButton);
+        getRootPane().setDefaultButton( closeButton );
+        closeButton.grabFocus();
+        if( !changeable )
+            addButton.setEnabled( false );
+        saveButton.setEnabled( false );
 
-        add("South",buttonPanel);
+        getContentPane().add( "South", buttonPanel );
         setBackground(Color.lightGray);
 
-        JPanel textAreaPanel = new JPanel();
+        model = new PropModel( properties );
+        model.addChangeListener(this);
+        treeTable = new JTreeTable( model );
 
-        textAreaPanel.add(Box.createRigidArea(new Dimension(1,10)));
-
-        JPanel textWrapper = new JPanel(new BorderLayout());
-        textWrapper.setAlignmentX(LEFT_ALIGNMENT);
-        textWrapper.setBorder(new SoftBevelBorder(BevelBorder.LOWERED));
-
-        textAreaPanel.add(textWrapper);
-
-        JScrollPane scroller = new JScrollPane()
-        {
-            public Dimension getPreferredSize()
-            {
-                return new Dimension(500,600);
-            }
-
-            public float getAlignmentX()
-            {
-                return LEFT_ALIGNMENT;
-            }
-        };
-
-        scroller.getViewport().add(textArea);
-        textArea.setFont(new Font("Dialog", Font.PLAIN, 12));
-        textWrapper.add(scroller, BorderLayout.CENTER);
-
-        add(Box.createRigidArea(new Dimension(10,1)));
-        add("Center",textWrapper);
+        JScrollPane scrollpane = new JScrollPane();
+        scrollpane.setViewportView( treeTable );
+        getContentPane().add( "Center", scrollpane );
 
         addWindowListener(
             new WindowAdapter()
@@ -186,28 +79,69 @@ class GUI extends Frame implements ActionListener
                     cancel();
                 }
             });
+
+        pack();
+        setSize( getPreferredSize() );
+        center();
+        show();
+    }
+
+    public void stateChanged( ChangeEvent e )
+    {
+        if( changeable )
+        {
+            changed = true;
+            if( saveButton != null )
+                saveButton.setEnabled( true );
+        }
     }
 
     public void actionPerformed(ActionEvent e)
     {
-        if (e.getActionCommand().equals("Submit"))
+        if( e.getActionCommand().equals("Add") )
         {
-            ok();
+            add();
         }
-        else
+        else if( e.getActionCommand().equals("Save") )
+        {
+            save();
+        }
+        else if( e.getActionCommand().equals("Close") )
+        {
             cancel();
+        }
     }
 
-
-    protected void ok()
+    public void add()
     {
-        pd.setData(textArea.getText());
-        pd.ok();
+        // TODO
+        setVisible(false);
     }
 
-
-    protected void cancel()
+    public void save()
     {
-        pd.cancel();
+        // TODO
+        setVisible(false);
     }
+
+    public void cancel()
+    {
+        setVisible(false);
+    }
+
+    protected void center()
+    {
+        Rectangle recthDimensions = getParent().getBounds();
+        Rectangle bounds = getBounds();
+        setBounds(recthDimensions.x + (recthDimensions.width-bounds.width)/2,
+             recthDimensions.y + (recthDimensions.height - bounds.height)/2, bounds.width, bounds.height );
+    }
+
+    private PropModel model;
+    private JTreeTable treeTable;
+    private JButton addButton;
+    private JButton saveButton;
+    private JButton closeButton;
+    private boolean changeable;
+    private boolean changed = false;
 }

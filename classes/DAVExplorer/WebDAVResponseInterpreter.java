@@ -602,31 +602,9 @@ public class WebDAVResponseInterpreter
         else if (Extra.equals("properties"))
         {
             Document ppatchDoc = new Document();
-            Enumeration docEnum = xml_doc.getElements();
-            while (docEnum.hasMoreElements())
-            {
-                Element nameEl = (Element) docEnum.nextElement();
-                if (nameEl.getType() == Element.ELEMENT)
-                    break;
-                ppatchDoc.addChild(nameEl,null);
-            }
-            ppatchDoc.addChild(WebDAVXML.elemNewline,null);
-
-            // write header
             ByteArrayOutputStream byte_prop = new ByteArrayOutputStream();
             XMLOutputStream  xml_prop = new XMLOutputStream(byte_prop);
             byte[] prop_out = null;
-            try
-            {
-                ppatchDoc.save(xml_prop);
-            }
-            catch( Exception e )
-            {
-                GlobalData.getGlobalData().errorMsg("DAV Interpreter:\n\nError encountered \nwhile parsing PROPFIND Response.\n" + e);
-                stream = null;
-                return;
-            }
-
             String[] token = new String[1];
             token[0] = new String( WebDAVXML.ELEM_RESPONSE );
             Element rootElem = skipElements( xml_doc, token );
@@ -641,17 +619,20 @@ public class WebDAVResponseInterpreter
                     {
                         if( currentTag.getName().equals( WebDAVXML.ELEM_PROPSTAT ) )
                         {
-                            parseProperties( current, xml_prop );
+                            token = new String[2];
+                            token[0] = new String( WebDAVXML.ELEM_PROPSTAT );
+                            token[1] = new String( WebDAVXML.ELEM_PROP );
+                            rootElem = skipElements( current, token );
+                            if( rootElem != null )
+                            {
+                                String host = HostName;
+                                if (Port != 0)
+                                    host = HostName + ":" + Port;
+                                PropDialog pd = new PropDialog( rootElem, Resource, host, false );
+                            }
                         }
                     }
                 }
-
-                prop_out = byte_prop.toByteArray();
-                String host = HostName;
-                if (Port > 0)
-                    host = HostName + ":" + Port;
-                PropDialog pd = new PropDialog(Resource,host,new String(prop_out), false);
-                pd.addPropDialogListener(new propDialogListener());
             }
         }
         else if(Extra.equals("expand"))
@@ -1140,13 +1121,13 @@ public class WebDAVResponseInterpreter
         return HostName;
     }
 
-    class propDialogListener implements PropDialogListener
-    {
-        public void propDialog(PropDialogEvent e)
-        {
-            generator.handlePropPatch(e);
-        }
-    }
+//    class propDialogListener implements PropDialogListener
+//    {
+//        public void propDialog(PropDialogEvent e)
+//        {
+//            generator.handlePropPatch(e);
+//        }
+//    }
 
     public boolean replaceFile(String fileName)
     {
@@ -1287,7 +1268,7 @@ public class WebDAVResponseInterpreter
               head = current;
               continue;
             }
-              // True if we did found the "owner" tag
+            // True if we did find the "owner" tag
             if (head!=null) {
               // Tag HREF found
               if( (tag!=null) && (tag.getName().equals( WebDAVXML.ELEM_HREF )) ) {

@@ -42,11 +42,13 @@ package DAVExplorer;
 
 class AsNode
 {
-    public AsNode( String schema, String alias, AsNode parent )
+    public AsNode( String schema, String alias, AsNode next )
     {
         m_schema = schema;
         m_alias = alias;
-        m_parent = parent;
+        m_next = next;
+        if( next != null )
+            next.m_prev = this;
     }
 
     public String getAlias()
@@ -69,12 +71,18 @@ class AsNode
         m_attributeSet = true;
     }
 
-    public AsNode getParent()
+    public AsNode getNext()
     {
-        return m_parent;
+        return m_next;
     }
 
-    AsNode m_parent = null;
+    public AsNode getPrev()
+    {
+        return m_prev;
+    }
+
+    AsNode m_next = null;
+    AsNode m_prev = null;
     String m_schema;
     String m_alias;
     boolean m_attributeSet = false;
@@ -85,7 +93,11 @@ public class AsGen
 {
     public AsGen()
     {
-        m_lastGenerated = "@";
+    }
+
+    public AsGen( AsNode node )
+    {
+        m_current = node;
     }
 
     public void createNamespace( String schema )
@@ -94,10 +106,35 @@ public class AsGen
         m_current = node;
     }
 
-    public void up()
+    public AsGen getNext()
     {
-        if( m_current != null )
-            m_current = m_current.getParent();
+        if( m_current == null )
+            return null;
+        else
+            return new AsGen( m_current.getNext() );
+    }
+
+    public AsGen getPrev()
+    {
+        if( m_current == null )
+            return null;
+        else
+            return new AsGen( m_current.getPrev() );
+    }
+
+    public AsGen getFirst()
+    {
+        if( m_current == null )
+            return null;
+
+        AsNode current = m_current;
+        AsNode prev = current.getPrev();
+        while( prev != null )
+        {
+            current = prev;
+            prev = current.getPrev();
+        }
+        return new AsGen( current );
     }
 
     public String getAlias()
@@ -126,6 +163,7 @@ public class AsGen
 
     public void setAttribute()
     {
+        // set when the namespace is declared
         if( m_current != null )
             m_current.setAttribute();
     }
@@ -169,5 +207,5 @@ public class AsGen
     }
 
     AsNode m_current = null;
-    String m_lastGenerated;
+    private static String m_lastGenerated = "@";
 }

@@ -73,6 +73,7 @@ import HTTPClient.CookieModule;
 
 import javax.swing.*;
 import javax.swing.event.*;
+import javax.swing.text.Keymap;
 import java.awt.*;
 import java.awt.event.*;
 import java.util.*;

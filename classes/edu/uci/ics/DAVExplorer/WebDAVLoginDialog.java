@@ -75,7 +75,7 @@ import java.awt.*;
 import java.awt.event.*;
 
 
-public class WebDAVLoginDialog extends Dialog implements ActionListener
+public class WebDAVLoginDialog extends JDialog implements ActionListener
 {
 /*-----------------------------------------------------------------------
 Public methods and attributes section
@@ -88,36 +88,53 @@ Public methods and attributes section
     {
         super( GlobalData.getGlobalData().getMainFrame(), strCaption, isModal );
 
-        JPanel groupPanel = new JPanel(new GridLayout( 6, 1 ));
-        groupPanel.add(new JLabel("Realm: " + realm, JLabel.CENTER ));
-        groupPanel.add(new JLabel("Scheme: " + scheme, JLabel.CENTER ));
-        groupPanel.add(new JLabel("Login name:"));
-        groupPanel.add(txtUsername = new JTextField(40));
-        groupPanel.add(new JLabel("Password:"));
-        txtPassword = new JPasswordField("", 40);
-        groupPanel.add(txtPassword);
-
         GridBagLayout gridbag = new GridBagLayout();
-        JPanel p = new JPanel( gridbag );
+        JPanel groupPanel = new JPanel( gridbag );
         GridBagConstraints constraints = new GridBagConstraints();
         constraints.fill = GridBagConstraints.BOTH;
+        constraints.gridwidth = GridBagConstraints.REMAINDER;
+        JLabel l = new JLabel( "Realm: " + realm, JLabel.CENTER );
+        gridbag.setConstraints( l, constraints );
+        groupPanel.add( l );
+        l = new JLabel( "Scheme: " + scheme, JLabel.CENTER );
+        gridbag.setConstraints( l, constraints );
+        groupPanel.add( l );
         constraints.gridwidth = 1;
         constraints.weightx = 1.0;
+        l = new JLabel( "Login name:", JLabel.LEFT );
+        gridbag.setConstraints( l, constraints );
+        groupPanel.add( l );
+        constraints.weightx = 3.0;
+        constraints.gridwidth = GridBagConstraints.REMAINDER;
+        txtUsername = new JTextField(30);
+        txtUsername.addActionListener( this );
+        gridbag.setConstraints( txtUsername, constraints );
+        groupPanel.add( txtUsername );
+        constraints.gridwidth = 1;
+        constraints.weightx = 1.0;
+        l = new JLabel( "Password:", JLabel.LEFT );
+        gridbag.setConstraints( l, constraints );
+        groupPanel.add( l );
+        constraints.weightx = 3.0;
+        constraints.gridwidth = GridBagConstraints.REMAINDER;
+        txtPassword = new JPasswordField( "", 30 );
+        txtPassword.addActionListener( this );
+        gridbag.setConstraints( txtPassword, constraints );
+        groupPanel.add( txtPassword );
+        JPanel p = new JPanel();
         p.add( OkButton = new JButton( "OK" ) );
         OkButton.addActionListener( this );
-        constraints.weightx = 1.0;
-        gridbag.setConstraints( OkButton, constraints );
-
         p.add( CancelButton = new JButton( "Cancel" ) );
         CancelButton.addActionListener( this );
-        constraints.weightx = 1.0;
-        gridbag.setConstraints( CancelButton, constraints );
+        gridbag.setConstraints( p, constraints );
+        groupPanel.add( p );
+        getRootPane().setDefaultButton( OkButton );
+        txtUsername.requestFocus();
 
-        add( p, BorderLayout.SOUTH );
-        add(groupPanel, BorderLayout.CENTER);
+        getContentPane().add( groupPanel );
         pack();
         center();
-        txtUsername.requestFocus();
+        setResizable( false );
         setVisible( true );
     }
 
@@ -140,17 +157,39 @@ Public methods and attributes section
         {
             m_strUsername = txtUsername.getText();
             m_strUserPassword = String.valueOf( txtPassword.getPassword() );
-
-            if ( ( m_strUsername.length() > 0  ) && (m_strUserPassword.equals("") ) )
-                return;
+            if ( (m_strUsername.length()>0) && (m_strUserPassword.length()>0) )
+            {
+                setVisible( false );
+                dispose();
+            }
         }
         else if( e.getActionCommand().equals( "Cancel" ) )
         {
             m_strUsername = "";
             m_strUserPassword = "";
+            setVisible( false );
+            dispose();
         }
-        setVisible( false );
-        dispose();
+        else
+        {
+            /*
+             * Simulate click on default button
+             * JTextFields intercept the return button
+             * Ideally, this would be modified by code like this:
+             * static {
+             *   JTextField f = new JTextField();
+             *   KeyStroke enter = KeyStroke.getKeyStroke(KeyEvent.VK_ENTER, 0);
+             *   Keymap map = f.getKeymap();
+             *   map.removeKeyStrokeBinding(enter);
+             * }
+             * However, this changes the keymap for *all* JTextFields, and we
+             * need the original mapping for the URI box
+             */
+            m_strUsername = txtUsername.getText();
+            m_strUserPassword = String.valueOf( txtPassword.getPassword() );
+            if ( (m_strUsername.length()>0) && (m_strUserPassword.length()>0) )
+                OkButton.doClick();
+        }
     }
 
 

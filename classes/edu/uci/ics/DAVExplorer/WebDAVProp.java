@@ -85,4 +85,55 @@ public class WebDAVProp
 
         return (prop_list.elements());
     }
+
+
+    public WebDAVProp( String tag, String value, String schema )
+    {
+        this.tag = tag;
+        this.value = value;
+        this.schema = schema;
+        this.children = null;
+        this.leaf = true;
+    }
+
+    public WebDAVProp( String tag, String schema, WebDAVProp[] children )
+    {
+        this.tag = tag;
+        this.value = null;
+        this.schema = schema;
+        this.children = children;
+        this.leaf = false;
+    }
+
+
+    public String getTag()
+    {
+        return tag;
+    }
+
+    public String getValue()
+    {
+        return value;
+    }
+
+    public String getSchema()
+    {
+        return schema;
+    }
+
+    public boolean isLeaf()
+    {
+        return leaf;
+    }
+
+    public WebDAVProp[] getChildren()
+    {
+        return children;
+    }
+
+    protected String tag;
+    protected String value;
+    protected String schema;
+    protected WebDAVProp[] children;
+    protected boolean leaf;
 }

@@ -94,34 +94,56 @@ public class WebDAVXML
         }
     }
 
+
+    public static AsGen findNamespace( AsGen alias, String schema )
+    {
+        if( schema != null )
+        {
+            alias = alias.getFirst();
+            while( alias != null )
+            {
+                if( alias.getSchema().equals( schema ) )
+                    return alias;
+                alias = alias.getNext();
+            }
+        }
+        return null;
+    }
+
+
     public static Element createElement( String tag, int type, Element parent, AsGen alias )
     {
+        return createElement( tag, type, parent, alias, false );
+    }
+
+    public static Element createElement( String tag, int type, Element parent, AsGen namespace, boolean declareNamespaces )
+    {
         Element element = null;
-        if( alias.isAttributeSet() )
+
+        // make sure we have the namespace declared
+        if( namespace.isAttributeSet() )
         {
-            if( parent != null )
-            {
-                // check if parent has same namespace
-                // if not, remove the current alias node and use the previous one
-                String parentNS = parent.getTagName().getNameSpace().toString();
-                while( !parentNS.equals( alias.getAlias() ) )
-                {
-                    alias.up();
-                }
-            }
-            element = new ElementImpl(createName(tag, alias.getAlias()), type );
+            element = new ElementImpl(createName(tag, namespace.getAlias()), type );
         }
         else
         {
-            element = new ElementImpl(createName(tag, alias.getAlias()), type );
-            if( alias.getSchema() != null )
+            element = new ElementImpl(createName(tag, namespace.getAlias()), type );
+            setNSAttribute( element, namespace );
+        }
+        if( declareNamespaces )
+        {
+            // declare all our namespaces
+            AsGen currentNS = namespace;
+            while( currentNS != null )
             {
-                element.setAttribute( Name.create(alias.getAlias(), "xmlns"), alias.getSchema() );
-                alias.setAttribute();
+                setNSAttribute( element, currentNS );
+                currentNS = currentNS.getNext();
             }
         }
+
         return element;
     }
+
 
     protected static Name createName( String tag, String alias )
     {
@@ -130,6 +152,16 @@ public class WebDAVXML
         else
             return Name.create( tag, alias );
     }
+
+    private static void setNSAttribute( Element element, AsGen currentNS )
+    {
+        if( currentNS.getSchema() != null && element != null )
+        {
+            element.setAttribute( Name.create( currentNS.getAlias(), "xmlns"), currentNS.getSchema() );
+            currentNS.setAttribute();
+        }
+    }
+
 
     //11.1
     public static final String ELEM_ACTIVE_LOCK = "activelock";
