@@ -152,6 +152,8 @@ Thanks to everybody.
 
 6. CHANGELOG
 
+Changes for version 0.92-dev:
+
 Changes for version 0.91:
 - Re-Enabled authentication requests for PUT, broken by changing to streaming
   PUT data in 0.82 (thanks to Marc Richard for alerting us to the problem.)
