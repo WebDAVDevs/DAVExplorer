@@ -894,11 +894,19 @@ public class WebDAVResponseInterpreter
         {
             Element current = (Element)treeEnum.nextElement();
             Name tag = current.getTagName();
-            if( (tag != null) && tag.getName().equals( WebDAVXML.ELEM_HREF ) )
+            if( (tag != null) && tag.getName().equals( WebDAVXML.ELEM_OWNER ) )
             {
-                Element token = (Element)treeEnum.nextElement();
-                if( (token != null) && (token.getType() == Element.PCDATA) )
-                    return token.getText();
+                current = (Element)treeEnum.nextElement();
+                if( current != null )
+                {
+                    tag = current.getTagName();
+                    if( (tag != null) && tag.getName().equals( WebDAVXML.ELEM_HREF ) )
+                    {
+                        Element token = (Element)treeEnum.nextElement();
+                        if( (token != null) && token.getType() == Element.PCDATA )
+                            return token.getText();
+                    }
+                }
             }
         }
         return "";
