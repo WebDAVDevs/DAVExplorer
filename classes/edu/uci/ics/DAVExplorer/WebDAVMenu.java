@@ -46,6 +46,9 @@
  * @date        17 March 2003
  * Changes:     Integrated Brian Johnson's applet changes.
  *              Added better error reporting.
+ * @author      Joachim Feise (dav-exp@ics.uci.edu)
+ * @date        27 April 2003
+ * Changes:     Added shared lock functionality.
  */
 
 package edu.uci.ics.DAVExplorer;
@@ -175,7 +178,8 @@ public class WebDAVMenu extends JMenuBar implements ActionListener
         mnu_FileMenu.add(new WebDAVMenuItem( "Get File", this, true ));
         mnu_FileMenu.add(new WebDAVMenuItem( "Write File",this, true ));
         mnu_FileMenu.addSeparator();
-        mnu_FileMenu.add(new WebDAVMenuItem( "Lock", this, true ));
+        mnu_FileMenu.add(new WebDAVMenuItem( "Exclusive Lock", this, true ));
+        mnu_FileMenu.add(new WebDAVMenuItem( "Shared Lock", this, true ));
         mnu_FileMenu.add(new WebDAVMenuItem( "Unlock", this, true ));
         mnu_FileMenu.addSeparator();
         mnu_FileMenu.add(new WebDAVMenuItem( "Copy", this, true ));

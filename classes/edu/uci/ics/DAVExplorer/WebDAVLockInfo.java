@@ -33,6 +33,9 @@
  * @author      Joachim Feise (dav-exp@ics.uci.edu)
  * @date        1 October 2001
  * Changes:     Change of package name
+ * @author      Joachim Feise (dav-exp@ics.uci.edu)
+ * @date        27 April 2003
+ * Changes:     Allowing empty lock info.
  */
 
 package edu.uci.ics.DAVExplorer;
@@ -75,32 +78,31 @@ Public methods and attributes section
         setVisible( true );
     }
 
+
     public synchronized void addListener(ActionListener l)
     {
         listeners.addElement(l);
     }
+
 
     public synchronized void removeListener(ActionListener l)
     {
         listeners.removeElement(l);
     }
 
+
     public void actionPerformed(ActionEvent e)
     {
         if(e.getActionCommand().equals("OK"))
         {
             String user = txtUsername.getText();
-
-            if ( user.length() == 0  )
-                return;
+            // note: empty lockinfo is allowed, defaults to "DAV Explorer"
             GlobalData.getGlobalData().WriteConfigEntry( "lockinfo", user );
         }
         setVisible( false );
         dispose();
     }
-/*-----------------------------------------------------------------------
-Private methods and attributes section
------------------------------------------------------------------------*/
+
 
 /*-----------------------------------------------------------------------
 Protected methods and attributes section
@@ -112,6 +114,7 @@ Protected methods and attributes section
         setBounds(recthDimensions.x + (recthDimensions.width-bounds.width)/2,
              recthDimensions.y + (recthDimensions.height - bounds.height)/2, bounds.width, bounds.height );
     }
+
 
     protected JTextField txtUsername;
     protected JButton OKbutton;

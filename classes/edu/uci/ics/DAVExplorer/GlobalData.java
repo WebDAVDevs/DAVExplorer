@@ -42,6 +42,9 @@
  * @author      Joachim Feise (dav-exp@ics.uci.edu)
  * @date        7 April 2003
  * Changes:     Improved reading/writing of configuration entries. 
+ * @author      Joachim Feise (dav-exp@ics.uci.edu)
+ * @date        27 April 2003
+ * Changes:     added support for default config entries.
  */
 
 package edu.uci.ics.DAVExplorer;
@@ -383,14 +386,22 @@ class GlobalData
     }
 
 
-    public String ReadConfigEntry( String token )
+    public String ReadConfigEntry( String token, String defaultString )
     {
         Vector info = ReadConfigEntry( token, false );
         if( info.size() > 0 )
         {
             return (String)info.elementAt(0);
         }
+        if( defaultString != null )
+            return defaultString;
         return "";
+    }
+
+
+    public String ReadConfigEntry( String token )
+    {
+        return ReadConfigEntry( token, "" );
     }
 
 

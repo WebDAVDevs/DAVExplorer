@@ -46,6 +46,9 @@
  * @date        17 March 2003
  * Changes:     Integrated Brian Johnson's applet changes.
  *              Added better error reporting.
+ * @author      Joachim Feise (dav-exp@ics.uci.edu)
+ * @date        27 April 2003
+ * Changes:     Added shared lock functionality.
  */
 
 package edu.uci.ics.DAVExplorer;
@@ -1169,7 +1172,7 @@ System.out.println("Copy: strippedResource: "+StrippedResource);
     }
 
 
-    public synchronized boolean GenerateLock(String OwnerInfo, String lockToken)
+    public synchronized boolean GenerateLock(String OwnerInfo, String lockToken, boolean exclusive )
     {
         if( GlobalData.getGlobalData().getDebugRequest() )
         {
@@ -1178,7 +1181,6 @@ System.out.println("Copy: strippedResource: "+StrippedResource);
 
         Headers = null;
         Body = null;
-        // Only exclusive write lock is supported at the time
         StrippedResource = parseResourceName( true );
         if( StrippedResource == null )
         {
@@ -1207,7 +1209,11 @@ System.out.println("Copy: strippedResource: "+StrippedResource);
             Element ownerElem = WebDAVXML.createElement( WebDAVXML.ELEM_OWNER, Element.ELEMENT, lockInfoElem, asgen );
 
             Element typeValue = WebDAVXML.createElement( WebDAVXML.ELEM_WRITE, Element.ELEMENT, lockTypeElem, asgen );
-            Element scopeVal = WebDAVXML.createElement( WebDAVXML.ELEM_EXCLUSIVE, Element.ELEMENT, scopeElem, asgen );
+            Element scopeVal;
+            if( exclusive )
+                scopeVal = WebDAVXML.createElement( WebDAVXML.ELEM_EXCLUSIVE, Element.ELEMENT, scopeElem, asgen );
+            else
+                scopeVal = WebDAVXML.createElement( WebDAVXML.ELEM_SHARED, Element.ELEMENT, scopeElem, asgen );
             Element ownerHref = WebDAVXML.createElement( WebDAVXML.ELEM_HREF, Element.ELEMENT, ownerElem, asgen );
             Element ownerVal = WebDAVXML.createElement( null, Element.PCDATA, ownerElem, asgen );
             ownerVal.setText(OwnerInfo);

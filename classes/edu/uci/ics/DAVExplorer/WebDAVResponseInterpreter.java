@@ -43,6 +43,9 @@
  * @date        17 March 2003
  * Changes:     Integrated Brian Johnson's applet changes.
  *              Added better error reporting.
+ * @author      Joachim Feise (dav-exp@ics.uci.edu)
+ * @date        27 April 2003
+ * Changes:     Added shared lock functionality.
  */
 
 package edu.uci.ics.DAVExplorer;
@@ -383,7 +386,7 @@ public class WebDAVResponseInterpreter
                 fireInsertionEvent(HostName + Resource);
             }
         }
-        else if( Extra.equals("lock") || Extra.equals("unlock")
+        else if( Extra.equals("exclusiveLock") || Extra.equals("sharedLock") || Extra.equals("unlock")
                  || Extra.equals("delete") || Extra.startsWith("rename:")
                  || Extra.equals("display") || Extra.equals("commit")
                  || Extra.startsWith("rename2:") || Extra.startsWith("delete2:") )
@@ -421,7 +424,7 @@ public class WebDAVResponseInterpreter
                             }
                             else if( status < 500 )
                             {
-                                if( Extra.equals("lock") || Extra.equals("unlock") )
+                                if( Extra.equals("exclusiveLock") || Extra.equals("sharedLock") || Extra.equals("unlock") )
                                 {
                                     GlobalData.getGlobalData().errorMsg( "This resource does not support locking." );
                                     return;
@@ -488,10 +491,16 @@ public class WebDAVResponseInterpreter
                 if( pos >= 0 )
                     lockToken = lockToken.substring(pos);
             }
-            if (Extra.equals("lock"))
+            if (Extra.equals("exclusiveLock"))
             {
                     String lockInfo = getLockInfo();
-                    generator.GenerateLock(lockInfo,lockToken);
+                    generator.GenerateLock( lockInfo, lockToken, true );
+                    generator.execute();
+            }
+            else if (Extra.equals("sharedLock"))
+            {
+                    String lockInfo = getLockInfo();
+                    generator.GenerateLock( lockInfo, lockToken, false );
                     generator.execute();
             }
             else if (Extra.equals("unlock"))
@@ -627,7 +636,8 @@ public class WebDAVResponseInterpreter
 
     public String getLockInfo()
     {
-        return GlobalData.getGlobalData().ReadConfigEntry("lockinfo");
+        // if lockinfo doesn't exist, use default
+        return GlobalData.getGlobalData().ReadConfigEntry( "lockinfo", "DAV Explorer" );
     }
 
     public boolean Refreshing()

@@ -40,6 +40,9 @@
  * @date        17 March 2003
  * Changes:     Integrated Brian Johnson's applet changes.
  *              Added better error reporting.
+ * @author      Joachim Feise (dav-exp@ics.uci.edu)
+ * @date        27 April 2003
+ * Changes:     separated button name from icon name.
  */
 
 package edu.uci.ics.DAVExplorer;
@@ -72,16 +75,22 @@ public class WebDAVToolBar extends JPanel implements ActionListener
         toolbarListener = new Vector();
     }
 
-    public void addTool( JToolBar tb, String name, String description )
+    private void addTool( JToolBar tb, String name, String description )
     {
+        addTool( tb, name, name, description );
+    }
 
-        JButton b = new JButton(GlobalData.getGlobalData().getImageIcon(name + ".gif", name));
+
+    private void addTool( JToolBar tb, String name, String iconName, String description )
+    {
+        JButton b = new JButton(GlobalData.getGlobalData().getImageIcon(iconName + ".gif", name));
         b.setActionCommand( description );
         b.addActionListener(this);
         b.setToolTipText( description );
         b.setMargin(new Insets(1,1,1,1));
         tb.add(b);
     }
+
 
     private Component createToolbar()
     {
@@ -90,7 +99,7 @@ public class WebDAVToolBar extends JPanel implements ActionListener
         addTool( toolbar, "copy", "Copy" );
         addTool( toolbar, "delete", "Delete" );
         toolbar.addSeparator();
-        addTool( toolbar, "lock", "Lock" );
+        addTool( toolbar, "exclusiveLock", "lock", "Exclusive Lock" );
         addTool( toolbar, "unlock", "Unlock" );
         addTool( toolbar, "propfind", "View/Modify Properties" );
         return toolbar;

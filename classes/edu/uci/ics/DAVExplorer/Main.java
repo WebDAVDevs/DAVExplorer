@@ -65,6 +65,9 @@
  * @author      Joachim Feise (dav-exp@ics.uci.edu)
  * @date        31 March 2003
  * Changes:     Integrated Thoralf Rickert's progress bar changes.
+ * @author      Joachim Feise (dav-exp@ics.uci.edu)
+ * @date        27 April 2003
+ * Changes:     Added shared lock functionality.
  */
 
 
@@ -582,7 +585,7 @@ public class Main extends JFrame
             }
                 }
             }
-            else if (command.equals("Lock"))
+            else if (command.equals("Exclusive Lock"))
             {
                 String s = fileView.getSelected();
                 if( s == null )
@@ -593,7 +596,21 @@ public class Main extends JFrame
                 {
                     WebDAVTreeNode n = fileView.getParentNode();
                     requestGenerator.setResource(s, n);
-                    lockDocument();
+                    lockDocument( true );
+                }
+            }
+            else if (command.equals("Shared Lock"))
+            {
+                String s = fileView.getSelected();
+                if( s == null )
+                {
+                    GlobalData.getGlobalData().errorMsg( "No resource selected." );
+                }
+                else
+                {
+                    WebDAVTreeNode n = fileView.getParentNode();
+                    requestGenerator.setResource(s, n);
+                    lockDocument( false );
                 }
             }
             else if (command.equals("Unlock"))
@@ -966,9 +983,12 @@ public class Main extends JFrame
         }
     }
 
-    protected void lockDocument()
+    protected void lockDocument( boolean exclusive )
     {
-        requestGenerator.DiscoverLock("lock");
+        if( exclusive )
+            requestGenerator.DiscoverLock("exclusiveLock");
+        else
+            requestGenerator.DiscoverLock("sharedLock");
     }
 
     protected void unlockDocument()
