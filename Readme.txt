@@ -97,6 +97,7 @@ Changes for version 0.82-dev:
   directory structure.
 - Fixed the icon locator code to account for drive letters on Windows.
 - Special handling of PUT to support files > 2GB.
+- Added Translate header to better support IIS
 
 Changes for version 0.81:
 - Fixed handling of default namespace in the view/modify property dialog
