@@ -41,8 +41,7 @@
 // Change List:
 // 1. Changed treeView.fireSelectionEvent(); to treeView.initTree();
 //    This is the same function, but with a better name.
-// 2. Added Create Folder functionality
-// 3. Added filename selection for export file
+
 
 package WebDAV;
 

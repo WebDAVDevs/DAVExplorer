@@ -94,7 +94,7 @@ public class WebDAVManager {
       try {
         Con.addDigestAuthorization(HostName,user, pass);
         Con.addBasicAuthorization(HostName,user,pass);
-      } catch (Exception exc) { System.out.println(e); }
+      } catch (Exception exc) { System.out.println(exc); }
     }
     
     MethodName = e.getMethod();

@@ -39,9 +39,7 @@
 // Date: 3/17/99
 //
 // Change List:
-//  1. Fixed truncateResource and fullResource to properly remove
-//      the 'http://' part of the URL
-//  2. Added safeguards for empty directory
+
 
 package WebDAV;
 
@@ -64,6 +62,7 @@ public class WebDAVTreeNode extends DefaultMutableTreeNode {
   protected static WebDAVResponseInterpreter interpreter = new WebDAVResponseInterpreter();
   public WebDAVTreeNode (Object o) {
     super(o);
+//    System.out.println("child " + o.toString() + " created..");
   }
   public WebDAVTreeNode (Object o, boolean isRoot) {
     super(o);
@@ -92,6 +91,7 @@ public class WebDAVTreeNode extends DefaultMutableTreeNode {
   }
 
   public int getChildCount() {
+     
      if ( (hasLoaded) && (interpreter.Refreshing()) ) {
        Object[] full_path = getPath();
        if (full_path.length > 1) {      
@@ -115,6 +115,7 @@ public class WebDAVTreeNode extends DefaultMutableTreeNode {
   }
 
   protected void loadRemote(byte[] byte_xml) {
+
     Vector nodesChildren = new Vector();
     Document xml_doc = null; 
     Element multiElem = null;
@@ -176,7 +177,11 @@ public class WebDAVTreeNode extends DefaultMutableTreeNode {
 
 
   public void parseResponse(Element respElem, String ResourceName, Vector nodesChildren) {
+
+
     Enumeration respEnum = respElem.getElements();
+    
+    
     while (respEnum.hasMoreElements()) {     
 
 
@@ -360,13 +365,16 @@ public class WebDAVTreeNode extends DefaultMutableTreeNode {
             WebDAVTreeNode childNode = new WebDAVTreeNode(resName);
             childNode.setDataNode(newNode);
             insert(childNode,0);
+//            System.out.println("inserting collection: " + resName);
         }
         else {
             nodesChildren.addElement(newNode);
+//            System.out.println("inserting non-collection: " + resName);
         }
       }
   }
   protected void loadLocal(String name, Object[] full_path) {
+
      String fileName = name;
      for (int i=2;i<full_path.length;i++)
        fileName += File.separator + full_path[i];
@@ -410,7 +418,7 @@ System.out.println(e);
      }
      else {
 	hasLoaded = false;
-        System.out.println("ERROR: invalid directory");
+        //System.out.println("ERROR: invalid directory");
 	dataNode = null;
 	return;
      }

@@ -190,7 +190,7 @@ public class WebDAVFileView
                 }
                 catch (Exception exc)
                 {
-                    System.out.println("oops");
+                    System.out.println(exc);
                 }
             }
         };
@@ -506,12 +506,13 @@ public class WebDAVFileView
         {
             if (releaseRow != -1)
             {
-                if (pressRow != releaseRow)
-                    System.out.println("WebDAVFileView: Got Drag");
+                if (pressRow != releaseRow){
+                    //System.out.println("WebDAVFileView: Got Drag");
+		}
             }
             else
             {
-                System.out.println("dragged outside");
+                //System.out.println("dragged outside");
             }
         }
     }
@@ -542,7 +543,7 @@ public class WebDAVFileView
             try
             {
                 locked = (Boolean) table.getValueAt(row,col);
-                System.out.println("locked is: " + locked);
+                //System.out.println("locked is: " + locked);
             }
             catch (Exception exc)
             {
