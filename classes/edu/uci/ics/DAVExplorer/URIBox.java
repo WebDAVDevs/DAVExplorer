@@ -70,14 +70,8 @@ public class URIBox extends JPanel implements ActionListener
 
         JPanel panel = new JPanel();
 
-        String iconPath = getIconPath();
-        if (iconPath == null)
-            System.exit(0);
+        okButton = new JButton(loadImageIcon("connect.gif", "Connect"));
 
-        if( jarPath == null )
-            okButton = new JButton(loadImageIcon(iconPath + File.separatorChar + "connect.gif", "Connect"));
-        else
-            okButton = new JButton(loadImageIcon(iconPath + "connect.gif", "Connect"));
         //okButton.setMargin(new Insets(1,1,1,1));
         okButton.setActionCommand("Connect");
         okButton.addActionListener(this);
@@ -106,83 +100,15 @@ public class URIBox extends JPanel implements ActionListener
     JLabel label1;
     JButton okButton;
 
-    private static String getIconPath()
-    {
-        String icons = WebDAVClassName + File.separatorChar + IconDir;
-        String classPath = System.getProperty("java.class.path");
-        if (classPath == null)
-        {
-            errorMsg("No Classpath set." );
-            return null;
-        }
-
-        StringTokenizer paths = new StringTokenizer(classPath, ":;");
-
-        while (paths.hasMoreTokens())
-        {
-            String nextPath = paths.nextToken();
-            String lowerPath = nextPath.toLowerCase();
-            if( lowerPath.endsWith( jarExtension ) )
-            {
-                jarPath = nextPath;
-                int pos = lowerPath.indexOf( jarExtension );
-                nextPath = nextPath.substring( 0, pos );
-            }
-            if (!nextPath.endsWith(new Character(File.separatorChar).toString()))
-                nextPath += File.separatorChar;
-            nextPath += icons;
-            File iconDirFile = new File(nextPath);
-            if (iconDirFile.exists())
-                return nextPath;
-            if( jarPath != null )
-            {
-                try
-                {
-                    ZipFile jfile = new ZipFile( jarPath );
-                    icons = WebDAVClassName + "/" + IconDir + "/";
-                    ZipEntry entry = jfile.getEntry( icons + "connect.gif" );
-                    if( entry != null )
-                    {
-                        return icons;
-                    }
-                    else
-                        jarPath = null;
-                }
-                catch( IOException e )
-                {
-                }
-            }
-        }
-        errorMsg("Path to icons not found." );
-        return null;
-    }
 
     private ImageIcon loadImageIcon(String filename, String description)
     {
-        if( jarPath == null )
-            return new ImageIcon(filename, description);
-        else
-        {
-            try
-            {
-                ZipFile file = new ZipFile( jarPath );
-                ZipEntry entry = file.getEntry( filename );
-                InputStream is = file.getInputStream( entry );
-                int len = (int)entry.getSize();
-                if( len != -1 )
-        {
-                    byte[] ba = new byte[len];
-                    is.read( ba, 0, len );
-                    return new ImageIcon( ba, description );
+        try {
+            return new ImageIcon(getClass().getResource("icons/" + filename),description);
+        } catch (Exception ex) {
+            errorMsg("Toolbar:\nIcon load error." );
+            return null;
         }
-            }
-            catch( IOException e )
-            {
-                errorMsg("Icon load failure: " + e );
-                return null;
-            }
-        }
-        return null;
     }
 
     public void actionPerformed(ActionEvent evt)

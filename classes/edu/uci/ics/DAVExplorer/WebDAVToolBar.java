@@ -18,9 +18,9 @@
  */
 
 /**
- * Title:       WebDAV Toolbae
+ * Title:       WebDAV Toolbar
  * Description: Implements the main toolbar
- * Copyright:   Copyright (c) 1998-2002 Regents of the University of California. All rights reserved.
+ * Copyright:   Copyright (c) 1998-2001 Regents of the University of California. All rights reserved.
  * @author      Undergraduate project team ICS 126B 1998
  * @date        1998
  * @author      Yuzo Kanomata, Joachim Feise (dav-exp@ics.uci.edu)
@@ -32,6 +32,10 @@
  * @author      Joachim Feise (dav-exp@ics.uci.edu)
  * @date        1 October 2001
  * Changes:     Change of package name
+ * @author      Joachim Feise (dav-exp@ics.uci.edu), Karen Schuchardt
+ * @date        2 April 2002
+ * Changes:     Incorporated Karen Schuchardt's changes to improve the loading of
+ *              images. Thanks!
  */
 
 package edu.uci.ics.DAVExplorer;
@@ -78,15 +82,9 @@ public class WebDAVToolBar extends JPanel implements ActionListener
 
     public void addTool( JToolBar tb, String name, String description )
     {
-        String iconPath = getIconPath();
-        if (iconPath == null)
-            System.exit(0);
 
         JButton b = null;
-        if( jarPath == null )
-            b = new JButton(loadImageIcon(iconPath + File.separatorChar + name + ".gif", name));
-        else
-            b = new JButton(loadImageIcon(iconPath + name + ".gif", name));
+        b = new JButton(loadImageIcon(name + ".gif", name));
         b.setActionCommand( description );
         b.addActionListener(this);
         b.setToolTipText( description );
@@ -107,95 +105,15 @@ public class WebDAVToolBar extends JPanel implements ActionListener
         return toolbar;
     }
 
-    private static String getIconPath()
-    {
-        String icons = WebDAVClassName;
-        if( File.separatorChar != '/' )
-        {
-			int pos = icons.indexOf("/");
-			while( pos >=0 )
-			{
-				icons = icons.substring( 0, pos) + File.separatorChar + icons.substring( pos+1 );
-				pos = icons.indexOf( "/" );
-			}
-		}
-        icons += File.separatorChar + IconDir;
-        String classPath = System.getProperty("java.class.path");
-        if (classPath == null)
-        {
-            errorMsg("Toolbar:\nNo Classpath set." );
-            return null;
-        }
-
-        StringTokenizer paths = new StringTokenizer(classPath,":;");
-        while (paths.hasMoreTokens())
-        {
-            String nextPath = paths.nextToken();
-            String lowerPath = nextPath.toLowerCase();
-            if( lowerPath.endsWith( jarExtension ) )
-            {
-                jarPath = nextPath;
-                int pos = lowerPath.indexOf( jarExtension );
-                nextPath = nextPath.substring( 0, pos );
-            }
-            if (!nextPath.endsWith(new Character(File.separatorChar).toString()))
-                nextPath += File.separatorChar;
-            nextPath += icons;
-            File iconDirFile = new File(nextPath);
-            if (iconDirFile.exists())
-                return nextPath;
-            if( jarPath != null )
-            {
-                try
-                {
-                    ZipFile zfile = new ZipFile( jarPath );
-                    icons = WebDAVClassName + "/" + IconDir + "/";
-                    ZipEntry entry = zfile.getEntry( icons + "connect.gif" );
-                    if( entry != null )
-                    {
-                        return icons;
-                    }
-                    else
-                        jarPath = null;
-                }
-                catch( IOException e )
-                {
-                }
-            }
-        }
-        errorMsg("Toolbar:\nPath to icons not found." );
-        return null;
-    }
 
     private ImageIcon loadImageIcon(String filename, String description)
     {
-        if( jarPath == null )
-            return new ImageIcon(filename, description);
-        else
-        {
-            try
-            {
-                ZipFile file = new ZipFile( jarPath );
-                ZipEntry entry = file.getEntry( filename );
-                if( entry != null )
-                {
-                    InputStream is = file.getInputStream( entry );
-                    int len = (int)entry.getSize();
-                    if( len != -1 )
-                    {
-                        byte[] ba = new byte[len];
-                        is.read( ba, 0, len );
-                        return new ImageIcon( ba, description );
-                    }
-                }
-            }
-            catch( IOException e )
-            {
-                errorMsg("Toolbar:\nIcon load error." );
-                return null;
-            }
+        try {
+            return new ImageIcon(getClass().getResource("icons/" +  filename),description);
+        } catch (Exception ex) {
+            errorMsg("Toolbar:\nIcon load error." );
+            return null;
         }
-        return null;
     }
 
     public synchronized void addActionListener(ActionListener l)
