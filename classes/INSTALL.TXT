@@ -1,0 +1,17 @@
+Installation procedure
+
+DAV Explorer requires Java 2 (aka JDK 1.2).
+
+1. Compile all Java source files with Java 2.
+
+2. Create the DAVExplorer.jar file.
+   Make sure that the DAVManifest file exists in the root of the DAVExplorer tree.
+   Under MS Windows, run the DAVjar.bat file from the root of the DAVExplorer tree.
+   Under Unix, run the DAVjar.sh shell script from the root of the DAVExplorer tree..
+
+3. Run the DAV Explorer.
+   Under MS Windows, run the DAVExplorer.bat file from the root of the DAVExplorer tree..
+   Under Unix, run the DAVExplorer.sh shell script from the root of the DAVExplorer tree..
+   You can also run DAVExplorer by using the command 'java -jar DAVExplorer.jar'.
+
+
