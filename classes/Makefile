@@ -20,13 +20,13 @@ SRC = .
 all:	com HTTPClient DAVExplorer
 
 com::
-	@( CLASSPATH=.:$(CLASSPATH); export CLASSPATH; cd $(SRC)/com; make all )
+	@( CLASSPATH=`pwd`:$(CLASSPATH); export CLASSPATH; cd $(SRC)/com; make all )
 
 HTTPClient::
-	@( CLASSPATH=.:$(CLASSPATH); export CLASSPATH; cd $(SRC)/HTTPClient; make all )
+	@( CLASSPATH=`pwd`:$(CLASSPATH); export CLASSPATH; cd $(SRC)/HTTPClient; make all )
 
 DAVExplorer::
-	@( CLASSPATH=.:$(CLASSPATH); export CLASSPATH; cd $(SRC)/DAVExplorer; make all )
+	@( CLASSPATH=`pwd`:$(CLASSPATH); export CLASSPATH; cd $(SRC)/DAVExplorer; make all )
 
 DAVExplorer.jar::
 	jar -cfm DAVExplorer.jar DAVManifest \
