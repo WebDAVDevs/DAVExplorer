@@ -159,12 +159,12 @@ public class Main extends JFrame
 
     public void checkAuth(String in)
     {
-        int pos = in.indexOf(":");
+        int pos = in.indexOf("/");
         String host = null;
         String authInfo = null;
 
-        if (pos < 0)
-            pos = in.indexOf("/");
+//        if (pos < 0)
+//            pos = in.indexOf("/");
         if (pos < 0)
             host = in;
         else

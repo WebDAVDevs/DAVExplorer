@@ -63,7 +63,7 @@ public class WebDAVManager
     public HTTPResponse Response;
     private WebDAVConnection Con;
     private String HostName = null;
-    private int Port;
+    private int Port = -1;
     private String MethodName;
     private String ResourceName;
     private NVPair[] Headers;
@@ -82,7 +82,8 @@ public class WebDAVManager
         String TempHost = e.getHost();
         int TempPort = e.getPort();
 
-        if ((TempHost != null) && (TempHost.length() > 0) && (!TempHost.equals(HostName)))
+        if( ((TempHost!=null) && (TempHost.length()>0) && !TempHost.equals(HostName))
+            || (TempPort!=Port) )
         {
             HostName = TempHost;
             if (TempPort != 0)
