@@ -696,7 +696,7 @@ public class WebDAVRequestGenerator implements Runnable
         Headers = null;
         Body = null;
 
-    parentNode = selectedCollection;
+        parentNode = selectedCollection;
 
         ResourceName = destDir;
         if (!parseResourceName())
@@ -705,11 +705,16 @@ public class WebDAVRequestGenerator implements Runnable
             return;
         }
 
+        // strip any directory info from the destination name
         String dest = fileName;
         int pos = dest.lastIndexOf( File.separatorChar );
         if( pos >= 0 )
             dest = dest.substring( pos + 1 );
 
+        // get the collection part of the resource
+        pos = StrippedResource.lastIndexOf( "/" );
+        if( pos >= 0 )
+            StrippedResource = StrippedResource.substring( 0, pos + 1 );
         StrippedResource = StrippedResource + dest;
 
         if ( (fileName == null) || (fileName.equals("")) )
