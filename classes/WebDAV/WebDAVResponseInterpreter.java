@@ -223,6 +223,8 @@ public class WebDAVResponseInterpreter
             Document xml_doc = new Document();
             xml_doc.load(byte_in);
 
+            printXML( body );
+            
             if (Extra.equals("uribox"))
             {
                 if( Port > 0 )
@@ -918,5 +920,25 @@ public class WebDAVResponseInterpreter
                           "\nLock Token: " + LockToken+
                           "\nTimeout:    " + LockTimeout+"\n");
         pane.showOptionDialog(mainFrame,str, "Lock Information", JOptionPane.DEFAULT_OPTION, JOptionPane.INFORMATION_MESSAGE, null,options, options[0]);
+    }
+
+    private void printXML( byte[] body )
+    {
+        String debugOutput = System.getProperty( "debug", "false" );
+        if( debugOutput.equals( "true" ) )
+        {
+            System.out.println("Received xml:");
+            XMLOutputStream out = new XMLOutputStream(System.out);
+            ByteArrayInputStream tmpIn = new ByteArrayInputStream(body);
+            Document tmpDoc = new Document();
+            try
+            {
+                tmpDoc.load(tmpIn);
+                tmpDoc.save(out);
+            }
+            catch (Exception e)
+            {
+            }
+        }
     }
 }
