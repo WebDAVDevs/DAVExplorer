@@ -1426,7 +1426,8 @@ public class WebDAVRequestGenerator implements Runnable
         Extra = info;
     }
 
-    public void handlePropPatch(PropDialogEvent e)
+    // TODO: fix
+/*    public void handlePropPatch(PropDialogEvent e)
     {
         String hostname = e.getHost();
         String host = null;
@@ -1471,7 +1472,7 @@ public class WebDAVRequestGenerator implements Runnable
         }
         //GeneratePropPatch(host,port,res,oldProp,newProp);
     }
-
+*/
 
     private String getContentType( String file )
     {
