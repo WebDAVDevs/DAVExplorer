@@ -25,25 +25,23 @@ import com.ms.xml.om.Element;
  * Description: 
  * Copyright:   Copyright (c) 2005 Regents of the University of California. All rights reserved.
  * @author      Joachim Feise (dav-exp@ics.uci.edu)
- * @date        19 January 2005
+ * @date        
  */
-public class ACLPrivilegesDialog extends PropDialog
+public class ACLPrincipalsDialog extends PropDialog
 {
 
     /**
      * @param properties
      * @param resource
      * @param hostname
-     * @param supported
+     * @param locktoken
+     * @param changeable
      */
-    public ACLPrivilegesDialog( Element properties, String resource,
-            String hostname, boolean supported )
+    public ACLPrincipalsDialog( Element properties, String resource,
+            String hostname )
     {
         init( new ACLPropModel(properties), properties, resource, hostname, null, false );
-        if( supported )
-            setTitle( "View supported Privileges" );
-        else
-            setTitle( "View User Privileges" );
+        setTitle( "View Principal Collection Set" );
         buttonPanel.remove(addButton);
         buttonPanel.remove(deleteButton);
         buttonPanel.remove(saveButton);

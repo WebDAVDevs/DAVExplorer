@@ -394,7 +394,7 @@ public class WebDAVMenu extends JMenuBar implements ActionListener
         mnu_ACLMenu.add( new WebDAVMenuItem( "Get User's Privileges", GET_USER_PRIVILEGES, this ) );
         mnu_ACLMenu.addSeparator();
         mnu_ACLMenu.add( new WebDAVMenuItem( "Get ACLs", GET_ACL, this ) );
-        mnu_ACLMenu.add( new WebDAVMenuItem( "Get Supported ACLs", GET_SUPPORTED_ACL, this ) );
+        mnu_ACLMenu.add( new WebDAVMenuItem( "Get ACL Restrictions", GET_SUPPORTED_ACL, this ) );
         mnu_ACLMenu.add( new WebDAVMenuItem( "Set ACLs", SET_ACL, this ) );
         mnu_ACLMenu.addSeparator();
         mnu_ACLMenu.add( new WebDAVMenuItem( "Get Inherited ACLs", GET_INHERITED_ACL, this ) );

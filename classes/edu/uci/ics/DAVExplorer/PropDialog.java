@@ -45,6 +45,7 @@ import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JOptionPane;
+import javax.swing.JTree;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import javax.swing.event.ListSelectionEvent;
@@ -70,6 +71,34 @@ public class PropDialog extends JDialog
     public PropDialog( Element properties, String resource, String hostname, String locktoken, boolean changeable )
     {
         super( GlobalData.getGlobalData().getMainFrame() );
+        model = new PropModel( properties );
+        init( model, properties, resource, hostname, locktoken, changeable );
+        pack();
+        setSize( getPreferredSize() );
+        center();
+        show();
+    }
+
+
+    public PropDialog( PropModel model, Element properties, String resource, String hostname, String locktoken, boolean changeable )
+    {
+        super( GlobalData.getGlobalData().getMainFrame() );
+        init( model, properties, resource, hostname, locktoken, changeable );
+        pack();
+        setSize( getPreferredSize() );
+        center();
+        show();
+    }
+
+
+    protected PropDialog()
+    {
+        super( GlobalData.getGlobalData().getMainFrame() );
+    }
+
+    
+    protected void init( PropModel model, Element properties, String resource, String hostname, String locktoken, boolean changeable )
+    {
         this.changeable = changeable;
         if( changeable )
             setTitle("View/Modify Properties");
@@ -90,7 +119,7 @@ public class PropDialog extends JDialog
         saveButton.addActionListener(this);
         closeButton  = new JButton("Close");
         closeButton.addActionListener(this);
-        JPanel buttonPanel = new JPanel();
+        buttonPanel = new JPanel();
         buttonPanel.add(addButton);
         buttonPanel.add(deleteButton);
         buttonPanel.add(saveButton);
@@ -107,10 +136,14 @@ public class PropDialog extends JDialog
         getContentPane().add( "South", buttonPanel );
         setBackground(Color.lightGray);
 
-        model = new PropModel( properties );
         model.addChangeListener(this);
         treeTable = new JTreeTable( model );
         treeTable.getSelectionModel().addListSelectionListener(this);
+        // the minimum number of rows to see, expand as necessary
+        JTree tree = treeTable.getTree();
+        tree.expandRow( 0 );
+        if( tree.getRowCount() < 5 )
+            tree.expandRow( 1 );
 
         JScrollPane scrollpane = new JScrollPane();
         scrollpane.setViewportView( treeTable );
@@ -126,10 +159,6 @@ public class PropDialog extends JDialog
                 }
             });
 
-        pack();
-        setSize( getPreferredSize() );
-        center();
-        show();
     }
 
 
@@ -317,15 +346,16 @@ public class PropDialog extends JDialog
     }
 
 
-    private JTreeTable treeTable;
-    private PropModel model;
-    private JButton addButton;
-    private JButton deleteButton;
-    private JButton saveButton;
-    private JButton closeButton;
-    private boolean changeable;
-    private boolean changed = false;
-    private String resource;
-    private String locktoken;
-    private boolean waiting;
+    protected JTreeTable treeTable;
+    protected PropModel model;
+    protected JPanel buttonPanel;
+    protected JButton addButton;
+    protected JButton deleteButton;
+    protected JButton saveButton;
+    protected JButton closeButton;
+    protected boolean changeable;
+    protected boolean changed = false;
+    protected String resource;
+    protected String locktoken;
+    protected boolean waiting;
 }

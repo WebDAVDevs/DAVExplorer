@@ -38,7 +38,6 @@ import com.ms.xml.util.Name;
 
 public class ACLResponseInterpreter extends DeltaVResponseInterpreter
 {
-
     /**
      * Constructor 
      */
@@ -212,12 +211,10 @@ public class ACLResponseInterpreter extends DeltaVResponseInterpreter
                 handlePrivileges( xml_doc, false );
                 break;
             case WebDAVResponseEvent.ACL:
-                break;
             case WebDAVResponseEvent.SUPPORTED_ACL:
-                break;
             case WebDAVResponseEvent.INHERITED_ACL:
-                break;
             case WebDAVResponseEvent.ACL_PRINCIPALS:
+                handleListACLs( xml_doc, extendedCode );
                 break;
             default:
                 super.parsePropFind();
@@ -266,15 +263,10 @@ public class ACLResponseInterpreter extends DeltaVResponseInterpreter
                 break;
 
             case WebDAVResponseEvent.ACL_SUPPORTED_PRIVILEGES:
-                break;
             case WebDAVResponseEvent.ACL_USER_PRIVILEGES:
-                break;
             case WebDAVResponseEvent.ACL:
-                break;
             case WebDAVResponseEvent.SUPPORTED_ACL:
-                break;
             case WebDAVResponseEvent.INHERITED_ACL:
-                break;
             case WebDAVResponseEvent.ACL_PRINCIPALS:
                 break;
             default:
@@ -349,6 +341,62 @@ public class ACLResponseInterpreter extends DeltaVResponseInterpreter
                             if (Port != 0)
                                 host = HostName + ":" + Port;
                             ACLPrivilegesDialog pd = new ACLPrivilegesDialog( rootElem, Resource, host, supported );
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+
+    protected void handleListACLs( Document xml_doc, int code )
+    {
+        String[] token = new String[1];
+        token[0] = new String( WebDAVXML.ELEM_RESPONSE );
+        Element rootElem = skipElements( xml_doc, token );
+        if( rootElem != null )
+        {
+            TreeEnumeration enumTree =  new TreeEnumeration( rootElem );
+            while( enumTree.hasMoreElements() )
+            {
+                Element current = (Element)enumTree.nextElement();
+                Name currentTag = current.getTagName();
+                if( currentTag != null )
+                {
+                    if( currentTag.getName().equals( WebDAVXML.ELEM_PROPSTAT ) )
+                    {
+                        token = new String[2];
+                        token[0] = new String( WebDAVXML.ELEM_PROPSTAT );
+                        token[1] = new String( WebDAVXML.ELEM_PROP );
+                        rootElem = skipElements( current, token );
+                        if( rootElem != null )
+                        {
+                            String host = HostName;
+                            if (Port != 0)
+                                host = HostName + ":" + Port;
+                            switch( code )
+                            {
+                                case WebDAVResponseEvent.ACL:
+                                {
+                                    ACLListDialog pd = new ACLListDialog( rootElem, Resource, host );
+                                    break;
+                                }
+                                case WebDAVResponseEvent.SUPPORTED_ACL:
+                                {
+                                    ACLRestrictionDialog pd = new ACLRestrictionDialog( rootElem, Resource, host );
+                                    break;
+                                }
+                                case WebDAVResponseEvent.INHERITED_ACL:
+                                {
+                                    ACLInheritedDialog pd = new ACLInheritedDialog( rootElem, Resource, host );
+                                    break;
+                                }
+                                case WebDAVResponseEvent.ACL_PRINCIPALS:
+                                {
+                                    ACLPrincipalsDialog pd = new ACLPrincipalsDialog( rootElem, Resource, host );
+                                    break;
+                                }
+                            }
                         }
                     }
                 }

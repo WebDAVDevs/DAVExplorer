@@ -39,6 +39,7 @@ import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JOptionPane;
+import javax.swing.JTree;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import javax.swing.event.ListSelectionEvent;
@@ -49,8 +50,7 @@ import com.ms.xml.om.Element;
 /**
  * 
  */
-public class ACLOwnerDialog extends JDialog
-    implements ActionListener, ChangeListener, ListSelectionListener, WebDAVCompletionListener
+public class ACLOwnerDialog extends PropDialog
 {
     /**
      * Constructor
@@ -62,125 +62,26 @@ public class ACLOwnerDialog extends JDialog
      */
     public ACLOwnerDialog( Element properties, String resource, String hostname, boolean owner, boolean changeable )
     {
-        super( GlobalData.getGlobalData().getMainFrame() );
-        this.changeable = changeable;
-        this.owner = owner;
+        init( new ACLPropModel(properties), properties, resource, hostname, null, false );
         String title;
         if( changeable )
             title = "View/Modify ACL ";
         else
+        {
             title = "View ACL ";
+            buttonPanel.remove(saveButton);
+        }
         if( owner )
             title += "Owner";
         else
             title += "Group";
         setTitle( title );
-        this.resource = hostname + resource;
-        JLabel label = new JLabel( this.resource, JLabel.CENTER );
-        label.setForeground(Color.black);
-        getContentPane().add( "North", label );
-
-        saveButton = new JButton("Save");
-        saveButton.addActionListener(this);
-        closeButton  = new JButton("Close");
-        closeButton.addActionListener(this);
-        JPanel buttonPanel = new JPanel();
-        buttonPanel.add(saveButton);
-        buttonPanel.add(closeButton);
-        getRootPane().setDefaultButton( closeButton );
-        closeButton.grabFocus();
-        saveButton.setEnabled( false );
-
-        getContentPane().add( "South", buttonPanel );
-        setBackground(Color.lightGray);
-
-        model = new ACLOwnerModel( properties );
-        model.addChangeListener(this);
-        treeTable = new JTreeTable( model );
-        treeTable.getSelectionModel().addListSelectionListener(this);
-
-        JScrollPane scrollpane = new JScrollPane();
-        scrollpane.setViewportView( treeTable );
-        getContentPane().add( "Center", scrollpane );
-
-        ((Main)GlobalData.getGlobalData().getMainFrame()).addWebDAVCompletionListener(this);
-        addWindowListener(
-            new WindowAdapter()
-            {
-                public void windowClosing(WindowEvent we_Event)
-                {
-                    cancel();
-                }
-            });
-
+        buttonPanel.remove(addButton);
+        buttonPanel.remove(deleteButton);
         pack();
         setSize( getPreferredSize() );
         center();
         show();
-    }
-
-
-    /**
-     * 
-     * @param e
-     */
-    public void stateChanged( ChangeEvent e )
-    {
-        setChanged( true );
-    }
-
-
-    /**
-     * 
-     * @param enable
-     */
-    public void setChanged( boolean enable )
-    {
-        if( changeable )
-        {
-            changed = enable;
-            saveButton.setEnabled( changed );
-            if( !changed )
-                model.clear();
-        }
-    }
-
-
-    /**
-     * 
-     * @param e
-     */
-    public void actionPerformed(ActionEvent e)
-    {
-        if( e.getActionCommand().equals("Save") )
-        {
-            save();
-        }
-        else if( e.getActionCommand().equals("Close") )
-        {
-            cancel();
-        }
-    }
-
-
-    /**
-     * 
-     * @param e
-     */
-    public void valueChanged(ListSelectionEvent e)
-    {
-    }
-
-
-    /**
-     * 
-     * @param e
-     */
-    public void completion( WebDAVCompletionEvent e )
-    {
-        if( waiting && e.isSuccessful() )
-            setChanged( false );  // disable save button
-        waiting = false;
     }
 
 
@@ -191,7 +92,6 @@ public class ACLOwnerDialog extends JDialog
     {
         Element modified = model.getModified(false);
         ACLRequestGenerator generator = (ACLRequestGenerator)WebDAVResponseInterpreter.getGenerator();
-        //generator.setResource( resource, null );
         if( owner )
             generator.SetOwner( modified, resource );
         else
@@ -201,50 +101,5 @@ public class ACLOwnerDialog extends JDialog
     }
 
 
-    /**
-     *
-     */
-    public void cancel()
-    {
-        setVisible(false);
-        dispose();
-    }
-
-
-    /**
-     *
-     */
-    protected void center()
-    {
-        Rectangle recthDimensions = getParent().getBounds();
-        Rectangle bounds = getBounds();
-        setBounds(recthDimensions.x + (recthDimensions.width-bounds.width)/2,
-             recthDimensions.y + (recthDimensions.height - bounds.height)/2, bounds.width, bounds.height );
-    }
-
-
-    /**
-     * 
-     * @param title
-     * @param text
-     * @return
-     */
-    protected boolean ConfirmationDialog( String title, String text )
-    {
-        int opt = JOptionPane.showConfirmDialog( GlobalData.getGlobalData().getMainFrame(), text, title, JOptionPane.YES_NO_OPTION );
-        if (opt == JOptionPane.YES_OPTION)
-            return true;
-        return false;
-    }
-
-
-    private JTreeTable treeTable;
-    private PropModel model;
-    private JButton saveButton;
-    private JButton closeButton;
-    private boolean changeable;
-    private boolean changed = false;
-    private String resource;
-    private boolean waiting;
     private boolean owner;
 }
