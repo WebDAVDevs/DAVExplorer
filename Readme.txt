@@ -1,3 +1,10 @@
+Changes for version 0.81-dev:
+- Fixed handling of default namespace
+- Fixed menu selection of view/modify properties dialog
+- Fixed problems with property addition to root
+- Apache 1.3.x workaround: PROPPATCH returns a 500 error if Host: header contains
+  the port number. The workaround is activated with the option -DApache=yes
+
 Changes for version 0.80:
 - Makefile for HTTPClient now works with JSSE installed as "bundled" extension.
 - Fixed handling of EOF for whitespace after the final tag (interoperability
