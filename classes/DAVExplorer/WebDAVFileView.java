@@ -353,18 +353,19 @@ public class WebDAVFileView implements ViewSelectionListener
         {
             WebDAVTreeNode child = (WebDAVTreeNode) n.getChildAt(i);
             DataNode d_node = child.getDataNode();
-            if (d_node == null)
-                    return;
-            Object[] rowObj = new Object[7];
-            rowObj[0] = "true";
-            rowObj[1] = new Boolean(d_node.isLocked());
-            rowObj[2] = d_node.getName();
-            rowObj[3] = d_node.getDisplay();
-            rowObj[4] = d_node.getType();
-            rowObj[5] = (new Long(d_node.getSize())).toString();
-            rowObj[6] = d_node.getDate();
+            if (d_node != null)
+            {
+                Object[] rowObj = new Object[7];
+                rowObj[0] = "true";
+                rowObj[1] = new Boolean(d_node.isLocked());
+                rowObj[2] = d_node.getName();
+                rowObj[3] = d_node.getDisplay();
+                rowObj[4] = d_node.getType();
+                rowObj[5] = (new Long(d_node.getSize())).toString();
+                rowObj[6] = d_node.getDate();
 
-            addRow(rowObj);
+                addRow(rowObj);
+            }
         }
     }
 
@@ -395,10 +396,14 @@ public class WebDAVFileView implements ViewSelectionListener
     TreePath tp = new TreePath(parentNode.getPath());
 
     if (tp.getPathCount() > 1) {
-        for ( int i = 1; i < tp.getPathCount(); i++ ) {
-            s = s + tp.getPathComponent(i) + "/";
+        for ( int i = 1; i < tp.getPathCount(); i++ )
+        {
+            s = s + tp.getPathComponent(i);
+            if( s.startsWith( WebDAVPrefix ) )
+                s += "/";
+            else if( !s.endsWith( String.valueOf(File.separatorChar) ) )
+                s += File.separatorChar;
         }
-
     }
     return s;
 
@@ -783,7 +788,7 @@ public class WebDAVFileView implements ViewSelectionListener
             }
             catch (Exception exc)
             {
-        System.out.println(exc);
+                System.out.println(exc);
                 return;
             }
             if ( (locked != null) && (locked.booleanValue()) )

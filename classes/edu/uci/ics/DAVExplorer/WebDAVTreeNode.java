@@ -60,21 +60,32 @@ public class WebDAVTreeNode extends DefaultMutableTreeNode
     protected DataNode dataNode;
     protected static WebDAVRequestGenerator generator = new WebDAVRequestGenerator();
     protected static WebDAVResponseInterpreter interpreter = new WebDAVResponseInterpreter();
+    private String userAgent;
 
     protected boolean childrenLoaded = false;
 
-    public WebDAVTreeNode (Object o)
+    public WebDAVTreeNode (Object o, String ua )
     {
         super(o);
+        userAgent = ua;
+        generator.setUserAgent( ua );
         hasLoaded = true;
     }
 
-    public WebDAVTreeNode (Object o, boolean isRoot)
+    public WebDAVTreeNode (Object o, boolean isRoot, String ua )
     {
         super(o);
+        userAgent = ua;
+        generator.setUserAgent( ua );
         hasLoaded = true;
         childrenLoaded = true;
         dataNode = new DataNode(true,false,null, o.toString(),"DAV Root Node","",0,"",null);
+    }
+
+    public void setUserAgent( String ua )
+    {
+        userAgent = ua;
+        generator.setUserAgent( userAgent );
     }
 
     public DataNode getDataNode()
@@ -218,9 +229,10 @@ public class WebDAVTreeNode extends DefaultMutableTreeNode
                             // update node values as necessary
                             if( curnode.getDisplay()!="" )
                                 node.setDisplay( curnode.getDisplay() );    // overwrite any old value
-                            if( curnode.isLocked() && !node.isLocked() ){
+                            if( curnode.isLocked() && !node.isLocked() )
+                            {
                                 node.lock( curnode.getLockToken() );        // never change back to unlocked here
-                }
+                            }
                             if( curnode.isCollection() )
                                 node.makeCollection();                      // never change back to normal node
                             if( curnode.getType()!="" )
@@ -257,7 +269,7 @@ public class WebDAVTreeNode extends DefaultMutableTreeNode
             {
                 if( node.isCollection() )
                 {
-                    WebDAVTreeNode childNode = new WebDAVTreeNode(resName);
+                    WebDAVTreeNode childNode = new WebDAVTreeNode( resName, userAgent );
                     childNode.setDataNode(node);
                     insert(childNode,0);
                 }
@@ -344,8 +356,11 @@ public class WebDAVTreeNode extends DefaultMutableTreeNode
     {
         String fileName = name;
         for (int i=2;i<full_path.length;i++)
-            fileName += File.separator + full_path[i];
-
+        {
+            if( !fileName.endsWith( String.valueOf(File.separatorChar) ) )
+                fileName += File.separator;
+            fileName += full_path[i];
+        }
         name = full_path[full_path.length - 1].toString();
         File f = new File(fileName);
         if ((f != null) && (f.exists()) && (f.isDirectory()) )
@@ -358,7 +373,11 @@ public class WebDAVTreeNode extends DefaultMutableTreeNode
                 int len = fileList.length;
                 for (int i=0;i<len;i++)
                 {
-                    File aFile = new File(fileName + File.separatorChar + fileList[i]);
+                    String newFile = fileName;
+                    if( !fileName.endsWith( String.valueOf(File.separatorChar) ) )
+                        newFile += File.separatorChar;
+                    newFile += fileList[i];
+                    File aFile = new File( newFile );
                     boolean isDir = aFile.isDirectory();
                     Date newDate = new Date(aFile.lastModified());
                     DataNode newNode = new DataNode(isDir,
@@ -372,7 +391,7 @@ public class WebDAVTreeNode extends DefaultMutableTreeNode
 
                     if (isDir)
                     {
-                        WebDAVTreeNode childNode = new WebDAVTreeNode(newNode.getName());
+                        WebDAVTreeNode childNode = new WebDAVTreeNode( newNode.getName(), userAgent );
                         childNode.setDataNode(newNode);
                         insert(childNode,0);
                     }

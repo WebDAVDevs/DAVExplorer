@@ -87,6 +87,7 @@ public class Main extends JFrame
         //authHost = null;
 
         treeView = new WebDAVTreeView(WebDAVFrame);
+        treeView.setUserAgent( UserAgent );
         fileView = new WebDAVFileView(WebDAVFrame);
 
         CommandMenu = new WebDAVMenu();
@@ -175,10 +176,10 @@ public class Main extends JFrame
         String host = null;
         String authInfo = null;
 
-        if (pos < 0)
+//        if (pos < 0)
             host = in;
-        else
-            host = in.substring(0,pos);
+//        else
+//            host = in.substring(0,pos);
         authHost = host;
         if (!authTable.containsKey(host))
         {
@@ -476,16 +477,29 @@ public class Main extends JFrame
             }
             else if (command.equals("Create Collection"))
             {
+                WebDAVTreeNode n = fileView.getParentNode();
                 String prompt = new String( "Enter collection name:" );
                 String title = new String( "Create Collection" );
                 String dirname = selectName( title, prompt );
                 if( dirname != null )
                 {
-                    WebDAVTreeNode n = fileView.getParentNode();
-                    requestGenerator.setNode(n);
+                    if( treeView.isRemote( treeView.getCurrentPath() ) )
+                    {
+                        requestGenerator.setNode(n);
 
-                    requestGenerator.GenerateMkCol( treeView.getCurrentPath(), dirname );
-                    requestGenerator.execute();
+                        requestGenerator.GenerateMkCol( treeView.getCurrentPath(), dirname );
+                        requestGenerator.execute();
+                    }
+                    else
+                    {
+                        if( !treeView.getCurrentPath().endsWith( String.valueOf(File.separatorChar) ) )
+                            dirname = treeView.getCurrentPath() + File.separatorChar + dirname;
+                        else
+                            dirname = treeView.getCurrentPath() + dirname;
+                        File f = new File( dirname );
+                        boolean result = f.mkdir();
+                        treeView.refreshLocal( n );
+                    }
                 }
             }
             else if (command.equals("Clear Auth Buffer"))
@@ -616,9 +630,20 @@ public class Main extends JFrame
             int opt = pane.showConfirmDialog( WebDAVFrame, str, title, JOptionPane.YES_NO_OPTION );
             if (opt == JOptionPane.YES_OPTION)
             {
-                WebDAVTreeNode n = fileView.getParentNode();
-                requestGenerator.setResource(s, n);
-                requestGenerator.DiscoverLock("delete");
+                if( treeView.isRemote( s ) )
+                {
+                    WebDAVTreeNode n = fileView.getParentNode();
+                    requestGenerator.setResource(s, n);
+                    requestGenerator.DiscoverLock("delete");
+                }
+                else
+                {
+                    WebDAVTreeNode n = fileView.getParentNode();
+                    File f = new File( s );
+                    if( !deleteLocal( f ) )
+                        errorMsg( "Delete Error on local filesystem." );
+                    treeView.refreshLocal( n );
+                }
             }
         }
     }
@@ -657,10 +682,33 @@ public class Main extends JFrame
         return ret;
     }
 
-    public void errorMsg(String str)
+    private void errorMsg(String str)
     {
         JOptionPane pane = new JOptionPane();
         Object [] options = { "OK" };
         pane.showOptionDialog( WebDAVFrame, str, "Error Message", JOptionPane.DEFAULT_OPTION, JOptionPane.ERROR_MESSAGE, null,options, options[0]);
+    }
+
+    private boolean deleteLocal( File f )
+    {
+        try
+        {
+            if( f.isDirectory() )
+            {
+                String[] flist = f.list();
+                for( int i=0; i<flist.length; i++ )
+                {
+                    if( !deleteLocal( new File(flist[i]) ) )
+                        return false;
+                }
+                return f.delete();
+            }
+            else
+                return f.delete();
+        }
+        catch( Exception e )
+        {
+        }
+        return false;
     }
 }

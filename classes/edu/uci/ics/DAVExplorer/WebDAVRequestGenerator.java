@@ -48,6 +48,7 @@ import HTTPClient.*;
 import java.util.*;
 import java.io.*;
 import javax.swing.*;
+import javax.swing.tree.*;
 import com.ms.xml.om.*;
 import com.ms.xml.parser.*;
 import com.ms.xml.util.*;
@@ -254,7 +255,15 @@ public class WebDAVRequestGenerator implements Runnable
             newHeaders[Headers.length] = new NVPair( "User-Agent", userAgent );
             Headers = newHeaders;
         }
-        WebDAVRequestEvent e = new WebDAVRequestEvent(this, Method,HostName,Port,StrippedResource, Headers, Body, Extra, User, Password, Node);
+
+        String url = null;
+        if( Node != null )
+        {
+            TreeNode path[] = Node.getPath();
+            url = path[1];
+        }
+
+        WebDAVRequestEvent e = new WebDAVRequestEvent(this, Method,HostName,Port,StrippedResource, Headers, Body, Extra, User, Password, Node );
         Node = null;
         for (int i=0;i<ls.size();i++)
         {

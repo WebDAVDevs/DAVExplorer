@@ -69,7 +69,7 @@ public class WebDAVTreeView implements ViewSelectionListener, CopyResponseListen
     final static String WebDAVRoot = "DAV Explorer";
     final static String WebDAVPrefix = "http://";
 
-    DefaultMutableTreeNode root = new WebDAVTreeNode(WebDAVRoot,true);
+    DefaultMutableTreeNode root = new WebDAVTreeNode( WebDAVRoot, true, "" );
     DefaultTreeModel treeModel = new DefaultTreeModel(root);
     DefaultMutableTreeNode currNode = root;
     Vector rootElements = new Vector();
@@ -77,19 +77,18 @@ public class WebDAVTreeView implements ViewSelectionListener, CopyResponseListen
     TreeSelectionModel selectionModel = new DefaultTreeSelectionModel();
     Vector selListeners = new Vector();
     public static String homeDirName;
-    public String startDirName;
+    public String startDirName = null;
+    private String userAgent;
 
     JFrame mainFrame;
 
     JScrollPane sp;
 
     // Yuzo: Changing from this to an new Selection Listener which does no
-    SelectionChangeListener treeSelectionListener =
-                new SelectionChangeListener();
+    SelectionChangeListener treeSelectionListener = new SelectionChangeListener();
     // Adding an Expansion Event Listener so as to expand a node
     // without having to select it.
-    treeExpansionListener treeExpListener =
-                    new treeExpansionListener();
+    treeExpansionListener treeExpListener = new treeExpansionListener();
 
     private boolean simpleNodeExpand = false;
 
@@ -112,7 +111,9 @@ public class WebDAVTreeView implements ViewSelectionListener, CopyResponseListen
         //sp.getViewport().add(tree);
         sp.setPreferredSize(new Dimension(240,400));
 
-        startDirName = System.getProperty("user.home");
+        String os = (System.getProperty( "os.name" )).toLowerCase();
+        if( os.indexOf( "windows" ) == -1 )
+            startDirName = System.getProperty("user.home");
         if (startDirName == null){
             startDirName = new Character(File.separatorChar).toString();
         }
@@ -140,6 +141,12 @@ public class WebDAVTreeView implements ViewSelectionListener, CopyResponseListen
             {
             }
         });
+    }
+
+    public void setUserAgent( String ua )
+    {
+        userAgent = ua;
+        ((WebDAVTreeNode)root).setUserAgent( userAgent );
     }
 
     class treeExpansionListener implements TreeExpansionListener
@@ -304,7 +311,8 @@ public class WebDAVTreeView implements ViewSelectionListener, CopyResponseListen
 
             // Get the last node, then check if all the Children are
             // loaded.
-            WebDAVTreeNode tn = (WebDAVTreeNode)tp.getLastPathComponent();
+            WebDAVTreeNode tn = (WebDAVTreeNode)currPath.getLastPathComponent();
+
             if (!tn.hasLoadedChildren())
             {
                 // Load all the Children of this Node.
@@ -314,11 +322,11 @@ public class WebDAVTreeView implements ViewSelectionListener, CopyResponseListen
             }
 
             ViewSelectionEvent event = new ViewSelectionEvent(this,
-                            (WebDAVTreeNode)tp.getLastPathComponent(), tp);
+                            (WebDAVTreeNode)currPath.getLastPathComponent(), currPath);
             for (int i=0; i<selListeners.size();i++)
             {
                 ViewSelectionListener l = (ViewSelectionListener)selListeners.elementAt(i);
-                    l.selectionChanged(event);
+                l.selectionChanged(event);
             }
         }
     }
@@ -409,7 +417,7 @@ public class WebDAVTreeView implements ViewSelectionListener, CopyResponseListen
         }
 
         rootElements.addElement(newName);
-        WebDAVTreeNode newNode = new WebDAVTreeNode(newName);
+        WebDAVTreeNode newNode = new WebDAVTreeNode( newName, userAgent );
         treeModel.insertNodeInto(newNode,root,0);
 
         if (local)
@@ -479,7 +487,11 @@ public class WebDAVTreeView implements ViewSelectionListener, CopyResponseListen
 
     public boolean isCollection( String curFile )
     {
-        int pos = curFile.lastIndexOf( "/" );
+        int pos;
+        if( isRemote( curFile ) )
+            pos = curFile.lastIndexOf( "/" );
+        else
+            pos = curFile.lastIndexOf( String.valueOf(File.separatorChar) );
         if( pos >= 0 )
             curFile = curFile.substring( pos+1 );
         currNode = (WebDAVTreeNode) currPath.getLastPathComponent();
@@ -504,6 +516,47 @@ public class WebDAVTreeView implements ViewSelectionListener, CopyResponseListen
         }
         return false;
     }
+
+    public boolean isRemote( String curFile )
+    {
+        if( curFile.startsWith(WebDAVPrefix) )
+            return true;
+        else
+            return false;
+    }
+
+    public void refreshLocal( WebDAVTreeNode n )
+    {
+        TreeNode path[] = n.getPath();
+
+        String s = new String();
+        for (int i = 1; i < path.length; i++)
+        {
+            s = s + path[i];
+            if( !s.endsWith( String.valueOf(File.separatorChar) ) )
+                s += File.separatorChar;
+        }
+        // Now then reload the Tree from this node
+        // This means that we have to unload this node
+        // then reload it
+        n.removeAllChildren();
+        n.setHasLoadedChildren( false );
+
+        TreePath tp = new TreePath(path);
+
+        // Load all the Children of this Node.
+        n.loadChildren();
+        treeModel.nodeStructureChanged(n);
+        n.setHasLoadedChildren(true);
+
+        ViewSelectionEvent event = new ViewSelectionEvent(this, n, tp);
+        for (int i=0; i<selListeners.size();i++)
+        {
+            ViewSelectionListener l = (ViewSelectionListener)selListeners.elementAt(i);
+            l.selectionChanged(event);
+        }
+    }
+
 
     private String getLockToken( DataNode node, String curFile )
     {

@@ -61,7 +61,7 @@ public class WebDAVRequestEvent extends EventObject
 
 
     public WebDAVRequestEvent(Object module, String MethodName, String HostName, int Port, String ResourceName,
-                              NVPair[] Headers, byte[] Body, String Extra, String User, String Pass, WebDAVTreeNode n)
+                              NVPair[] Headers, byte[] Body, String Extra, String User, String Pass, WebDAVTreeNode n )
     {
         super(module);
         this.MethodName = MethodName;
@@ -121,7 +121,8 @@ public class WebDAVRequestEvent extends EventObject
         return Extra;
     }
 
-    public WebDAVTreeNode getNode(){
-	return node;
+    public WebDAVTreeNode getNode()
+    {
+        return node;
     }
 }
