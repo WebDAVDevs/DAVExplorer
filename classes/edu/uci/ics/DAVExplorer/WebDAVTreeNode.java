@@ -158,6 +158,7 @@ public class WebDAVTreeNode extends DefaultMutableTreeNode
         }
         catch (Exception inEx)
         {
+            System.out.println("EXCEPTION:loadRemote, byte_array empty");
 	    System.out.println(inEx);
             //dataNode = null;
             //hasLoaded = false;
@@ -467,9 +468,11 @@ public class WebDAVTreeNode extends DefaultMutableTreeNode
                 }
                 pathToResource = pathToResource + "/";
 
+		generator.setResource(pathToResource, null);
+
                 generator.GeneratePropFindForNode(pathToResource,"allprop","one",null,null, true, this);
-                //generator.execute();
-                generator.run();
+                generator.execute();
+                //generator.run();
                 return;
             }
             else
@@ -494,8 +497,8 @@ public class WebDAVTreeNode extends DefaultMutableTreeNode
                 pathToResource = pathToResource + "/";
 
                 generator.GeneratePropFindForNode(pathToResource,"allprop","one",null,null, true, this);
-                //generator.execute();
-                generator.run();
+                generator.execute();
+                //generator.run();
             }
         }
         else

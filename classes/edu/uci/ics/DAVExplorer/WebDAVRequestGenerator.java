@@ -604,8 +604,10 @@ public class WebDAVRequestGenerator implements Runnable
 
     public synchronized void GenerateMkCol( String parentDir, String dirname )
     {
+
         Headers = null;
         Body = null;
+
 
         ResourceName = parentDir;
         if (!parseResourceName())
@@ -873,6 +875,7 @@ public class WebDAVRequestGenerator implements Runnable
 
         String srcFile = ResourceName;
         ResourceName = dir;
+
         /*
         if (!parseResourceName())
             dir = "/";

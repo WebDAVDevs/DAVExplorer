@@ -217,7 +217,9 @@ public class WebDAVFileView implements ViewSelectionListener
                     String val = null;
                     try
                     {
-                        val = (String) table.getValueAt(row-1,2);
+                        //val = (String) table.getValueAt(row,2);
+                        val = (String) table.getValueAt(selectedRow,2);
+            		//int origRow = sorter.getTrueRow(selectedRow);
                     }
                     catch (Exception e)
                     {
@@ -225,6 +227,7 @@ public class WebDAVFileView implements ViewSelectionListener
 
                     if ( val != null)
                     {
+		    /*
                     Object obj[] = parentNode.getUserObjectPath();
                         if (parentPath == null || parentPath.equals("") ){
                         for (int i = 0; i < obj.length; i++){
@@ -233,6 +236,7 @@ public class WebDAVFileView implements ViewSelectionListener
                             }
                         }
                         }
+		    */
 			
 
                         if (!parentPath.startsWith(WebDAVPrefix))
@@ -300,6 +304,12 @@ public class WebDAVFileView implements ViewSelectionListener
         table.updateUI();
     }
 
+
+    // Returns the path to the parentNode
+    public String getParentPath(){
+	return parentPath;
+    }
+
     ////////////
     // This implements the View Selection Listener Interface
     // The purpose of this listners is to respond to the
@@ -310,14 +320,21 @@ public class WebDAVFileView implements ViewSelectionListener
     {
         table.clearSelection();
         clearTable();
+	selectedRow = -1;
 
         parentNode = (WebDAVTreeNode)e.getNode();
 
 	// set Parent Path
-	//String userOject[] = (String[])parentNode.getUserObjectPath();
-	//for ( int j= 0; j < userObject.length; j++){
-	//    parentPath = userObject[j] + "/";
-	//}
+
+	TreePath tp = e.getPath();
+
+	Object pathString[] = tp.getPath();
+	parentPath = "";
+	if( pathString.length > 0 ){
+	for (int i = 1; i < pathString.length; i++){
+	    parentPath += pathString[i].toString() + "/";
+	}
+	}
 
         if (table.getRowCount() != 0)
         {
@@ -330,11 +347,13 @@ public class WebDAVFileView implements ViewSelectionListener
 
 	WebDAVTreeNode pn = (WebDAVTreeNode)tn.getParent();
 
+	/*
         int count = tn.getChildCount();
         for (int i=0; i < count; i++)
         {
             WebDAVTreeNode child = (WebDAVTreeNode) tn.getChildAt(i);
 	}
+	*/
 
 
         Cursor c = mainFrame.getCursor(); // save original cursor
@@ -354,6 +373,7 @@ public class WebDAVFileView implements ViewSelectionListener
 
         if (sub == null)
         {
+	//System.out.println(" No  resource");
         }
         else
         {
@@ -461,9 +481,9 @@ public class WebDAVFileView implements ViewSelectionListener
             if (isCollection) {
 		//Get the TreeNode and return it
 		//Integer val = (Integer)table.getValueAt(selectedRow,7);
-		Vector row = (Vector)data.elementAt(selectedRow);
-		Integer val = (Integer)row.elementAt(7);
-		int i = val.intValue();
+		//Vector row = (Vector)data.elementAt(selectedRow);
+		//Integer val = (Integer)row.elementAt(7);
+		//int i = val.intValue();
 
 		boolean found = false;
 		WebDAVTreeNode node = null;
@@ -487,11 +507,18 @@ public class WebDAVFileView implements ViewSelectionListener
 		return null;
 	    }
         }catch (Exception exc) {
+		System.out.println("Exception getSelectedCollection");
                     exc.printStackTrace();
                     return null;
         }
     }
 
+    public boolean hasSelected(){
+	if (selectedRow >= 0)
+		return true;
+	else
+		return false;
+    }
 
 
     public String getSelected(){
@@ -736,7 +763,7 @@ public class WebDAVFileView implements ViewSelectionListener
     {
         updateTable(new Vector());
 
-    selectedRow = -1;
+        selectedRow = -1;
     }
 
     public void treeSelectionChanged(ViewSelectionEvent e)
@@ -831,6 +858,8 @@ public class WebDAVFileView implements ViewSelectionListener
     {
         Point cursorPoint = new Point(e.getX(),e.getY());
         releaseRow = table.rowAtPoint(cursorPoint);
+	selectedRow = releaseRow;
+
         if (pressRow != -1)
         {
             if (releaseRow != -1)

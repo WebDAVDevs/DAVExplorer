@@ -578,8 +578,22 @@ public class WebDAVResponseInterpreter
         //fireInsertionEvent(null);
 
         clearStream();
-        CopyResponseEvent e = new CopyResponseEvent( this, Node);
-        copyListener.CopyEventResponse(e);
+
+	if (Extra.equals("mkcol"))
+	{
+            CopyResponseEvent e = new CopyResponseEvent( this, Node);
+            copyListener.CopyEventResponse(e);
+	}
+	else if (Extra.equals("mkcolbelow"))
+	{
+	    // Piggy Back on Put Event, 
+	    // This reloads the node on the selected collection,
+	    // but should not change the selection.
+            WebDAVTreeNode parent = generator.getPossibleParentOfSelectedCollectionNode();
+            PutEvent e = new PutEvent( this, Node, parent);
+	    putListener.PutEventResponse(e);
+	    
+	}
     }
 
     public void parseGet()

@@ -118,6 +118,7 @@ public class WebDAVManager
         ExtraInfo = e.getExtraInfo();
     	try {
       	    Response = Con.Generic(MethodName, ResourceName, Body, Headers);
+
       	    WebDAVResponseEvent webdavResponse  = GenerateWebDAVResponse(Response,tn);
             fireResponse(webdavResponse);
     	}

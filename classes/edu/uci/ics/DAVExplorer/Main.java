@@ -67,6 +67,7 @@ public class Main extends JFrame
     String authHost;
     public final static String VERSION = "0.51";
     public final static String UserAgent = "UCI DAV Explorer/" + VERSION;
+    String writeToDir;
 
     public Main(String frameName)
     {
@@ -316,7 +317,8 @@ public class Main extends JFrame
                 WebDAVTreeNode n = fileView.getParentNode();
                 requestGenerator.setResource(s, n);
 
-                requestGenerator.GenerateRename( str, treeView.getCurrentPath() );
+                //requestGenerator.GenerateRename( str, treeView.getCurrentPath() );
+                requestGenerator.GenerateRename( str, fileView.getParentPath() );
             }
         }
     }
@@ -345,9 +347,11 @@ public class Main extends JFrame
             // This call process the info from the server
             responseInterpreter.handleResponse(e);
 
-            // Post processing
-            // These are actions designed to take place after the
-            // response has been loaded
+
+	    // Post processing
+	    // These are actions designed to take place after the 
+	    // response has been loaded
+
             String extra = e.getExtraInfo();
 
             String method = e.getMethodName();
@@ -380,6 +384,7 @@ public class Main extends JFrame
                 if (tn != null)
                 {
                     tn.finishLoadChildren();
+		   
 
                     treeView.setSelectedNode(tn);
                 }
@@ -393,6 +398,9 @@ public class Main extends JFrame
             {
             }
             else if (extra.equals("delete"))
+            {
+            }
+            else if (extra.equals("mkcol"))
             {
             }
         }
@@ -413,12 +421,23 @@ public class Main extends JFrame
             else if (command.equals("Write File"))
             {
                 FileDialog fd = new FileDialog(WebDAVFrame, "Write File" , FileDialog.LOAD);
-                fd.setVisible( true );
 
-                if(  ( !fd.getDirectory().equals("") ) && ( fd.getDirectory() != null ) && ( fd.getFile() != null ) )
+		if (writeToDir != null)
+		{
+		    fd.setDirectory(writeToDir);	
+		}
+
+                fd.setVisible(true);
+
+		String dirName =fd.getDirectory();
+
+		String fName = fd.getFile();
+
+                if(  ( !dirName.equals("") ) && ( dirName != null ) && ( fName != null ) && (!fName.equals("") ) )
                 {
-                    String fullPath = fd.getDirectory() + fd.getFile();
-                    String token = treeView.getLockToken( fd.getFile() );
+		    writeToDir = dirName;
+                    String fullPath = dirName + fName;
+                    String token = treeView.getLockToken( fName );
 
                     // Get the current Node so that we can update it later
                     String s = "";
@@ -502,6 +521,7 @@ public class Main extends JFrame
             }
             else if (command.equals("Delete"))
             {
+
                 String s = fileView.getSelected();
                 if( s == null )
                 {
@@ -509,7 +529,16 @@ public class Main extends JFrame
                 }
                 else
                 {
-                    deleteDocument( treeView.isCollection( s ) );
+                    //deleteDocument( treeView.isCollection( s ) );
+		    WebDAVTreeNode n = fileView.getSelectedCollection();
+		    if ( n == null) 
+		    {
+                    	deleteDocument( false );
+		    }
+		    else
+		    {
+                    	deleteDocument(  true );
+		    }
                 }
             }
             else if (command.equals("Create Collection"))
@@ -518,24 +547,45 @@ public class Main extends JFrame
                 String prompt = new String( "Enter collection name:" );
                 String title = new String( "Create Collection" );
                 String dirname = selectName( title, prompt );
+
                 if( dirname != null )
                 {
-                    if( treeView.isRemote( treeView.getCurrentPath() ) )
+		    WebDAVTreeNode selected = fileView.getSelectedCollection();
+                    if( treeView.isRemote( fileView.getParentPath() ) )
                     {
-                        requestGenerator.setNode(n);
 
-                        requestGenerator.GenerateMkCol( treeView.getCurrentPath(), dirname );
-                        requestGenerator.execute();
+			if (selected == null){
+                            requestGenerator.setNode(n);
+
+                            requestGenerator.setExtraInfo("mkcol");
+
+                            requestGenerator.GenerateMkCol( fileView.getParentPath(), dirname );
+                            requestGenerator.execute();
+			}
+			else
+			{
+			    requestGenerator.setNode( selected );
+			    requestGenerator.setExtraInfo("mkcolbelow");
+                            requestGenerator.GenerateMkCol( fileView.getSelected(), dirname );
+                            requestGenerator.execute();
+			}
                     }
                     else
                     {
                         if( !treeView.getCurrentPath().endsWith( String.valueOf(File.separatorChar) ) )
-                            dirname = treeView.getCurrentPath() + File.separatorChar + dirname;
+                            dirname = fileView.getSelected() + File.separatorChar + dirname;
                         else
-                            dirname = treeView.getCurrentPath() + dirname;
+                            dirname = fileView.getSelected() + dirname;
                         File f = new File( dirname );
                         boolean result = f.mkdir();
-                        treeView.refreshLocal( n );
+			if ( selected == null )
+			{
+                            treeView.refreshLocal( n );
+			}
+			else
+			{
+			    treeView.refreshLocalNoSelection(selected);
+			}
                     }
                 }
             }
@@ -659,7 +709,7 @@ public class Main extends JFrame
     protected void deleteDocument( boolean collection )
     {
         String s = fileView.getSelected();
-        if( s == null )
+        if( !fileView.hasSelected() )
         {
             errorMsg( "No file selected." );
         }
