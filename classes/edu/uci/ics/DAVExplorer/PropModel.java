@@ -55,7 +55,6 @@ import javax.swing.event.TreeExpansionEvent;
 import com.ms.xml.om.Element;
 import com.ms.xml.om.TreeEnumeration;
 import com.ms.xml.util.Name;
-import com.ms.xml.util.Atom;
 
 
 /**
