@@ -98,7 +98,7 @@ public class WebDAVManager
                 {
                     Port = 0;
                     if( GlobalData.getGlobalData().doSSL() )
-                        Con = new WebDAVConnection( "https", HostName );
+                        Con = new WebDAVConnection( "https", HostName, 443 );
                     else
                         Con = new WebDAVConnection(HostName);
                 }
