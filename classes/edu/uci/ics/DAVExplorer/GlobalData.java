@@ -192,7 +192,8 @@ class GlobalData
                 isr = new InputStreamReader( iStream, encoding );
 
             BufferedReader br = new BufferedReader( isr );
-            return br.readLine();
+            String out = br.readLine();
+            return (out == null)? "" : out;
         }
         catch( IOException e )
         {
@@ -206,7 +207,8 @@ class GlobalData
                     iStream.reset();
                     InputStreamReader isr = new InputStreamReader( iStream );
                     BufferedReader br = new BufferedReader( isr );
-                    return br.readLine();
+                    String out = br.readLine();
+                    return (out == null)? "" : out;
                 }
                 catch( IOException e2 )
                 {
@@ -224,7 +226,8 @@ class GlobalData
                     iStream = new EscapeInputStream( byte_in, true );
                     InputStreamReader isr = new InputStreamReader( iStream, "UTF-8" );
                     BufferedReader br = new BufferedReader( isr );
-                    return br.readLine();
+                    String out = br.readLine();
+                    return (out == null)? "" : out;
                 }
                 catch( IOException e2 )
                 {
@@ -263,6 +266,8 @@ class GlobalData
                 do
                 {
                     String line = in.readLine();
+                    if( line == null )
+                        break;
                     StringTokenizer filetokens = new StringTokenizer( line, "= \t" );
                     if( (filetokens.nextToken()).equals(token) )
                     {
