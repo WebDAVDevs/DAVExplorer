@@ -256,13 +256,6 @@ public class WebDAVRequestGenerator implements Runnable
             Headers = newHeaders;
         }
 
-        String url = null;
-        if( Node != null )
-        {
-            TreeNode path[] = Node.getPath();
-            url = path[1];
-        }
-
         WebDAVRequestEvent e = new WebDAVRequestEvent(this, Method,HostName,Port,StrippedResource, Headers, Body, Extra, User, Password, Node );
         Node = null;
         for (int i=0;i<ls.size();i++)
