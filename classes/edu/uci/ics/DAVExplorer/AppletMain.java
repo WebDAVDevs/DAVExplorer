@@ -29,6 +29,7 @@
  *                  <PARAM NAME=uri VALUE="http://dav.somewhere.com/webdav/">
  *                  <PARAM NAME=username VALUE="username">
  *                  <PARAM NAME=password VALUE="password">
+ *                  <PARAM NAME=proxy VALUE="proxy.com">
  *              </APPLET>
  *              Alternative Usage:
  *              <EMBED TYPE     = "application/x-java-applet"
@@ -38,16 +39,23 @@
  *                     archive  = "DAVExplorer.jar"
  *                     uri      = "http://dav.somewhere.com/webdav/"
  *                     username = "username"
- *                     password = "password">
+ *                     password = "password"
+ *                     proxy    = "proxy.com">
  *              </EMBED>
  * 
  *              The username and password parameters are optional for security reasons.
  *              If they are not specified on the webpage, they are requested interactively.
  *              The applet code also supports the use of SSL.
+ *              The proxy parameter is optional and allows the automatic use of a proxy
+ *              server if specified.
  * 
  * Copyright:   Copyright (c) 2003 Regents of the University of California. All rights reserved.
  * @author      Brian Johnson, integrated by Joachim Feise (dav-exp@ics.uci.edu)
  * @date        25 March 2003
+ * @author      Joachim Feise (dav-exp@ics.uci.edu)
+ * @date        3 November 2003
+ * Changes:     Added support for proxy server in applet settings (it always worked through
+ *              the "Edit Proxy Info" menu entry.)
  */
 
 
@@ -71,7 +79,8 @@ public class AppletMain extends javax.swing.JApplet {
         GlobalData.getGlobalData().setHideURIBox(parseBooleanParameter("hideURIBox"));
 
         // register the initial tree nodes and get 'em going
-        GlobalData.getGlobalData().setInitialSites(getUriUnPwParameters());
+        GlobalData.getGlobalData().setInitialSites( getUriUnPwParameters() );
+        GlobalData.getGlobalData().setProxy( getParameter("proxy") );
         setRootPane(new Main("DAV Explorer Applet").getRootPane());
     }
 

@@ -45,6 +45,10 @@
  * @author      Joachim Feise (dav-exp@ics.uci.edu)
  * @date        27 April 2003
  * Changes:     added support for default config entries.
+ * @author      Joachim Feise (dav-exp@ics.uci.edu)
+ * @date        3 November 2003
+ * Changes:     Added support for proxy server in applet settings (it always worked through
+ *              the "Edit Proxy Info" menu entry.)
  */
 
 package edu.uci.ics.DAVExplorer;
@@ -88,6 +92,7 @@ class GlobalData
     private boolean isAppletMode = false;
     private boolean hideURIBox = false;
     private String[][] initialSites = new String[][] { {} };
+    private String appletProxy;
     private boolean doAddStartDir = true;
     private URIBox uriBox;
     private WebDAVTreeView tree;
@@ -162,6 +167,18 @@ class GlobalData
     public String[][] getInitialSites()
     {
         return initialSites;
+    }
+
+
+    public void setProxy( String proxy )
+    {
+        appletProxy = proxy;
+    }
+
+
+    public String getProxy()
+    {
+        return appletProxy;
     }
 
 

@@ -45,6 +45,10 @@
  * @date        17 March 2003
  * Changes:     Integrated Brian Johnson's applet changes.
  *              Added better error reporting.
+ * @author      Joachim Feise (dav-exp@ics.uci.edu)
+ * @date        3 November 2003
+ * Changes:     Added support for proxy server in applet settings (it always worked through
+ *              the "Edit Proxy Info" menu entry.)
  */
 
 package edu.uci.ics.DAVExplorer;
@@ -87,10 +91,16 @@ public class WebDAVManager
     {
         String ProxyTempHost = null;
         int ProxyTempPort = 0;
-        String proxy = GlobalData.getGlobalData().ReadConfigEntry("proxy");
+        String proxy = null;
+        if( GlobalData.getGlobalData().isAppletMode() )
+        {
+            proxy = GlobalData.getGlobalData().getProxy();
+        }
+        if( proxy == null )
+            proxy = GlobalData.getGlobalData().ReadConfigEntry("proxy");
         boolean useProxy = false;
         // find out if proxy is used
-        if( (proxy.length() > 0) || proxy.startsWith(GlobalData.WebDAVPrefix) )
+        if( proxy != null && (proxy.length() > 0 || proxy.startsWith(GlobalData.WebDAVPrefix)) )
         {
             if( proxy.startsWith(GlobalData.WebDAVPrefix) )
                 proxy = proxy.substring(GlobalData.WebDAVPrefix.length());
