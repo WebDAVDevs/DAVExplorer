@@ -177,14 +177,11 @@ public class Main extends JFrame
         String host = null;
         String authInfo = null;
 
-//        if (pos < 0)
-            host = in;
-//        else
-//            host = in.substring(0,pos);
+        host = in;
         authHost = host;
         if (!authTable.containsKey(host))
         {
-            ld = new WebDAVLoginDialog(WebDAVFrame, new LoginDialogListener(), "Auth Info For " + host + ":",true);
+            new WebDAVLoginDialog(WebDAVFrame, new LoginDialogListener(), "Auth Info For " + host + ":",true);
         }
         else
         {

@@ -72,6 +72,10 @@ Public methods and attributes section
     {
         super(parent, strCaption, isModal);
 
+        Rectangle recthDimensions = getParent().getBounds();
+        setBounds(recthDimensions.x + (recthDimensions.width - 400)/ 2,
+             recthDimensions.y + (recthDimensions.height - 100)/2, 400, 100 );
+        //setSize( 400, 100 );
         userPath = System.getProperty( "user.home" );
         if (userPath == null)
             userPath = "";
@@ -94,7 +98,7 @@ Public methods and attributes section
             }
         }
 
-        JPanel groupPanel = new JPanel(new GridLayout(4,1));
+        JPanel groupPanel = new JPanel(new GridLayout( 2, 1 ));
         groupPanel.add(new JLabel("Lock Info:"));
         groupPanel.add(txtUsername = new JTextField(80));
         if (lockInfo != null)
@@ -105,7 +109,7 @@ Public methods and attributes section
         OKbutton.addActionListener(this);
         getContentPane().add(groupPanel, BorderLayout.CENTER);
         pack();
-        show();
+        setVisible( true );
     }
 
     public synchronized void addListener(ActionListener l)
@@ -138,6 +142,7 @@ Public methods and attributes section
             {
             }
         }
+        setVisible( false );
         dispose();
     }
 
@@ -145,17 +150,6 @@ Public methods and attributes section
     public void setUsername(String strUsername)
     {
         m_strUsername = strUsername;
-    }
-
-    public void show()
-    {
-        Rectangle recthDimensions = getParent().bounds();
-        Rectangle rectvDimensions = bounds();
-
-        move(recthDimensions.x + (recthDimensions.width - rectvDimensions.width)/ 2,
-             recthDimensions.y + (recthDimensions.height - rectvDimensions.height)/2);
-
-        super.show();
     }
 
 /*-----------------------------------------------------------------------

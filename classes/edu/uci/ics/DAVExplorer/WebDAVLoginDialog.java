@@ -78,19 +78,24 @@ Public methods and attributes section
     //Construction
     public WebDAVLoginDialog(JFrame parent, ActionListener l, String strCaption, boolean isModal)
     {
-        super(parent, strCaption, isModal);
+        super(parent, strCaption, true);
+
+        Rectangle recthDimensions = getParent().getBounds();
+        setBounds(recthDimensions.x + (recthDimensions.width - 350)/ 2,
+             recthDimensions.y + (recthDimensions.height - 110)/2, 350, 110 );
         addListener(l);
-        JPanel groupPanel = new JPanel(new GridLayout(4,1));
+        JPanel groupPanel = new JPanel(new GridLayout( 4, 1 ));
         groupPanel.add(new JLabel("Login name:"));
         groupPanel.add(txtUsername = new JTextField(40));
         groupPanel.add(new JLabel("Password:"));
-        txtPassword = new JPasswordField("", 20);
+        txtPassword = new JPasswordField("", 40);
         groupPanel.add(txtPassword);
         getContentPane().add(OKbutton = new JButton("OK"), BorderLayout.SOUTH);
         OKbutton.addActionListener(this);
         getContentPane().add(groupPanel, BorderLayout.CENTER);
         pack();
-        show();
+        //new Thread( this ).start();
+        setVisible( true );
     }
 
     //Handling the events that happen in the dialog
@@ -107,7 +112,7 @@ Public methods and attributes section
 	if(e.getActionCommand().equals("OK"))
         {
             String user = txtUsername.getText();
-            String pass = txtPassword.getText();
+            String pass = String.valueOf( txtPassword.getPassword() );
 
             if ( ( user.length() > 0  ) && (pass.equals("") ) )
                 return;
@@ -123,6 +128,7 @@ Public methods and attributes section
                 client.actionPerformed(evt);
             }
         }
+        setVisible( false );
         dispose();
     }
 
@@ -148,17 +154,6 @@ Public methods and attributes section
     public String getUserPassword()
     {
         return m_strUserPassword;
-    }
-
-    public void show()
-    {
-        Rectangle recthDimensions = getParent().bounds();
-        Rectangle rectvDimensions = bounds();
-
-        move(recthDimensions.x + (recthDimensions.width - rectvDimensions.width)/ 2,
-             recthDimensions.y + (recthDimensions.height - rectvDimensions.height)/2);
-
-        super.show();
     }
 
 /*-----------------------------------------------------------------------
