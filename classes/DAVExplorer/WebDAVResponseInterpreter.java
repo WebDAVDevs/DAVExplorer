@@ -80,7 +80,6 @@ public class WebDAVResponseInterpreter
     private static Vector lockListeners = new Vector();
     private final static String EditDir = "Edit";
     private final static String WebDAVClassName = "DAVExplorer";
-//    private final static String lockInfoFilename = "lockinfo.dat";
     private final static String WebDAVLockDir = "";
     private final static String HTTPString = "HTTP/1.1";
     private static String WebDAVEditDir = null;

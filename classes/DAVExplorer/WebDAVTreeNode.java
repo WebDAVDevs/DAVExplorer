@@ -142,8 +142,7 @@ public class WebDAVTreeNode extends DefaultMutableTreeNode
             remove(0);
         }
 
-    // They forgot this
-    dataNode = null;
+		dataNode = null;
 
     }
 
@@ -180,8 +179,8 @@ public class WebDAVTreeNode extends DefaultMutableTreeNode
         catch (Exception inEx)
         {
             System.out.println("EXCEPTION:loadRemote, byte_array empty");
-        System.out.println(inEx);
-        System.out.println(inEx.getMessage());
+			System.out.println(inEx);
+			System.out.println(inEx.getMessage());
             //dataNode = null;
             //hasLoaded = false;
             interpreter.clearStream();
@@ -239,6 +238,8 @@ public class WebDAVTreeNode extends DefaultMutableTreeNode
 
         if( respElem.numElements() == 0 )
             return;
+
+		dataNode = null;
         SiblingEnumeration enumTree =  new SiblingEnumeration( respElem.getChild(0) );
         while( enumTree.hasMoreElements() )
         {
@@ -335,6 +336,26 @@ public class WebDAVTreeNode extends DefaultMutableTreeNode
                 }
             }
         }
+
+		// handle the case when the server doesn't send properties for the container
+		// itself
+		if( dataNode == null )
+		{
+            // create a container with as much data as we have
+            int pathLen = getPath().length;
+            String hostName = resName;
+            if (pathLen == 2)
+            {
+                if( GlobalData.getGlobalData().doSSL() )
+                    hostName = HTTPSPrefix + interpreter.getHost() + "/" + ResourceName;
+                else
+                    hostName = HTTPPrefix + interpreter.getHost() + "/" + ResourceName;
+            }
+            // update node values
+            dataNode = new DataNode( true, false, null,
+                                     hostName, ResourceName, "httpd/unix-directory", 0,
+                                     "", null );
+		}
     }
 
 
