@@ -1,34 +1,21 @@
 /*
- * @(#)TableMap.java	1.4 97/12/17
+ * Copyright (c) 1999 Regents of the University of California.
+ * All rights reserved.
  *
- * Copyright (c) 1997 Sun Microsystems, Inc. All Rights Reserved.
+ * This software was developed at the University of California, Irvine.
  *
- * This software is the confidential and proprietary information of Sun
- * Microsystems, Inc. ("Confidential Information").  You shall not
- * disclose such Confidential Information and shall use it only in
- * accordance with the terms of the license agreement you entered into
- * with Sun.
- *
- * SUN MAKES NO REPRESENTATIONS OR WARRANTIES ABOUT THE SUITABILITY OF THE
- * SOFTWARE, EITHER EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE
- * IMPLIED WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR
- * PURPOSE, OR NON-INFRINGEMENT. SUN SHALL NOT BE LIABLE FOR ANY DAMAGES
- * SUFFERED BY LICENSEE AS A RESULT OF USING, MODIFYING OR DISTRIBUTING
- * THIS SOFTWARE OR ITS DERIVATIVES.
- *
+ * Redistribution and use in source and binary forms are permitted
+ * provided that the above copyright notice and this paragraph are
+ * duplicated in all such forms and that any documentation,
+ * advertising materials, and other materials related to such
+ * distribution and use acknowledge that the software was developed
+ * by the University of California, Irvine.  The name of the
+ * University may not be used to endorse or promote products derived
+ * from this software without specific prior written permission.
+ * THIS SOFTWARE IS PROVIDED ``AS IS'' AND WITHOUT ANY EXPRESS OR
+ * IMPLIED WARRANTIES, INCLUDING, WITHOUT LIMITATION, THE IMPLIED
+ * WARRANTIES OF MERCHANTIBILITY AND FITNESS FOR A PARTICULAR PURPOSE.
  */
-
-/** 
- * In a chain of data manipulators some behaviour is common. TableMap
- * provides most of this behavour and can be subclassed by filters
- * that only need to override a handful of specific methods. TableMap 
- * implements TableModel by routing all requests to its model, and
- * TableModelListener by routing all events to its listeners. Inserting 
- * a TableMap which has not been subclassed into a chain of table filters 
- * should have no effect.
- *
- * @version 1.4 12/17/97
- * @author Philip Milne */
 package WebDAV;
 
 import com.sun.java.swing.table.*; 

@@ -16,14 +16,27 @@
  * IMPLIED WARRANTIES, INCLUDING, WITHOUT LIMITATION, THE IMPLIED
  * WARRANTIES OF MERCHANTIBILITY AND FITNESS FOR A PARTICULAR PURPOSE.
  */
-
-// We Use this class to generate namespace aliases within
+// This class is used to generate namespace aliases within
 // an xml document.
 //
 // Version: 0.1
-// Author:  Robert Emmery  <memmery@earthlink.net>
+// Author:  Robert Emmery
 // Date:    2/28/98
-////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////
+// The code has been modified to include povisions for the final
+// WebDAV xml namespaces.  A small number of program errors have
+// been corrected.
+//
+// Please use the following contact:
+//
+// dav-exp@ics.uci.edu
+//
+// Version: 0.4
+// Changes by: Yuzo Kanomata and Joe Feise
+// Date: 3/17/99
+//
+// Change List:
+
 
 package WebDAV;
 

@@ -27,6 +27,33 @@ package WebDAV;
 //On: 3/3/98
 //For ICS126B (WebDAV Project)
 /////////////////////////////////////////////////////////////////////////
+// This class causes a login dialog box to 
+// appear.  The purpose of this Login box is
+// to authenticate users when they attempt to 
+// connect to a DAV site through the action of
+// connecting to it.
+//
+// This class DOES NOT authenticate users at this
+// time.  It is in place as a UI component which 
+// may be fully integrated in an authetication scheme
+// at some future point.
+////////////////////////////////////////////////////////////////
+// The code has been modified to include povisions for the final
+// WebDAV xml namespaces.  A small number of program errors have
+// been corrected.
+//
+// Please use the following contact:
+//
+// dav-exp@ics.uci.edu
+//
+// Version: 0.4
+// Changes by: Yuzo Kanomata and Joe Feise
+// Date: 3/17/99
+//
+// Change List:
+// Note: No authenication check is executed in the Action Listener
+// when "okay" is clicked.
+
 
 import com.sun.java.swing.JDialog;
 import com.sun.java.swing.JFrame;

@@ -22,17 +22,39 @@
 //        like interface.
 //
 //        Version:    0.3
-//        Author:     Robert Emmery <memmery@earthlink.net>
+//        Author:     Robert Emmery 
 //        Date:       4/2/98
-///////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////
+// The code has been modified to include povisions for the final
+// WebDAV xml namespaces.  A small number of program errors have
+// been corrected.
+//
+// Please use the following contact:
+//
+// dav-exp@ics.uci.edu
+//
+// Version: 0.4
+// Changes by: Yuzo Kanomata and Joe Feise
+// Date: 3/17/99
+//
+// Change List:
+// 1. method fireSelectionEvent() has been renames to initTree()
+//    This more acurately describes its purpose and function.
+// 2. The MouseListener section of code which includes the methods
+//    handleSingleClick and handleDoubleClick have been commented out.
+//    This code is redundent to the functionality of tree selection,
+//    and caused a side effect tree selection event to be caused
+//    when the X,Y portion of the cursor was repositioned on a 
+//    repaint by the display.
+
 
 package WebDAV;
 
 // We are importing JFC packages (these will be included in JDK 1.2)
-
 import com.sun.java.swing.*;
 import com.sun.java.swing.tree.*;
 import com.sun.java.swing.event.*;
+
 import java.util.*;
 import java.awt.*;
 import java.awt.event.*;
@@ -67,35 +89,58 @@ public class WebDAVTreeView
         tree.setRowHeight(-1);
         this.mainFrame = mainFrame;
         startDirName = System.getProperty("user.home");
-        if (startDirName == null)
+        if (startDirName == null){
             startDirName = new Character(File.separatorChar).toString();
-// We're interested in single clicks
+	}
 
-        MouseListener ml = new MouseAdapter()
-        {
-            public void mouseClicked(MouseEvent e)
-            {
-                int selRow = tree.getRowForLocation(e.getX(), e.getY());
-                TreePath selPath = tree.getPathForLocation(e.getX(), e.getY());
-                if(selRow != -1)
-                {
-                    if(e.getClickCount() == 1)
-                    {
-                        handleSingleClick(selPath);
-                    }
-                    else if(e.getClickCount() == 2)
-                    {
-                        handleDoubleClick(selPath);
-                    }
-                }
-            }
-            
-            public void mouseExited(MouseEvent e)
-            {
-            }
-        };
+// The items below have been removed because they interfered with the 
+// tree selection events.  They would cause a secondary tree selection
+// event in the cases where the X and Y position of the clicked mouse
+// would move over another directory when the screen was redrawn after 
+// an initial tree selection.
+//
+// We're interested in single clicks
+//        MouseListener ml = new MouseAdapter()
+//        {
+//            public void mouseClicked(MouseEvent e)
+//            {
+//                int selRow = tree.getRowForLocation(e.getX(), e.getY());
+//                TreePath selPath = tree.getPathForLocation(e.getX(), e.getY());
+//                if(selRow != -1)
+//                {
+//                    if(e.getClickCount() == 1)
+//                    {
+//                        handleSingleClick(selPath);
+//                    }
+//                    else if(e.getClickCount() == 2)
+//                    {
+//                        handleDoubleClick(selPath);
+//                    }
+//                }
+//            }
+//            
+//            public void mouseExited(MouseEvent e)
+//            {
+//            }
+//        };
     }
   
+//    public void handleSingleClick(TreePath selPath)
+//    {
+//        // Select the clicked item.
+//
+//        if ( (selPath != null) && (!tree.isPathSelected(selPath)) )
+//        {
+//            selectionModel.setSelectionPath(selPath);
+//        }
+//    }
+//
+//    public void handleDoubleClick(TreePath selPath)
+//    {
+//        // Nothing to do here.
+//    }
+
+
     public JScrollPane getScrollPane()
     {
         // We package the whole TreeView inside a Scroll Pane, returned
@@ -107,20 +152,6 @@ public class WebDAVTreeView
         return(sp);
     }
 
-    public void handleSingleClick(TreePath selPath)
-    {
-        // Select the clicked item.
-
-        if ( (selPath != null) && (!tree.isPathSelected(selPath)) )
-        {
-            selectionModel.setSelectionPath(selPath);
-        }
-    }
-
-    public void handleDoubleClick(TreePath selPath)
-    {
-        // Nothing to do here.
-    }
 
     public void tableSelectionChanged(ViewSelectionEvent e)
     {
@@ -168,7 +199,7 @@ public class WebDAVTreeView
 
     class SelectionChangeListener implements TreeSelectionListener
     {
-        // This is where we handle the selection event. 
+        // This is where we handle the tree selection event. 
         // We send the event to all the registered listeners.
 
         public void valueChanged(TreeSelectionEvent e)
@@ -185,11 +216,21 @@ public class WebDAVTreeView
                 String strPath = constructPath(path);
                 currNode = (WebDAVTreeNode) path.getLastPathComponent();
                 ViewSelectionEvent selEvent = new ViewSelectionEvent(this,currNode,strPath);
+
+		// The following 2 lines change the cursor in the JFrame 
+		// so that the user has feedback that the events are
+		// being processed.
+		// Note: this depends on mainFrame being set.
+		Cursor c = mainFrame.getCursor(); // save original cursor
+		mainFrame.setCursor( Cursor.getPredefinedCursor( Cursor.WAIT_CURSOR ) );
+
                 for (int i=0; i<ls.size();i++)
                 {
                     ViewSelectionListener l = (ViewSelectionListener) ls.elementAt(i);
                     l.selectionChanged(selEvent);
                 }
+
+		mainFrame.setCursor( c ); //reset to original cursor
             }
         }
     }

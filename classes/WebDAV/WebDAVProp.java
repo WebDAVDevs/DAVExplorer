@@ -21,6 +21,24 @@
    listed in section 12 of .07 spec
 
 */
+// This code was originally written by a undergraduate project
+// team at UCI.
+//
+////////////////////////////////////////////////////////////////
+// The code has been modified to include povisions for the final
+// WebDAV xml namespaces.  A small number of program errors have
+// been corrected.
+//
+// Please use the following contact:
+//
+// dav-exp@ics.uci.edu
+//
+// Version: 0.4
+// Changes by: Yuzo Kanomata and Joe Feise
+// Date: 3/17/99
+//
+// Change List:
+
 
 
 package WebDAV;

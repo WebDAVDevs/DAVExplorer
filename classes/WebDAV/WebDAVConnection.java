@@ -22,9 +22,23 @@
 // sending all the requests.
 //
 // Version: 0.1
-// Author:  Robert Emmery <memmery@earthlink.net>
+// Author:  Robert Emmery 
 // Date:    1/20/98
-////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////
+// The code has been modified to include povisions for the final
+// WebDAV xml namespaces.  A small number of program errors have
+// been corrected.
+//
+// Please use the following contact:
+//
+// dav-exp@ics.uci.edu
+//
+// Version: 0.4
+// Changes by: Yuzo Kanomata and Joe Feise
+// Date: 3/17/99
+//
+// Change List:
+
 
 package WebDAV;
 

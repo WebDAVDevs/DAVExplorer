@@ -16,6 +16,29 @@
  * IMPLIED WARRANTIES, INCLUDING, WITHOUT LIMITATION, THE IMPLIED
  * WARRANTIES OF MERCHANTIBILITY AND FITNESS FOR A PARTICULAR PURPOSE.
  */
+// This code was originally written by a undergraduate project
+// team at UCI.
+//
+// This class creates an event object which carries the path
+// and node to the recieving listener.
+//
+////////////////////////////////////////////////////////////////
+// The code has been modified to include povisions for the final
+// WebDAV xml namespaces.  A small number of program errors have
+// been corrected.
+//
+// Please use the following contact:
+//
+// dav-exp@ics.uci.edu
+//
+// Version: 0.4
+// Changes by: Yuzo Kanomata and Joe Feise
+// Date: 3/17/99
+//
+// Change List:
+// Note: This code was not tested at this time (3/17/99) as 
+// the current Apache server does not support locking.
+
 
 package WebDAV;
 
