@@ -136,7 +136,9 @@ public class WebDAVManager
                 {
                     Port = TempPort;
                     if( GlobalData.getGlobalData().doSSL() )
+                    {
                         Con = new WebDAVConnection( "https", Hostname, Port );
+                    }
                     else
                         Con = new WebDAVConnection(Hostname, Port);
                 }
@@ -144,7 +146,9 @@ public class WebDAVManager
                 {
                     Port = 0;
                     if( GlobalData.getGlobalData().doSSL() )
+                    {
                         Con = new WebDAVConnection( "https", Hostname, 443 );
+                    }
                     else
                         Con = new WebDAVConnection(Hostname);
                 }

@@ -56,7 +56,7 @@ import com.ms.xml.om.Element;
 public class PropDialog extends JDialog
     implements ActionListener, ChangeListener, ListSelectionListener, WebDAVCompletionListener
 {
-    public PropDialog( Element properties, String resource, String hostname, boolean changeable )
+    public PropDialog( Element properties, String resource, String hostname, String locktoken, boolean changeable )
     {
         super( GlobalData.getGlobalData().getMainFrame() );
         this.changeable = changeable;
@@ -65,6 +65,7 @@ public class PropDialog extends JDialog
         else
             setTitle("View Properties");
         this.resource = hostname + resource;
+        this.locktoken = locktoken;
         JLabel label = new JLabel( this.resource, JLabel.CENTER );
         label.setForeground(Color.black);
         getContentPane().add( "North", label );
@@ -225,12 +226,11 @@ public class PropDialog extends JDialog
         Element add = model.getModified(false);
         Element remove = model.getModified(true);
         WebDAVRequestGenerator generator = WebDAVResponseInterpreter.getGenerator();
-        generator.GeneratePropPatch( resource, add, remove );
+        generator.GeneratePropPatch( resource, add, remove, locktoken );
         // TODO: some kind of visual indication
         waiting = true;
         generator.execute();
         // TODO: check for error
-        //setChanged( false );  // disable save button
     }
 
     public void cancel()
@@ -266,5 +266,6 @@ public class PropDialog extends JDialog
     private boolean changeable;
     private boolean changed = false;
     private String resource;
+    private String locktoken;
     private boolean waiting;
 }

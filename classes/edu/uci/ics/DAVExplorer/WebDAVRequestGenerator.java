@@ -354,13 +354,10 @@ public class WebDAVRequestGenerator implements Runnable
     }
 
 
-    public synchronized boolean GeneratePropFindForNode(   String FullPath,
-                            String command,
-                            String Depth,
-                            String[] props,
-                            String[] schemas,
-                            boolean flag,
-                        WebDAVTreeNode n )
+    public synchronized boolean GeneratePropFindForNode( String FullPath, String command,
+                                                         String Depth, String[] props,
+                                                         String[] schemas, boolean flag,
+                                                         WebDAVTreeNode n )
     {
         Node = n;
         return GeneratePropFind( FullPath, command, Depth, props, schemas, flag);
@@ -583,7 +580,7 @@ public class WebDAVRequestGenerator implements Runnable
         return false;
     }
 
-    public synchronized boolean GeneratePropPatch(String FullPath, Element addProps, Element removeProps )
+    public synchronized boolean GeneratePropPatch(String FullPath, Element addProps, Element removeProps, String locktoken )
     {
         if( GlobalData.getGlobalData().getDebugRequest() )
         {
@@ -643,9 +640,15 @@ public class WebDAVRequestGenerator implements Runnable
             miniDoc.save(xml_out);
             Body = byte_str.toByteArray();
 
-            Headers = new NVPair[3];
+            if (locktoken != null)
+            {
+                Headers = new NVPair[4];
+                Headers[3] = new NVPair( "If", "(<" + locktoken + ">)" );
+            }
+            else
+                Headers = new NVPair[3];
             if (Port == 0 || Port == DEFAULT_PORT)
-                Headers[0] = new NVPair("Host", HostName);
+                Headers[0] = new NVPair( "Host", HostName );
             else
             {
                 // 2001-Oct-29 jfeise (dav-exp@ics.uci.edu):
@@ -653,18 +656,18 @@ public class WebDAVRequestGenerator implements Runnable
                 // Apache returns a 500 error on the first try
                 String apache = System.getProperty( "Apache", "no" );
                 if( apache.equalsIgnoreCase("no") )
-                    Headers[0] = new NVPair("Host", HostName + ":" + Port);
+                    Headers[0] = new NVPair( "Host", HostName + ":" + Port );
                 else
-                    Headers[0] = new NVPair("Host", HostName);
+                    Headers[0] = new NVPair( "Host", HostName );
             }
-            Headers[1] = new NVPair("Content-Type", "text/xml");
-            Headers[2] = new NVPair("Content-Length", new Long(Body.length).toString());
+            Headers[1] = new NVPair( "Content-Type", "text/xml" );
+            Headers[2] = new NVPair( "Content-Length", new Long(Body.length).toString() );
 
             printXML( miniDoc );
         }
         catch (Exception e)
         {
-            GlobalData.getGlobalData().errorMsg("XML Generator Error: \n" + e);
+            GlobalData.getGlobalData().errorMsg( "XML Generator Error: \n" + e );
             return false;
         }
         return true;
@@ -1290,55 +1293,16 @@ public class WebDAVRequestGenerator implements Runnable
         int pos = file.lastIndexOf( "." );
         if( pos >= 0 )
         {
-            String extension = file.substring( pos+1 ).toLowerCase();
-            if( extension.equals( "htm" ) || extension.equals( "html" ) )
-                content = "text/html";
-            else if( extension.equals( "gif" ) )
-                content = "image/gif";
-            else if( extension.equals( "jpg" ) || extension.equals( "jpeg" ) )
-                content = "image/jpeg";
-            else if( extension.equals( "css" ) )
-                content = "text/css";
-            else if( extension.equals( "pdf" ) )
-                content = "application/pdf";
-            else if( extension.equals( "doc" ) )
-                content = "application/msword";
-            else if( extension.equals( "ppt" ) )
-                content = "application/vnd.ms-powerpoint";
-            else if( extension.equals( "xls" ) )
-                content = "application/vnd.ms-excel";
-            else if( extension.equals( "ps" ) )
-                content = "application/postscript";
-            else if( extension.equals( "zip" ) )
-                content = "application/zip";
-            else if( extension.equals( "fm" ) )
-                content = "application/vnd.framemaker";
-            else if( extension.equals( "mif" ) )
-                content = "application/vnd.mif";
-            else if( extension.equals( "png" ) )
-                content = "image/png";
-            else if( extension.equals( "tif" ) || extension.equals( "tiff" ) )
-                content = "image/tiff";
-            else if( extension.equals( "rtf" ) )
-                content = "text/rtf";
-            else if( extension.equals( "xml" ) )
-                content = "text/xml";
-            else if( extension.equals( "mpg" ) || extension.equals( "mpeg" ) )
-                content = "video/mpeg";
-            else if( extension.equals( "mov" ) )
-                content = "video/quicktime";
-            else if( extension.equals( "hqx" ) )
-                content = "application/mac-binhex40";
-            else if( extension.equals( "au" ) )
-                content = "audio/basic";
-            else if( extension.equals( "vrm" ) || extension.equals( "vrml" ) )
-                content = "model/vrml";
-            else if( extension.equals( "txt" ) || extension.equals( "c" ) || extension.equals( "cc" ) || extension.equals( "cpp" ) ||
-                extension.equals( "h" ) || extension.equals( "sh" ) || extension.equals( "bat" ) || extension.equals( "ada" ) ||
-                extension.equals( "java" ) || extension.equals( "rc" ) )
-                content = "text/plain";
+            for( int i=0; i<extensions.length; i+=2 )
+            {
+                String extension = file.substring( pos+1 ).toLowerCase();
+                if( extension.equals(extensions[i]) )
+                {
+                    content = extensions[i+1];
+                    break;
+                }
+            }
         }
-
         return content;
     }
 
@@ -1358,4 +1322,42 @@ public class WebDAVRequestGenerator implements Runnable
             }
         }
     }
+
+    private String[] extensions = { "htm", "text/html",
+                                    "html", "text/html",
+                                    "gif", "image/gif",
+                                    "jpg", "image/jpeg",
+                                    "jpeg", "image/jpeg",
+                                    "css", "text/css",
+                                    "pdf", "application/pdf",
+                                    "doc", "application/msword",
+                                    "ppt", "application/vnd.ms-powerpoint",
+                                    "xls", "application/vnd.ms-excel",
+                                    "ps", "application/postscript",
+                                    "zip", "application/zip",
+                                    "fm", "application/vnd.framemaker",
+                                    "mif", "application/vnd.mif",
+                                    "png", "image/png",
+                                    "tif", "image/tiff",
+                                    "tiff", "image/tiff",
+                                    "rtf", "text/rtf",
+                                    "xml", "text/xml",
+                                    "mpg", "video/mpeg",
+                                    "mpeg", "video/mpeg",
+                                    "mov", "video/quicktime",
+                                    "hqx", "application/mac-binhex40",
+                                    "au", "audio/basic",
+                                    "vrm", "model/vrml",
+                                    "vrml", "model/vrml",
+                                    "txt", "text/plain",
+                                    "c", "text/plain",
+                                    "cc", "text/plain",
+                                    "cpp", "text/plain",
+                                    "h", "text/plain",
+                                    "sh", "text/plain",
+                                    "bat", "text/plain",
+                                    "ada", "text/plain",
+                                    "java", "text/plain",
+                                    "rc", "text/plain"
+                                  };
 }

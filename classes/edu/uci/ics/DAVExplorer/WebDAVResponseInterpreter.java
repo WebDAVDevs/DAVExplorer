@@ -226,7 +226,7 @@ public class WebDAVResponseInterpreter
             }
         }
         else if (Method.equals("LOCK"))
-            parseLock();
+            parseLock( false );
         else if (Method.equals("UNLOCK"))
             parseUnlock();
         else
@@ -569,6 +569,7 @@ public class WebDAVResponseInterpreter
         }
         else if (Extra.equals("properties"))
         {
+            String locktoken = parseLock( true );
             Document ppatchDoc = new Document();
             ByteArrayOutputStream byte_prop = new ByteArrayOutputStream();
             XMLOutputStream  xml_prop = new XMLOutputStream(byte_prop);
@@ -596,7 +597,7 @@ public class WebDAVResponseInterpreter
                                 String host = HostName;
                                 if (Port != 0)
                                     host = HostName + ":" + Port;
-                                PropDialog pd = new PropDialog( rootElem, Resource, host, true );
+                                PropDialog pd = new PropDialog( rootElem, Resource, host, locktoken, true );
                             }
                         }
                     }
@@ -899,7 +900,7 @@ public class WebDAVResponseInterpreter
         copyListener.CopyEventResponse(e);
     }
 
-    public void parseLock()
+    public String parseLock( boolean secondary )
     {
         if( GlobalData.getGlobalData().getDebugResponse() )
         {
@@ -914,8 +915,9 @@ public class WebDAVResponseInterpreter
             stream = body;
             if (body == null)
             {
-                GlobalData.getGlobalData().errorMsg("DAV Interpreter:\n\nMissing XML body in\nLOCK response.");
-                return;
+                if( !secondary )
+                    GlobalData.getGlobalData().errorMsg("DAV Interpreter:\n\nMissing XML body in\nLOCK response.");
+                return null;
             }
             ByteArrayInputStream byte_in = new ByteArrayInputStream(body);
             xml_doc = new Document();
@@ -923,12 +925,16 @@ public class WebDAVResponseInterpreter
         }
         catch (Exception e)
         {
-            GlobalData.getGlobalData().errorMsg("DAV Interpreter:\n\nError encountered \nwhile parsing LOCK Response.\n" + e);
-            stream = null;
-            return;
+            if( !secondary )
+            {
+                GlobalData.getGlobalData().errorMsg("DAV Interpreter:\n\nError encountered \nwhile parsing LOCK Response.\n" + e);
+                stream = null;
+            }
+            return null;
         }
 
-        printXML( body );
+        if( !secondary )
+            printXML( body );
 
         String lockToken = null;
         String[] token = new String[2];
@@ -960,7 +966,9 @@ public class WebDAVResponseInterpreter
                 }
             }
         }
-        fireLockEvent( 0, lockToken );
+        if( !secondary )
+            fireLockEvent( 0, lockToken );
+        return lockToken;
     }
 
     public void parseUnlock()
@@ -1417,7 +1425,7 @@ public class WebDAVResponseInterpreter
         return null;
     }
 
-
+/*
     private void parseProperties( Element properties, XMLOutputStream xml_prop )
     {
         if( GlobalData.getGlobalData().getDebugResponse() )
@@ -1465,7 +1473,7 @@ public class WebDAVResponseInterpreter
             }
         }
     }
-
+*/
     private void printXML( byte[] body )
     {
         String debugOutput = System.getProperty( "debug", "false" );
