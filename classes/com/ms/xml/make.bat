@@ -16,6 +16,10 @@ rem IMPLIED WARRANTIES, INCLUDING, WITHOUT LIMITATION, THE IMPLIED
 rem WARRANTIES OF MERCHANTIBILITY AND FITNESS FOR A PARTICULAR PURPOSE.
 
 @echo on
-del dso\*.class om\*.class parser\*.class util\*.class xmlstream\*.class
+del dso\*.class
+del om\*.class
+del parser\*.class
+del util\*.class
+del xmlstream\*.class
 javac dso\*.java om\*.java parser\*.java util\*.java xmlstream\*.java
 @echo off
