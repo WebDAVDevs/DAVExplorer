@@ -23,6 +23,7 @@ import java.awt.Component;
 import java.awt.Cursor;
 import java.awt.Dialog;
 import java.awt.Frame;
+import java.awt.BorderLayout;
 import java.awt.GraphicsConfiguration;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
@@ -41,7 +42,9 @@ import javax.swing.JDialog;
 import javax.swing.JLabel;
 import javax.swing.JList;
 import javax.swing.JPanel;
+import javax.swing.JScrollPane;
 import javax.swing.JTabbedPane;
+import javax.swing.JTable;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import javax.swing.event.ListSelectionEvent;
@@ -122,111 +125,30 @@ implements ActionListener, ChangeListener, ListSelectionListener, WebDAVCompleti
     }
 
 
-    protected JPanel makePrincipalPanel()
+    protected JPanel makeCriteriaPanel()
     {
-        Vector entries = new Vector();
+        JLabel label = new JLabel( "Search Criteria" );
         JPanel panel = new JPanel(false);
-        if( addACL )
-        {
-            String prefix;
-            if( GlobalData.getGlobalData().getSSL() )
-                prefix =  GlobalData.WebDAVPrefixSSL;
-            else
-                prefix = GlobalData.WebDAVPrefix;
-            ACLRequestGenerator generator = (ACLRequestGenerator)ACLResponseInterpreter.getGenerator();
-            generator.setResource( prefix+resource, null );
-            waiting = true;
-            generator.GetPrincipalCollections();
-            try
-            {
-                synchronized( this )
-                {
-                    wait(30000);
-                }
-            }
-            catch( InterruptedException e )
-            {
-            }
-            if( interpreter != null )
-            {
-                Vector principals = interpreter.getPrincipalCollectionSet();
-                if( principals != null )
-                {
-                    for( int i=0; i < principals.size(); i++ )
-                    {
-                        interpreter = null;
-                        generator.setResource( prefix+hostname+(String)principals.get(i), null );
-                        waiting = true;
-                        generator.GetPrincipalNames();
-                        try
-                        {
-                            synchronized( this )
-                            {
-                                wait(30000);
-                            }
-                        }
-                        catch( InterruptedException e )
-                        {
-                        }
-                        if( interpreter != null && interpreter.getPrincipalNames() != null )
-                            entries.addAll( interpreter.getPrincipalNames() );
-                    }
-                }
-            }
-        }
-        else
-        {
-            entries.add( principal );
-        }
-        JComboBox combo = new JComboBox( entries );
-        combo.setRenderer( 
-            new DefaultListCellRenderer()
-            {
-                public Component getListCellRendererComponent(
-                        JList list,
-                        Object value,
-                        int index,
-                        boolean isSelected,
-                        boolean cellHasFocus)
-                    {
-                        setText( ((String[])value)[1] );
-                        setBackground(isSelected ? Color.gray : Color.lightGray);
-                        setForeground(Color.black);
-                        return this;
-                    }
-            });
+        label.setForeground(Color.black);
+        BorderLayout layout = new BorderLayout();
+        panel.setLayout( new BorderLayout() );
+        panel.add( label, BorderLayout.NORTH );
 
-        combo.setEditable( false );
-        combo.setActionCommand( "Principal" );
-        combo.addActionListener( this );
-        principal = (String[])combo.getSelectedItem();
-        principalType = ACLNode.HREF;
+        JTable table = new JTable( model );
+        table.getSelectionModel().addListSelectionListener(this);
+        JScrollPane scrollpane = new JScrollPane();
+        scrollpane.setViewportView( table );
+        panel.add( scrollpane, BorderLayout.CENTER );
 
-        JLabel label = new JLabel( "Principal: " );
-        label.setHorizontalAlignment( JLabel.RIGHT );
-        GridBagLayout gridbag = new GridBagLayout();
-        GridBagConstraints c = new GridBagConstraints();
-        panel.setLayout( gridbag );
-        c.fill = GridBagConstraints.BOTH;
-        c.weightx = 1.0;
-        c.gridwidth = 1;
-        gridbag.setConstraints( label, c );
-        panel.add( label );
-        c.gridwidth = GridBagConstraints.REMAINDER;
-        gridbag.setConstraints( combo, c );
-        panel.add( combo );
-        JLabel hrefLabel = new JLabel( "href: " );
-        hrefLabel.setHorizontalAlignment( JLabel.RIGHT );
-        c.gridwidth = 1;
-        c.ipady = 10;
-        c.anchor = GridBagConstraints.CENTER;
-        gridbag.setConstraints( hrefLabel, c );
-        panel.add( hrefLabel );
-        href = new JLabel( principal[0] );
-        href.setHorizontalAlignment( JLabel.LEFT );
-        c.gridwidth = GridBagConstraints.REMAINDER;
-        gridbag.setConstraints( href, c );
-        panel.add( href );
+        JButton addButton = new JButton("Add");
+        addButton.addActionListener(this);
+        addButton.setMnemonic( KeyEvent.VK_A );
+        JButton deleteButton  = new JButton("Delete");
+        deleteButton.addActionListener(this);
+        deleteButton.setMnemonic( KeyEvent.VK_D );
+        panel.add( addButton, BorderLayout.SOUTH );
+        panel.add( deleteButton, BorderLayout.SOUTH );
+
         return panel;
     }
 
