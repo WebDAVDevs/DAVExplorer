@@ -71,6 +71,7 @@ public class WebDAVResponseInterpreter
     private final static String WebDAVClassName = "DAVExplorer";
     private final static String lockInfoFilename = "lockinfo.dat";
     private final static String WebDAVLockDir = "";
+    private final static String HTTPString = "HTTP/1.1";
     private static String WebDAVEditDir = null;
     private static boolean refresh = false;
     private static boolean inProg = false;
@@ -290,13 +291,9 @@ public class WebDAVResponseInterpreter
             String lockTimeout = "";
             String lockDepth = "";
 
-            String[] token = new String[5];
+            String[] token = new String[2];
             token[0] = new String( WebDAVXML.ELEM_RESPONSE );
             token[1] = new String( WebDAVXML.ELEM_PROPSTAT );
-            token[2] = new String( WebDAVXML.ELEM_PROP );
-            token[3] = new String( WebDAVProp.PROP_LOCKDISCOVERY );
-            token[4] = new String( WebDAVXML.ELEM_ACTIVE_LOCK );
-
             Element rootElem = skipElements( xml_doc, token );
             if( rootElem != null )
             {
@@ -307,29 +304,75 @@ public class WebDAVResponseInterpreter
                     Name currentTag = current.getTagName();
                     if( currentTag != null )
                     {
-                        if( currentTag.getName().equals( WebDAVXML.ELEM_LOCK_TOKEN ) )
+                        if( currentTag.getName().equals( WebDAVXML.ELEM_STATUS ) )
                         {
-                            lockToken = getLockToken( current );
+                            int status = getStatus( current );
+System.out.println("Extra: "+Extra +", status: "+status);
+                            if( status < 300 )
+                            {
+                                // everything ok
+                            }
+                            else if( status < 400 )
+                            {
+                            }
+                            else if( status < 500 )
+                            {
+                                if( Extra.equals("lock") || Extra.equals("unlock") )
+                                {
+                                    errorMsg( "This resource does not support locking." );
+                                    return;
+                                }
+                            }
+                            else
+                            {
+                                errorMsg( "Server error: " + status );
+                                return;
+                            }
                         }
-                        else if( currentTag.getName().equals( WebDAVXML.ELEM_LOCK_TYPE ) )
+                        else if( currentTag.getName().equals( WebDAVXML.ELEM_PROP ) )
                         {
-                            lockType = getLockType( current );
-                        }
-                        else if( currentTag.getName().equals( WebDAVXML.ELEM_LOCK_SCOPE ) )
-                        {
-                            lockScope = getLockScope( current );
-                        }
-                        else if( currentTag.getName().equals( WebDAVXML.ELEM_OWNER ) )
-                        {
-                            ownerInfo = getOwnerInfo( current );
-                        }
-                        else if( currentTag.getName().equals( WebDAVXML.ELEM_TIMEOUT ) )
-                        {
-                            lockTimeout = getLockTimeout( current );
-                        }
-                        else if( currentTag.getName().equals( WebDAVXML.ELEM_LOCK_DEPTH ) )
-                        {
-                            lockDepth = getLockDepth( current );
+                            token = new String[3];
+                            token[0] = new String( WebDAVXML.ELEM_PROP );
+                            token[1] = new String( WebDAVProp.PROP_LOCKDISCOVERY );
+                            token[2] = new String( WebDAVXML.ELEM_ACTIVE_LOCK );
+
+                            rootElem = skipElements( current, token );
+                            if( rootElem != null )
+                            {
+                                enumTree =  new TreeEnumeration( rootElem );
+                                while( enumTree.hasMoreElements() )
+                                {
+                                    current = (Element)enumTree.nextElement();
+                                    currentTag = current.getTagName();
+                                    if( currentTag != null )
+                                    {
+                                        if( currentTag.getName().equals( WebDAVXML.ELEM_LOCK_TOKEN ) )
+                                        {
+                                            lockToken = getLockToken( current );
+                                        }
+                                        else if( currentTag.getName().equals( WebDAVXML.ELEM_LOCK_TYPE ) )
+                                        {
+                                            lockType = getLockType( current );
+                                        }
+                                        else if( currentTag.getName().equals( WebDAVXML.ELEM_LOCK_SCOPE ) )
+                                        {
+                                            lockScope = getLockScope( current );
+                                        }
+                                        else if( currentTag.getName().equals( WebDAVXML.ELEM_OWNER ) )
+                                        {
+                                            ownerInfo = getOwnerInfo( current );
+                                        }
+                                        else if( currentTag.getName().equals( WebDAVXML.ELEM_TIMEOUT ) )
+                                        {
+                                            lockTimeout = getLockTimeout( current );
+                                        }
+                                        else if( currentTag.getName().equals( WebDAVXML.ELEM_LOCK_DEPTH ) )
+                                        {
+                                            lockDepth = getLockDepth( current );
+                                        }
+                                    }
+                                }
+                            }
                         }
                     }
                 }
@@ -1001,6 +1044,35 @@ public class WebDAVResponseInterpreter
                 return current.getText();
         }
         return "";
+    }
+
+
+    private int getStatus( Element status )
+    {
+        TreeEnumeration treeEnum = new TreeEnumeration( status );
+        while(treeEnum.hasMoreElements() )
+        {
+            Element current = (Element)treeEnum.nextElement();
+            Name tag = current.getTagName();
+            if( (tag != null) && tag.getName().equals( WebDAVXML.ELEM_STATUS ) )
+            {
+                current = (Element)treeEnum.nextElement();
+                if( (current != null) && (current.getType() == Element.PCDATA) )
+                {
+                    StringTokenizer text = new StringTokenizer( current.getText() );
+                    if( text.countTokens() >= 2 )
+                    {
+                        if( text.nextToken().equals( HTTPString ) )
+                        {
+                            int value = Integer.parseInt( text.nextToken() );
+System.out.println(value);
+                            return value;
+                        }
+                    }
+                }
+            }
+        }
+        return 0;
     }
 
 
