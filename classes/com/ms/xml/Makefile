@@ -89,4 +89,5 @@ dist::
 	- cd $(SRC)/parser; rm -rf *.class CVS
 	- cd $(SRC)/util; rm -rf *.class CVS
 	- cd $(SRC)/xmlstream; rm -rf *.class CVS
+	- cd $(SRC)/xmlstream/XMLURLStream; rm -rf *.class CVS
 	- rm -rf $(SRC)/CVS
