@@ -55,6 +55,9 @@
  * @author      Joachim Feise (dav-exp@ics.uci.edu)
  * @date        22 November 2001
  * Changes:     Improved copy and move operations
+ * @author      Joachim Feise (dav-exp@ics.uci.edu)
+ * @date        2 April 2002
+ * Changes:     Updated for JDK 1.4
  */
 
 
