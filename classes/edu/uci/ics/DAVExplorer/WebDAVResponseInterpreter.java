@@ -51,11 +51,14 @@ import java.util.Vector;
 import java.util.Enumeration;
 import java.util.StringTokenizer;
 import java.io.File;
-import java.io.StringReader;
+//import java.io.StringReader;
 import java.io.BufferedReader;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
+//import java.io.DataInputStream;
+import java.io.InputStreamReader;
 import java.io.FileOutputStream;
+import java.io.IOException;
 import HTTPClient.HTTPResponse;
 import com.ms.xml.om.Element;
 import com.ms.xml.om.ElementImpl;
@@ -121,15 +124,8 @@ public class WebDAVResponseInterpreter
         Port = e.getPort();
 
         // get the resource name, and unescape it
-        StringReader sr = new StringReader( e.getResource() + "\n" );
-        EscapeReader er = new EscapeReader( sr, true );
-        BufferedReader br = new BufferedReader( er );
-        try{
-            Resource = br.readLine();
-        } catch(Exception exc) {
-            System.out.println(exc);
-            throw new ResponseException( "Resource name unescape error" );
-        }
+        // TODO: get encoding
+        Resource = unescape( e.getResource(), null );
         Node = e.getNode();
 
         try
@@ -365,9 +361,9 @@ public class WebDAVResponseInterpreter
                 return;
             }
             ByteArrayInputStream byte_in = new ByteArrayInputStream(body);
-            EscapeInputStream iStream = new EscapeInputStream( byte_in, true );
+            //EscapeInputStream iStream = new EscapeInputStream( byte_in, true );
             xml_doc = new Document();
-            xml_doc.load( iStream );
+            xml_doc.load( byte_in );
         }
         catch (Exception e)
         {
@@ -927,9 +923,9 @@ public class WebDAVResponseInterpreter
                 return;
             }
             ByteArrayInputStream byte_in = new ByteArrayInputStream(body);
-            EscapeInputStream iStream = new EscapeInputStream( byte_in, true );
+            //EscapeInputStream iStream = new EscapeInputStream( byte_in, true );
             xml_doc = new Document();
-            xml_doc.load( iStream );
+            xml_doc.load( byte_in );
         }
         catch (Exception e)
         {
@@ -1168,7 +1164,10 @@ public class WebDAVResponseInterpreter
             {
                 Element token = (Element)treeEnum.nextElement();
                 if( (token != null) && (token.getType() == Element.PCDATA || token.getType() == Element.CDATA) )
-                    return token.getText();
+                {
+                    // TODO: get encoding
+                    return unescape( token.getText(), null );
+                }
             }
         }
         return null;
@@ -1214,7 +1213,9 @@ public class WebDAVResponseInterpreter
 
     /**
      * Function used to retreive the owner details on a lock.
-     * A small correction has been made in the code by Eric Giguere to get the owner name in cases where the parsers adds empty tags in the element tree (bug from the parser).
+     * A small correction has been made in the code by Eric Giguere to get the
+     * owner name in cases where the parsers adds empty tags in the element tree
+     * (bug from the parser).
      *
      * @author : Joachim Feise, Eric Giguere
      * @param ownerinfo The XML node that is at the root of the owner information
@@ -1237,29 +1238,32 @@ public class WebDAVResponseInterpreter
         {
             current = (Element)treeEnum.nextElement();
             if (current!=null)
-              tag = current.getTagName();
+                tag = current.getTagName();
             else
-              tag = null;
+                tag = null;
 
             if( (tag!=null) && (tag.getName().equals( WebDAVXML.ELEM_OWNER )) ) {
-              head = current;
-              continue;
+                head = current;
+                continue;
             }
             // True if we did find the "owner" tag
             if (head!=null) {
-              // Tag HREF found
-              if( (tag!=null) && (tag.getName().equals( WebDAVXML.ELEM_HREF )) ) {
-                href = current;
-                continue;
-              }
-              // No Href found but we get a PCDATA or CDATA element so return its text
-              else if ( (href==null) && (current.getType()==Element.PCDATA || current.getType() == Element.CDATA) )
-                return current.getText();
-              // Href element found on previous iteration so we return the content
-              // of its sub-element, if any
-              else if ( (href!=null) && (current.getType()==Element.PCDATA || current.getType() == Element.CDATA) ) {
-                return current.getText();
-              }
+                // Tag HREF found
+                if( (tag!=null) && (tag.getName().equals( WebDAVXML.ELEM_HREF )) )
+                {
+                    href = current;
+                    continue;
+                }
+                // No Href found but we get a PCDATA or CDATA element so return its text
+                else if ( (href==null) && (current.getType()==Element.PCDATA || current.getType() == Element.CDATA) )
+                    return current.getText();
+                // Href element found on previous iteration so we return the content
+                // of its sub-element, if any
+                else if ( (href!=null) && (current.getType()==Element.PCDATA || current.getType() == Element.CDATA) )
+                {
+                    // TODO: get encoding
+                    return unescape( current.getText(), null );
+                }
             }
         }
         return "";
@@ -1352,7 +1356,8 @@ public class WebDAVResponseInterpreter
                 Element token = (Element)treeEnum.nextElement();
                 if( token.getType() == Element.PCDATA || token.getType() == Element.CDATA )
                 {
-                    String HrefValue = token.getText();
+                    // TODO: get encoding
+                    String HrefValue = unescape( token.getText(), null );
                     // stripping https://
                     int pos = HrefValue.indexOf( HTTPSPrefix );
                     if( pos >= 0 )
@@ -1465,6 +1470,30 @@ public class WebDAVResponseInterpreter
                 }
             }
         }
+    }
+
+
+    private String unescape( String text, String encoding )
+    {
+        text += "\n";
+        ByteArrayInputStream byte_in = new ByteArrayInputStream( text.getBytes() );
+        EscapeInputStream iStream = new EscapeInputStream( byte_in, true );
+        try
+        {
+            InputStreamReader isr = null;
+            if( (encoding==null) || (encoding.length()==0) )
+                isr = new InputStreamReader( iStream, "UTF-8" );
+            else
+                isr = new InputStreamReader( iStream, encoding );
+
+            BufferedReader br = new BufferedReader( isr );
+            return br.readLine();
+        }
+        catch( IOException e )
+        {
+            GlobalData.getGlobalData().errorMsg("Data unescaping error: \n" + e);
+        }
+        return "";
     }
 
     private void printXML( byte[] body )

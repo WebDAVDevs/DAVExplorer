@@ -107,6 +107,7 @@ public class EscapeReader
             if( low > 64 )
                 low -= 7;
             val = ((high-48) << 4) + (low-48);
+            // TODO: handle encoding
         }
         return val;
     }
