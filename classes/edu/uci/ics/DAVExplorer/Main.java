@@ -196,7 +196,7 @@ public class Main extends JFrame
 
     public final static void main(String[] argv)
     {
-        Main mFrame = new Main("WebDAV Explorer");
+        Main mFrame = new Main("DAV Explorer");
     }
 
     class LoginDialogListener implements ActionListener

@@ -52,14 +52,30 @@ public class WebDAVConnection extends HTTPConnection
     public WebDAVConnection(String HostName)
     {
         super(HostName, DEFAULT_PORT);
+        try
+        {
+            removeModule( Class.forName("HTTPClient.RedirectionModule") );
+        }
+        catch (ClassNotFoundException cnfe)
+        {
+            // just ignore it
+        }
     }
 
     public WebDAVConnection(String HostName, int Port)
     {
         super(HostName, Port);
+        try
+        {
+            removeModule( Class.forName("HTTPClient.RedirectionModule") );
+        }
+        catch (ClassNotFoundException cnfe)
+        {
+            // just ignore it
+        }
     }
 
-    public HTTPResponse PropFind(String file, byte[] body, NVPair[] headers) 
+    public HTTPResponse PropFind(String file, byte[] body, NVPair[] headers)
         throws IOException, ModuleException
     {
         return ExtensionMethod("PROPFIND",file, body, headers);
@@ -80,13 +96,13 @@ public class WebDAVConnection extends HTTPConnection
     public HTTPResponse AddRef(String file, NVPair[] headers)
         throws IOException, ModuleException
     {
-        return ExtensionMethod("ADDREF", file, (byte[]) null, headers);  
+        return ExtensionMethod("ADDREF", file, (byte[]) null, headers);
     }
 
     public HTTPResponse DelRef(String file, NVPair[] headers)
         throws IOException, ModuleException
     {
-        return ExtensionMethod("DELREF", file, (byte[]) null, headers); 
+        return ExtensionMethod("DELREF", file, (byte[]) null, headers);
     }
 
     public HTTPResponse Copy(String file, byte[] body, NVPair[] headers)
@@ -119,10 +135,10 @@ public class WebDAVConnection extends HTTPConnection
         return ExtensionMethod("LOCK", file, body, headers);
     }
 
-    public HTTPResponse Lock(String file, NVPair[] headers) 
+    public HTTPResponse Lock(String file, NVPair[] headers)
         throws IOException, ModuleException
     {
-        return Lock(file, null, headers); 
+        return Lock(file, null, headers);
     }
 
     public HTTPResponse Unlock(String file, NVPair[] headers)

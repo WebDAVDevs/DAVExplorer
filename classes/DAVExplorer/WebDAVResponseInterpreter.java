@@ -129,28 +129,33 @@ public class WebDAVResponseInterpreter
         HostName = e.getHost();
         Port = e.getPort();
 
-    ByteArrayInputStream ar = new ByteArrayInputStream(e.getResource().getBytes());
+        ByteArrayInputStream ar = new ByteArrayInputStream(e.getResource().getBytes());
         EscapeInputStream iStream = new EscapeInputStream( ar, true );
-    DataInputStream dis = new DataInputStream( iStream );
-    try{
+        DataInputStream dis = new DataInputStream( iStream );
+        try{
             Resource = dis.readLine();
-    } catch(Exception exc) {
-        System.out.println(exc);
-    }
-
+        } catch(Exception exc) {
+            System.out.println(exc);
+        }
         Node = e.getNode();
         try
         {
+            if (res.getStatusCode() >= 300)
+            {
+                resetInProgress();
+                if( (res.getStatusCode() == 302) || (res.getStatusCode() == 301) )
+                {
+                    String location = res.getHeader( "Location" );
+                    errorMsg("The resource requested moved to " + location + "\nPlease try connecting to the new location." );
+                }
+                else
+                    errorMsg("DAV Interpreter:\n\n" + res.getStatusCode() + " " + res.getReasonLine());
+                return;
+            }
             if (Method.equals("MOVE"))
             {
                 parseMove();
                 resetInProgress();
-                return;
-            }
-            if (res.getStatusCode() >= 300)
-            {
-                resetInProgress();
-                errorMsg("DAV Interpreter:\n\n" + res.getStatusCode() + " " + res.getReasonLine());
                 return;
             }
         }
@@ -307,7 +312,6 @@ public class WebDAVResponseInterpreter
                         if( currentTag.getName().equals( WebDAVXML.ELEM_STATUS ) )
                         {
                             int status = getStatus( current );
-System.out.println("Extra: "+Extra +", status: "+status);
                             if( status < 300 )
                             {
                                 // everything ok
