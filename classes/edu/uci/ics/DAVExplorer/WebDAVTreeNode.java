@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 1998-2003 Regents of the University of California.
+ * Copyright (c) 1998-2004 Regents of the University of California.
  * All rights reserved.
  *
  * This software was developed at the University of California, Irvine.
@@ -20,7 +20,7 @@
 /**
  * Title:       WebDAV Tree Node
  * Description: Implementation of the nodes for the navigation tree
- * Copyright:   Copyright (c) 1998-2003 Regents of the University of California. All rights reserved.
+ * Copyright:   Copyright (c) 1998-2004 Regents of the University of California. All rights reserved.
  * @author      Robert Emmery
  * @date        2 April 1998
  * @author      Yuzo Kanomata, Joachim Feise (dav-exp@ics.uci.edu)
@@ -48,6 +48,9 @@
  * @author      Joachim Feise (dav-exp@ics.uci.edu)
  * @date        23 September 2003
  * Changes:     Refactored code during DeltaV integration.
+ * @author      Joachim Feise (dav-exp@ics.uci.edu)
+ * @date        08 February 2004
+ * Changes:     Added Javadoc templates
  */
 
 package edu.uci.ics.DAVExplorer;
@@ -63,6 +66,10 @@ import com.ms.xml.om.Document;
 import com.ms.xml.om.TreeEnumeration;
 import com.ms.xml.util.Name;
 
+
+/**
+ * 
+ */
 public class WebDAVTreeNode extends DefaultMutableTreeNode
 {
     protected static DeltaVRequestGenerator generator = new DeltaVRequestGenerator();
@@ -77,13 +84,21 @@ public class WebDAVTreeNode extends DefaultMutableTreeNode
     protected boolean localLoad = false;
 
 
+    /**
+     * 
+     */
     public static void reset()
     {
         generator = new DeltaVRequestGenerator();
         interpreter = new DeltaVResponseInterpreter();
     }
 
-    
+
+    /**
+     * Constructor
+     * @param o
+     * @param ua
+     */    
     public WebDAVTreeNode( Object o, String ua )
     {
         super(o);
@@ -92,7 +107,13 @@ public class WebDAVTreeNode extends DefaultMutableTreeNode
         hasLoaded = true;
     }
 
-    
+
+    /**
+     * Constructor
+     * @param o
+     * @param isRoot
+     * @param ua
+     */    
     public WebDAVTreeNode( Object o, boolean isRoot, String ua )
     {
         super(o);
@@ -103,44 +124,72 @@ public class WebDAVTreeNode extends DefaultMutableTreeNode
         dataNode = new DataNode( true, false, null, o.toString(), "DAV Root Node", "", 0, "", null );
     }
 
-    
+
+    /**
+     * 
+     * @param ua
+     */    
     public void setUserAgent( String ua )
     {
         userAgent = ua;
         generator.setUserAgent( userAgent );
     }
 
-    
+
+    /**
+     * 
+     * @return
+     */
     public DataNode getDataNode()
     {
         return dataNode;
     }
 
-    
+
+    /**
+     * 
+     * @param newNode
+     */
     public void setDataNode( DataNode newNode )
     {
         dataNode = newNode;
     }
 
-    
+
+    /**
+     * 
+     * 
+     * @return
+     */
     public boolean isLeaf()
     {
         return false;
     }
 
-    
+
+    /**
+     * 
+     * @return
+     */
     public boolean hasLoadedChildren()
     {
         return childrenLoaded;
     }
 
-    
+
+    /**
+     * 
+     * @param b
+     */
     public void setHasLoadedChildren( boolean b )
     {
         childrenLoaded = b;
     }
 
-    
+
+    /**
+     * 
+     */
     public void removeChildren()
     {
         if( GlobalData.getGlobalData().getDebugTreeNode() )
@@ -157,13 +206,22 @@ public class WebDAVTreeNode extends DefaultMutableTreeNode
         dataNode = null;
     }
 
-    
+
+    /**
+     * 
+     * 
+     * @return
+     */
     public int getChildCount()
     {
         return super.getChildCount();
     }
 
-    
+
+    /**
+     * 
+     * @param byte_xml
+     */    
     protected void loadRemote( byte[] byte_xml )
     {
         if( GlobalData.getGlobalData().getDebugTreeNode() )
@@ -231,6 +289,11 @@ public class WebDAVTreeNode extends DefaultMutableTreeNode
     }
 
 
+    /**
+     * 
+     * @param name
+     * @param full_path
+     */
     protected void loadLocal(String name, Object[] full_path)
     {
         if( GlobalData.getGlobalData().getDebugTreeNode() )
@@ -300,7 +363,9 @@ public class WebDAVTreeNode extends DefaultMutableTreeNode
     }
 
 
-    // This finishes the Load Children when a call is made to a DAV server
+    /**
+     * This finishes the Load Children when a call is made to a DAV server
+     */
     public void finishLoadChildren()
     {
         byte[] byte_xml = interpreter.getXML();
@@ -314,6 +379,10 @@ public class WebDAVTreeNode extends DefaultMutableTreeNode
     }
 
 
+    /**
+     * 
+     * @param select
+     */
     public void loadChildren( boolean select )
     {
         if( GlobalData.getGlobalData().getDebugTreeNode() )
@@ -458,18 +527,31 @@ public class WebDAVTreeNode extends DefaultMutableTreeNode
         }
     }
 
+
+    /**
+     * 
+     * @return
+     */
     public boolean isLocalLoad()
     {
         return localLoad;
     }
 
 
+    /**
+     * 
+     * @return
+     */
     public boolean isDeltaV()
     {
         return getDeltaV();
     }
     
-    
+
+    /**
+     * 
+     * @return
+     */
     public boolean getDeltaV()
     {
         if( !(dataNode instanceof DeltaVDataNode ) )
@@ -477,7 +559,11 @@ public class WebDAVTreeNode extends DefaultMutableTreeNode
         return ((DeltaVDataNode)dataNode).getDeltaV();
     }
     
-    
+
+    /**
+     * 
+     * @param deltaV
+     */
     public void setDeltaV( boolean deltaV )
     {
         if( !(dataNode instanceof DeltaVDataNode ) )
@@ -485,7 +571,11 @@ public class WebDAVTreeNode extends DefaultMutableTreeNode
         ((DeltaVDataNode)dataNode).setDeltaV( deltaV );
     }
     
-    
+
+    /**
+     * 
+     * @return
+     */
     public boolean getDeltaVReports()
     {
         if( !(dataNode instanceof DeltaVDataNode ) )
@@ -494,6 +584,10 @@ public class WebDAVTreeNode extends DefaultMutableTreeNode
     }
 
 
+    /**
+     * 
+     * @param reports
+     */
     public void setDeltaVReports( boolean reports )
     {
         if( !(dataNode instanceof DeltaVDataNode ) )

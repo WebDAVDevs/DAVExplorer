@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 1998-2003 Regents of the University of California.
+ * Copyright (c) 1998-2004 Regents of the University of California.
  * All rights reserved.
  *
  * This software was developed at the University of California, Irvine.
@@ -22,7 +22,7 @@
  * Description: This class creates an extension of JPanel which creates the
  *              URI entry box on the WebDAVExplorer.  This box contains
  *              the text field in which the user enters the dav server's URI.
- * Copyright:   Copyright (c) 1998-2003 Regents of the University of California. All rights reserved.
+ * Copyright:   Copyright (c) 1998-2004 Regents of the University of California. All rights reserved.
  * @author      Undergraduate project team ICS 126B 1998
  * @date        1998
  * @author      Yuzo Kanomata, Joachim Feise (dav-exp@ics.uci.edu)
@@ -45,6 +45,9 @@
  * @date        7 April 2003
  * Changes:     Integrated Thoralf Rickert's change to combobox.
  *              Cleaned up.
+ * @author      Joachim Feise (dav-exp@ics.uci.edu)
+ * @date        08 February 2004
+ * Changes:     Added Javadoc templates
  */
 
 package edu.uci.ics.DAVExplorer;
@@ -62,6 +65,9 @@ import javax.swing.SwingConstants;
 import java.awt.Dimension;
 
 
+/**
+ * 
+ */
 public class URIBox extends JPanel implements ActionListener
 {
     private Vector URIBoxListener;
@@ -70,6 +76,9 @@ public class URIBox extends JPanel implements ActionListener
     private JButton okButton;
 
 
+    /**
+     * Constructor
+     */
     public URIBox()
     {
         super();
@@ -109,6 +118,12 @@ public class URIBox extends JPanel implements ActionListener
     }
 
 
+    /**
+     * 
+     * @param filename
+     * @param description
+     * @return
+     */
     private ImageIcon loadImageIcon(String filename, String description)
     {
         try
@@ -123,24 +138,40 @@ public class URIBox extends JPanel implements ActionListener
     }
 
 
+    /**
+     * 
+     * @param evt
+     */
     public void actionPerformed(ActionEvent evt)
     {
         notifyListener();
     }
 
 
+    /**
+     * 
+     * @param uri
+     */
     public void setText(String uri)
     {
         urlField.setSelectedItem(uri);
     }
 
 
+    /**
+     * 
+     * @return
+     */
     public String getText()
     {
         return urlField.getSelectedItem().toString().trim();
     }
 
 
+    /**
+     * 
+     * @param l
+     */
     public synchronized void addActionListener(ActionListener l)
     {
         URIBoxListener.addElement(l);
@@ -162,12 +193,19 @@ public class URIBox extends JPanel implements ActionListener
     }
 
 
+    /**
+     * 
+     * @param l
+     */
     public synchronized void removeActionListener(ActionListener l)
     {
         URIBoxListener.removeElement(l);
     }
 
 
+    /**
+     * 
+     */
     protected void notifyListener()
     {
         ActionEvent evt = new ActionEvent(this, ActionEvent.ACTION_PERFORMED, getText());
@@ -187,8 +225,15 @@ public class URIBox extends JPanel implements ActionListener
     }
 
 
+    /**
+     * 
+     */
     class EnterPressedListener implements ActionListener
     {
+        /**
+         * 
+         * @param e
+         */
         public void actionPerformed(ActionEvent e)
         {
             // ignore events resulting from changing the selection

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 1998-2003 Regents of the University of California.
+ * Copyright (c) 1998-2004 Regents of the University of California.
  * All rights reserved.
  *
  * This software was developed at the University of California, Irvine.
@@ -22,7 +22,7 @@
  * Description: This class is part of the GUI module for the WebDAV
  *              Client. It provides the user with a Windows Explorer
  *              like interface.
- * Copyright:   Copyright (c) 1998-2003 Regents of the University of California. All rights reserved.
+ * Copyright:   Copyright (c) 1998-2004 Regents of the University of California. All rights reserved.
  * @author      Robert Emmery
  * @date        2 April 1998
  * @author      Yuzo Kanomata, Joachim Feise (dav-exp@ics.uci.edu)
@@ -55,6 +55,9 @@
  * @author      Joachim Feise (dav-exp@ics.uci.edu)
  * @date        23 September 2003
  * Changes:     Integrated the DeltaV code from the Spring 2003 ICS125 team.
+ * @author      Joachim Feise (dav-exp@ics.uci.edu)
+ * @date        08 February 2004
+ * Changes:     Added Javadoc templates
  */
 
 package edu.uci.ics.DAVExplorer;
@@ -79,7 +82,11 @@ import java.io.File;
 import java.util.Vector;
 import java.util.Enumeration;
 
+
 // Yuzo: This should be a Model
+/**
+ * 
+ */
 public class WebDAVTreeView implements ViewSelectionListener, CopyResponseListener, PutListener
 {
     JTree tree;
@@ -103,7 +110,10 @@ public class WebDAVTreeView implements ViewSelectionListener, CopyResponseListen
     // without having to select it.
     treeExpansionListener treeExpListener = new treeExpansionListener();
 
-    // Constructor
+
+    /**
+     * Constructor
+     */
     public WebDAVTreeView()
     {
         GlobalData.getGlobalData().setTree(this);
@@ -148,7 +158,6 @@ public class WebDAVTreeView implements ViewSelectionListener, CopyResponseListen
         // Yuzo Adding Expansion Event listner for testing purposes:
         tree.addTreeExpansionListener( treeExpListener);
 
-
         treeModel.addTreeModelListener( new TreeModelListener()
         {
             public void treeNodesChanged(TreeModelEvent e)
@@ -169,19 +178,36 @@ public class WebDAVTreeView implements ViewSelectionListener, CopyResponseListen
         });
     }
 
+
+    /**
+     * 
+     * @return
+     */
     public DefaultMutableTreeNode getRoot() {
         return root;
     }
 
 
+    /**
+     * 
+     * @param ua
+     */
     public void setUserAgent( String ua )
     {
         userAgent = ua;
         ((WebDAVTreeNode)root).setUserAgent( userAgent );
     }
 
+
+    /**
+     * 
+     */
     class treeExpansionListener implements TreeExpansionListener
     {
+        /**
+         * 
+         * @param evt
+         */
         public void treeExpanded( TreeExpansionEvent evt )
         {
             if( GlobalData.getGlobalData().getDebugTreeView() )
@@ -205,17 +231,23 @@ public class WebDAVTreeView implements ViewSelectionListener, CopyResponseListen
             GlobalData.getGlobalData().resetCursor();
         }
 
+
+        /**
+         * 
+         * @param evt
+         */
         public void treeCollapsed( TreeExpansionEvent evt )
         {
         }
     }
 
 
-
     // Yuzo: added PutResponse stuff to handle put to a selected collection
     // in the file view
-
-    // Goal here is to load the node without changing the selection
+    /**
+     * Goal here is to load the node without changing the selection
+     * @param e
+     */
     public void PutEventResponse(PutEvent e)
     {
         if( GlobalData.getGlobalData().getDebugTreeView() )
@@ -239,6 +271,10 @@ public class WebDAVTreeView implements ViewSelectionListener, CopyResponseListen
     }
 
     //Yuzo: Added Copy ResponseListner stuff
+    /**
+     * 
+     * @param e
+     */
     public synchronized void CopyEventResponse(CopyResponseEvent e)
     {
         if( GlobalData.getGlobalData().getDebugTreeView() )
@@ -264,6 +300,10 @@ public class WebDAVTreeView implements ViewSelectionListener, CopyResponseListen
     }
 
 
+    /**
+     * 
+     * @return
+     */
     public JScrollPane getScrollPane()
     {
         // We package the whole TreeView inside a Scroll Pane, returned
@@ -271,17 +311,25 @@ public class WebDAVTreeView implements ViewSelectionListener, CopyResponseListen
         return(sp);
     }
 
-    //Yuzo Added: Get the Selection Event from TableView
-    // This means that a folder(dir) was double clicked.
-    // Now handle this event as an open of that partictular dir
+
+    /**
+     * Yuzo Added: Get the Selection Event from TableView
+     * This means that a folder(dir) was double clicked.
+     * Now handle this event as an open of that partictular dir 
+     * @param e
+     */
     public void selectionChanged(ViewSelectionEvent e)
     {
         tableSelectionChanged(e);
     }
 
-    //  This is where selection event from the TableView are routed to.
-    //  The Event includes the information needed to expand/select
-    //  the particular row.
+
+    /**
+     * This is where selection event from the TableView are routed to.
+     * The Event includes the information needed to expand/select
+     * the particular row.
+     * @param e
+     */
     protected void tableSelectionChanged(ViewSelectionEvent e)
     {
         if( GlobalData.getGlobalData().getDebugTreeView() )
@@ -349,6 +397,10 @@ public class WebDAVTreeView implements ViewSelectionListener, CopyResponseListen
         tree.addTreeSelectionListener(treeSelectionListener);
     }
 
+
+    /**
+     *
+     */
     public void refresh()
     {
         if( GlobalData.getGlobalData().getDebugTreeView() )
@@ -362,20 +414,33 @@ public class WebDAVTreeView implements ViewSelectionListener, CopyResponseListen
         tree.setSelectionRow(row);
     }
 
+
+    /**
+     * 
+     * @param l
+     */
     public synchronized void addViewSelectionListener(ViewSelectionListener l)
     {
         // Register a listener
         selListeners.addElement(l);
     }
 
+
+    /**
+     * 
+     * @param l
+     */
     public synchronized void removeViewSelectionListener(ViewSelectionListener l)
     {
         selListeners.removeElement(l);
     }
 
 
-    // This method sets the selected TreeNode to tn and sends the proper
-    // notifications out.
+    /**
+     * This method sets the selected TreeNode to tn and sends the proper
+     * notifications out.
+     * @param tn
+     */
     public void setSelectedNode( WebDAVTreeNode tn )
     {
         if( GlobalData.getGlobalData().getDebugTreeView() )
@@ -414,10 +479,16 @@ public class WebDAVTreeView implements ViewSelectionListener, CopyResponseListen
         }
     }
 
-    //Yuzo New Selection Listener for tree selection
+
+    /**
+     * Yuzo New Selection Listener for tree selection 
+     */
     class SelectionChangeListener implements TreeSelectionListener
     {
-        // This is where we handle the tree selection event.
+        /**
+         * This is where we handle the tree selection event.
+         * @param e
+         */
         public void valueChanged(TreeSelectionEvent e)
         {
         if( GlobalData.getGlobalData().getDebugTreeView() )
@@ -472,6 +543,9 @@ public class WebDAVTreeView implements ViewSelectionListener, CopyResponseListen
     }
 
 
+    /**
+     * 
+     */
     public void initTree()
     {
         // For initialization purposes.
@@ -503,6 +577,11 @@ public class WebDAVTreeView implements ViewSelectionListener, CopyResponseListen
     }
 
 
+    /**
+     * 
+     * @param the_path
+     * @return
+     */
     public String constructPath(TreePath the_path)
     {
         // This will iterate through the path array, and construct
@@ -544,6 +623,14 @@ public class WebDAVTreeView implements ViewSelectionListener, CopyResponseListen
         return (newPath);
     }
 
+
+    /**
+     * 
+     * @param name
+     * @param local
+     * @param deltaV
+     * @return
+     */
     public boolean addRowToRoot(String name, boolean local, boolean deltaV )
     {
         if( GlobalData.getGlobalData().getDebugTreeView() )
@@ -618,17 +705,32 @@ public class WebDAVTreeView implements ViewSelectionListener, CopyResponseListen
         return true;
     }
 
+
+    /**
+     * 
+     * @return
+     */
     public String getCurrentPath()
     {
         return constructPath( currPath );
     }
 
-    // Yuzo: This is to allow Main to add fileView as a Tree Listener
+
+    /**
+     * Yuzo: This is to allow Main to add fileView as a Tree Listener
+     * @param tsl
+     */
     public void addTreeSelectionListener(TreeSelectionListener tsl)
     {
         tree.addTreeSelectionListener(tsl);
     }
 
+
+    /**
+     * 
+     * @param curFile
+     * @return
+     */
     public String getLockToken( String curFile )
     {
         if( currPath == null )
@@ -638,6 +740,12 @@ public class WebDAVTreeView implements ViewSelectionListener, CopyResponseListen
         return getLockToken( node, curFile );
     }
 
+
+    /**
+     * 
+     * @param curFile
+     * @param token
+     */
     public void setLock( String curFile, String token )
     {
         currNode = (WebDAVTreeNode) currPath.getLastPathComponent();
@@ -649,6 +757,11 @@ public class WebDAVTreeView implements ViewSelectionListener, CopyResponseListen
         }
     }
 
+
+    /**
+     * 
+     * @param curFile
+     */
     public void resetLock( String curFile )
     {
         currNode = (WebDAVTreeNode) currPath.getLastPathComponent();
@@ -661,6 +774,11 @@ public class WebDAVTreeView implements ViewSelectionListener, CopyResponseListen
     }
 
 
+    /**
+     * 
+     * @param curFile
+     * @return
+     */
     public boolean isCollection( String curFile )
     {
         int pos;
@@ -694,6 +812,11 @@ public class WebDAVTreeView implements ViewSelectionListener, CopyResponseListen
     }
 
 
+    /**
+     * 
+     * @param curFile
+     * @return
+     */
     public boolean isRemote( String curFile )
     {
         if( curFile.startsWith(GlobalData.WebDAVPrefix) || curFile.startsWith(GlobalData.WebDAVPrefixSSL) )
@@ -703,12 +826,20 @@ public class WebDAVTreeView implements ViewSelectionListener, CopyResponseListen
     }
 
 
+    /**
+     * 
+     * @return
+     */
     public boolean isDeltaV()
     {
         return getDeltaV();
     }
     
-    
+
+    /**
+     * 
+     * @return
+     */
     public boolean getDeltaV()
     {
         if( currPath==null || currPath.getPathCount()<1 )
@@ -720,7 +851,11 @@ public class WebDAVTreeView implements ViewSelectionListener, CopyResponseListen
         return node.getDeltaV();
     }
     
-    
+
+    /**
+     * 
+     * @return
+     */
     public boolean getDeltaVReports()
     {
         if( currPath==null || currPath.getPathCount()<1 )
@@ -732,7 +867,12 @@ public class WebDAVTreeView implements ViewSelectionListener, CopyResponseListen
         return node.getDeltaVReports();
     }
     
-    
+
+    /**
+     * 
+     * @param curFile
+     * @param versions
+     */
     public void setVersions( String curFile, Vector versions )
     {
         currNode = (WebDAVTreeNode) currPath.getLastPathComponent();
@@ -745,6 +885,10 @@ public class WebDAVTreeView implements ViewSelectionListener, CopyResponseListen
     }
 
 
+    /**
+     * 
+     * @param n
+     */
     public void refreshLocalNoSelection( WebDAVTreeNode n )
     {
         if( GlobalData.getGlobalData().getDebugTreeView() )
@@ -765,6 +909,11 @@ public class WebDAVTreeView implements ViewSelectionListener, CopyResponseListen
         tree.addTreeSelectionListener(treeSelectionListener);
     }
 
+
+    /**
+     * 
+     * @param n
+     */
     public void refreshLocal( WebDAVTreeNode n )
     {
         if( GlobalData.getGlobalData().getDebugTreeView() )
@@ -814,6 +963,12 @@ public class WebDAVTreeView implements ViewSelectionListener, CopyResponseListen
     }
 
 
+    /**
+     * 
+     * @param node
+     * @param curFile
+     * @return
+     */
     private String getLockToken( DataNode node, String curFile )
     {
         if( node == null )
@@ -836,6 +991,13 @@ public class WebDAVTreeView implements ViewSelectionListener, CopyResponseListen
         return null;
     }
 
+
+    /**
+     * 
+     * @param node
+     * @param curFile
+     * @return
+     */
     private DataNode getCurrentDataNode( DataNode node, String curFile )
     {
         if( node == null )

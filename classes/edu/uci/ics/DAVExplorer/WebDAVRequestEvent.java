@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 1998-2001 Regents of the University of California.
+ * Copyright (c) 1998-2004 Regents of the University of California.
  * All rights reserved.
  *
  * This software was developed at the University of California, Irvine.
@@ -22,7 +22,7 @@
  * Description: This class creates an event object which carries the following:
  *              HostName, Port, MethodName, ResourceName, Headers, Body,
  *              Extra, User, Password
- * Copyright:   Copyright (c) 1998-2001 Regents of the University of California. All rights reserved.
+ * Copyright:   Copyright (c) 1998-2004 Regents of the University of California. All rights reserved.
  * @author      Undergraduate project team ICS 126B 1998
  * @date        1998
  * @author      Yuzo Kanomata, Joachim Feise (dav-exp@ics.uci.edu)
@@ -31,6 +31,9 @@
  * @author      Joachim Feise (dav-exp@ics.uci.edu)
  * @date        1 October 2001
  * Changes:     Change of package name
+ * @author      Joachim Feise (dav-exp@ics.uci.edu)
+ * @date        08 February 2004
+ * Changes:     Added Javadoc templates
  */
 
 package edu.uci.ics.DAVExplorer;
@@ -38,6 +41,10 @@ package edu.uci.ics.DAVExplorer;
 import java.util.EventObject;
 import HTTPClient.NVPair;
 
+
+/**
+ * 
+ */
 public class WebDAVRequestEvent extends EventObject
 {
     private String HostName;
@@ -53,6 +60,20 @@ public class WebDAVRequestEvent extends EventObject
     private WebDAVTreeNode node;
 
 
+    /**
+     * Constructor
+     * @param module
+     * @param MethodName
+     * @param HostName
+     * @param Port
+     * @param ResourceName
+     * @param Headers
+     * @param Body
+     * @param Extra
+     * @param User
+     * @param Pass
+     * @param n
+     */
     public WebDAVRequestEvent( Object module, String MethodName, String HostName, int Port,
                                String ResourceName, NVPair[] Headers, byte[] Body,
                                String Extra, String User, String Pass, WebDAVTreeNode n )
@@ -76,51 +97,101 @@ public class WebDAVRequestEvent extends EventObject
         this.node =n;
     }
 
+
+    /**
+     * 
+     * @return
+     */
     public String getHost()
     {
         return HostName;
     }
 
+
+    /**
+     * 
+     * @return
+     */
     public String getUser()
     {
         return User;
     }
 
+
+    /**
+     * 
+     * @return
+     */
     public String getPass()
     {
         return Pass;
     }
 
+
+    /**
+     * 
+     * @return
+     */
     public int getPort()
     {
         return Port;
     }
 
+
+    /**
+     * 
+     * @return
+     */
     public String getMethod()
     {
         return MethodName;
     }
 
+
+    /**
+     * 
+     * @return
+     */
     public String getResource()
     {
         return ResourceName;
     }
 
+
+    /**
+     * 
+     * @return
+     */
     public NVPair[] getHeaders()
     {
         return Headers;
     }
 
+
+    /**
+     * 
+     * @return
+     */
     public byte[] getBody()
     {
         return Body;
     }
 
+
+    /**
+     * 
+     * @return
+     */
     public String getExtraInfo()
     {
         return Extra;
     }
 
+
+    /**
+     * 
+     * @return
+     */
     public WebDAVTreeNode getNode()
     {
         return node;

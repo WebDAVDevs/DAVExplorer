@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 1999-2001 Regents of the University of California.
+ * Copyright (c) 1999-2004 Regents of the University of California.
  * All rights reserved.
  *
  * This software was developed at the University of California, Irvine.
@@ -22,12 +22,15 @@
  * Description: This class is a filterstream that converts escaped characters to
  *              their normal equivalents, or escapes special characters, respectively,
  *              depending on the direction of the conversion.
- * Copyright:   Copyright (c) 1999-2001 Regents of the University of California. All rights reserved.
+ * Copyright:   Copyright (c) 1999-2004 Regents of the University of California. All rights reserved.
  * @author      Joachim Feise (dav-exp@ics.uci.edu)
  * @date        1 April 1999
  * @author      Joachim Feise (dav-exp@ics.uci.edu)
  * @date        1 October 2001
  * Changes:     Change of package name
+ * @author      Joachim Feise (dav-exp@ics.uci.edu)
+ * @date        08 February 2004
+ * Changes:     Added Javadoc templates
  */
 
 package edu.uci.ics.DAVExplorer;
@@ -36,9 +39,18 @@ import java.io.InputStream;
 import java.io.FilterInputStream;
 import java.io.IOException;
 
+
+/**
+ * 
+ */
 public class EscapeInputStream
     extends FilterInputStream
 {
+    /**
+     * 
+     * @param in
+     * @param remove
+     */
     public EscapeInputStream( InputStream in, boolean remove )
     {
         super( in );
@@ -46,6 +58,11 @@ public class EscapeInputStream
         m_remove = remove;
     }
 
+
+    /**
+     * 
+     * @return
+     */
     public int read()
         throws IOException
     {
@@ -58,12 +75,28 @@ public class EscapeInputStream
             return readAdd();
     }
 
+
+    /**
+     * 
+     * @param b
+     * 
+     * @return
+     */
     public int read( byte[] b )
         throws IOException
     {
         return read( b, 0, b.length );
     }
 
+
+    /**
+     * 
+     * @param b
+     * @param off
+     * @param len
+     * 
+     * @return
+     */
     public int read( byte[] b, int off, int len )
         throws IOException
     {
@@ -90,6 +123,8 @@ public class EscapeInputStream
      * read byte from input stream and remove any escaped
      * sequences and replace them with the unescaped equivalent
      * byte.
+     * 
+     * @return
      */
     private int readRemove()
         throws IOException
@@ -118,9 +153,12 @@ public class EscapeInputStream
         return val;
     }
 
+
     /**
      * read byte from input stream and replace any byte that
      * requires escaping with the equivalent escape sequence.
+     * 
+     * @return
      */
     private int readAdd()
         throws IOException
@@ -159,6 +197,7 @@ public class EscapeInputStream
         }
         return val;
     }
+
 
     private InputStream m_in = null;
     private boolean m_remove = false;

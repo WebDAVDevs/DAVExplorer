@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 1998-2001 Regents of the University of California.
+ * Copyright (c) 1998-2004 Regents of the University of California.
  * All rights reserved.
  *
  * This software was developed at the University of California, Irvine.
@@ -21,7 +21,7 @@
  * Title:       AsGen
  * Description: This class is used to generate namespace aliases within
  *              an xml document.
- * Copyright:   Copyright (c) 1998-2001 Regents of the University of California. All rights reserved.
+ * Copyright:   Copyright (c) 1998-2004 Regents of the University of California. All rights reserved.
  * @author      Robert Emmery
  * @date        28 February 1998
  * @author      Yuzo Kanomata, Joachim Feise (dav-exp@ics.uci.edu)
@@ -32,12 +32,24 @@
  * @author      Joachim Feise (dav-exp@ics.uci.edu)
  * @date        1 October 2001
  * Changes:     Change of package name
+ * @author      Joachim Feise (dav-exp@ics.uci.edu)
+ * @date        08 February 2004
+ * Changes:     Added Javadoc templates
  */
 
 package edu.uci.ics.DAVExplorer;
 
+/**
+ * 
+ */
 class AsNode
 {
+    /**
+     * Constructor
+     * @param schema
+     * @param alias
+     * @param next 
+     */
     public AsNode( String schema, String alias, AsNode next )
     {
         m_schema = schema;
@@ -47,31 +59,60 @@ class AsNode
         m_prev = next;
     }
 
+
+    /**
+     * 
+     * @return
+     */
     public String getAlias()
     {
         return m_alias;
     }
 
+
+    /**
+     * 
+     * @return
+     */
     public String getSchema()
     {
         return m_schema;
     }
 
+
+    /**
+     * 
+     * @return
+     */
     public boolean isAttributeSet()
     {
         return m_attributeSet;
     }
 
+
+    /**
+     * 
+     */
     public void setAttribute()
     {
         m_attributeSet = true;
     }
 
+
+    /**
+     *
+     * @return
+     */
     public AsNode getNext()
     {
         return m_next;
     }
 
+
+    /**
+     *
+     * @return
+     */
     public AsNode getPrev()
     {
         return m_prev;
@@ -85,12 +126,22 @@ class AsNode
 };
 
 
+/**
+ * 
+ */
 public class AsGen
 {
+    /**
+     * Constructor
+     */
     public AsGen()
     {
     }
 
+
+    /**
+     * Copy constructor
+     */
     protected AsGen( AsNode node )
     {
         if( m_first == null )
@@ -100,6 +151,11 @@ public class AsGen
         m_current = node;
     }
 
+
+    /**
+     * 
+     * @param schema
+     */
     public void createNamespace( String schema )
     {
         AsNode node = new AsNode( schema, getNextAs(), m_last );
@@ -109,6 +165,11 @@ public class AsGen
         m_current = node;
     }
 
+
+    /**
+     * 
+     * @return
+     */
     public AsGen getNext()
     {
         if( m_current == null )
@@ -118,6 +179,11 @@ public class AsGen
         return new AsGen( m_current );
     }
 
+
+    /**
+     * 
+     * @return
+     */
     public AsGen getPrev()
     {
         if( m_current == null )
@@ -127,6 +193,11 @@ public class AsGen
         return new AsGen( m_current );
     }
 
+
+    /**
+     * 
+     * @return
+     */
     public AsGen getFirst()
     {
         if( m_first == null )
@@ -135,6 +206,11 @@ public class AsGen
             return new AsGen( m_first );
     }
 
+
+    /**
+     * 
+     * @return
+     */
     public String getAlias()
     {
         if( m_current == null )
@@ -143,6 +219,11 @@ public class AsGen
             return m_current.getAlias();
     }
 
+
+    /**
+     * 
+     * @return
+     */
     public String getSchema()
     {
         if( m_current == null )
@@ -151,6 +232,11 @@ public class AsGen
             return m_current.getSchema();
     }
 
+
+    /**
+     * 
+     * @return
+     */
     public boolean isAttributeSet()
     {
         if( m_current == null )
@@ -159,6 +245,10 @@ public class AsGen
             return m_current.isAttributeSet();
     }
 
+
+    /**
+     * 
+     */
     public void setAttribute()
     {
         // set when the namespace is declared
@@ -166,12 +256,21 @@ public class AsGen
             m_current.setAttribute();
     }
 
+
+    /**
+     * 
+     */
     public static void clear()
     {
         m_current = m_first = m_last = null;
         m_lastGenerated = "@";
     }
 
+
+    /**
+     * 
+     * @return
+     */
     private String getNextAs()
     {
         String str = m_lastGenerated;
@@ -209,6 +308,7 @@ public class AsGen
         m_lastGenerated = str;
         return str;
     }
+
 
     private static AsNode m_first;
     private static AsNode m_last;

@@ -52,6 +52,9 @@
  * @author      Joachim Feise (dav-exp@ics.uci.edu)
  * @date        06 February 2004
  * Changes:     Added support disabling compression encoding
+ * @author      Joachim Feise (dav-exp@ics.uci.edu)
+ * @date        08 February 2004
+ * Changes:     Added Javadoc templates
  */
 
 package edu.uci.ics.DAVExplorer;
@@ -75,6 +78,9 @@ import java.io.File;
 import java.io.IOException;
 
 
+/**
+ * 
+ */
 class GlobalData
 {
     /** Debug variables */
@@ -109,12 +115,19 @@ class GlobalData
     public static final String WebDAVPrefix = "http://";
     public static final String WebDAVPrefixSSL = "https://";
 
+
+    /**
+     * Protected constructor
+     */
     protected GlobalData()
     {
         init( true );
     }
 
 
+    /**
+     * 
+     */
     static void reset()
     {
         // reset this class
@@ -131,6 +144,10 @@ class GlobalData
     }
 
 
+    /**
+     * 
+     * @return
+     */
     static GlobalData getGlobalData()
     {
         if( globalData == null )
@@ -139,30 +156,50 @@ class GlobalData
     }
 
 
+    /**
+     * 
+     * @return
+     */
     public WebDAVTreeView getTree()
     {
         return tree;
     }
 
 
+    /**
+     * 
+     * @param theTree
+     */
     public void setTree(WebDAVTreeView theTree)
     {
         tree = theTree;
     }
 
 
+    /**
+     * 
+     * @return
+     */
     public boolean isAppletMode()
     {
         return isAppletMode;
     }
 
 
+    /**
+     * 
+     * @param isAnApplet
+     */
     public void setAppletMode(boolean isAnApplet)
     {
         isAppletMode = isAnApplet;
     }
 
 
+    /**
+     * 
+     * @param initialSiteList
+     */
     public void setInitialSites(String[][] initialSiteList)
     {
         if (initialSiteList != null)
@@ -170,66 +207,110 @@ class GlobalData
     }
 
 
+    /**
+     * 
+     * @return
+     */
     public String[][] getInitialSites()
     {
         return initialSites;
     }
 
 
+    /**
+     * 
+     * @param proxy
+     */
     public void setProxy( String proxy )
     {
         appletProxy = proxy;
     }
 
 
+    /**
+     * 
+     * @return
+     */
     public String getProxy()
     {
         return appletProxy;
     }
 
 
+    /**
+     * 
+     * @return
+     */
     public boolean hideURIBox()
     {
         return hideURIBox;
     }
 
 
+    /**
+     * 
+     * @param visible
+     */
     public void setHideURIBox(boolean visible)
     {
         hideURIBox = visible;
     }
 
 
+    /**
+     * 
+     * @return
+     */
     public boolean doAddStartDir()
     {
         return doAddStartDir;
     }
 
 
+    /**
+     * 
+     * @param doIt
+     */
     public void setAddStartDir(boolean doIt)
     {
         doAddStartDir = doIt;
     }
 
 
+    /**
+     * 
+     * @return
+     */
     public URIBox getURIBox()
     {
         return uriBox;
     }
 
 
+    /**
+     * 
+     * @param theURIBox
+     */
     public void setURIBox(URIBox theURIBox)
     {
         uriBox = theURIBox;
     }
 
 
+    /**
+     * 
+     * @return
+     */
     public boolean getDebugAll()
     {
         return debugAll;
     }
 
 
+    /**
+     * 
+     * @param debug
+     */
     public void setDebugAll( boolean debug )
     {
         debugAll = debug;
@@ -237,12 +318,20 @@ class GlobalData
     }
 
 
+    /**
+     * 
+     * @return
+     */
     public boolean getDebugRequest()
     {
         return debugRequest;
     }
 
 
+    /**
+     * 
+     * @param debug
+     */
     public void setDebugRequest( boolean debug )
     {
         debugRequest = debug;
@@ -250,12 +339,20 @@ class GlobalData
     }
 
 
+    /**
+     * 
+     * @return
+     */
     public boolean getDebugResponse()
     {
         return debugResponse;
     }
 
 
+    /**
+     * 
+     * @param debug
+     */
     public void setDebugResponse( boolean debug )
     {
         debugResponse = debug;
@@ -263,12 +360,20 @@ class GlobalData
     }
 
 
+    /**
+     * 
+     * @return
+     */
     public boolean getDebugTreeView()
     {
         return debugTreeView;
     }
 
 
+    /**
+     * 
+     * @param debug
+     */
     public void setDebugTreeView( boolean debug )
     {
         debugTreeView = debug;
@@ -276,12 +381,20 @@ class GlobalData
     }
 
 
+    /**
+     * 
+     * @return
+     */
     public boolean getDebugTreeNode()
     {
         return debugTreeNode;
     }
 
 
+    /**
+     * 
+     * @param debug
+     */
     public void setDebugTreeNode( boolean debug )
     {
         debugTreeNode = debug;
@@ -289,12 +402,20 @@ class GlobalData
     }
 
 
+    /**
+     * 
+     * @return
+     */
     public boolean getDebugFileView()
     {
         return debugFileView;
     }
 
 
+    /**
+     * 
+     * @param debug
+     */
     public void setDebugFileView( boolean debug )
     {
         debugFileView = debug;
@@ -302,12 +423,20 @@ class GlobalData
     }
 
 
+    /**
+     * 
+     * @return
+     */
     public JFrame getMainFrame()
     {
         return mainFrame;
     }
 
 
+    /**
+     * 
+     * @param frame
+     */
     public void setMainFrame( JFrame frame )
     {
         mainFrame = frame;
@@ -316,6 +445,10 @@ class GlobalData
     }
 
 
+    /**
+     * 
+     * @param str
+     */
     public void errorMsg(String str)
     {
         Object[] options = { "OK" };
@@ -323,6 +456,10 @@ class GlobalData
     }
 
 
+    /**
+     * 
+     * @param c
+     */
     public void setCursor( Cursor c )
     {
         if( mainFrame != null )
@@ -330,6 +467,10 @@ class GlobalData
     }
 
 
+    /**
+     * 
+     *
+     */
     public void resetCursor()
     {
         if( mainFrame != null && origCursor != null )
@@ -337,6 +478,13 @@ class GlobalData
     }
 
 
+    /**
+     * 
+     * @param text
+     * @param encoding
+     * @param href
+     * @return
+     */
     public String unescape( String text, String encoding, boolean href )
     {
         ByteArrayInputStream byte_in = new ByteArrayInputStream( text.getBytes() );
@@ -397,30 +545,52 @@ class GlobalData
     }
 
 
+    /**
+     * 
+     * @param SSL
+     */
     public void setSSL( boolean SSL )
     {
         ssl = SSL;
     }
 
 
+    /**
+     * 
+     * @return
+     */
     public boolean getSSL()
     {
         return ssl;
     }
 
 
+    /**
+     * 
+     * @param compression
+     */
     public void setCompressions( boolean compression )
     {
         this.compression = compression;
     }
     
     
+    /**
+     * 
+     * @return
+     */
     public boolean getCompression()
     {
         return compression;
     }
     
-    
+
+    /**
+     * 
+     * @param token
+     * @param defaultString
+     * @return
+     */
     public String ReadConfigEntry( String token, String defaultString )
     {
         Vector info = ReadConfigEntry( token, false );
@@ -434,12 +604,23 @@ class GlobalData
     }
 
 
+    /**
+     * 
+     * @param token
+     * @return
+     */
     public String ReadConfigEntry( String token )
     {
         return ReadConfigEntry( token, "" );
     }
 
 
+    /**
+     * 
+     * @param token
+     * @param multiple
+     * @return
+     */
     public Vector ReadConfigEntry( String token, boolean multiple )
     {
         Vector info = new Vector();
@@ -483,12 +664,22 @@ class GlobalData
     }
 
 
+    /**
+     * 
+     * @param token
+     * @param data
+     */
     public void WriteConfigEntry( String token, String data )
     {
         WriteConfigEntry( token, data, true );
     }
 
 
+    /**
+     * 
+     * @param token
+     * @param data
+     */
     public void WriteConfigEntry( String token, Vector data )
     {
         if( (data == null) || (data.size() == 0) )
@@ -503,6 +694,12 @@ class GlobalData
     }
 
 
+    /**
+     * 
+     * @param token
+     * @param data
+     * @param overwrite
+     */
     public void WriteConfigEntry( String token, Vector data, boolean overwrite )
     {
         if( (data == null) || (data.size() == 0) )
@@ -517,6 +714,12 @@ class GlobalData
     }
 
 
+    /**
+     * 
+     * @param token
+     * @param data
+     * @param overwrite
+     */
     public void WriteConfigEntry( String token, String data, boolean overwrite )
     {
         String userPath = System.getProperty( "user.home" );
@@ -571,6 +774,10 @@ class GlobalData
     }
 
 
+    /**
+     * 
+     * @param readFromProperties
+     */
     private void init( boolean readFromProperties )
     {
         if( readFromProperties )
@@ -614,6 +821,12 @@ class GlobalData
     }
 
 
+    /**
+     * 
+     * @param name
+     * @param description
+     * @return
+     */
     public ImageIcon getImageIcon(String name, String description)
     {
         try
@@ -629,6 +842,12 @@ class GlobalData
     }
 
 
+    /**
+     * 
+     * @param is
+     * @return
+     * @throws IOException
+     */
     public static byte[] toByteArray(InputStream is)
         throws IOException
     {

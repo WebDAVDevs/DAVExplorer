@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2003 Regents of the University of California.
+ * Copyright (c) 2003-2004 Regents of the University of California.
  * All rights reserved.
  *
  * This software was developed at the University of California, Irvine.
@@ -36,17 +36,24 @@ import com.ms.xml.util.Name;
  * Description: This is the interpreter module that parses DeltaV responses.
  *              Some of the methods are not parsed, and the functions are left
  *              empty intentionally.
- * Copyright:   Copyright (c) 2003 Regents of the University of California. All rights reserved.
+ * Copyright:   Copyright (c) 2003-2004 Regents of the University of California. All rights reserved.
  * @author      Joachim Feise (dav-exp@ics.uci.edu)
  * @date        23 September 2003
  * @author      Joachim Feise (dav-exp@ics.uci.edu)
  * @date        28 October 2003
  * Changes:     Fixed double insertion listener firing.
+ * @author      Joachim Feise (dav-exp@ics.uci.edu)
+ * @date        07 February 2004
+ * Changes:     Parsing OPTIONS response for activity data
+ *              (needed for evtl. Subversion support.)
+ * @author      Joachim Feise (dav-exp@ics.uci.edu)
+ * @date        08 February 2004
+ * Changes:     Added Javadoc templates
  */
 public class DeltaVResponseInterpreter extends WebDAVResponseInterpreter
 {
     /**
-     * 
+     * Constructor, just initializing superclass  
      */
     public DeltaVResponseInterpreter()
     {
@@ -55,15 +62,23 @@ public class DeltaVResponseInterpreter extends WebDAVResponseInterpreter
 
 
     /**
-     * @param rg
+     * Constructor, storing the request generator
+     *   
+     * @param rg    WebDAVRequestGenerator
      */
-    public DeltaVResponseInterpreter(WebDAVRequestGenerator rg)
+    public DeltaVResponseInterpreter( WebDAVRequestGenerator rg )
     {
         super(rg);
     }
 
 
-    public void handleResponse(WebDAVResponseEvent e)
+    /**
+     * Process a response from the server
+     * 
+     * @param e WebDAVResponseEvent
+     *          The event from the client library, containing the response data  
+     */
+    public void handleResponse( WebDAVResponseEvent e )
         throws ResponseException
     {
         if( GlobalData.getGlobalData().getDebugResponse() )
@@ -119,6 +134,9 @@ public class DeltaVResponseInterpreter extends WebDAVResponseInterpreter
     }
 
 
+    /**
+     * Process the response to a VERSION-CONTROL request  
+     */
     public void parseVersionControl()
     {
         try
@@ -135,6 +153,9 @@ public class DeltaVResponseInterpreter extends WebDAVResponseInterpreter
     }
 
     
+    /**
+     * Process the response to a CHECKOUT request  
+     */
     public void parseCheckout()
     {
         try
@@ -151,6 +172,9 @@ public class DeltaVResponseInterpreter extends WebDAVResponseInterpreter
     }
 
     
+    /**
+     * Process the response to an UNCHECKOUT request  
+     */
     public void parseUnCheckout()
     {
         try{
@@ -166,6 +190,9 @@ public class DeltaVResponseInterpreter extends WebDAVResponseInterpreter
     }
 
     
+    /**
+     * Process the response to a CHECKIN request  
+     */
     public void parseCheckin()
     {
         try{
@@ -181,6 +208,9 @@ public class DeltaVResponseInterpreter extends WebDAVResponseInterpreter
     }
 
 
+    /**
+     * Process the response to a REPORT request  
+     */
     public void parseReport()
     {
         Vector nodesChildren = new Vector();
@@ -196,7 +226,7 @@ public class DeltaVResponseInterpreter extends WebDAVResponseInterpreter
         
             if (body == null)
             {
-                GlobalData.getGlobalData().errorMsg("DAV Interpreter:\n\nMissing XML body in\nPROPFIND response.");
+                GlobalData.getGlobalData().errorMsg("DeltaV Interpreter:\n\nMissing XML body in\nREPORT response.");
                 return;
             }
         
@@ -207,7 +237,7 @@ public class DeltaVResponseInterpreter extends WebDAVResponseInterpreter
         }
         catch (Exception e)
         {
-            GlobalData.getGlobalData().errorMsg("DAV Interpreter:\n\nError encountered \nwhile parsing REPORT Response.\n" + e);
+            GlobalData.getGlobalData().errorMsg("DeltaV Interpreter:\n\nError encountered \nwhile parsing REPORT Response.\n" + e);
             stream = null;
             return;
         }
@@ -215,6 +245,8 @@ public class DeltaVResponseInterpreter extends WebDAVResponseInterpreter
         printXML( body );
         
         DataNode dataNode = null;
+        
+        // expecting a <multistatus> tag, skipping everything up to it
         String[] token = new String[1];
         token[0] = new String( WebDAVXML.ELEM_MULTISTATUS );
         Element rootElem = skipElements( xml_doc, token );
@@ -222,7 +254,6 @@ public class DeltaVResponseInterpreter extends WebDAVResponseInterpreter
         
         if( rootElem != null )
         {
-            
             TreeEnumeration enumTree =  new TreeEnumeration( rootElem );
             while( enumTree.hasMoreElements() )
             {
@@ -230,6 +261,7 @@ public class DeltaVResponseInterpreter extends WebDAVResponseInterpreter
                 Name currentTag = current.getTagName();
                 if( currentTag != null )
                 {
+                    // expecting a <response> tag
                     if( currentTag.getName().equals( WebDAVXML.ELEM_RESPONSE ) )
                     {
                         dataNode = parseResponse( current, ResourceName, nodesChildren );
@@ -251,6 +283,9 @@ public class DeltaVResponseInterpreter extends WebDAVResponseInterpreter
     }
 
 
+    /**
+     * Generate the request to get a specific version  
+     */
     class GetVersionListener implements ActionListener
     {
         public void actionPerformed(ActionEvent e)
@@ -263,18 +298,39 @@ public class DeltaVResponseInterpreter extends WebDAVResponseInterpreter
     }
 
 
-
-    public DataNode parseResponse( Element respElem, String resourceName, Vector nodesChildren )
+    /**
+     * Parse a subtree of a <response> tag
+     * 
+     * @param respElem      the root of the <response> tree
+     * @param resourceName  the relative URL of the resource this tree refers to
+     * @param nodesChildren internal structure holding data about child nodes
+     * 
+     * @return              structure holding version information for the resource
+     */
+    protected DataNode parseResponse( Element respElem, String resourceName, Vector nodesChildren )
     {
         return parseResponse( respElem, resourceName, nodesChildren, null, null, null );
     }
 
 
-    public DataNode parseResponse( Element respElem, String resourceName, Vector nodesChildren, DataNode dataNode, String userAgent, DefaultMutableTreeNode treeNode )
+    /**
+     * Parse a subtree of a <response> tag
+     * 
+     * @param respElem      the root of the <response> tree
+     * @param resourceName  the relative URL of the resource this tree refers to
+     * @param nodesChildren internal structure holding data about child nodes
+     * @param dataNode      structure holding version information for the resource
+     * @param userAgent     user agent string
+     * @param treeNode      node holding the collection URL for this resource
+     * 
+     * @return              structure holding version information for the resource
+     */
+    protected DataNode parseResponse( Element respElem, String resourceName, Vector nodesChildren,
+                                      DataNode dataNode, String userAgent, DefaultMutableTreeNode treeNode )
     {
         if( GlobalData.getGlobalData().getDebugTreeNode() )
         {
-            System.err.println( "WebDAVTreeNode::parseResponse" );
+            System.err.println( "DeltaVResponseInterpreter::parseResponse" );
         }
     
         DataNode node = null;
@@ -452,11 +508,20 @@ public class DeltaVResponseInterpreter extends WebDAVResponseInterpreter
     }
     
     
+    /**
+     * Parse the DeltaV properties in a subtree of a <prop> tag
+     * 
+     * @param propElem      the root of the <prop> tree
+     * @param resourceName  the relative URL of the resource this tree refers to
+     * @param resName       the relative URL of a version of the resource
+     * 
+     * @return              structure holding version information for the resource
+     */
     protected DataNode parseProps( Element propElem, String ResourceName, String resName )
     {
         if( GlobalData.getGlobalData().getDebugTreeNode() )
         {
-            System.err.println( "WebDAVTreeNode::parseProps" );
+            System.err.println( "DeltaVResponseInterpreter::parseProps" );
         }
 
         String comment = "";
@@ -555,11 +620,18 @@ public class DeltaVResponseInterpreter extends WebDAVResponseInterpreter
     }
 
 
+    /**
+     * Parse a subtree and return the value of the first <href> tag 
+     * 
+     * @param href      the root of the tree
+     * 
+     * @return          the href, or an empty if no <href> tag was found
+     */
     protected String getHref( Element href )
     {
             if( GlobalData.getGlobalData().getDebugResponse() )
             {
-                System.err.println( "WebDAVResponseInterpreter::getHref" );
+                System.err.println( "DeltaVResponseInterpreter::getHref" );
             }
 
             TreeEnumeration treeEnum = new TreeEnumeration( href );
@@ -580,11 +652,17 @@ public class DeltaVResponseInterpreter extends WebDAVResponseInterpreter
     }
 
 
+    /**
+     * Parse a subtree and return the value of the first element 
+     * 
+     * @param value     root of the subtree
+     * @return          the value of the first element
+     */
     protected String getPropValue( Element value )
     {
         if( GlobalData.getGlobalData().getDebugResponse() )
         {
-            System.err.println( "DeltaVResponseInterpreter::getComment" );
+            System.err.println( "DeltaVResponseInterpreter::getPropValue" );
         }
     
         TreeEnumeration treeEnum = new TreeEnumeration( value );
@@ -598,11 +676,14 @@ public class DeltaVResponseInterpreter extends WebDAVResponseInterpreter
     }
 
 
+    /**
+     * Parse the response to an OPTIONS request
+     */
     public void parseOptions()
     {
         if( GlobalData.getGlobalData().getDebugResponse() )
         {
-            System.err.println( "WebDAVResponseInterpreter::parseOptions" );
+            System.err.println( "DeltaVResponseInterpreter::parseOptions" );
         }
 
         try
@@ -610,22 +691,52 @@ public class DeltaVResponseInterpreter extends WebDAVResponseInterpreter
             String davheader = res.getHeader( "DAV" );
             if( davheader == null )
             {
-                // no WebDAV support
-                GlobalData.getGlobalData().errorMsg("DAV Interpreter:\n\nThe server does not support WebDAV\nat Resource " + Resource + ".");
+                // no DeltaV support
+                GlobalData.getGlobalData().errorMsg("DeltaV Interpreter:\n\nThe server does not support DAV\nat Resource " + Resource + ".");
                 return;
             }
             deltaV = false;
             deltaVReports = false;
+            deltaVActivity = false;
             if( davheader.indexOf("version-control") >= 0 )
             {
                 deltaV = true;
                 if( davheader.indexOf("report") >= 0 )
                     deltaVReports = true;
+                if( davheader.indexOf("activity") >= 0 )
+                    deltaVActivity = true;
+            }
+            
+            if( deltaVActivity )
+            {
+                byte[] body = null;
+                body = res.getData();
+                if( body == null )
+                {
+                    if (Extra.equals("uribox"))
+                    {
+                        // we got here from entering a URI, we only want to get the activity
+                        // name in this case
+                        String str = HostName;
+                        if (Port > 0)
+                            str += ":" + Port;
+                        str += Resource;
+                        if( ((DeltaVRequestGenerator)generator).GenerateOptions( str, true ) )
+                        {
+                            generator.execute();
+                            return;
+                        }
+                    }
+                }
+                else
+                {
+                    parseOptionsXML();
+                }
             }
         }
         catch (Exception e)
         {
-            GlobalData.getGlobalData().errorMsg("DAV Interpreter:\n\nError encountered \nwhile parsing OPTIONS Response:\n" + e);
+            GlobalData.getGlobalData().errorMsg("DeltaV Interpreter:\n\nError encountered \nwhile parsing OPTIONS Response:\n" + e);
             stream = null;
             return;
         }
@@ -676,8 +787,82 @@ public class DeltaVResponseInterpreter extends WebDAVResponseInterpreter
     }
 
 
+    /**
+     * Parse the XML tree for an options-response entry
+     *
+     * @see RFC 3253, section 13.7
+     */
+    public void parseOptionsXML()
+    {
+        if( GlobalData.getGlobalData().getDebugResponse() )
+        {
+            System.err.println( "DeltaVResponseInterpreter::parseOptionsActivity" );
+        }
+        Vector nodesChildren = new Vector();
+        String ResourceName = getResource();
 
-    public void fireInsertionEvent( String str )
+        byte[] body = null;
+        Document xml_doc = null;
+
+        try
+        {
+            body = res.getData();
+            stream = body;
+        
+            if (body == null)
+            {
+                GlobalData.getGlobalData().errorMsg("DeltaV Interpreter:\n\nMissing XML body in\nOPTIONS response.");
+                return;
+            }
+        
+            ByteArrayInputStream byte_in = new ByteArrayInputStream(body);
+        
+            xml_doc = new Document();
+            xml_doc.load( byte_in );
+        }
+        catch (Exception e)
+        {
+            GlobalData.getGlobalData().errorMsg("DeltaV Interpreter:\n\nError encountered \nwhile parsing OPTIONS Response.\n" + e);
+            stream = null;
+            return;
+        }
+
+        printXML( body );
+        
+        // skip everything up to <options-response> tag
+        String[] token = new String[1];
+        token[0] = new String( DeltaVXML.ELEM_OPTIONS_RESPONSE );
+        Element rootElem = skipElements( xml_doc, token );
+        int count = 0;
+        activityHref = null;
+        
+        if( rootElem != null )
+        {
+            TreeEnumeration enumTree =  new TreeEnumeration( rootElem );
+            while( enumTree.hasMoreElements() )
+            {
+                Element current = (Element)enumTree.nextElement();
+                Name currentTag = current.getTagName();
+                if( currentTag != null )
+                {
+                    // handle <activity-collection-set> tag
+                    if( currentTag.getName().equals( DeltaVXML.ELEM_ACTIVITY_COLLECTION_SET ) )
+                    {
+                        // tag encloses <href>
+                        activityHref = getHref( current );
+                    }
+                }
+            }
+        }
+    }
+
+
+    /**
+     * Inform listeners of an insertion event
+     * 
+     * @param str       info of the event
+     */
+    protected void fireInsertionEvent( String str )
     {
         if( !deltaV && !deltaVReports )
         {
@@ -699,55 +884,100 @@ public class DeltaVResponseInterpreter extends WebDAVResponseInterpreter
     }
 
 
+    /**
+     * Add a version control listener
+     * 
+     * @param l     listener to add
+     */
     public synchronized void addVersionControlListener(ActionListener l)
     {
         versionControlListeners.addElement(l);  
     }
 
 
+    /**
+     * Add a checkout listener
+     * 
+     * @param l     listener to add
+     */
     public synchronized void addCheckoutListener(ActionListener l)
     {
         checkoutListeners.addElement(l);    
     }  
 
 
+    /**
+     * Add an uncheckout listener
+     * 
+     * @param l     listener to add
+     */
     public synchronized void addUnCheckoutListener(ActionListener l)
     {
         unCheckoutListeners.addElement(l);  
     }
 
 
+    /**
+     * Add a checkin listener
+     * 
+     * @param l     listener to add
+     */
     public synchronized void addCheckinListener(ActionListener l)
     {
         checkinListeners.addElement(l); 
     }   
 
 
+    /**
+     * Remove a version control listener
+     * 
+     * @param l     listener to remove
+     */
     public synchronized void removeVersionControlListener(ActionListener l)
     {
         versionControlListeners.removeElement(l);   
     }
 
 
+    /**
+     * Remove a checkout listener
+     * 
+     * @param l     listener to remove
+     */
     public synchronized void removeCheckoutListener(ActionListener l)
     {
         checkoutListeners.removeElement(l); 
     }  
 
 
+    /**
+     * Remove an uncheckout listener
+     * 
+     * @param l     listener to remove
+     */
     public synchronized void removeUnCheckoutListener(ActionListener l)
     {
         unCheckoutListeners.removeElement(l);   
     }
 
 
+    /**
+     * Remove a checkin listener
+     * 
+     * @param l     listener to remove
+     */
     public synchronized void removeCheckinListener(ActionListener l)
     {
         checkinListeners.removeElement(l);  
     }   
 
 
-    public void fireVersionControlEvent( String str, int code )
+    /**
+     * Inform listeners of a version control event
+     * 
+     * @param str       info of the event
+     */
+    protected void fireVersionControlEvent( String str, int code )
     {
         Vector ls;
 
@@ -764,7 +994,12 @@ public class DeltaVResponseInterpreter extends WebDAVResponseInterpreter
     }
 
 
-    public void fireCheckoutEvent( String str, int code )
+    /**
+     * Inform listeners of a checkout event
+     * 
+     * @param str       info of the event
+     */
+    protected void fireCheckoutEvent( String str, int code )
     {
         Vector ls;
 
@@ -781,7 +1016,12 @@ public class DeltaVResponseInterpreter extends WebDAVResponseInterpreter
     }
     
 
-    public void fireUnCheckoutEvent( String str, int code )
+    /**
+     * Inform listeners of an uncheckout event
+     * 
+     * @param str       info of the event
+     */
+    protected void fireUnCheckoutEvent( String str, int code )
     {
         Vector ls;
 
@@ -797,7 +1037,13 @@ public class DeltaVResponseInterpreter extends WebDAVResponseInterpreter
         }       
     }
     
-    public void fireCheckinEvent( String str, int code )
+
+    /**
+     * Inform listeners of a checkin event
+     * 
+     * @param str       info of the event
+     */
+    protected void fireCheckinEvent( String str, int code )
     {
         Vector ls;
 
@@ -814,11 +1060,18 @@ public class DeltaVResponseInterpreter extends WebDAVResponseInterpreter
     }
 
 
-    public String truncateResource(String res)
+    /**
+     * Strip a resource to just the resource name
+     * 
+     * @param res       Resource to strip
+     * 
+     * @return          the stripped resource
+     */
+    protected String truncateResource( String res )
     {
         if( GlobalData.getGlobalData().getDebugTreeNode() )
         {
-            System.err.println( "WebDAVTreeNode::truncateResource" );
+            System.err.println( "DeltaVResponseInterpreter::truncateResource" );
         }
     
         int pos = res.indexOf(GlobalData.WebDAVPrefixSSL);
@@ -843,10 +1096,18 @@ public class DeltaVResponseInterpreter extends WebDAVResponseInterpreter
         return res;
     }
     
-    public String getFullResource(String res) {
+
+    /**
+     * Strip the protocol from a resource
+     * 
+     * @param res       Resource to strip
+     * @return          the stripped resource
+     */
+    protected String getFullResource(String res)
+    {
         if( GlobalData.getGlobalData().getDebugTreeNode() )
         {
-            System.err.println( "WebDAVTreeNode::getFullResource" );
+            System.err.println( "DeltaVResponseInterpreter::getFullResource" );
         }
     
         int pos = res.indexOf(GlobalData.WebDAVPrefixSSL);
@@ -875,4 +1136,6 @@ public class DeltaVResponseInterpreter extends WebDAVResponseInterpreter
     
     protected boolean deltaV = false;
     protected boolean deltaVReports = false;
+    protected boolean deltaVActivity = false;
+    protected String activityHref = null;
 }

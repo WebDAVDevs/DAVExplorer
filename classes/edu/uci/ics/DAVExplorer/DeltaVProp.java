@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2003 Regents of the University of California.
+ * Copyright (c) 2003-2004 Regents of the University of California.
  * All rights reserved.
  *
  * This software was developed at the University of California, Irvine.
@@ -25,9 +25,12 @@ import java.util.Enumeration;
 /**
  * Title:       DeltaV Properties
  * Description: Simple list of all DeltaV properties, based on RFC 3253
- * Copyright:   Copyright (c) 2003 Regents of the University of California. All rights reserved.
+ * Copyright:   Copyright (c) 2003-2004 Regents of the University of California. All rights reserved.
  * @author      Joachim Feise (dav-exp@ics.uci.edu)
  * @date        27 August 2003
+ * @author      Joachim Feise (dav-exp@ics.uci.edu)
+ * @date        08 February 2004
+ * Changes:     Added Javadoc templates
  */
 public class DeltaVProp extends WebDAVProp
 {
@@ -91,10 +94,18 @@ public class DeltaVProp extends WebDAVProp
     public static final String PROP_VERSION_CONTROLLED_BINDING_SET = "version-controlled-binding-set";
 
 
+    /**
+     * Constructor 
+     */
     public DeltaVProp()
     {
     }
 
+
+    /**
+     * 
+     * @return
+     */
     public static Enumeration getDeltaVProps()
     {
         Vector prop_list = new Vector();
@@ -146,6 +157,12 @@ public class DeltaVProp extends WebDAVProp
     }
 
 
+    /**
+     * 
+     * @param tag
+     * @param value
+     * @param schema
+     */
     public DeltaVProp( String tag, String value, String schema )
     {
         this.tag = tag;
@@ -155,6 +172,13 @@ public class DeltaVProp extends WebDAVProp
         this.leaf = true;
     }
 
+
+    /**
+     * 
+     * @param tag
+     * @param schema
+     * @param children
+     */
     public DeltaVProp( String tag, String schema, DeltaVProp[] children )
     {
         this.tag = tag;
@@ -165,10 +189,14 @@ public class DeltaVProp extends WebDAVProp
     }
 
 
+    /**
+     * 
+     */
     public WebDAVProp[] getChildren()
     {
         return children;
     }
+
 
     protected DeltaVProp[] children;
 }

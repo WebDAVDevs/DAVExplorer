@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 1998-2001 Regents of the University of California.
+ * Copyright (c) 1998-2004 Regents of the University of California.
  * All rights reserved.
  *
  * This software was developed at the University of California, Irvine.
@@ -21,7 +21,7 @@
  * Title:       WebDAV Properties
  * Description: Simple list of all DAV: properties
  *              listed in section 12 of .07 spec
- * Copyright:   Copyright (c) 1998-2001 Regents of the University of California. All rights reserved.
+ * Copyright:   Copyright (c) 1998-2004 Regents of the University of California. All rights reserved.
  * @author      Undergraduate project team ICS 126B 1998
  * @date        1998
  * @author      Yuzo Kanomata, Joachim Feise (dav-exp@ics.uci.edu)
@@ -29,6 +29,9 @@
  * @author      Joachim Feise (dav-exp@ics.uci.edu)
  * @date        1 October 2001
  * Changes:     Change of package name
+ * @author      Joachim Feise (dav-exp@ics.uci.edu)
+ * @date        08 February 2004
+ * Changes:     Added Javadoc templates
  */
 
 package edu.uci.ics.DAVExplorer;
@@ -36,6 +39,10 @@ package edu.uci.ics.DAVExplorer;
 import java.util.Vector;
 import java.util.Enumeration;
 
+
+/**
+ * 
+ */
 public class WebDAVProp
 {
     public static final String DAV_SCHEMA = "DAV:";
@@ -52,10 +59,18 @@ public class WebDAVProp
     public static final String PROP_SUPPORTEDLOCK = "supportedlock";
 
 
+    /**
+     * Constructor
+     */
     public WebDAVProp()
     {
     }
 
+
+    /**
+     * 
+     * @return
+     */
     public static Enumeration getDavProps()
     {
         Vector prop_list = new Vector();
@@ -76,6 +91,12 @@ public class WebDAVProp
     }
 
 
+    /**
+     * Constructor
+     * @param tag
+     * @param value
+     * @param schema
+     */
     public WebDAVProp( String tag, String value, String schema )
     {
         this.tag = tag;
@@ -85,6 +106,13 @@ public class WebDAVProp
         this.leaf = true;
     }
 
+
+    /**
+     * Constructor
+     * @param tag
+     * @param schema
+     * @param children
+     */
     public WebDAVProp( String tag, String schema, WebDAVProp[] children )
     {
         this.tag = tag;
@@ -95,30 +123,55 @@ public class WebDAVProp
     }
 
 
+    /**
+     * 
+     * @return
+     */
     public String getTag()
     {
         return tag;
     }
 
+
+    /**
+     * 
+     * @return
+     */
     public String getValue()
     {
         return value;
     }
 
+
+    /**
+     * 
+     * @return
+     */
     public String getSchema()
     {
         return schema;
     }
 
+
+    /**
+     * 
+     * @return
+     */
     public boolean isLeaf()
     {
         return leaf;
     }
 
+
+    /**
+     * 
+     * @return
+     */
     public WebDAVProp[] getChildren()
     {
         return children;
     }
+
 
     protected String tag;
     protected String value;

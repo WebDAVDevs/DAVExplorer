@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 1998-2003 Regents of the University of California.
+ * Copyright (c) 1998-2004 Regents of the University of California.
  * All rights reserved.
  *
  * This software was developed at the University of California, Irvine.
@@ -25,7 +25,7 @@
  *              This class DOES NOT authenticate users at this time. It is in
  *              place as a UI component which may be fully integrated in an
  *              authentication scheme at some future point.
- * Copyright:   Copyright (c) 1998-2003 Regents of the University of California. All rights reserved.
+ * Copyright:   Copyright (c) 1998-2004 Regents of the University of California. All rights reserved.
  * @author      Gerair D. Balian (dav-exp@ics.uci.edu)
  * @date        3 March 1998
  * @author      Yuzo Kanomata, Joachim Feise (dav-exp@ics.uci.edu)
@@ -53,6 +53,9 @@
  * @author      Joachim Feise (dav-exp@ics.uci.edu)
  * @date        17 November 2003
  * Changes:     Explicitly resetting the cursor.
+ * @author      Joachim Feise (dav-exp@ics.uci.edu)
+ * @date        08 February 2004
+ * Changes:     Added Javadoc templates
  */
 
 package edu.uci.ics.DAVExplorer;
@@ -74,6 +77,10 @@ import java.awt.event.ActionListener;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 
+
+/**
+ * 
+ */
 public class WebDAVLoginDialog extends JDialog implements ActionListener, DocumentListener
 {
 /*-----------------------------------------------------------------------
@@ -82,7 +89,13 @@ Public methods and attributes section
 
     Vector listeners = new Vector();
 
-    //Construction
+    /**
+     * Constructor
+     * @param strCaption
+     * @param realm
+     * @param scheme
+     * @param isModal
+     */
     public WebDAVLoginDialog( String strCaption, String realm, String scheme, boolean isModal )
     {
         super( GlobalData.getGlobalData().getMainFrame(), strCaption, isModal );
@@ -146,19 +159,30 @@ Public methods and attributes section
     }
 
 
+    /**
+     * 
+     * @param l
+     */
     public synchronized void addListener( ActionListener l )
     {
         listeners.addElement(l);
     }
 
 
+    /**
+     * 
+     * @param l
+     */
     public synchronized void removeListener( ActionListener l )
     {
         listeners.removeElement(l);
     }
 
 
-    // ActionListener interface
+    /**
+     * ActionListener interface
+     * @param e
+     */
     public void actionPerformed( ActionEvent e )
     {
         if( e.getActionCommand().equals("OK") )
@@ -199,35 +223,61 @@ Public methods and attributes section
     }
 
 
-    // DocumentListener interface
+    /**
+     * DocumentListener interface
+     * @param e
+     */
     public void insertUpdate( DocumentEvent e )
     {
         checkEnableOk();
     }
 
+
+    /**
+     * DocumentListener interface
+     * @param e
+     */
     public void removeUpdate( DocumentEvent e )
     {
         checkEnableOk();
     }
 
+
+    /**
+     * DocumentListener interface
+     * @param e
+     */
     public void changedUpdate( DocumentEvent e )
     {
         checkEnableOk();
     }
 
 
-    //Get the user name to be sent through the wire
+    /**
+     * Get the user name to be sent through the wire
+     * 
+     * @return
+     */
     public String getUsername()
     {
         return m_strUsername;
     }
 
-    //Get the user password to be sent through the wire.
+
+    /**
+     * Get the user password to be sent through the wire
+     * 
+     * @return
+     */
     public String getUserPassword()
     {
         return m_strUserPassword;
     }
 
+
+    /**
+     *
+     */
     public void clearData()
     {
     	// try to get rid of any unencoded passwords in dialog
@@ -239,6 +289,9 @@ Public methods and attributes section
 /*-----------------------------------------------------------------------
 Protected methods and attributes section
 -----------------------------------------------------------------------*/
+    /**
+     * 
+     */
     protected void checkEnableOk()
     {
         if( (txtUsername.getText().length()>0) && (String.valueOf(txtPassword.getPassword()).length()>0) )
@@ -250,6 +303,10 @@ Protected methods and attributes section
             okButton.setEnabled( false );
     }
 
+
+    /**
+     *
+     */
     protected void center()
     {
         Rectangle recthDimensions = getParent().getBounds();

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2001 Regents of the University of California.
+ * Copyright (c) 2001-2004 Regents of the University of California.
  * All rights reserved.
  *
  * This software was developed at the University of California, Irvine.
@@ -20,12 +20,15 @@
 /**
  * Title:       Property Dialog
  * Description: Dialog for viewing/modifying DAV properties
- * Copyright:   Copyright (c) 2001 Regents of the University of California. All rights reserved.
+ * Copyright:   Copyright (c) 2001-2004 Regents of the University of California. All rights reserved.
  * @author      Joachim Feise (dav-exp@ics.uci.edu)
  * @date        29 September 2001
  * @author      Joachim Feise (dav-exp@ics.uci.edu)
  * @date        1 October 2001
  * Changes:     Change of package name
+ * @author      Joachim Feise (dav-exp@ics.uci.edu)
+ * @date        08 February 2004
+ * Changes:     Added Javadoc templates
  */
 
 package edu.uci.ics.DAVExplorer;
@@ -50,9 +53,20 @@ import javax.swing.tree.TreePath;
 import com.ms.xml.om.Element;
 
 
+/**
+ * 
+ */
 public class PropDialog extends JDialog
     implements ActionListener, ChangeListener, ListSelectionListener, WebDAVCompletionListener
 {
+    /**
+     * Constructor
+     * @param properties
+     * @param resource
+     * @param hostname
+     * @param locktoken
+     * @param changeable
+     */
     public PropDialog( Element properties, String resource, String hostname, String locktoken, boolean changeable )
     {
         super( GlobalData.getGlobalData().getMainFrame() );
@@ -118,11 +132,21 @@ public class PropDialog extends JDialog
         show();
     }
 
+
+    /**
+     * 
+     * @param e
+     */
     public void stateChanged( ChangeEvent e )
     {
         setChanged( true );
     }
 
+
+    /**
+     * 
+     * @param enable
+     */
     public void setChanged( boolean enable )
     {
         if( changeable )
@@ -134,6 +158,11 @@ public class PropDialog extends JDialog
         }
     }
 
+
+    /**
+     * 
+     * @param e
+     */
     public void actionPerformed(ActionEvent e)
     {
         if( e.getActionCommand().equals("Add") )
@@ -154,6 +183,11 @@ public class PropDialog extends JDialog
         }
     }
 
+
+    /**
+     * 
+     * @param e
+     */
     public void valueChanged(ListSelectionEvent e)
     {
         if( changeable )
@@ -170,6 +204,11 @@ public class PropDialog extends JDialog
         }
     }
 
+
+    /**
+     * 
+     * @param e
+     */
     public void completion( WebDAVCompletionEvent e )
     {
         if( waiting && e.isSuccessful() )
@@ -177,6 +216,10 @@ public class PropDialog extends JDialog
         waiting = false;
     }
 
+
+    /**
+     * 
+     */
     public void add()
     {
         boolean selected = true;
@@ -205,6 +248,10 @@ public class PropDialog extends JDialog
         }
     }
 
+
+    /**
+     *
+     */
     public void remove()
     {
         String title = "Delete Property";
@@ -218,6 +265,10 @@ public class PropDialog extends JDialog
         }
     }
 
+
+    /**
+     * 
+     */
     public void save()
     {
         Element add = model.getModified(false);
@@ -228,12 +279,20 @@ public class PropDialog extends JDialog
         generator.execute();
     }
 
+
+    /**
+     *
+     */
     public void cancel()
     {
         setVisible(false);
         dispose();
     }
 
+
+    /**
+     *
+     */
     protected void center()
     {
         Rectangle recthDimensions = getParent().getBounds();
@@ -243,6 +302,12 @@ public class PropDialog extends JDialog
     }
 
 
+    /**
+     * 
+     * @param title
+     * @param text
+     * @return
+     */
     protected boolean ConfirmationDialog( String title, String text )
     {
         int opt = JOptionPane.showConfirmDialog( GlobalData.getGlobalData().getMainFrame(), text, title, JOptionPane.YES_NO_OPTION );
@@ -250,6 +315,7 @@ public class PropDialog extends JDialog
             return true;
         return false;
     }
+
 
     private JTreeTable treeTable;
     private PropModel model;

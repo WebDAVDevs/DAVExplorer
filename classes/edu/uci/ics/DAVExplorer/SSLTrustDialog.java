@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2001 Regents of the University of California.
+ * Copyright (c) 2001-2004 Regents of the University of California.
  * All rights reserved.
  *
  * This software was developed at the University of California, Irvine.
@@ -20,27 +20,37 @@
 /**
  * Title:       Authentication Dialog
  * Description: Wrapper around the login dialog
- * Copyright:   Copyright (c) 2001 Regents of the University of California. All rights reserved.
+ * Copyright:   Copyright (c) 2001-2004 Regents of the University of California. All rights reserved.
  * @author      Joachim Feise (dav-exp@ics.uci.edu)
  * @date        31 July 2001
  * @author      Joachim Feise (dav-exp@ics.uci.edu)
  * @date        1 October 2001
  * Changes:     Change of package name
+ * @author      Joachim Feise (dav-exp@ics.uci.edu)
+ * @date        08 February 2004
+ * Changes:     Added Javadoc templates
  */
 
 package edu.uci.ics.DAVExplorer;
 
 import javax.swing.JOptionPane;
 
+
+/**
+ * 
+ */
 public class SSLTrustDialog
 {
-
+    /**
+     * Constructor 
+     */
     public SSLTrustDialog()
     {
     }
 
     /**
      * the method called by .
+     * @param host
      *
      * @return true if the user trusts the host, false else
      */

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 1998-2003 Regents of the University of California.
+ * Copyright (c) 1998-2004 Regents of the University of California.
  * All rights reserved.
  *
  * This software was developed at the University of California, Irvine.
@@ -20,7 +20,7 @@
 /**
  * Title:       WebDAVLockInfo
  * Description: Dialog to enter the lock owner info
- * Copyright:   Copyright (c) 1998-2003 Regents of the University of California. All rights reserved.
+ * Copyright:   Copyright (c) 1998-2004 Regents of the University of California. All rights reserved.
  * @author      Robert Emmery (dav-exp@ics.uci.edu)
  * @date        2 April 1998
  * @author      Yuzo Kanomata, Joachim Feise (dav-exp@ics.uci.edu)
@@ -40,6 +40,9 @@
  * @date        10 November 2003
  * Changes:     The return key now triggers a programmatic click on the OK
  *              button.
+ * @author      Joachim Feise (dav-exp@ics.uci.edu)
+ * @date        08 February 2004
+ * Changes:     Added Javadoc templates
  */
 
 package edu.uci.ics.DAVExplorer;
@@ -58,6 +61,9 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 
 
+/**
+ * 
+ */
 public class WebDAVLockInfo extends Dialog implements ActionListener
 {
 /*-----------------------------------------------------------------------
@@ -65,7 +71,13 @@ Public methods and attributes section
 -----------------------------------------------------------------------*/
     Vector listeners = new Vector();
 
-    //Construction
+
+    /**
+     * Constructor
+     * @param parent
+     * @param strCaption
+     * @param isModal
+     */
     public WebDAVLockInfo( JFrame parent, String strCaption, boolean isModal )
     {
         super( parent, strCaption, isModal );
@@ -84,18 +96,30 @@ Public methods and attributes section
     }
 
 
+    /**
+     * 
+     * @param l
+     */
     public synchronized void addListener( ActionListener l )
     {
         listeners.addElement( l );
     }
 
 
+    /**
+     * 
+     * @param l
+     */
     public synchronized void removeListener( ActionListener l )
     {
         listeners.removeElement( l );
     }
 
 
+    /**
+     * 
+     * @param e
+     */
     public void actionPerformed( ActionEvent e )
     {
         if( e.getActionCommand().equals( "OK" ) )
@@ -130,6 +154,9 @@ Public methods and attributes section
 /*-----------------------------------------------------------------------
 Protected methods and attributes section
 -----------------------------------------------------------------------*/
+    /**
+     * 
+     */
     protected void center()
     {
         Rectangle recthDimensions = getParent().getBounds();

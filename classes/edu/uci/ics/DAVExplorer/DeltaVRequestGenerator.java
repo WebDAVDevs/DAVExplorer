@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2003 Regents of the University of California.
+ * Copyright (c) 2003-2004 Regents of the University of California.
  * All rights reserved.
  *
  * This software was developed at the University of California, Irvine.
@@ -21,15 +21,23 @@
  * Title:       DeltaV Request Generator
  * Description: This is where all of the requests are formed. The class contains
  *              static information needed to form all DeltaV requests.
- * Copyright:   Copyright (c) 2003 Regents of the University of California. All rights reserved.
+ * Copyright:   Copyright (c) 2003-2004 Regents of the University of California. All rights reserved.
  * @author      Joachim Feise (dav-exp@ics.uci.edu)
  * @date        23 September 2003
+ * @author      Joachim Feise (dav-exp@ics.uci.edu)
+ * @date        07 February 2004
+ * Changes:     Creating OPTIONS request for activity data
+ *              (needed for evtl. Subversion support.)
+ * @author      Joachim Feise (dav-exp@ics.uci.edu)
+ * @date        08 February 2004
+ * Changes:     Added Javadoc templates
  */
 
 package edu.uci.ics.DAVExplorer;
 
 import java.io.ByteArrayOutputStream;
 import HTTPClient.NVPair;
+import HTTPClient.Util;
 import com.ms.xml.om.Element;
 import com.ms.xml.om.Document;
 import com.ms.xml.util.XMLOutputStream;
@@ -39,7 +47,7 @@ public class DeltaVRequestGenerator extends WebDAVRequestGenerator
 {
 
     /**
-     * 
+     * Constructor, just initializing superclass  
      */
     public DeltaVRequestGenerator()
     {
@@ -47,6 +55,12 @@ public class DeltaVRequestGenerator extends WebDAVRequestGenerator
     }
 
 
+    /**
+     * Generate VERSION-CONTROL request
+     * @see RFC 3253, section 3.5
+     * 
+     * @return  true if successful, false else  
+     */
     public synchronized boolean GenerateEnableVersioning()
     {
         if( GlobalData.getGlobalData().getDebugRequest() )
@@ -78,6 +92,12 @@ public class DeltaVRequestGenerator extends WebDAVRequestGenerator
 
     
     
+    /**
+     * Generate CHECKOUT request
+     * @see RFC 3253, section 4.3
+     * 
+     * @return  true if successful, false else  
+     */
     public synchronized boolean GenerateCheckOut()
     {
         if( GlobalData.getGlobalData().getDebugRequest() )
@@ -108,6 +128,12 @@ public class DeltaVRequestGenerator extends WebDAVRequestGenerator
     }
     
     
+    /**
+     * Generate UNCHECKOUT request
+     * @see RFC 3253, section 4.5
+     * 
+     * @return  true if successful, false else  
+     */
     public synchronized boolean GenerateUnCheckOut()
     {
         if( GlobalData.getGlobalData().getDebugRequest() )
@@ -137,6 +163,12 @@ public class DeltaVRequestGenerator extends WebDAVRequestGenerator
     }
     
     
+    /**
+     * Generate CHECKIN request
+     * @see RFC 3253, section 4.4
+     * 
+     * @return  true if successful, false else  
+     */
     public synchronized boolean GenerateCheckIn()
     {
         if( GlobalData.getGlobalData().getDebugRequest() )
@@ -168,12 +200,12 @@ public class DeltaVRequestGenerator extends WebDAVRequestGenerator
         topElem.addChild( WebDAVXML.elemNewline, null );
         Element comment = WebDAVXML.createElement( "comment", Element.ELEMENT, topElem, asgen );
         Element commentData = WebDAVXML.createElement( null, Element.PCDATA, topElem, asgen );
-        commentData.setText("this is a comment");
+        //commentData.setText("this is a comment");
         addChild( comment, commentData, 0, 0, false, false );
         addChild( topElem, comment, 1, 0, false, true );
         Element author = WebDAVXML.createElement( "creator-displayname", Element.ELEMENT, topElem, asgen );
         Element authorData = WebDAVXML.createElement( null, Element.PCDATA, topElem, asgen );
-        authorData.setText( "this is the author" );
+        //authorData.setText( "this is the author" );
         addChild( author, authorData, 0, 0, false, false );
         addChild( topElem, author, 1, 0, false, true );
         miniDoc.addChild( topElem, null );
@@ -203,6 +235,12 @@ public class DeltaVRequestGenerator extends WebDAVRequestGenerator
     }
     
 
+    /**
+     * Generate REPORT request
+     * @see RFC 3253, section 3.6
+     * 
+     * @return  true if successful, false else  
+     */
     public synchronized boolean GenerateVersionHistory(String extra )
     {
         if( GlobalData.getGlobalData().getDebugRequest() )
@@ -279,6 +317,61 @@ public class DeltaVRequestGenerator extends WebDAVRequestGenerator
             GlobalData.getGlobalData().errorMsg("XML generation error: \n" + e);
             return false;
         }
+        return true;
+    }
+
+
+    /**
+     * Generate OPTIONS request with XML body, asking for activity-collection-set
+     * @see RFC 3253, section 13.7
+     * 
+     * @return  true if successful, false else  
+     */
+    public synchronized boolean GenerateOptions( String FullPath, boolean getActivity )
+    {
+        if( GlobalData.getGlobalData().getDebugRequest() )
+        {
+            System.err.println( "DeltaVRequestGenerator::GenerateOptions" );
+        }
+
+        Headers = null;
+        Body = null;
+
+        if( !super.GenerateOptions( FullPath ) )
+            return false;
+
+        Document miniDoc = new Document();
+        miniDoc.setVersion("1.0");
+        miniDoc.addChild(WebDAVXML.elemNewline,null);
+
+        AsGen asgen = WebDAVXML.findNamespace( new AsGen(), null );
+        if( asgen == null )
+            asgen = WebDAVXML.createNamespace( new AsGen(), null );
+        Element options = WebDAVXML.createElement( DeltaVXML.ELEM_OPTIONS, Element.ELEMENT, null, asgen );
+        Element activityset = WebDAVXML.createElement( DeltaVXML.ELEM_ACTIVITY_COLLECTION_SET, Element.ELEMENT, options, asgen );
+        addChild( options, activityset, 1, true );
+        miniDoc.addChild( options, null );
+        miniDoc.addChild( WebDAVXML.elemNewline, null );
+
+        ByteArrayOutputStream byte_str = new ByteArrayOutputStream();
+        XMLOutputStream xml_out = new XMLOutputStream(byte_str);
+
+        try
+        {
+            miniDoc.save(xml_out);
+            Body = byte_str.toByteArray();
+
+            int size = Headers.length;
+            Headers = Util.resizeArray( Headers, size+2 ); 
+            Headers[size] = new NVPair( "Content-Type", "text/xml" );
+            Headers[size+1] = new NVPair( "Content-Length", new Long(Body.length).toString() );
+        }
+        catch (Exception e)
+        {
+            GlobalData.getGlobalData().errorMsg("XML generation error: \n" + e);
+            return false;
+        }
+            
         return true;
     }
 }

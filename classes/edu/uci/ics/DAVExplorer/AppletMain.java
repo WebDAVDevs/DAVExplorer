@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2003 Regents of the University of California.
+ * Copyright (c) 2003-2004 Regents of the University of California.
  * All rights reserved.
  *
  * This software was developed at the University of California, Irvine.
@@ -49,13 +49,16 @@
  *              The proxy parameter is optional and allows the automatic use of a proxy
  *              server if specified.
  * 
- * Copyright:   Copyright (c) 2003 Regents of the University of California. All rights reserved.
+ * Copyright:   Copyright (c) 2003-2004 Regents of the University of California. All rights reserved.
  * @author      Brian Johnson, integrated by Joachim Feise (dav-exp@ics.uci.edu)
  * @date        25 March 2003
  * @author      Joachim Feise (dav-exp@ics.uci.edu)
  * @date        3 November 2003
  * Changes:     Added support for proxy server in applet settings (it always worked through
  *              the "Edit Proxy Info" menu entry.)
+ * @author      Joachim Feise (dav-exp@ics.uci.edu)
+ * @date        08 February 2004
+ * Changes:     Added Javadoc templates
  */
 
 
@@ -63,13 +66,22 @@ package edu.uci.ics.DAVExplorer;
 
 import java.util.StringTokenizer;
 
-public class AppletMain extends javax.swing.JApplet {
-
+/**
+ * 
+ */
+public class AppletMain extends javax.swing.JApplet
+{
+    /**
+     * 
+     */
     public void init()
     {
     }
 
 
+    /**
+     * 
+     */
     public void start()
     {
         // clear tree
@@ -85,12 +97,19 @@ public class AppletMain extends javax.swing.JApplet {
     }
 
 
+    /**
+     * 
+     */
     public void stop()
     {
         GlobalData.reset();
     }
 
 
+    /**
+     *
+     * @param name 
+     */
     private boolean parseBooleanParameter(String name)
     {
         String appletMode = getParameter(name);
@@ -101,14 +120,20 @@ public class AppletMain extends javax.swing.JApplet {
     }
 
 
+    /**
+     * 
+     * @return
+     */
     private String[][] getUriUnPwParameters()
     {
         // array of triplets: URI, Username, Password
         String[][] retVal = new String[][] { {} };
 
-//        retVal = new String[][] {
-//            { "http://dav.somewhere.com/webdav", "username", "password"}
-//        };
+        /* example string for testing
+        retVal = new String[][] {
+            { "http://dav.somewhere.com/webdav", "username", "password"}
+        };
+        */
 
         String uri = getParameter("uri");
         String username = getParameter("username");

@@ -74,6 +74,9 @@
  * @author      John Barton (HP), Joachim Feise (dav-exp@ics.uci.edu)
  * @date        06 February 2004
  * Changes:     Integrated John Barton's refactoring changes and drop support.
+ * @author      Joachim Feise (dav-exp@ics.uci.edu)
+ * @date        08 February 2004
+ * Changes:     Added Javadoc templates
  */
 
 
@@ -105,6 +108,10 @@ import java.awt.datatransfer.*;
 import java.util.*;
 import java.io.*;
 
+
+/**
+ * 
+ */
 public class Main extends JFrame
 {
     public final static String VERSION = "0.91-dev";
@@ -112,6 +119,11 @@ public class Main extends JFrame
     public final static String COPYRIGHT = "Copyright (c) 1998-2004 Regents of the University of California";
     public final static String EMAIL = "EMail: dav-exp@ics.uci.edu";
 
+
+    /**
+     * 
+     * @param frameName
+     */
     public Main(String frameName)
     {
         super (frameName);
@@ -194,7 +206,9 @@ public class Main extends JFrame
     }
 
 
-    /* 04DEC03 John_Barton@hpl.hp.com Factored from ctor to aid reuse */
+    /**
+     * 04DEC03 John_Barton@hpl.hp.com Factored from ctor to aid reuse
+     */
     public void setLookAndFeel()
     {
         /* Uncomment the following 8 lines if you want system's L&F
@@ -210,7 +224,9 @@ public class Main extends JFrame
     }
 
 
-    /* 04DEC03 John_Barton@hpl.hp.com Factored from ctor to aid reuse */
+    /**
+     * 04DEC03 John_Barton@hpl.hp.com Factored from ctor to aid reuse
+     */
     public void buildFrame()
     {
       CommandMenu = new WebDAVMenu();
@@ -269,20 +285,28 @@ public class Main extends JFrame
 
     }
 
-    protected WebDAVFileView createFileView() {
 
-    fileView = new WebDAVFileView();
-
-    // Get the rename Event
-    fileView.addRenameListener(new RenameListener());
-    fileView.addDisplayLockListener(new DisplayLockListener());
-    fileView.addDisplayVersionListener(new DisplayVersionListener());
-
-    return fileView;
+    /**
+     * 
+     * @return
+     */
+    protected WebDAVFileView createFileView()
+    {
+        fileView = new WebDAVFileView();
+    
+        // Get the rename Event
+        fileView.addRenameListener(new RenameListener());
+        fileView.addDisplayLockListener(new DisplayLockListener());
+        fileView.addDisplayVersionListener(new DisplayVersionListener());
+    
+        return fileView;
     }
 
 
-    /* 04DEC03 John_Barton@hpl.hp.com removed final to allow override */
+    /**
+     * 04DEC03 John_Barton@hpl.hp.com Factored from ctor to aid reuse
+     * @param argv
+     */
     public static void main(String[] argv)
     {
         String property = System.getProperty( "help", "no" );
@@ -346,9 +370,15 @@ public class Main extends JFrame
     }
 
 
-    /* 04DEC04 John_Barton@hpl.hp.com move to public to allow Main to be subclassed */
+    /**
+     * 04DEC03 John_Barton@hpl.hp.com Factored from ctor to aid reuse 
+     */
     public class URIBoxListener_Gen implements WebDAVURIBoxListener
     {
+        /**
+         * 
+         * @param e
+         */
         public void actionPerformed(ActionEvent e)
         {
             String str = e.getActionCommand();
@@ -402,14 +432,26 @@ public class Main extends JFrame
         }
     }
 
-    /* 04DEC03 John_Barton@hpl.hp.com move to public to allow Main to be subclassed */
+
+    /**
+     * 04DEC03 John_Barton@hpl.hp.com move to public to allow Main to be subclassed 
+     */
     public class TreeInsertionListener implements InsertionListener
     {
+        /**
+         * 
+         * @param e
+         */
         public void actionPerformed(ActionEvent e)
         {
             actionPerformed( e, false );
         }
 
+        /**
+         * 
+         * @param e
+         * @param deltaV
+         */
         public void actionPerformed(ActionEvent e, boolean deltaV )
         {
             String str = e.getActionCommand();
@@ -424,9 +466,16 @@ public class Main extends JFrame
         }
     }
 
-    /* 04DEC03 John_Barton@hpl.hp.com move to public to allow Main to be subclassed */
+
+    /**
+     * 04DEC03 John_Barton@hpl.hp.com move to public to allow Main to be subclassed
+     */
     public class MoveUpdateListener implements ActionListener
     {
+        /**
+         * 
+         * @param e
+         */
         public void actionPerformed(ActionEvent e)
         {
             String str = e.getActionCommand();
@@ -439,36 +488,64 @@ public class Main extends JFrame
         }
     }
 
-    /* 04DEC03 John_Barton@hpl.hp.com move to public to allow Main to be subclassed */
+
+    /**
+     * 04DEC03 John_Barton@hpl.hp.com move to public to allow Main to be subclassed
+     */
     public class TableSelectListener_Gen implements ViewSelectionListener
     {
+        /**
+         * 
+         * @param e
+         */
         public void selectionChanged(ViewSelectionEvent e)
         {
             requestGenerator.tableSelectionChanged(e);
         }
     }
 
-    /* 04DEC03 John_Barton@hpl.hp.com move to public to allow Main to be subclassed */
+
+    /**
+     * 04DEC03 John_Barton@hpl.hp.com move to public to allow Main to be subclassed
+     */
     public class TableSelectListener_Tree implements ViewSelectionListener
     {
+        /**
+         * 
+         * @param e
+         */
         public void selectionChanged(ViewSelectionEvent e)
         {
             treeView.tableSelectionChanged(e);
         }
     }
 
-    /* 04DEC03 John_Barton@hpl.hp.com move to public to allow Main to be subclassed */
+
+    /**
+     * 04DEC03 John_Barton@hpl.hp.com move to public to allow Main to be subclassed
+     */
     public class TreeSelectListener_Gen implements ViewSelectionListener
     {
+        /**
+         * 
+         * @param e
+         */
         public void selectionChanged(ViewSelectionEvent e)
         {
             requestGenerator.treeSelectionChanged(e);
         }
     }
 
-    /* 04DEC03 John_Barton@hpl.hp.com move to public to allow Main to be subclassed */
+
+    /**
+     * 04DEC03 John_Barton@hpl.hp.com move to public to allow Main to be subclassed
+     */
     public class LockListener implements ActionListener
     {
+        /**
+         * 
+         * @param e
+         */
         public void actionPerformed(ActionEvent e)
         {
             String token = e.getActionCommand();
@@ -486,9 +563,15 @@ public class Main extends JFrame
     }
 
 
-    /* 04DEC03 John_Barton@hpl.hp.com move to public to allow Main to be subclassed */
+    /**
+     * 04DEC03 John_Barton@hpl.hp.com move to public to allow Main to be subclassed
+     */
     public class VersionControlListener implements ActionListener
     {
+        /**
+         * 
+         * @param e
+         */
         public void actionPerformed(ActionEvent e)
         {
             String res = e.getActionCommand();
@@ -504,9 +587,15 @@ public class Main extends JFrame
     }
 
 
-    /* 04DEC03 John_Barton@hpl.hp.com move to public to allow Main to be subclassed */
+    /**
+     * 04DEC03 John_Barton@hpl.hp.com move to public to allow Main to be subclassed
+     */
     public class CheckoutListener implements ActionListener
     {
+        /**
+         * 
+         * @param e
+         */
         public void actionPerformed(ActionEvent e)
         {
             String res = e.getActionCommand();
@@ -522,9 +611,15 @@ public class Main extends JFrame
     }
 
 
-    /* 04DEC03 John_Barton@hpl.hp.com move to public to allow Main to be subclassed */
+    /**
+     * 04DEC03 John_Barton@hpl.hp.com move to public to allow Main to be subclassed
+     */
     public class UnCheckoutListener implements ActionListener
     {
+        /**
+         * 
+         * @param e
+         */
         public void actionPerformed(ActionEvent e)
         {
             String res = e.getActionCommand();
@@ -540,9 +635,15 @@ public class Main extends JFrame
     }
 
 
-    /* 04DEC03 John_Barton@hpl.hp.com move to public to allow Main to be subclassed */
+    /**
+     * 04DEC03 John_Barton@hpl.hp.com move to public to allow Main to be subclassed
+     */
     public class CheckinListener implements ActionListener
     {
+        /**
+         * 
+         * @param e
+         */
         public void actionPerformed(ActionEvent e)
         {
             String res = e.getActionCommand();
@@ -558,9 +659,15 @@ public class Main extends JFrame
     }
 
 
-    /* 04DEC03 John_Barton@hpl.hp.com move to public to allow Main to be subclassed */
+    /**
+     * 04DEC03 John_Barton@hpl.hp.com move to public to allow Main to be subclassed 
+     */
     public class DisplayLockListener implements ActionListener
     {
+        /**
+         * 
+         * @param e
+         */
         public void actionPerformed(ActionEvent e)
         {
             if( e.getActionCommand() != null )
@@ -570,9 +677,15 @@ public class Main extends JFrame
     }
 
 
-    /* 04DEC03 John_Barton@hpl.hp.com move to public to allow Main to be subclassed */
+    /**
+     * 04DEC03 John_Barton@hpl.hp.com move to public to allow Main to be subclassed
+     */
     public class DisplayVersionListener implements ActionListener
     {
+        /**
+         * 
+         * @param e
+         */
         public void actionPerformed(ActionEvent e)
         {
             if( e.getActionCommand() != null )
@@ -583,9 +696,15 @@ public class Main extends JFrame
     }
 
 
-    /* 04DEC03 John_Barton@hpl.hp.com move to public to allow Main to be subclassed */
+    /**
+     * 04DEC03 John_Barton@hpl.hp.com move to public to allow Main to be subclassed
+     */
     public class RenameListener implements ActionListener
     {
+        /**
+         * 
+         * @param e
+         */
         public void actionPerformed(ActionEvent e)
         {
             String str = e.getActionCommand();
@@ -613,9 +732,15 @@ public class Main extends JFrame
     }
 
 
-    /* 04DEC03 John_Barton@hpl.hp.com move to public to allow Main to be subclassed */
+    /**
+     * 04DEC03 John_Barton@hpl.hp.com move to public to allow Main to be subclassed
+     */
     public class RequestListener implements WebDAVRequestListener
     {
+        /**
+         * 
+         * @param e
+         */    
         public void requestFormed(WebDAVRequestEvent e)
         {
             webdavManager.sendRequest(e);
@@ -623,9 +748,15 @@ public class Main extends JFrame
     }
 
 
-    /* 04DEC03 John_Barton@hpl.hp.com move to public to allow Main to be subclassed */
+    /**
+     * 04DEC03 John_Barton@hpl.hp.com move to public to allow Main to be subclassed
+     */
     public class ResponseListener implements WebDAVResponseListener
     {
+        /**
+         * 
+         * @param e
+         */
         public void responseFormed(WebDAVResponseEvent e)
         {
             // This call process the info from the server
@@ -695,9 +826,16 @@ public class Main extends JFrame
         }
     }
 
-    /* 04DEC03 John_Barton@hpl.hp.com move to public to allow Main to be subclassed */
+
+    /**
+     * 04DEC03 John_Barton@hpl.hp.com move to public to allow Main to be subclassed
+     */
     public class MenuListener_Gen implements ActionListener
     {
+        /**
+         * 
+         * @param e
+         */
         public void actionPerformed(ActionEvent e)
         {
             String command = e.getActionCommand();
@@ -1082,18 +1220,31 @@ public class Main extends JFrame
     }
 
 
+    /**
+     * 
+     * @param l
+     */
     public void addWebDAVCompletionListener( WebDAVCompletionListener l )
     {
         listenerList.add( WebDAVCompletionListener.class, l );
     }
 
 
+    /**
+     * 
+     * @param l
+     */
     public void removeWebDAVCompletionListener( WebDAVCompletionListener l )
     {
         listenerList.remove(WebDAVCompletionListener.class, l );
     }
 
 
+    /**
+     * 
+     * @param source
+     * @param success
+     */
     protected void fireWebDAVCompletion( Object source, boolean success )
     {
         Object[] listeners = listenerList.getListenerList();
@@ -1109,13 +1260,22 @@ public class Main extends JFrame
         }
     }
 
+
+    /**
+     * 
+     */
     protected void viewDocument()
     {
-        if( requestGenerator.GenerateGet("view") ){
+        if( requestGenerator.GenerateGet("view") )
+        {
             requestGenerator.execute();
-    }
+        }
     }
 
+
+    /**
+     * 
+     */
     protected void saveAsDocument()
     {
         String s = fileView.getSelected();
@@ -1133,6 +1293,11 @@ public class Main extends JFrame
         }
     }
 
+
+    /**
+     * 
+     * @param collection
+     */
     protected void deleteDocument( boolean collection )
     {
         String s = fileView.getSelected();
@@ -1194,6 +1359,11 @@ public class Main extends JFrame
         }
     }
 
+
+    /**
+     * 
+     * @param exclusive
+     */
     protected void lockDocument( boolean exclusive )
     {
         if( exclusive )
@@ -1202,11 +1372,19 @@ public class Main extends JFrame
             requestGenerator.DiscoverLock("sharedLock");
     }
 
+
+    /**
+     * 
+     */
     protected void unlockDocument()
     {
         requestGenerator.DiscoverLock("unlock");
     }
 
+
+    /**
+     *
+     */
     protected void viewProperties()
     {
         String s = fileView.getSelected();
@@ -1218,13 +1396,19 @@ public class Main extends JFrame
         {
             requestGenerator.setResource(s, null);
             requestGenerator.setExtraInfo("properties");
-            if( requestGenerator.GeneratePropFind(null,"allprop","zero",null,null,false) ){
+            if( requestGenerator.GeneratePropFind(null,"allprop","zero",null,null,false) )
+            {
                 requestGenerator.execute();
-        }
+            }
         }
     }
 
-    // 08DEC03 John_Barton@hpl.hp.com extracted from Write File branch of event handler.
+
+    /**
+     * 08DEC03 John_Barton@hpl.hp.com extracted from Write File branch of event handler.
+     * @param dirName
+     * @param fName
+     */
     protected void doWriteFile(String dirName, String fName)
     {
         if( (dirName != null) && !dirName.equals("") && (fName != null) &&
@@ -1265,7 +1449,9 @@ public class Main extends JFrame
     }
 
 
-    /* 08DEC03 John_Barton@hpl.hp.com Add support for drop (and a bit for drag) */
+    /**
+     * 08DEC03 John_Barton@hpl.hp.com Add support for drop (and a bit for drag)
+     */
     public class DropEnabler
         implements DropTargetListener, DragSourceListener, DragGestureListener
     {
@@ -1275,6 +1461,10 @@ public class Main extends JFrame
         int drop_action_allowed = DnDConstants.ACTION_COPY;
         String os_name;
 
+        /**
+         * Constructor 
+         * @param enabled
+         */
         public DropEnabler(Component enabled)
         {
             this.drop_enabled = enabled;
@@ -1284,53 +1474,102 @@ public class Main extends JFrame
             os_name = System.getProperty("os.name");
         }
 
-        // DragSourceListener
+
+
+        /**
+         * DragSourceListener 
+         * @param DragSourceDropEvent
+         */
         public void dragDropEnd(DragSourceDropEvent DragSourceDropEvent)
         {
             /* ignored */
         }
 
 
+        /**
+         * 
+         * @param DragSourceDragEvent
+         */
         public void dragEnter(DragSourceDragEvent DragSourceDragEvent)
         {
             /* ignored */
         }
 
 
+        /**
+         * 
+         * @param DragSourceEvent
+         */
         public void dragExit(DragSourceEvent DragSourceEvent)
         {
             /* ignored */
         }
 
 
+        /**
+         * 
+         * @param DragSourceDragEvent
+         */
         public void dragOver(DragSourceDragEvent DragSourceDragEvent)
         {
             /* ignored */
         }
 
 
-        public void dropActionChanged(DragSourceDragEvent DragSourceDragEvent) {/* ignored */}
+        /**
+         * 
+         * @param DragSourceDragEvent
+         */
+        public void dropActionChanged(DragSourceDragEvent DragSourceDragEvent)
+        {
+            /* ignored */
+        }
 
-        // DropTargetListener
-        public void dragEnter(DropTargetDragEvent dropTargetDragEvent) {
+
+        /**
+         * DropTargetListener
+         * @param dropTargetDragEvent
+         */
+        public void dragEnter(DropTargetDragEvent dropTargetDragEvent)
+        {
             dropTargetDragEvent.acceptDrag(drop_action_allowed);
         }
         
+
+        /**
+         * 
+         * @param dropTargetEvent
+         */
         public void dragExit(DropTargetEvent dropTargetEvent)
         {
             /* ignored */
         }
 
+
+        /**
+         * 
+         * @param dropTargetDragEvent
+         */
         public void dragOver(DropTargetDragEvent dropTargetDragEvent)
         {
             /* ignored */
         }
 
+
+        /**
+         * 
+         * @param dropTargetDragEvent
+         */
         public void dropActionChanged(DropTargetDragEvent dropTargetDragEvent)
         {
             /* ignored */
         }
 
+
+        /**
+         * 
+         * @param dropTargetDropEvent
+         */
         public synchronized void drop(DropTargetDropEvent dropTargetDropEvent)
         {
             try 
@@ -1344,7 +1583,7 @@ public class Main extends JFrame
                     while (iterator.hasNext())
                     {
                         File file = (File) iterator.next();
-                        doWriteFile(file.getParent()+file.separator,file.getName());
+                        doWriteFile(file.getParent()+File.separator,file.getName());
                     }
                     dropTargetDropEvent.getDropTargetContext().dropComplete(true);
                 }
@@ -1372,6 +1611,11 @@ public class Main extends JFrame
             }
         }
 
+
+        /**
+         * 
+         * @param dragGestureEvent
+         */
         public void dragGestureRecognized(DragGestureEvent dragGestureEvent)
         {
             String obj = fileView.getSelected();
@@ -1403,17 +1647,38 @@ public class Main extends JFrame
         }
     }
 
+
+    /**
+     * 
+     * @param title
+     * @param prompt
+     * @return
+     */
     private String selectName( String title, String prompt )
     {
         return selectName( title, prompt, null );
     }
 
+
+    /**
+     * 
+     * @param title
+     * @param prompt
+     * @param defaultValue
+     * @return
+     */
     private String selectName( String title, String prompt, String defaultValue )
     {
         String ret = (String)JOptionPane.showInputDialog( GlobalData.getGlobalData().getMainFrame(), prompt, title, JOptionPane.QUESTION_MESSAGE, null, null, defaultValue );
         return ret;
     }
 
+
+    /**
+     * 
+     * @param f
+     * @return
+     */
     private boolean deleteLocal( File f )
     {
         try
@@ -1436,6 +1701,7 @@ public class Main extends JFrame
         }
         return false;
     }
+
 
     protected DropEnabler dropEnabler;
     protected WebDAVFileView fileView;

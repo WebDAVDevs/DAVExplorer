@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 1998-2003 Regents of the University of California.
+ * Copyright (c) 1998-2004 Regents of the University of California.
  * All rights reserved.
  *
  * This software was developed at the University of California, Irvine.
@@ -23,7 +23,7 @@
  *              a bean, which listens for a request event. Once the event
  *              occurs, appropriate Method from the WebDAV class library is
  *              called.
- * Copyright:   Copyright (c) 1998-2003 Regents of the University of California. All rights reserved.
+ * Copyright:   Copyright (c) 1998-2004 Regents of the University of California. All rights reserved.
  * @author      Robert Emmery (dav-exp@ics.uci.edu)
  * @date        25 March 1998
  * @author      Yuzo Kanomata, Joachim Feise (dav-exp@ics.uci.edu)
@@ -55,6 +55,9 @@
  * @author      Joachim Feise (dav-exp@ics.uci.edu)
  * @date        17 November 2003
  * Changes:     Setting the cursor to an hourglass when connecting.
+ * @author      Joachim Feise (dav-exp@ics.uci.edu)
+ * @date        08 February 2004
+ * Changes:     Added Javadoc templates
  */
 
 package edu.uci.ics.DAVExplorer;
@@ -72,6 +75,10 @@ import com.sun.net.ssl.TrustManager;
 import com.sun.net.ssl.SSLContext;
 import javax.net.ssl.SSLSocketFactory;
 
+
+/**
+ * 
+ */
 public class WebDAVManager
 {
     public HTTPResponse Response;
@@ -90,10 +97,19 @@ public class WebDAVManager
     private boolean logging = false;
     private String logFilename = null;
 
+
+    /**
+     * Constructor
+     */
     public WebDAVManager()
     {
     }
 
+
+    /**
+     * 
+     * @param e
+     */
     public void sendRequest(WebDAVRequestEvent e)
     {
         String ProxyTempHost = null;
@@ -294,22 +310,44 @@ public class WebDAVManager
         }
     }
 
+
+    /**
+     * 
+     * @param l
+     */
     public synchronized void addResponseListener(WebDAVResponseListener l)
     {
         Listeners.addElement(l);
     }
 
+
+    /**
+     * 
+     * @param l
+     */
     public synchronized void removeResponseListener(WebDAVResponseListener l)
     {
         Listeners.removeElement(l);
     }
 
+
+    /**
+     * 
+     * @param Response
+     * @param Node
+     * @return
+     */
     public WebDAVResponseEvent GenerateWebDAVResponse(HTTPResponse Response, WebDAVTreeNode Node)
     {
         WebDAVResponseEvent e = new WebDAVResponseEvent(this,Hostname, Port, ResourceName,MethodName,Response,ExtraInfo, Node);
         return e;
     }
 
+
+    /**
+     * 
+     * @param e
+     */
     public void fireResponse(WebDAVResponseEvent e)
     {
         Vector ls;
@@ -325,6 +363,12 @@ public class WebDAVManager
         }
     }
 
+
+    /**
+     * 
+     * @param logging
+     * @param filename
+     */
     public void setLogging( boolean logging, String filename )
     {
         this.logging = logging;
@@ -336,6 +380,13 @@ public class WebDAVManager
         }
     }
 
+
+    /**
+     * 
+     * @param Hostname
+     * @param Port
+     * @return
+     */
     protected WebDAVConnection createProxyConnection( String Hostname, int Port )
     {
         if( Port != 0 )

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 1998-2003 Regents of the University of California.
+ * Copyright (c) 1998-2004 Regents of the University of California.
  * All rights reserved.
  *
  * This software was developed at the University of California, Irvine.
@@ -20,7 +20,7 @@
 /**
  * Title:       WebDAVFileView
  * Description: This class is part of the client's GUI.
- * Copyright:   Copyright (c) 1998-2003 Regents of the University of California. All rights reserved.
+ * Copyright:   Copyright (c) 1998-2004 Regents of the University of California. All rights reserved.
  * @author      Robert Emmery (dav-exp@ics.uci.edu)
  * @date        2 April 1998
  * @author      Yuzo Kanomata, Joachim Feise (dav-exp@ics.uci.edu)
@@ -56,6 +56,9 @@
  * @author      Joachim Feise (dav-exp@ics.uci.edu)
  * @date        15 November 2003
  * Changes:     Changed the justification of the size and last modified fields.
+ * @author      Joachim Feise (dav-exp@ics.uci.edu)
+ * @date        08 February 2004
+ * Changes:     Added Javadoc templates
  */
 
 package edu.uci.ics.DAVExplorer;
@@ -89,6 +92,10 @@ import java.util.Vector;
 import java.util.Enumeration;
 import java.io.File;
 
+
+/**
+ * 
+ */
 public class WebDAVFileView implements ViewSelectionListener, ActionListener
 {
     final String[] colNames = { " ",
@@ -123,6 +130,10 @@ public class WebDAVFileView implements ViewSelectionListener, ActionListener
     int selectedRow = -1;
     int pressRow, releaseRow;
 
+
+    /**
+     * Constructor
+     */
     public WebDAVFileView()
     {
         FOLDER_ICON = GlobalData.getGlobalData().getImageIcon("TreeClosed.gif", "");
@@ -279,31 +290,39 @@ public class WebDAVFileView implements ViewSelectionListener, ActionListener
     }
 
 
-    // Returns the path to the parentNode
+    /**
+     * Returns the path to the parentNode
+     * 
+     * @return
+     */
     public String getParentPath()
     {
         return parentPath;
     }
 
 
-    ////////////
-    // Implements the Action Listener.
-    // Purpose: to listen for a reset to the old selected name
-    // for the case of a failure of Rename.
-    // Need to do this because Response Interpreter can't access the
-    // resetName method because there teh FileView is not accessible
+    /**
+     * Implements the Action Listener.
+     * Purpose: to listen for a reset to the old selected name
+     * for the case of a failure of Rename.
+     * Need to do this because Response Interpreter can't access the
+     * resetName method because there teh FileView is not accessible
+     * @param e
+     */
     public void actionPerformed( ActionEvent e )
     {
         resetName();
     }
 
 
-    ////////////
-    // This implements the View Selection Listener Interface
-    // The purpose of this listners is to respond to the
-    // Selection of a node on the TreeView.  This means
-    // that the Table should become populated with the directories
-    // and files in the Selected Node.
+    /**
+     * This implements the View Selection Listener Interface
+     * The purpose of this listners is to respond to the
+     * Selection of a node on the TreeView.  This means
+     * that the Table should become populated with the directories
+     * and files in the Selected Node.
+     * @param e
+     */
     public synchronized void selectionChanged(ViewSelectionEvent e)
     {
         if( GlobalData.getGlobalData().getDebugFileView() )
@@ -375,6 +394,10 @@ public class WebDAVFileView implements ViewSelectionListener, ActionListener
     }
 
 
+    /**
+     * 
+     * @param n
+     */
     protected void addDirToTable(WebDAVTreeNode n)
     {
         if( GlobalData.getGlobalData().getDebugFileView() )
@@ -415,6 +438,10 @@ public class WebDAVFileView implements ViewSelectionListener, ActionListener
     }
 
 
+    /**
+     * 
+     * @param v
+     */
     protected void addFileToTable(Vector v)
     {
         if( GlobalData.getGlobalData().getDebugFileView() )
@@ -449,12 +476,20 @@ public class WebDAVFileView implements ViewSelectionListener, ActionListener
     }
 
 
+    /**
+     * 
+     * @return
+     */
     public WebDAVTreeNode getParentNode()
     {
         return parentNode;
     }
 
 
+    /**
+     * 
+     * @return
+     */
     protected String getParentPathString()
     {
         String s = "";
@@ -477,17 +512,23 @@ public class WebDAVFileView implements ViewSelectionListener, ActionListener
    }
 
 
-   /* Yuzo Added: purpose, to get Selected Resource which is the
-      old full name of a renamed item. */
-
+    /**
+     * get Selected Resource which is the old full name of a renamed item.
+     * 
+     * @return
+     */
     public String getOldSelectedResource()
     {
         return getParentPathString() + selectedResource;
     }
 
 
-    // Added to return the currently selected collection, null if none of resource
-    // null if no collection selected
+    /**
+     * Added to return the currently selected collection, null if none of resource
+     * null if no collection selected
+     * 
+     * @return
+     */
     public WebDAVTreeNode getSelectedCollection()
     {
         if( GlobalData.getGlobalData().getDebugFileView() )
@@ -550,6 +591,10 @@ public class WebDAVFileView implements ViewSelectionListener, ActionListener
     }
 
 
+    /**
+     * 
+     * @return
+     */
     public boolean isSelectedLocked()
     {
         int column = table.convertColumnIndexToView(1);
@@ -560,7 +605,12 @@ public class WebDAVFileView implements ViewSelectionListener, ActionListener
     }
 
 
-    // Attempt to get at the selected item's dataNode
+
+    /**
+     * Attempt to get at the selected item's dataNode
+     * 
+     * @return
+     */
     public String getSelectedLockToken()
     {
         if( GlobalData.getGlobalData().getDebugFileView() )
@@ -617,6 +667,10 @@ public class WebDAVFileView implements ViewSelectionListener, ActionListener
     }
 
 
+    /**
+     * 
+     * @return
+     */
     public boolean hasSelected()
     {
         if( selectedRow >= 0 )
@@ -626,6 +680,10 @@ public class WebDAVFileView implements ViewSelectionListener, ActionListener
     }
 
 
+    /**
+     * 
+     * @return
+     */
     public String getSelected()
     {
         if( GlobalData.getGlobalData().getDebugFileView() )
@@ -662,6 +720,9 @@ public class WebDAVFileView implements ViewSelectionListener, ActionListener
     }
 
 
+    /**
+     *
+     */
     public void resetName()
     {
         int column = table.convertColumnIndexToView(3);
@@ -672,12 +733,19 @@ public class WebDAVFileView implements ViewSelectionListener, ActionListener
     }
 
 
+    /**
+     * 
+     * @return
+     */
     public String getName()
     {
         return selectedResource;
     }
 
 
+    /**
+     *
+     */
     public synchronized void setLock()
     {
         int row = selectedRow;
@@ -695,6 +763,9 @@ public class WebDAVFileView implements ViewSelectionListener, ActionListener
     }
 
 
+    /**
+     *
+     */
     public synchronized void resetLock()
     {
         int row = selectedRow;
@@ -712,6 +783,9 @@ public class WebDAVFileView implements ViewSelectionListener, ActionListener
     }
 
 
+    /**
+     *
+     */
     public synchronized void update()
     {
         if( GlobalData.getGlobalData().getDebugFileView() )
@@ -724,6 +798,10 @@ public class WebDAVFileView implements ViewSelectionListener, ActionListener
     }
 
 
+    /**
+     * 
+     * @param table
+     */
     public void setupTable(JTable table)
     {
         if( GlobalData.getGlobalData().getDebugFileView() )
@@ -850,12 +928,19 @@ public class WebDAVFileView implements ViewSelectionListener, ActionListener
     }
 
 
+    /**
+     * 
+     * @return
+     */
     public JScrollPane getScrollPane()
     {
         return scrPane;
     }
 
 
+    /**
+     *
+     */
     public void fireTableModuleEvent()
     {
         TableModelEvent e = new TableModelEvent(dataModel);
@@ -867,6 +952,10 @@ public class WebDAVFileView implements ViewSelectionListener, ActionListener
     }
 
 
+    /**
+     * 
+     * @param newdata
+     */
     public void updateTable(Vector newdata)
     {
         if( GlobalData.getGlobalData().getDebugFileView() )
@@ -879,6 +968,10 @@ public class WebDAVFileView implements ViewSelectionListener, ActionListener
     }
 
 
+    /**
+     * 
+     * @param rowData
+     */
     private void addRow(Object[] rowData)
     {
         Vector newRow = new Vector();
@@ -890,6 +983,11 @@ public class WebDAVFileView implements ViewSelectionListener, ActionListener
         data.addElement(newRow);
     }
 
+
+    /**
+     * 
+     * @param row
+     */
     private void removeRow(int row)
     {
         data.removeElementAt(row);
@@ -897,6 +995,11 @@ public class WebDAVFileView implements ViewSelectionListener, ActionListener
     }
 
 
+    /**
+     * 
+     * @param columnName
+     * @return
+     */
     private int getColumn( String columnName )
     {
         for( int i=0; i<table.getColumnCount(); i++ )
@@ -907,7 +1010,10 @@ public class WebDAVFileView implements ViewSelectionListener, ActionListener
         return -1;  // column name not found
     }
     
-    
+
+    /**
+     *
+     */
     public void clearTable()
     {
         updateTable(new Vector());
@@ -925,54 +1031,90 @@ public class WebDAVFileView implements ViewSelectionListener, ActionListener
     }
 
 
+    /**
+     * 
+     * @param l
+     */
     public synchronized void addViewSelectionListener(ViewSelectionListener l)
     {
         selListeners.addElement(l);
     }
 
 
+    /**
+     * 
+     * @param l
+     */
     public synchronized void removeViewSelectionListener(ViewSelectionListener l)
     {
         selListeners.removeElement(l);
     }
 
 
+    /**
+     * 
+     * @param l
+     */
     public synchronized void addRenameListener(ActionListener l)
     {
         renameListeners.addElement(l);
     }
 
 
+    /**
+     * 
+     * @param l
+     */
     public synchronized void removeRenameListener(ActionListener l)
     {
         renameListeners.removeElement(l);
     }
 
 
+    /**
+     * 
+     * @param l
+     */
     public synchronized void addDisplayLockListener(ActionListener l)
     {
         displayLockListeners.addElement(l);
     }
 
 
+    /**
+     * 
+     * @param l
+     */
     public synchronized void removeDisplayLockListener(ActionListener l)
     {
         displayLockListeners.removeElement(l);
     }
 
 
+    /**
+     * 
+     * @param l
+     */
     public synchronized void addDisplayVersionListener(ActionListener l)
     {
         displayVersionListeners.addElement(l);
     }
 
 
+    /**
+     * 
+     * @param l
+     */
     public synchronized void removeDisplayVersionListener(ActionListener l)
     {
         displayVersionListeners.removeElement(l);
     }
 
 
+    /**
+     * 
+     * @param e
+     */
     public void handlePress(MouseEvent e)
     {
         Point cursorPoint = new Point(e.getX(),e.getY());
@@ -981,6 +1123,10 @@ public class WebDAVFileView implements ViewSelectionListener, ActionListener
     }
 
 
+    /**
+     * 
+     * @param e
+     */
     public void handleRelease(MouseEvent e)
     {
         Point cursorPoint = new Point(e.getX(),e.getY());
@@ -1003,6 +1149,9 @@ public class WebDAVFileView implements ViewSelectionListener, ActionListener
     }
 
 
+    /**
+     *
+     */
     public void displayLock()
     {
         Vector ls;
@@ -1019,6 +1168,9 @@ public class WebDAVFileView implements ViewSelectionListener, ActionListener
     }
 
 
+    /**
+     *
+     */
     public void displayVersions()
     {
         Vector ls;
@@ -1035,6 +1187,10 @@ public class WebDAVFileView implements ViewSelectionListener, ActionListener
     }
 
 
+    /**
+     * 
+     * @param e
+     */
     public void handleDoubleClick(MouseEvent e)
     {
         if( GlobalData.getGlobalData().getDebugFileView() )
@@ -1123,8 +1279,15 @@ public class WebDAVFileView implements ViewSelectionListener, ActionListener
     }
 
 
+    /**
+     * 
+     */
     class SelectionChangeListener implements ListSelectionListener
     {
+        /**
+         * 
+         * @param e
+         */
         public void valueChanged(ListSelectionEvent e)
         {
             if( GlobalData.getGlobalData().getDebugFileView() )

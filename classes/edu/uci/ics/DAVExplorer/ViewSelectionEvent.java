@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 1998-2001 Regents of the University of California.
+ * Copyright (c) 1998-2004 Regents of the University of California.
  * All rights reserved.
  *
  * This software was developed at the University of California, Irvine.
@@ -20,7 +20,7 @@
 /**
  * Title:       ViewSelection Event
  * Description: Event to be sent when the selection changes
- * Copyright:   Copyright (c) 1998-2001 Regents of the University of California. All rights reserved.
+ * Copyright:   Copyright (c) 1998-2004 Regents of the University of California. All rights reserved.
  * @author      Undergraduate project team ICS 126B 1998
  * @date        1998
  * @author      Yuzo Kanomata, Joachim Feise (dav-exp@ics.uci.edu)
@@ -28,6 +28,9 @@
  * @author      Joachim Feise (dav-exp@ics.uci.edu)
  * @date        1 October 2001
  * Changes:     Change of package name
+ * @author      Joachim Feise (dav-exp@ics.uci.edu)
+ * @date        08 February 2004
+ * Changes:     Added Javadoc templates
  */
 
 package edu.uci.ics.DAVExplorer;
@@ -35,11 +38,22 @@ package edu.uci.ics.DAVExplorer;
 import java.util.EventObject;
 import javax.swing.tree.TreePath;
 
+
+/**
+ * 
+ */
 public class ViewSelectionEvent extends EventObject
 {
     TreePath strPath;
     Object Node;
 
+
+    /**
+     * Constructor 
+     * @param module
+     * @param Node
+     * @param Path
+     */
     public ViewSelectionEvent(Object module, Object Node, TreePath Path)
     {
         super(module);
@@ -47,17 +61,33 @@ public class ViewSelectionEvent extends EventObject
         this.Node = Node;
     }
 
+
+    /**
+     * Constructor 
+     * @param module
+     * @param Path
+     */
     public ViewSelectionEvent(Object module, TreePath Path)
     {
         super(module);
         this.strPath = Path;
     }
 
+
+    /**
+     * 
+     * @return
+     */
     public TreePath getPath()
     {
         return strPath;
     }
 
+
+    /**
+     * 
+     * @return
+     */
     public Object getNode()
     {
         return Node;

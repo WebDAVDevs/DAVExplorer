@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2003 Regents of the University of California.
+ * Copyright (c) 2003-2004 Regents of the University of California.
  * All rights reserved.
  *
  * This software was developed at the University of California, Irvine.
@@ -25,14 +25,18 @@ import java.util.Vector;
 /**
  * Title:       DeltaVDataNode
  * Description: Node holding information about versions
- * Copyright:   Copyright (c) 2003 Regents of the University of California. All rights reserved.
+ * Copyright:   Copyright (c) 2003-2004 Regents of the University of California. All rights reserved.
  * @author      Joachim Feise (dav-exp@ics.uci.edu)
  * @date        23 September 2003
+ * @author      Joachim Feise (dav-exp@ics.uci.edu)
+ * @date        08 February 2004
+ * Changes:     Added Javadoc templates
  */
 public class DeltaVDataNode extends DataNode
 {
 
     /**
+     * Constructor
      * @param collection
      * @param locked
      * @param lockToken
@@ -58,6 +62,7 @@ public class DeltaVDataNode extends DataNode
     }
 
     /**
+     * Constructor
      * @param collection
      * @param locked
      * @param lockToken
@@ -83,12 +88,20 @@ public class DeltaVDataNode extends DataNode
     }
 
 
+    /**
+     * Copy constructor
+     * @param node 
+     */
     public DeltaVDataNode( DataNode node )
     {
         super(node.collection, node.locked, node.lockToken, node.name, node.display, node.type, node.size, node.getDate(), node.subNodes);
     }
     
     
+    /**
+     * Copy constructor
+     * @param node 
+     */
     public DeltaVDataNode( DeltaVDataNode node )
     {
         super(node.collection, node.locked, node.lockToken, node.name, node.display, node.type, node.size, node.getDate(), node.subNodes);
@@ -112,6 +125,10 @@ public class DeltaVDataNode extends DataNode
     }
     
 
+    /**
+     * 
+     * @param node 
+     */
     public void copyFrom( DeltaVDataNode node )
     {
         if( node.getComment().length() > 0 )
@@ -147,12 +164,20 @@ public class DeltaVDataNode extends DataNode
     }
     
 
+    /**
+     * 
+     * @param versions
+     */
     public void setVersions( Vector versions )
     {
         this.versions = versions;
     }
 
 
+    /**
+     *
+     * @param node
+     */
     public void addVersion( DataNode node )
     {
         if( versions == null )
@@ -161,12 +186,20 @@ public class DeltaVDataNode extends DataNode
     }
 
 
+    /**
+     *
+     * @return 
+     */
     public Vector getVersions()
     {
         return versions;
     }
 
 
+    /**
+     * 
+     * @return 
+     */
     public boolean hasVersions()
     {
         if( versions != null && versions.size() > 0 )
@@ -182,185 +215,310 @@ public class DeltaVDataNode extends DataNode
     }
     
     
+    /**
+     * 
+     * @param comment
+     */
     public void setComment( String comment )
     {
         this.comment = comment;
     }
 
 
+    /**
+     * 
+     * @return 
+     */
     public String getComment()
     {
         return (comment==null)? "" : comment;
     }
 
 
+    /**
+     * 
+     * @param creatorDisplayName
+     */
     public void setCreatorDisplayName( String creatorDisplayName )
     {
         this.creatorDisplayName = creatorDisplayName;
     }
 
 
+    /**
+     * 
+     * @return 
+     */
     public String getCreatorDisplayName()
     {
         return (creatorDisplayName==null)? "" : creatorDisplayName;
     }
 
 
+    /**
+     * 
+     * @param supportedMethodSet
+     */
     public void setSupportedMethodSet( String supportedMethodSet )
     {
         this.supportedMethodSet = supportedMethodSet;
     }
 
 
+    /**
+     * 
+     * @return 
+     */
     public String getSupportedMethodSet()
     {
         return (supportedMethodSet==null)? "" : supportedMethodSet;
     }
 
 
+    /**
+     * 
+     * @param supportedLivePropertySet
+     */
     public void setSupportedLivePropertySet( String supportedLivePropertySet )
     {
         this.supportedLivePropertySet = supportedLivePropertySet;
     }
 
 
+    /**
+     * 
+     * @return 
+     */
     public String getSupportedLivePropertySet()
     {
         return (supportedLivePropertySet==null)? "" : supportedLivePropertySet;
     }
 
 
+    /**
+     * 
+     * @param supportedReportSet
+     */
     public void setSupportedReportSet( String supportedReportSet )
     {
         this.supportedReportSet = supportedReportSet;
     }
 
 
+    /**
+     * 
+     * @return 
+     */
     public String getSupportedReportSet()
     {
         return (supportedReportSet==null)? "" : supportedReportSet;
     }
 
 
+    /**
+     * 
+     * @param checkedIn
+     */
     public void setCheckedIn( String checkedIn )
     {
         this.checkedIn = checkedIn;
     }
 
 
+    /**
+     * 
+     * @return 
+     */
     public String getCheckedIn()
     {
         return (checkedIn==null)? "" : checkedIn;
     }
 
 
+    /**
+     * 
+     * @param autoVersion
+     */
     public void setAutoVersion( String autoVersion )
     {
         this.autoVersion = autoVersion;
     }
 
 
+    /**
+     * 
+     * @return 
+     */
     public String getAutoVersion()
     {
         return (autoVersion==null)? "" : autoVersion;
     }
 
 
+    /**
+     * 
+     * @param checkOut
+     */
     public void setCheckedOut( String checkedOut )
     {
         this.checkedOut = checkedOut;
     }
 
 
+    /**
+     * 
+     * @return 
+     */
     public String getCheckedOut()
     {
         return (checkedOut==null)? "" : checkedOut;
     }
 
 
+    /**
+     * 
+     * @param predecessorSet
+     */
     public void setPredecessorSet( String predecessorSet )
     {
         this.predecessorSet = predecessorSet;
     }
 
 
+    /**
+     * 
+     * @return 
+     */
     public String getPredecessorSet()
     {
         return (predecessorSet==null)? "" : predecessorSet;
     }
 
 
+    /**
+     * 
+     * @param successorSet
+     */
     public void setSuccessorSet( String successorSet )
     {
         this.successorSet = successorSet;
     }
 
 
+    /**
+     * 
+     * @return 
+     */
     public String getSuccessorSet()
     {
         return (successorSet==null)? "" : successorSet;
     }
 
+
+    /**
+     * 
+     * @param checkoutSet
+     */
     public void setCheckoutSet( String checkoutSet )
     {
         this.checkoutSet = checkoutSet;
     }
 
 
+    /**
+     * 
+     * @return 
+     */
     public String getCheckoutSet()
     {
         return (checkoutSet==null)? "" : checkoutSet;
     }
 
 
+    /**
+     * 
+     * @param versionName
+     */
     public void setVersionName( String versionName )
     {
         this.versionName = versionName;
     }
 
 
+    /**
+     * 
+     * @return 
+     */
     public String getVersionName()
     {
         return (versionName==null)? "" : versionName;
     }
 
 
+    /**
+     * 
+     * @param href
+     */
     public void setHref( String href )
     {
         this.href = href;
     }
 
 
+    /**
+     * 
+     * @return 
+     */
     public String getHref()
     {
         return (href==null)? "" : href;
     }
 
 
+    /**
+     * 
+     * @return 
+     */
     public boolean isDeltaV()
     {
         return getDeltaV();
     }
     
     
+    /**
+     * 
+     * @return 
+     */
     public boolean getDeltaV()
     {
         return deltaV;
     }
     
     
+    /**
+     * 
+     * @param deltaV
+     */
     public void setDeltaV( boolean deltaV )
     {
         this.deltaV = deltaV;
     }
     
     
+    /**
+     * 
+     * @return 
+     */
     public boolean getDeltaVReports()
     {
         return deltaVReports;
     }
     
     
+    /**
+     * 
+     * @param reports
+     */
     public void setDeltaVReports( boolean reports )
     {
         deltaVReports = reports;

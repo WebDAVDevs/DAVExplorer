@@ -39,6 +39,9 @@
  * @author      Joachim Feise (dav-exp@ics.uci.edu)
  * @date        06 February 2004
  * Changes:     Refactoring, adding option to disable compression
+ * @author      Joachim Feise (dav-exp@ics.uci.edu)
+ * @date        08 February 2004
+ * Changes:     Added Javadoc templates
  */
 
 package edu.uci.ics.DAVExplorer;
@@ -48,14 +51,24 @@ import HTTPClient.HTTPResponse;
 import HTTPClient.NVPair;
 import HTTPClient.HttpOutputStream;
 import HTTPClient.ModuleException;
+import HTTPClient.ProtocolNotSuppException;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 
+
+/**
+ * Wrapper around HTTPClient.HTTPConnection 
+ */
 public class WebDAVConnection extends HTTPConnection
 {
     static final int DEFAULT_PORT = 80;
 
+
+    /**
+     * Constructor
+     * @param HostName
+     */
     public WebDAVConnection(String HostName)
     {
         super(HostName, DEFAULT_PORT);
@@ -65,8 +78,14 @@ public class WebDAVConnection extends HTTPConnection
     }
 
 
+    /**
+     * Constructor
+     * @param Protocol
+     * @param HostName
+     * @exception HTTPClient.ProtocolNotSuppException
+     */
     public WebDAVConnection( String Protocol, String HostName )
-        throws HTTPClient.ProtocolNotSuppException
+        throws ProtocolNotSuppException
     {
         super( Protocol, HostName, DEFAULT_PORT);
         removeModules();
@@ -75,6 +94,11 @@ public class WebDAVConnection extends HTTPConnection
     }
 
 
+    /**
+     * Constructor
+     * @param HostName
+     * @param Port
+     */
     public WebDAVConnection(String HostName, int Port)
     {
         super(HostName, Port);
@@ -84,8 +108,15 @@ public class WebDAVConnection extends HTTPConnection
     }
 
 
+    /**
+     * Constructor
+     * @param Protocol
+     * @param HostName
+     * @param port
+     * @exception HTTPClient.ProtocolNotSuppException
+     */
     public WebDAVConnection(String Protocol, String HostName, int Port )
-        throws HTTPClient.ProtocolNotSuppException
+        throws ProtocolNotSuppException
     {
         super( Protocol, HostName, Port );
         removeModules();
@@ -94,6 +125,16 @@ public class WebDAVConnection extends HTTPConnection
     }
 
 
+    /**
+     * 
+     * @param filename
+     * @param source
+     * @param headers
+     * @exception IOException
+     * @exception HTTPClient.ModuleException
+     *
+     * @return 
+     */
     public HTTPResponse Put( String filename, String source, NVPair[] headers )
         throws IOException, ModuleException
     {
@@ -121,84 +162,223 @@ public class WebDAVConnection extends HTTPConnection
     }
 
 
+    /**
+     * 
+     * @param file
+     * @param body
+     * @param headers
+     * @exception IOException
+     * @exception HTTPClient.ModuleException
+     *
+     * @return 
+     */
     public HTTPResponse PropFind(String file, byte[] body, NVPair[] headers)
         throws IOException, ModuleException
     {
         return ExtensionMethod("PROPFIND",file, body, headers);
     }
 
+
+    /**
+     * 
+     * @param file
+     * @param body
+     * @param headers
+     * @exception IOException
+     * @exception HTTPClient.ModuleException
+     *
+     * @return 
+     */
     public HTTPResponse PropPatch(String file, byte[] body, NVPair[] headers)
         throws IOException, ModuleException
     {
         return ExtensionMethod("PROPPATCH", file, body, headers);
     }
 
+
+    /**
+     * 
+     * @param file
+     * @param headers
+     * @exception IOException
+     * @exception HTTPClient.ModuleException
+     *
+     * @return 
+     */
     public HTTPResponse MkCol(String file, NVPair[] headers)
         throws IOException, ModuleException
     {
         return ExtensionMethod("MKCOL", file, (byte []) null, headers);
     }
 
+
+    /**
+     * 
+     * @param file
+     * @param headers
+     * @exception IOException
+     * @exception HTTPClient.ModuleException
+     *
+     * @return 
+     */
     public HTTPResponse AddRef(String file, NVPair[] headers)
         throws IOException, ModuleException
     {
         return ExtensionMethod("ADDREF", file, (byte[]) null, headers);
     }
 
+
+    /**
+     * 
+     * @param file
+     * @param headers
+     * @exception IOException
+     * @exception HTTPClient.ModuleException
+     *
+     * @return 
+     */
     public HTTPResponse DelRef(String file, NVPair[] headers)
         throws IOException, ModuleException
     {
         return ExtensionMethod("DELREF", file, (byte[]) null, headers);
     }
 
+
+    /**
+     * 
+     * @param file
+     * @param body
+     * @param headers
+     * @exception IOException
+     * @exception HTTPClient.ModuleException
+     *
+     * @return 
+     */
     public HTTPResponse Copy(String file, byte[] body, NVPair[] headers)
         throws IOException, ModuleException
     {
         return ExtensionMethod("COPY", file, body, headers);
     }
 
+
+    /**
+     * 
+     * @param file
+     * @param headers
+     * @exception IOException
+     * @exception HTTPClient.ModuleException
+     *
+     * @return 
+     */
     public HTTPResponse Copy(String file, NVPair[] headers)
         throws IOException, ModuleException
     {
         return Copy(file, null, headers);
     }
 
+
+    /**
+     * 
+     * @param file
+     * @param body
+     * @param headers
+     * @exception IOException
+     * @exception HTTPClient.ModuleException
+     *
+     * @return 
+     */
     public HTTPResponse Move(String file, byte[] body, NVPair[] headers)
         throws IOException, ModuleException
     {
         return ExtensionMethod("MOVE", file, body, headers);
     }
 
+
+    /**
+     * 
+     * @param file
+     * @param headers
+     * @exception IOException
+     * @exception HTTPClient.ModuleException
+     *
+     * @return 
+     */
     public HTTPResponse Move(String file, NVPair[] headers)
         throws IOException, ModuleException
     {
         return Move(file, null, headers);
     }
 
+
+    /**
+     * 
+     * @param file
+     * @param body
+     * @param headers
+     * @exception IOException
+     * @exception HTTPClient.ModuleException
+     *
+     * @return 
+     */
     public HTTPResponse Lock(String file, byte[] body, NVPair[] headers)
         throws IOException, ModuleException
     {
         return ExtensionMethod("LOCK", file, body, headers);
     }
 
+
+    /**
+     * 
+     * @param file
+     * @param headers
+     * @exception IOException
+     * @exception HTTPClient.ModuleException
+     *
+     * @return 
+     */
     public HTTPResponse Lock(String file, NVPair[] headers)
         throws IOException, ModuleException
     {
         return Lock(file, null, headers);
     }
 
+
+    /**
+     * 
+     * @param file
+     * @param headers
+     * @exception IOException
+     * @exception HTTPClient.ModuleException
+     *
+     * @return 
+     */
     public HTTPResponse Unlock(String file, NVPair[] headers)
         throws IOException, ModuleException
     {
         return ExtensionMethod("UNLOCK", file, (byte[]) null, headers);
     }
 
+
+    /**
+     * 
+     * @param file
+     * @param body
+     * @param headers
+     * @exception IOException
+     * @exception HTTPClient.ModuleException
+     *
+     * @return 
+     */
     public HTTPResponse Generic(String Method, String file, byte[] body, NVPair[] headers)
         throws IOException, ModuleException
     {
         return ExtensionMethod(Method, file, body, headers);
     }
     
+
+    /**
+     * 
+     */
     protected void removeModules()
     {
         try
@@ -212,11 +392,17 @@ public class WebDAVConnection extends HTTPConnection
     }
     
     
+    /**
+     * 
+     */
     protected void addModules()
     {
     }
     
     
+    /**
+     * 
+     */
     protected void changeModules()
     {
         try

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 1998-2003 Regents of the University of California.
+ * Copyright (c) 1998-2004 Regents of the University of California.
  * All rights reserved.
  *
  * This software was developed at the University of California, Irvine.
@@ -20,7 +20,7 @@
 /**
  * Title:       Table Sorter
  * Description: Class to sort the entries in the main viewer
- * Copyright:   Copyright (c) 1998-2003 Regents of the University of California. All rights reserved.
+ * Copyright:   Copyright (c) 1998-2004 Regents of the University of California. All rights reserved.
  * @author      Undergraduate project team ICS 126B 1998
  * @date        1998
  * @author      Joachim Feise (dav-exp@ics.uci.edu)
@@ -32,6 +32,9 @@
  * @author      Joachim Feise (dav-exp@ics.uci.edu)
  * @date        28 October 2003
  * Changes:     Keep quiet about model changes, except when debugAll is set.
+ * @author      Joachim Feise (dav-exp@ics.uci.edu)
+ * @date        08 February 2004
+ * Changes:     Added Javadoc templates
  */
 
 package edu.uci.ics.DAVExplorer;
@@ -49,6 +52,10 @@ import javax.swing.JTable;
 import javax.swing.table.JTableHeader;
 import javax.swing.table.TableColumnModel;
 
+
+/**
+ * 
+ */
 public class TableSorter extends TableMap
 {
     int indexes[];
@@ -58,22 +65,42 @@ public class TableSorter extends TableMap
     int compares;
 
 
+    /**
+     * Constructor
+     */
     public TableSorter()
     {
         indexes = new int[0]; // For consistency.
     }
 
+    /**
+     * Constructor
+     * @param model
+     */
     public TableSorter(TableModel model)
     {
         setModel(model);
     }
 
+
+    /**
+     * 
+     * @param model
+     */
     public void setModel(TableModel model)
     {
         super.setModel(model);
         reallocateIndexes();
     }
 
+
+    /**
+     * 
+     * @param row1
+     * @param row2
+     * @param column
+     * @return
+     */
     public int compareRowsByColumn(int row1, int row2, int column)
     {
         Class type = model.getColumnClass(column);
@@ -172,6 +199,13 @@ public class TableSorter extends TableMap
         }
     }
 
+
+    /**
+     * 
+     * @param row1
+     * @param row2
+     * @return
+     */
     public int compare(int row1, int row2)
     {
         compares++;
@@ -185,6 +219,10 @@ public class TableSorter extends TableMap
         return 0;
     }
 
+
+    /**
+     *
+     */
     public void  reallocateIndexes()
     {
         int rowCount = model.getRowCount();
@@ -198,6 +236,11 @@ public class TableSorter extends TableMap
             indexes[row] = row;
     }
 
+
+    /**
+     * 
+     * @param e
+     */
     public void tableChanged(TableModelEvent e)
     {
         reallocateIndexes();
@@ -206,6 +249,10 @@ public class TableSorter extends TableMap
         sortByColumn( lastColumn, ascending );
     }
 
+
+    /**
+     *
+     */
     public void checkModel()
     {
         if (indexes.length != model.getRowCount())
@@ -215,6 +262,11 @@ public class TableSorter extends TableMap
         }
     }
 
+
+    /**
+     * 
+     * @param sender
+     */
     public void  sort(Object sender)
     {
         checkModel();
@@ -223,6 +275,10 @@ public class TableSorter extends TableMap
         shuttlesort((int[])indexes.clone(), indexes, 0, indexes.length);
     }
 
+
+    /**
+     * 
+     */
     public void n2sort()
     {
         for(int i = 0; i < getRowCount(); i++)
@@ -237,13 +293,20 @@ public class TableSorter extends TableMap
         }
     }
 
-    // This is a home-grown implementation which we have not had time
-    // to research - it may perform poorly in some circumstances. It
-    // requires twice the space of an in-place algorithm and makes
-    // NlogN assigments shuttling the values between the two
-    // arrays. The number of compares appears to vary between N-1 and
-    // NlogN depending on the initial order but the main reason for
-    // using it here is that, unlike qsort, it is stable.
+
+    /**
+     * This is a home-grown implementation which we have not had time
+     * to research - it may perform poorly in some circumstances. It
+     * requires twice the space of an in-place algorithm and makes
+     * NlogN assigments shuttling the values between the two
+     * arrays. The number of compares appears to vary between N-1 and
+     * NlogN depending on the initial order but the main reason for
+     * using it here is that, unlike qsort, it is stable.
+     * @param from
+     * @param to
+     * @param low
+     * @param high
+     */
     public void shuttlesort(int from[], int to[], int low, int high)
     {
         if (high - low < 2)
@@ -295,6 +358,12 @@ public class TableSorter extends TableMap
         }
     }
 
+
+    /**
+     * 
+     * @param i
+     * @param j
+     */
     public void swap(int i, int j)
     {
         int tmp = indexes[i];
@@ -302,8 +371,13 @@ public class TableSorter extends TableMap
         indexes[j] = tmp;
     }
 
-    // The mapping only affects the contents of the data rows.
-    // Pass all requests to these rows through the mapping array: "indexes".
+    /**
+     * The mapping only affects the contents of the data rows.
+     * Pass all requests to these rows through the mapping array: "indexes".
+     * @param aRow
+     * 
+     * @return
+     */    
     public int getTrueRow(int aRow)
     {
         try
@@ -316,6 +390,14 @@ public class TableSorter extends TableMap
         }
     }
 
+
+    /**
+     * 
+     * @param aRow
+     * @param aColumn
+     * 
+     * @return
+     */
     public synchronized Object getValueAt(int aRow, int aColumn)
     {
         Object o = null;
@@ -331,17 +413,35 @@ public class TableSorter extends TableMap
         return o;
     }
 
+
+    /**
+     * 
+     * @param aValue
+     * @param aRow
+     * @param aColumn
+     */
     public void setValueAt(Object aValue, int aRow, int aColumn)
     {
         checkModel();
         model.setValueAt(aValue, indexes[aRow], aColumn);
     }
 
+
+    /**
+     * 
+     * @param column
+     */
     public void sortByColumn(int column)
     {
         sortByColumn(column, true);
     }
 
+
+    /**
+     * 
+     * @param column
+     * @param ascending
+     */
     public void sortByColumn(int column, boolean ascending)
     {
         this.ascending = ascending;
@@ -352,9 +452,13 @@ public class TableSorter extends TableMap
         super.tableChanged(new TableModelEvent(this));
     }
 
-    // There is no-where else to put this.
-    // Add a mouse listener to the Table to trigger a table sort
-    // when a column heading is clicked in the JTable.
+
+    /**
+     * There is no-where else to put this.
+     * Add a mouse listener to the Table to trigger a table sort
+     * when a column heading is clicked in the JTable.
+     * @param table
+     */
     public void addMouseListenerToHeaderInTable(JTable table)
     {
         final TableSorter sorter = this;
@@ -362,6 +466,10 @@ public class TableSorter extends TableMap
         tableView.setColumnSelectionAllowed(false);
         MouseAdapter listMouseListener = new MouseAdapter()
         {
+            /**
+             * 
+             * @param e
+             */
             public void mouseClicked(MouseEvent e)
             {
                 TableColumnModel columnModel = tableView.getColumnModel();

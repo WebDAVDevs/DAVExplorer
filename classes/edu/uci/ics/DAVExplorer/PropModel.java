@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2001 Regents of the University of California.
+ * Copyright (c) 2001-2004 Regents of the University of California.
  * All rights reserved.
  *
  * This software was developed at the University of California, Irvine.
@@ -20,7 +20,7 @@
 /**
  * Title:       Property Model
  * Description: Models the hierarchical nature of WebDAV properties
- * Copyright:   Copyright (c) 2001 Regents of the University of California. All rights reserved.
+ * Copyright:   Copyright (c) 2001-2004 Regents of the University of California. All rights reserved.
  * @author      Joachim Feise (dav-exp@ics.uci.edu)
  * @date        29 September 2001
  *
@@ -33,6 +33,9 @@
  * @author      Joachim Feise (dav-exp@ics.uci.edu)
  * @date        17 December 2001
  * Changes:     Fixed handling of adding and removing nested properties
+ * @author      Joachim Feise (dav-exp@ics.uci.edu)
+ * @date        08 February 2004
+ * Changes:     Added Javadoc templates
  */
 
 package edu.uci.ics.DAVExplorer;
@@ -54,15 +57,27 @@ import com.ms.xml.om.TreeEnumeration;
 import com.ms.xml.util.Name;
 import com.ms.xml.util.Atom;
 
+
+/**
+ * 
+ */
 public class PropModel extends AbstractTableModel implements TreeTableModel
 {
-
+    /**
+     * Constructor
+     * @param properties
+     */
     public PropModel( Element properties )
     {
         root = new PropNode( "Properties", null, null );
         parseProperties( properties, root );
     }
 
+
+    /**
+     * 
+     * @param tree
+     */
     public void setTree(JTree tree)
     {
         this.tree = tree;
@@ -82,6 +97,11 @@ public class PropModel extends AbstractTableModel implements TreeTableModel
         });
     }
 
+
+    /**
+     * 
+     * @return
+     */
     public int getRowCount()
     {
         if( tree != null )
@@ -89,6 +109,12 @@ public class PropModel extends AbstractTableModel implements TreeTableModel
         return 0;
     }
 
+
+    /**
+     * 
+     * @param removed
+     * @return
+     */
     public Element getModified( boolean removed )
     {
         if( removed )
@@ -97,6 +123,13 @@ public class PropModel extends AbstractTableModel implements TreeTableModel
             return getModified( root, null, false );
     }
 
+
+    /**
+     * 
+     * @param parentNode
+     * @param node
+     * @param root
+     */
     public void addNode( PropNode parentNode, PropNode node, boolean root )
     {
         parentNode.addChild( node );
@@ -119,6 +152,11 @@ public class PropModel extends AbstractTableModel implements TreeTableModel
         fireTreeNodesInserted( parentNode, pathToRoot, nodeIndices, nodes );
     }
 
+
+    /**
+     * 
+     * @param path
+     */
     public void removeNode( TreePath path )
     {
         TreePath parentPath = path.getParentPath();
@@ -133,11 +171,21 @@ public class PropModel extends AbstractTableModel implements TreeTableModel
         fireTreeNodesRemoved( parentNode, parentPath.getPath(), nodeIndices, nodes );
     }
 
+
+    /**
+     *
+     */
     public void clear()
     {
         clear( root );
     }
 
+
+    /**
+     * 
+     * @param row
+     * @return
+     */
     protected Object nodeForRow(int row)
     {
         if( tree != null )
@@ -149,27 +197,60 @@ public class PropModel extends AbstractTableModel implements TreeTableModel
     }
 
 
-    // The TreeTableModel interface
+    /**
+     * The TreeTableModel interface
+     * 
+     * @return
+     */
     public int getColumnCount()
     {
         return names.length;
     }
 
+
+    /**
+     * The TreeTableModel interface
+     * @param column
+     *  
+     * @return
+     */
     public String getColumnName( int column )
     {
         return names[column];
     }
 
+
+    /**
+     * The TreeTableModel interface
+     * @param column
+     * 
+     * @return
+     */
     public Class getColumnClass( int column )
     {
         return types[column];
     }
 
+
+    /**
+     * The TreeTableModel interface
+     * @param row
+     * @param column
+     * 
+     * @return
+     */
     public Object getValueAt(int row, int column)
     {
         return getValueAt(nodeForRow(row), column);
     }
 
+    /**
+     * The TreeTableModel interface
+     * @param node
+     * @param column
+     * 
+     * @return
+     */
     public Object getValueAt( Object node, int column )
     {
         try {
@@ -188,6 +269,14 @@ public class PropModel extends AbstractTableModel implements TreeTableModel
         return null;
     }
 
+
+    /**
+     * The TreeTableModel interface
+     * @param node
+     * @param column
+     * 
+     * @return
+     */
     public boolean isCellEditable( Object node, int column )
     {
         try {
@@ -206,12 +295,28 @@ public class PropModel extends AbstractTableModel implements TreeTableModel
         return true;
     }
 
+
+    /**
+     * The TreeTableModel interface
+     * @param node
+     * 
+     * @return
+     */
     public boolean isNodeRemovable( Object node )
     {
         // removal of DAV properties not allowed
         return !((PropNode)node).isDAVProp();
     }
 
+
+    /**
+     * The TreeTableModel interface
+     * @param aValue
+     * @param node
+     * @param column
+     * 
+     * @return
+     */
     public void setValueAt( Object aValue, Object node, int column )
     {
         String oldValue;
@@ -243,32 +348,74 @@ public class PropModel extends AbstractTableModel implements TreeTableModel
     }
 
 
-    // The TreeModel interface
+    /**
+     * The TreeModel interface
+     * 
+     * @return
+     */
     public Object getRoot()
     {
         return root;
     }
 
+
+    /**
+     * The TreeModel interface
+     * @param node
+     * 
+     * @return
+     */
     public int getChildCount(Object node)
     {
         Object[] children = ((PropNode)node).getChildren();
         return (children == null) ? 0 : children.length;
     }
 
+
+    /**
+     * The TreeModel interface
+     * @param node
+     * @param i
+     * 
+     * @return
+     */
     public Object getChild(Object node, int i)
     {
         return ((PropNode)node).getChildren()[i];
     }
 
+
+    /**
+     * The TreeModel interface
+     * @param node
+     * 
+     * @return
+     */
     public boolean isLeaf(Object node)
     {
         return getChildCount(node) == 0;
     }
 
+
+    /**
+     * The TreeModel interface
+     * @param path
+     * @param newValue
+     * 
+     * @return
+     */
     public void valueForPathChanged(TreePath path, Object newValue)
     {
     }
 
+
+    /**
+     * The TreeModel interface
+     * @param parent
+     * @param child
+     * 
+     * @return
+     */
     public int getIndexOfChild(Object parent, Object child)
     {
         for (int i = 0; i < getChildCount(parent); i++)
@@ -281,27 +428,66 @@ public class PropModel extends AbstractTableModel implements TreeTableModel
         return -1;
     }
 
+
+    /**
+     * The TreeModel interface
+     * @param l
+     * 
+     * @return
+     */
     public void addChangeListener(ChangeListener l)
     {
         listenerList.add(ChangeListener.class, l);
     }
 
+
+    /**
+     * The TreeModel interface
+     * @param l
+     * 
+     * @return
+     */
     public void removeChangeListener(ChangeListener l)
     {
         listenerList.remove(ChangeListener.class, l);
     }
 
+
+    /**
+     * The TreeModel interface
+     * @param l
+     * 
+     * @return
+     */
     public void addTreeModelListener(TreeModelListener l)
     {
         listenerList.add(TreeModelListener.class, l);
     }
 
+
+    /**
+     * The TreeModel interface
+     * @param l
+     * 
+     * @return
+     */
     public void removeTreeModelListener(TreeModelListener l)
     {
         listenerList.remove(TreeModelListener.class, l);
     }
 
-    protected void fireTreeNodesChanged(Object source, Object[] path, int[] childIndices, Object[] children)
+
+    /**
+     * The TreeModel interface
+     * @param source
+     * @param path
+     * @param childIndices
+     * @param children
+     * 
+     * @return
+     */
+    protected void fireTreeNodesChanged( Object source, Object[] path, int[] childIndices,
+                                         Object[] children )
     {
         Object[] listeners = listenerList.getListenerList();
         TreeModelEvent e = null;
@@ -316,7 +502,18 @@ public class PropModel extends AbstractTableModel implements TreeTableModel
         }
     }
 
-    protected void fireTreeNodesInserted(Object source, Object[] path, int[] childIndices, Object[] children)
+
+    /**
+     * The TreeModel interface
+     * @param source
+     * @param path
+     * @param childIndices
+     * @param children
+     * 
+     * @return
+     */
+    protected void fireTreeNodesInserted( Object source, Object[] path, int[] childIndices, 
+                                          Object[] children )
     {
         Object[] listeners = listenerList.getListenerList();
         TreeModelEvent e = null;
@@ -331,7 +528,18 @@ public class PropModel extends AbstractTableModel implements TreeTableModel
         }
     }
 
-    protected void fireTreeNodesRemoved(Object source, Object[] path, int[] childIndices, Object[] children)
+
+    /**
+     * The TreeModel interface
+     * @param source
+     * @param path
+     * @param childIndices
+     * @param children
+     * 
+     * @return
+     */
+    protected void fireTreeNodesRemoved( Object source, Object[] path, int[] childIndices,
+                                         Object[] children )
     {
         Object[] listeners = listenerList.getListenerList();
         TreeModelEvent e = null;
@@ -346,7 +554,18 @@ public class PropModel extends AbstractTableModel implements TreeTableModel
         }
     }
 
-    protected void fireTreeStructureChanged(Object source, Object[] path, int[] childIndices, Object[] children)
+
+    /**
+     * The TreeModel interface
+     * @param source
+     * @param path
+     * @param childIndices
+     * @param children
+     * 
+     * @return
+     */
+    protected void fireTreeStructureChanged( Object source, Object[] path, int[] childIndices,
+                                             Object[] children )
     {
         Object[] listeners = listenerList.getListenerList();
         TreeModelEvent e = null;
@@ -361,6 +580,13 @@ public class PropModel extends AbstractTableModel implements TreeTableModel
         }
     }
 
+
+    /**
+     * The TreeModel interface
+     * @param source
+     * 
+     * @return
+     */
     protected void fireModelChanged( Object source )
     {
         Object[] listeners = listenerList.getListenerList();
@@ -377,6 +603,11 @@ public class PropModel extends AbstractTableModel implements TreeTableModel
     }
 
 
+    /**
+     * 
+     * @param properties
+     * @param currentNode
+     */
     private void parseProperties( Element properties, PropNode currentNode )
     {
         if( GlobalData.getGlobalData().getDebugResponse() )
@@ -456,6 +687,14 @@ public class PropModel extends AbstractTableModel implements TreeTableModel
         }
     }
 
+
+    /**
+     * 
+     * @param node
+     * @param parent
+     * @param ignoreModifiedFlag
+     * @return
+     */
     private Element getModified( PropNode node, Element parent, boolean ignoreModifiedFlag )
     {
         Element prop = null;
@@ -517,6 +756,13 @@ public class PropModel extends AbstractTableModel implements TreeTableModel
         return retval;
     }
 
+
+    /**
+     * 
+     * @param node
+     * @param parent
+     * @return
+     */
     private Element getRemoved( PropNode node, Element parent )
     {
         Element prop = null;
@@ -571,6 +817,12 @@ public class PropModel extends AbstractTableModel implements TreeTableModel
         return retval;
     }
 
+
+    /**
+     * 
+     * @param el
+     * @return
+     */
     private Element getChildElement( Element el )
     {
         TreeEnumeration treeEnum = new TreeEnumeration( el );
@@ -587,6 +839,12 @@ public class PropModel extends AbstractTableModel implements TreeTableModel
         return null;
     }
 
+
+    /**
+     * 
+     * @param el
+     * @return
+     */
     private String getValue( Element el )
     {
         Element token = getChildElement(el);
@@ -596,6 +854,11 @@ public class PropModel extends AbstractTableModel implements TreeTableModel
     }
 
 
+    /**
+     * 
+     * @param node
+     * @return
+     */
     private boolean childrenModified( PropNode node )
     {
         if( node.isModified() )
@@ -609,6 +872,12 @@ public class PropModel extends AbstractTableModel implements TreeTableModel
         return false;
     }
 
+
+    /**
+     * 
+     * @param node
+     * @return
+     */
     private boolean childrenRemoved( PropNode node )
     {
         Object[] children = node.getRemovedChildren();
@@ -623,6 +892,11 @@ public class PropModel extends AbstractTableModel implements TreeTableModel
         return false;
     }
 
+
+    /**
+     * 
+     * @param node
+     */
     private void clear( PropNode node )
     {
         node.clear();

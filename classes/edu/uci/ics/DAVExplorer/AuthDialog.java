@@ -20,7 +20,7 @@
 /**
  * Title:       Authentication Dialog
  * Description: Wrapper around the login dialog
- * Copyright:   Copyright (c) 2001 Regents of the University of California. All rights reserved.
+ * Copyright:   Copyright (c) 2001, 2004 Regents of the University of California. All rights reserved.
  * @author      Joachim Feise (dav-exp@ics.uci.edu)
  * @date        31 July 2001
  * @author      Joachim Feise (dav-exp@ics.uci.edu)
@@ -29,6 +29,9 @@
  * @author      Joachim Feise (dav-exp@ics.uci.edu)
  * @date        14 January 2004
  * Changes:     Fixed using webpage-provided username/password for applet usage
+ * @author      Joachim Feise (dav-exp@ics.uci.edu)
+ * @date        08 February 2004
+ * Changes:     Added Javadoc templates
  */
 
 package edu.uci.ics.DAVExplorer;
@@ -37,8 +40,15 @@ import HTTPClient.AuthorizationPrompter;
 import HTTPClient.AuthorizationInfo;
 import HTTPClient.NVPair;
 
+
+/**
+ * 
+ */
 public class AuthDialog implements AuthorizationPrompter
 {
+    /**
+     * Constructor 
+     */
     public AuthDialog()
     {
     }
@@ -85,6 +95,7 @@ public class AuthDialog implements AuthorizationPrompter
 
         return answer;
     }
+
     
     static int lastIndex = -1;
 }

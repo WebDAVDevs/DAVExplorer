@@ -1,6 +1,6 @@
 /*
  * Copyright (c) 2003 Th. Rickert.
- * Copyright (c) 2003 Regents of the University of California.
+ * Copyright (c) 2003-2004 Regents of the University of California.
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms are permitted
@@ -20,8 +20,11 @@
  * Title:       Progressbar
  * Description: Progress bar control
  * Copyright:   Copyright (c) 2003 Th. Rickert.
- * Copyright:   Copyright (c) 2003 Regents of the University of California. All rights reserved.
+ * Copyright:   Copyright (c) 2003-2004 Regents of the University of California. All rights reserved.
  * @author      Th. Rickert, integrated by Joachim Feise
+ * @author      Joachim Feise (dav-exp@ics.uci.edu)
+ * @date        08 February 2004
+ * Changes:     Added Javadoc templates
  */
 
 package edu.uci.ics.DAVExplorer;
@@ -32,12 +35,19 @@ import javax.swing.JProgressBar;
 import HTTPClient.ProgressListener;
 import HTTPClient.ProgressObserver;
 
+
+/**
+ * 
+ */
 public class ProgressBar extends JProgressBar
     implements ProgressListener
 {
     private int unknownEnd = 0;
 
 
+    /**
+     * Constructor
+     */
     public ProgressBar()
     {
         super();
@@ -48,6 +58,12 @@ public class ProgressBar extends JProgressBar
     }
 
 
+    /**
+     * 
+     * @param writtenBytes
+     * @param len
+     * @param method
+     */
     public void progressAchieved( long writtenBytes, long len, String method )
     {
         if( len<0 || len<writtenBytes )

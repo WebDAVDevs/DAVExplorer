@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2001 Regents of the University of California.
+ * Copyright (c) 2001-2004 Regents of the University of California.
  * All rights reserved.
  *
  * This software was developed at the University of California, Irvine.
@@ -20,31 +20,48 @@
 /**
  * Title:       WebDAVCompletion Event
  * Description: Used to signal the completion of a WebDAV request
- * Copyright:   Copyright (c) 2001 Regents of the University of California. All rights reserved.
+ * Copyright:   Copyright (c) 2001-2004 Regents of the University of California. All rights reserved.
  * @author      Joachim Feise (dav-exp@ics.uci.edu)
  * @date        29 September 2001
  * @author      Joachim Feise (dav-exp@ics.uci.edu)
  * @date        1 October 2001
  * Changes:     Change of package name
+ * @author      Joachim Feise (dav-exp@ics.uci.edu)
+ * @date        08 February 2004
+ * Changes:     Added Javadoc templates
  */
 
 package edu.uci.ics.DAVExplorer;
 
 import java.util.EventObject;
 
+
+/**
+ * 
+ */
 public class WebDAVCompletionEvent extends EventObject
 {
-
+    /**
+     * Constructor
+     * @param source
+     * @param success
+     */
     public WebDAVCompletionEvent( Object source, boolean success )
     {
         super( source );
         this.success = success;
     }
 
+
+    /**
+     * 
+     * @return
+     */
     public boolean isSuccessful()
     {
         return success;
     }
+
 
     private boolean success;
 }

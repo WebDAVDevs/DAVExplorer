@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2003 Regents of the University of California.
+ * Copyright (c) 2003-2004 Regents of the University of California.
  * All rights reserved.
  *
  * This software was developed at the University of California, Irvine.
@@ -20,9 +20,12 @@
 /**
  * Title:       Version Info Dialog
  * Description: Dialog for viewing DeltaV version histories
- * Copyright:   Copyright (c) 2003 Regents of the University of California. All rights reserved.
+ * Copyright:   Copyright (c) 2003-2004 Regents of the University of California. All rights reserved.
  * @author      Joachim Feise (dav-exp@ics.uci.edu)
  * @date        16 September 2003
+ * @author      Joachim Feise (dav-exp@ics.uci.edu)
+ * @date        08 February 2004
+ * Changes:     Added Javadoc templates
  */
 
 package edu.uci.ics.DAVExplorer;
@@ -53,6 +56,9 @@ import javax.swing.table.TableColumn;
 import javax.swing.table.DefaultTableCellRenderer;
 
 
+/**
+ * 
+ */
 public class VersionInfoDialog extends JDialog
     implements ActionListener
 {
@@ -64,7 +70,13 @@ public class VersionInfoDialog extends JDialog
                          "Comment",
                          "href"};
 
-    
+
+    /**
+     * Constructor
+     * @param nodes
+     * @param resource
+     * @param hostname
+     */    
     public VersionInfoDialog( Vector nodes, String resource, String hostname )
     {
         super( GlobalData.getGlobalData().getMainFrame() );
@@ -191,6 +203,10 @@ public class VersionInfoDialog extends JDialog
     }
 
 
+    /**
+     * 
+     * @param nodes
+     */
     protected void addRows( Vector nodes )
     {
         if( nodes != null )
@@ -212,6 +228,10 @@ public class VersionInfoDialog extends JDialog
     }
 
 
+    /**
+     * 
+     * @param rowData
+     */
     private void addRow(Object[] rowData)
     {
         Vector newRow = new Vector();
@@ -224,6 +244,10 @@ public class VersionInfoDialog extends JDialog
     }
 
 
+    /**
+     * 
+     * @param e
+     */
     public void actionPerformed(ActionEvent e)
     {
         if( e.getActionCommand().equals("Close") )
@@ -233,12 +257,19 @@ public class VersionInfoDialog extends JDialog
     }
 
 
+    /**
+     *
+     */
     public void cancel()
     {
         setVisible(false);
         dispose();
     }
 
+
+    /**
+     * 
+     */
     protected void center()
     {
         Rectangle recthDimensions = getParent().getBounds();
@@ -248,12 +279,20 @@ public class VersionInfoDialog extends JDialog
     }
 
 
+    /**
+     * 
+     * @return
+     */
     public Dimension getPreferredSize()
     {
         return new Dimension( 700, 200 );
     }
     
-    
+
+    /**
+     * 
+     * @param table
+     */    
     public void setupTable(JTable table)
     {
         if( GlobalData.getGlobalData().getDebugFileView() )
@@ -327,6 +366,10 @@ public class VersionInfoDialog extends JDialog
     }
 
 
+    /**
+     * 
+     * @param e
+     */
     public void handleDoubleClick(MouseEvent e)
     {
         Point pt = e.getPoint();
@@ -353,12 +396,20 @@ public class VersionInfoDialog extends JDialog
     }
 
 
+    /**
+     * 
+     * @param l
+     */
     public synchronized void addGetVersionListener(ActionListener l)
     {
         getVersionListeners.addElement(l);
     }
 
 
+    /**
+     * 
+     * @param l
+     */
     public synchronized void removeGetVersionListener(ActionListener l)
     {
         getVersionListeners.removeElement(l);

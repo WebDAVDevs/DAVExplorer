@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 1997-2003 Regents of the University of California.
+ * Copyright (c) 1997-2004 Regents of the University of California.
  * All rights reserved.
  *
  * This software was developed at the University of California, Irvine.
@@ -21,7 +21,7 @@
  * Title:       WebDAVXML
  * Description: Define the Generic DAV XML Elements from section 12 of the WebDAV spec
  * <draft-ietf-webdav-protocol-05>
- * Copyright:   Copyright (c) 1997-2001 Regents of the University of California. All rights reserved.
+ * Copyright:   Copyright (c) 1997-2004 Regents of the University of California. All rights reserved.
  * @author      Marc Eaddy, Jonathan Shapiro, Shao Rong
  * @date        23 November 1997
  * @author      Robert Emmery
@@ -36,6 +36,9 @@
  * @date        17 March 2003
  * Changes:     Integrated Brian Johnson's applet changes.
  *              Added better error reporting.
+ * @author      Joachim Feise (dav-exp@ics.uci.edu)
+ * @date        08 February 2004
+ * Changes:     Added Javadoc templates
  */
 
 package edu.uci.ics.DAVExplorer;
@@ -58,6 +61,10 @@ public class WebDAVXML
     public static final ElementImpl elemTab = new ElementImpl(null, Element.WHITESPACE);
     public static final ElementImpl elemDSpace = new ElementImpl(null, Element.WHITESPACE);
 
+
+    /**
+     * 
+     */
     static
     {
         elemNewline.setText("\n");
@@ -65,10 +72,13 @@ public class WebDAVXML
         elemDSpace.setText("    ");
     }
 
-    public WebDAVXML()
-    {
-    }
 
+    /**
+     * 
+     * @param alias
+     * @param schema
+     * @return
+     */
     public static AsGen createNamespace( AsGen alias, String schema )
     {
         if( schema == null )
@@ -83,6 +93,12 @@ public class WebDAVXML
     }
 
 
+    /**
+     * 
+     * @param alias
+     * @param schema
+     * @return
+     */
     public static AsGen findNamespace( AsGen alias, String schema )
     {
         if( schema == null )
@@ -99,16 +115,45 @@ public class WebDAVXML
     }
 
 
+    /**
+     * 
+     * @param tag
+     * @param type
+     * @param parent
+     * @param namespace
+     * @return
+     */
     public static Element createElement( String tag, int type, Element parent, AsGen namespace )
     {
         return createElement( tag, type, parent, namespace, false, false );
     }
 
+
+    /**
+     * 
+     * @param tag
+     * @param type
+     * @param parent
+     * @param namespace
+     * @param declareNamespaces
+     * @return
+     */
     public static Element createElement( String tag, int type, Element parent, AsGen namespace, boolean declareNamespaces )
     {
         return createElement( tag, type, parent, namespace, declareNamespaces, false );
     }
 
+
+    /**
+     * 
+     * @param tag
+     * @param type
+     * @param parent
+     * @param namespace
+     * @param declareNamespaces
+     * @param neverdeclare
+     * @return
+     */
     public static Element createElement( String tag, int type, Element parent, AsGen namespace, boolean declareNamespaces, boolean neverdeclare )
     {
         Element element = new ElementImpl(createName(tag, namespace.getAlias()), type );
@@ -134,6 +179,12 @@ public class WebDAVXML
     }
 
 
+    /**
+     * 
+     * @param tag
+     * @param alias
+     * @return
+     */
     protected static Name createName( String tag, String alias )
     {
         if( alias == null )
@@ -142,6 +193,12 @@ public class WebDAVXML
             return Name.create( tag, alias );
     }
 
+
+    /**
+     * 
+     * @param element
+     * @param currentNS
+     */
     private static void setNSAttribute( Element element, AsGen currentNS )
     {
         if( currentNS.getSchema() != null && element != null )
@@ -250,6 +307,11 @@ public class WebDAVXML
     public static final String ELEM_PROPNAME = "propname";
 
 
+    /**
+     * 
+     * @param elem
+     * @return
+     */
     public static Name getNonNullTagName(Element elem)
     {
         Name name = null;

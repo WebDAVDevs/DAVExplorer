@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 1998-2003 Regents of the University of California.
+ * Copyright (c) 1998-2004 Regents of the University of California.
  * All rights reserved.
  *
  * This software was developed at the University of California, Irvine.
@@ -22,7 +22,7 @@
  * Description: This is the interpreter module that parses WebDAV responses.
  *              Some of the methods are not parsed, and the functions are left
  *              empty intentionally.
- * Copyright:   Copyright (c) 1998-2003 Regents of the University of California. All rights reserved.
+ * Copyright:   Copyright (c) 1998-2004 Regents of the University of California. All rights reserved.
  * @author      Robert Emmery
  * @date        2 April 1998
  * @author      Yuzo Kanomata, Joachim Feise (dav-exp@ics.uci.edu)
@@ -49,6 +49,9 @@
  * @author      Joachim Feise (dav-exp@ics.uci.edu)
  * @date        23 September 2003
  * Changes:     Refactored code during DeltaV integration.
+ * @author      Joachim Feise (dav-exp@ics.uci.edu)
+ * @date        08 February 2004
+ * Changes:     Added Javadoc templates
  */
 
 package edu.uci.ics.DAVExplorer;
@@ -74,13 +77,23 @@ import com.ms.xml.om.SiblingEnumeration;
 import com.ms.xml.util.XMLOutputStream;
 import com.ms.xml.util.Name;
 
+/**
+ * Parsing and reacting to responses to WebDAV requests
+ */
 public class WebDAVResponseInterpreter
 {
-
+    /**
+     * Constructor 
+     */
     public WebDAVResponseInterpreter()
     {
     }
 
+
+    /**
+     * Constructor
+     * @param rg
+     */
     public WebDAVResponseInterpreter( WebDAVRequestGenerator rg )
     {
         super();
@@ -114,6 +127,11 @@ public class WebDAVResponseInterpreter
             userPathDir += File.separatorChar;
     }
 
+
+    /**
+     * 
+     * @param e
+     */
     public void handleResponse(WebDAVResponseEvent e)
         throws ResponseException
     {
@@ -245,6 +263,13 @@ public class WebDAVResponseInterpreter
         }
     }
 
+
+    /**
+     * 
+     * @param parent
+     * @param prop
+     * @param tabs
+     */
     protected void saveProps( Element parent, Element prop, int tabs )
     {
         Element newProp = null;
@@ -285,6 +310,9 @@ public class WebDAVResponseInterpreter
     }
 
 
+    /**
+     * Parse the response to an OPTIONS request
+     */
     public void parseOptions()
     {
         if( GlobalData.getGlobalData().getDebugResponse() )
@@ -351,6 +379,9 @@ public class WebDAVResponseInterpreter
     }
 
 
+    /**
+     * Parse the response to a PROPFIND request
+     */
     public void parsePropFind()
     {
         if( GlobalData.getGlobalData().getDebugResponse() )
@@ -644,22 +675,41 @@ public class WebDAVResponseInterpreter
         }
     }
 
+
+    /**
+     * Get lock info data from configuration file
+     * @return  lock info data 
+     */
     public String getLockInfo()
     {
         // if lockinfo doesn't exist, use default
         return GlobalData.getGlobalData().ReadConfigEntry( "lockinfo", "DAV Explorer" );
     }
 
+
+    /**
+     * 
+     * @return
+     */
     public boolean Refreshing()
     {
         return refresh;
     }
 
+
+    /**
+     * 
+     */
     public void ResetRefresh()
     {
         refresh = false;
     }
 
+
+    /**
+     * 
+     * @param node
+     */
     public void setRefresh( WebDAVTreeNode node )
     {
         if( GlobalData.getGlobalData().getDebugResponse() )
@@ -675,6 +725,10 @@ public class WebDAVResponseInterpreter
         copyListener.CopyEventResponse(e);
     }
 
+
+    /**
+     * Parse the result of a PROPPATCH request
+     */
     public void parsePropPatch()
     {
         if( GlobalData.getGlobalData().getDebugResponse() )
@@ -683,6 +737,10 @@ public class WebDAVResponseInterpreter
         }
     }
 
+
+    /**
+     * Parse the result of a MKCOL request
+     */
     public void parseMkCol()
     {
         if( GlobalData.getGlobalData().getDebugResponse() )
@@ -708,6 +766,10 @@ public class WebDAVResponseInterpreter
         }
     }
 
+
+    /**
+     * Parse the result of a GET request
+     */
     public void parseGet()
     {
         if( GlobalData.getGlobalData().getDebugResponse() )
@@ -804,6 +866,10 @@ public class WebDAVResponseInterpreter
         }
     }
 
+
+    /**
+     * Parse the result of a PUT request
+     */
     public void parsePut()
     {
         if( GlobalData.getGlobalData().getDebugResponse() )
@@ -833,6 +899,10 @@ public class WebDAVResponseInterpreter
         generator.resetParentNode();
     }
 
+
+    /**
+     * Parse the result of a DELETE request
+     */
     public void parseDelete()
     {
         if( GlobalData.getGlobalData().getDebugResponse() )
@@ -846,18 +916,34 @@ public class WebDAVResponseInterpreter
         copyListener.CopyEventResponse(e);
     }
 
+    /**
+     * Add a copy listener
+     * 
+     * @param l     listener to add
+     */
     public void addCopyResponseListener( CopyResponseListener l)
     {
         // Add only one for now
         copyListener = l;
     }
 
+
+    /**
+     * Add a put listener
+     * 
+     * @param l     listener to add
+     */
     public void addPutListener( PutListener l)
     {
         // Add only one for now
         putListener = l;
     }
 
+    /**
+     * Add a listener
+     * 
+     * @param l     listener to add
+     */
     public void addActionListener( ActionListener l)
     {
         // Add only one for now
@@ -865,6 +951,9 @@ public class WebDAVResponseInterpreter
     }
 
 
+    /**
+     * Perform a copy 
+     */
     public void executeCopy()
     {
         if( GlobalData.getGlobalData().getDebugResponse() )
@@ -877,6 +966,10 @@ public class WebDAVResponseInterpreter
         copyListener.CopyEventResponse(e);
     }
 
+
+    /**
+     * Parse the response to a COPY request 
+     */
     public void parseCopy()
     {
         if( GlobalData.getGlobalData().getDebugResponse() )
@@ -889,6 +982,10 @@ public class WebDAVResponseInterpreter
         fireInsertionEvent(null);
     }
 
+
+    /**
+     * Parse the response to a MOVE request 
+     */
     public void parseMove()
     {
         if( GlobalData.getGlobalData().getDebugResponse() )
@@ -920,6 +1017,10 @@ public class WebDAVResponseInterpreter
         copyListener.CopyEventResponse(e);
     }
 
+
+    /**
+     * Parse the response to a LOCK request 
+     */
     public String parseLock( boolean secondary )
     {
         if( GlobalData.getGlobalData().getDebugResponse() )
@@ -991,6 +1092,10 @@ public class WebDAVResponseInterpreter
         return lockToken;
     }
 
+
+    /**
+     * Parse the response to a UNLOCK request
+     */
     public void parseUnlock()
     {
         if( GlobalData.getGlobalData().getDebugResponse() )
@@ -1003,6 +1108,14 @@ public class WebDAVResponseInterpreter
     }
 
 
+    /**
+     * Parse a tree rooted at a <prop> tag
+     * @param propElem
+     * @param ResourceName
+     * @param resName
+     * 
+     * @return
+     */
     protected DataNode parseProps( Element propElem, String ResourceName, String resName )
     {
         if( GlobalData.getGlobalData().getDebugTreeNode() )
@@ -1077,6 +1190,12 @@ public class WebDAVResponseInterpreter
     }
 
 
+    /**
+     * 
+     * @param displayName
+     * 
+     * @return
+     */
     protected String getDisplayName( Element displayName )
     {
         if( GlobalData.getGlobalData().getDebugTreeNode() )
@@ -1103,6 +1222,12 @@ public class WebDAVResponseInterpreter
     }
 
 
+    /**
+     * 
+     * @param lockdiscovery
+     * 
+     * @return
+     */
     protected String lockDiscovery( Element lockdiscovery )
     {
         if( GlobalData.getGlobalData().getDebugTreeNode() )
@@ -1141,6 +1266,12 @@ public class WebDAVResponseInterpreter
     }
 
 
+    /**
+     * 
+     * @param resourcetype
+     * 
+     * @return
+     */
     protected boolean getResourceType( Element resourcetype )
     {
         if( GlobalData.getGlobalData().getDebugTreeNode() )
@@ -1160,6 +1291,12 @@ public class WebDAVResponseInterpreter
     }
 
     
+    /**
+     * 
+     * @param contenttype
+     *
+     * @return
+     */
     protected String getContentType( Element contenttype )
     {
         if( GlobalData.getGlobalData().getDebugTreeNode() )
@@ -1181,6 +1318,12 @@ public class WebDAVResponseInterpreter
     }
 
     
+    /**
+     * 
+     * @param contentlength
+     * 
+     * @return
+     */
     protected String getContentLength( Element contentlength )
     {
         if( GlobalData.getGlobalData().getDebugTreeNode() )
@@ -1202,6 +1345,12 @@ public class WebDAVResponseInterpreter
     }
 
 
+    /**
+     * 
+     * @param lastmodified
+     * 
+     * @return
+     */
     protected String getLastModified( Element lastmodified )
     {
         if( GlobalData.getGlobalData().getDebugTreeNode() )
@@ -1223,47 +1372,96 @@ public class WebDAVResponseInterpreter
     }
 
 
+    /**
+     * 
+     */
     public void clearStream()
     {
         stream = null;
     }
 
+
+    /**
+     * 
+     * @return
+     */
     public byte[] getXML()
     {
         return stream;
     }
 
+
+    /**
+     * Add an insertion listener
+     * 
+     * @param l     listener to add
+     */
     public synchronized void addInsertionListener(InsertionListener l)
     {
         listeners.addElement(l);
     }
 
+    /**
+     * Remove an insertion listener
+     * 
+     * @param l     listener to remove
+     */
     public synchronized void removeInsertionListener(InsertionListener l)
     {
         listeners.removeElement(l);
     }
 
+
+    /**
+     * Add a move listener
+     * 
+     * @param l     listener to add
+     */
     public synchronized void addMoveUpdateListener(ActionListener l)
     {
         moveListeners.addElement(l);
     }
 
+
+    /**
+     * Remove a move listener
+     * 
+     * @param l     listener to remove
+     */
     public synchronized void removeMoveUpdateListener(ActionListener l)
     {
         moveListeners.removeElement(l);
     }
 
+
+    /**
+     * Add a lock listener
+     * 
+     * @param l     listener to add
+     */
     public synchronized void addLockListener(ActionListener l)
     {
         lockListeners.addElement(l);
     }
 
+
+    /**
+     * Remove a lock listener
+     * 
+     * @param l     listener to remove
+     */
     public synchronized void removeLockListener(ActionListener l)
     {
         lockListeners.removeElement(l);
     }
 
-    public void fireInsertionEvent( String str )
+
+    /**
+     * Inform listeners of an insertion event
+     * 
+     * @param str       info of the event
+     */
+    protected void fireInsertionEvent( String str )
     {
         if( GlobalData.getGlobalData().getDebugResponse() )
         {
@@ -1285,7 +1483,12 @@ public class WebDAVResponseInterpreter
     }
 
 
-    public void fireMoveUpdate(String str)
+    /**
+     * Inform listeners of a move event
+     * 
+     * @param str       info of the event
+     */
+    protected void fireMoveUpdate(String str)
     {
         if( GlobalData.getGlobalData().getDebugResponse() )
         {
@@ -1306,7 +1509,13 @@ public class WebDAVResponseInterpreter
         }
     }
 
-    public void fireLockEvent(int id, String str)
+
+    /**
+     * Inform listeners of a lock event
+     * 
+     * @param str       info of the event
+     */
+    protected void fireLockEvent(int id, String str)
     {
         if( GlobalData.getGlobalData().getDebugResponse() )
         {
@@ -1327,16 +1536,33 @@ public class WebDAVResponseInterpreter
         }
     }
 
+
+    /**
+     *
+     * @return 
+     */
     public String getResource()
     {
         return Resource;
     }
 
+
+    /**
+     * 
+     * @return
+     */
     public String getHost()
     {
         return HostName;
     }
 
+
+    /**
+     * 
+     * @param fileName
+     * 
+     * @return
+     */
     public boolean replaceFile(String fileName)
     {
         String str = new String(fileName + " exists.\nReplace?\n");
@@ -1347,6 +1573,11 @@ public class WebDAVResponseInterpreter
             return false;
     }
 
+
+    /**
+     * 
+     * @return
+     */
     public boolean launchAnyway()
     {
         String str = new String("View in application?");
@@ -1357,6 +1588,11 @@ public class WebDAVResponseInterpreter
             return false;
     }
 
+
+    /**
+     * 
+     * @return
+     */
     public String selectApplication()
     {
         String str = new String("Select the application to show this file");
@@ -1364,7 +1600,18 @@ public class WebDAVResponseInterpreter
         return ret;
     }
 
-    public void displayLock(String LockType, String LockScope, String LockDepth, String LockToken, String LockTimeout, String LockOwner )
+
+    /**
+     * Display lock information
+     * @param LockType
+     * @param LockScope
+     * @param LockDepth
+     * @param LockToken
+     * @param LockTimeout
+     * @param LockOwner
+     */
+    public void displayLock( String LockType, String LockScope, String LockDepth,
+                             String LockToken, String LockTimeout, String LockOwner )
     {
         Object [] options = { "OK" };
         if (LockToken == null)
@@ -1379,7 +1626,11 @@ public class WebDAVResponseInterpreter
     }
 
 
-    // singleton access
+    /**
+     * Get the singleton request generator object
+     * 
+     * @return The request generator object
+     */
     public static WebDAVRequestGenerator getGenerator()
     {
         if( generator == null )
@@ -1388,6 +1639,12 @@ public class WebDAVResponseInterpreter
     }
 
 
+    /**
+     *
+     * @param locktoken
+     * 
+     * @return 
+     */
     protected String getLockToken( Element locktoken )
     {
         if( GlobalData.getGlobalData().getDebugResponse() )
@@ -1414,6 +1671,12 @@ public class WebDAVResponseInterpreter
     }
 
 
+    /**
+     * 
+     * @param locktype
+     * 
+     * @return
+     */
     protected String getLockType( Element locktype )
     {
         if( GlobalData.getGlobalData().getDebugResponse() )
@@ -1433,6 +1696,12 @@ public class WebDAVResponseInterpreter
     }
 
 
+    /**
+     * 
+     * @param lockscope
+     * 
+     * @return
+     */
     protected String getLockScope( Element lockscope )
     {
         if( GlobalData.getGlobalData().getDebugResponse() )
@@ -1452,14 +1721,14 @@ public class WebDAVResponseInterpreter
     }
 
     /**
-     * Function used to retreive the owner details on a lock.
+     * Function used to retrieve the owner details on a lock.
      * A small correction has been made in the code by Eric Giguere to get the
      * owner name in cases where the parsers adds empty tags in the element tree
      * (bug from the parser).
-     *
-     * @author : Joachim Feise, Eric Giguere
-     * @param ownerinfo The XML node that is at the root of the owner information
-     * @version 1.1
+     * @author  Joachim Feise, Eric Giguere
+     * @param   ownerinfo The XML node that is at the root of the owner information
+     * 
+     * @return
      */
     protected String getOwnerInfo( Element ownerinfo )
     {
@@ -1510,6 +1779,12 @@ public class WebDAVResponseInterpreter
     }
 
 
+    /**
+     * 
+     * @param locktimeout
+     * 
+     * @return
+     */
     protected String getLockTimeout( Element locktimeout )
     {
         if( GlobalData.getGlobalData().getDebugResponse() )
@@ -1528,6 +1803,12 @@ public class WebDAVResponseInterpreter
     }
 
 
+    /**
+     * 
+     * @param lockdepth
+     * 
+     * @return
+     */
     protected String getLockDepth( Element lockdepth )
     {
         if( GlobalData.getGlobalData().getDebugResponse() )
@@ -1546,6 +1827,12 @@ public class WebDAVResponseInterpreter
     }
 
 
+    /**
+     * 
+     * @param status
+     * 
+     * @return
+     */
     protected int getStatus( Element status )
     {
         if( GlobalData.getGlobalData().getDebugResponse() )
@@ -1579,6 +1866,12 @@ public class WebDAVResponseInterpreter
     }
 
 
+    /**
+     * 
+     * @param el
+     * 
+     * @return
+     */
     protected boolean checkHrefValue( Element el )
     {
         if( GlobalData.getGlobalData().getDebugResponse() )
@@ -1619,12 +1912,28 @@ public class WebDAVResponseInterpreter
         return false;
     }
 
+
+    /**
+     * 
+     * @param xml_doc
+     * @param token
+     * 
+     * @return
+     */
     public Element skipElements( Document xml_doc, String[] token )
     {
         Element rootElem = (Element)xml_doc.getRoot();
         return skipElements( rootElem, token );
     }
 
+
+    /**
+     * 
+     * @param rootElem
+     * @param token
+     * 
+     * @return
+     */
     public Element skipElements( Element rootElem, String[] token )
     {
         if( GlobalData.getGlobalData().getDebugResponse() )
@@ -1664,13 +1973,35 @@ public class WebDAVResponseInterpreter
     }
 
 
-    public DataNode parseResponse( Element respElem, String resourceName, Vector nodesChildren )
+    /**
+     * 
+     * @param respElem
+     * @param resourceName
+     * @param nodesChildren
+     * 
+     * @return
+     */
+    protected DataNode parseResponse( Element respElem, String resourceName,
+                                      Vector nodesChildren )
     {
         return parseResponse( respElem, resourceName, nodesChildren, null, null, null );
     }
 
 
-    public DataNode parseResponse( Element respElem, String resourceName, Vector nodesChildren, DataNode dataNode, String userAgent, DefaultMutableTreeNode treeNode )
+    /**
+     * 
+     * @param respElem
+     * @param resourceName
+     * @param nodesChildren
+     * @param dataNode
+     * @param userAgent
+     * @param treeNode
+     * 
+     * @return 
+     */
+    protected DataNode parseResponse( Element respElem, String resourceName,
+                                      Vector nodesChildren, DataNode dataNode,
+                                      String userAgent, DefaultMutableTreeNode treeNode )
     {
         if( GlobalData.getGlobalData().getDebugTreeNode() )
         {
@@ -1814,7 +2145,14 @@ public class WebDAVResponseInterpreter
     }
 
 
-    private String truncateResource(String res)
+    /**
+     * Strip a resource to just the resource name
+     * 
+     * @param res       Resource to strip
+     * 
+     * @return          the stripped resource
+     */
+    protected String truncateResource(String res)
     {
         if( GlobalData.getGlobalData().getDebugTreeNode() )
         {
@@ -1843,7 +2181,14 @@ public class WebDAVResponseInterpreter
         return res;
     }
 
-    private String getFullResource(String res)
+
+    /**
+     * Strip the protocol from a resource
+     * 
+     * @param res       Resource to strip
+     * @return          the stripped resource
+     */
+    protected String getFullResource(String res)
     {
         if( GlobalData.getGlobalData().getDebugTreeNode() )
         {
@@ -1869,6 +2214,10 @@ public class WebDAVResponseInterpreter
     }
 
 
+    /**
+     * When debugging is enabled, print the received XML
+     * @param body      The XML bytestream
+     */
     protected void printXML( byte[] body )
     {
         String debugOutput = System.getProperty( "debug", "false" );
@@ -1889,6 +2238,10 @@ public class WebDAVResponseInterpreter
         }
     }
 
+
+    /**
+     * Reset the internal data
+     */
     public static void reset()
     {
         generator = null;

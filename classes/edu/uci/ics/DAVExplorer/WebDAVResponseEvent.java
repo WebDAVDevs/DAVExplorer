@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 1998-2001 Regents of the University of California.
+ * Copyright (c) 1998-2004 Regents of the University of California.
  * All rights reserved.
  *
  * This software was developed at the University of California, Irvine.
@@ -20,7 +20,7 @@
 /**
  * Title:       WebDAVResponseEvent
  * Description: The event object sent for responses from the server
- * Copyright:   Copyright (c) 1998-2001 Regents of the University of California. All rights reserved.
+ * Copyright:   Copyright (c) 1998-2004 Regents of the University of California. All rights reserved.
  * @author      Undergraduate project team ICS 126B 1998
  * @date        1998
  * @author      Yuzo Kanomata, Joachim Feise (dav-exp@ics.uci.edu)
@@ -28,6 +28,9 @@
  * @author      Joachim Feise (dav-exp@ics.uci.edu)
  * @date        1 October 2001
  * Changes:     Change of package name
+ * @author      Joachim Feise (dav-exp@ics.uci.edu)
+ * @date        08 February 2004
+ * Changes:     Added Javadoc templates
  */
 
 package edu.uci.ics.DAVExplorer;
@@ -35,6 +38,10 @@ package edu.uci.ics.DAVExplorer;
 import java.util.EventObject;
 import HTTPClient.HTTPResponse;
 
+
+/**
+ * 
+ */
 public class WebDAVResponseEvent extends EventObject {
     HTTPResponse httpResponse;
     String MethodName;
@@ -45,6 +52,18 @@ public class WebDAVResponseEvent extends EventObject {
 
     WebDAVTreeNode Node; // The node to which the expand is directed
 
+
+    /**
+     * Constructor
+     * @param module
+     * @param hostname
+     * @param Port
+     * @param resource
+     * @param method
+     * @param response
+     * @param extra
+     * @param node
+     */
     public WebDAVResponseEvent(Object module, String hostname, int Port,String resource, String method, HTTPResponse response, String extra, WebDAVTreeNode node)
     {
         super (module);
@@ -63,36 +82,71 @@ public class WebDAVResponseEvent extends EventObject {
         this.Node = node;
     }
 
+
+    /**
+     * 
+     * @return
+     */
     public HTTPResponse getResponse()
     {
         return httpResponse;
     }
 
+
+    /**
+     * 
+     * @return
+     */
     public String getMethodName()
     {
         return MethodName;
     }
 
+
+    /**
+     * 
+     * @return
+     */
     public String getExtraInfo()
     {
         return ExtraInfo;
     }
 
+
+    /**
+     * 
+     * @return
+     */
     public String getHost()
     {
         return HostName;
     }
 
+
+    /**
+     * 
+     * @return
+     */
     public int getPort()
     {
         return Port;
     }
 
+
+    /**
+     * 
+     * @return
+     */
     public String getResource()
     {
         return Resource;
     }
 
+
+    /**
+     * 
+     * @return
+     */
     public WebDAVTreeNode getNode()
     {
         return Node;

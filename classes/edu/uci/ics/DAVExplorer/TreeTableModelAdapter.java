@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2001 Regents of the University of California.
+ * Copyright (c) 2001-2004 Regents of the University of California.
  * All rights reserved.
  *
  * This software was developed at the University of California, Irvine.
@@ -20,7 +20,7 @@
 /**
  * Title:       Property Dialog
  * Description: Dialog for viewing/modifying DAV properties
- * Copyright:   Copyright (c) 2001 Regents of the University of California. All rights reserved.
+ * Copyright:   Copyright (c) 2001-2004 Regents of the University of California. All rights reserved.
  * @author      Joachim Feise (dav-exp@ics.uci.edu)
  * @date        29 September 2001
  *
@@ -30,6 +30,9 @@
  * @author      Joachim Feise (dav-exp@ics.uci.edu)
  * @date        1 October 2001
  * Changes:     Change of package name
+ * @author      Joachim Feise (dav-exp@ics.uci.edu)
+ * @date        08 February 2004
+ * Changes:     Added Javadoc templates
  */
 
 package edu.uci.ics.DAVExplorer;
@@ -44,8 +47,16 @@ import javax.swing.event.TreeModelEvent;
 import javax.swing.event.TreeModelListener;
 
 
+/**
+ * 
+ */
 public class TreeTableModelAdapter extends AbstractTableModel
 {
+    /**
+     * Constructor
+     * @param treeTableModel
+     * @param tree
+     */
     public TreeTableModelAdapter(TreeTableModel treeTableModel, JTree tree)
     {
         this.tree = tree;
@@ -90,43 +101,98 @@ public class TreeTableModelAdapter extends AbstractTableModel
         });
     }
 
-    // TableModel interface
+
+    /**
+     * TableModel interface
+     * 
+     * @return
+     */
     public int getColumnCount()
     {
         return treeTableModel.getColumnCount();
     }
 
+
+    /**
+     * TableModel interface
+     * @param column
+     * 
+     * @return
+     */
     public String getColumnName(int column)
     {
         return treeTableModel.getColumnName(column);
     }
 
+
+    /**
+     * TableModel interface
+     * @param column
+     * 
+     * @return
+     */
     public Class getColumnClass(int column)
     {
         return treeTableModel.getColumnClass(column);
     }
 
+
+    /**
+     * TableModel interface
+     * 
+     * @return
+     */
     public int getRowCount()
     {
         return tree.getRowCount();
     }
 
+
+    /**
+     * TableModel interface
+     * @param row
+     * 
+     * @return
+     */
     protected Object nodeForRow(int row)
     {
         TreePath treePath = tree.getPathForRow(row);
         return treePath.getLastPathComponent();
     }
 
+
+    /**
+     * TableModel interface
+     * @param row
+     * @param column
+     * 
+     * @return
+     */
     public Object getValueAt(int row, int column)
     {
         return treeTableModel.getValueAt(nodeForRow(row), column);
     }
 
+
+    /**
+     * TableModel interface
+     * @param row
+     * @param column
+     * 
+     * @return
+     */
     public boolean isCellEditable(int row, int column)
     {
         return treeTableModel.isCellEditable(nodeForRow(row), column);
     }
 
+
+    /**
+     * TableModel interface
+     * @param value
+     * @param row
+     * @param column
+     */
     public void setValueAt(Object value, int row, int column)
     {
         treeTableModel.setValueAt(value, nodeForRow(row), column);
@@ -145,6 +211,7 @@ public class TreeTableModelAdapter extends AbstractTableModel
             }
         });
     }
+
 
     private JTree tree;
     private TreeTableModel treeTableModel;

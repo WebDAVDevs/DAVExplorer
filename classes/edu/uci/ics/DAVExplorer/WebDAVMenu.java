@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 1998-2003 Regents of the University of California.
+ * Copyright (c) 1998-2004 Regents of the University of California.
  * All rights reserved.
  *
  * This software was developed at the University of California, Irvine.
@@ -20,7 +20,7 @@
 /**
  * Title:       WebDAVMenu
  * Description: Main menu class
- * Copyright:   Copyright (c) 1998-2003 Regents of the University of California. All rights reserved.
+ * Copyright:   Copyright (c) 1998-2004 Regents of the University of California. All rights reserved.
  * @author      Undergraduate project team ICS 126B 1998
  * @date        1998
  * @author      Yuzo Kanomata, Joachim Feise (dav-exp@ics.uci.edu)
@@ -52,6 +52,9 @@
  * @author      Joachim Feise (dav-exp@ics.uci.edu)
  * @date        23 September 2003
  * Changes:     Integrated the DeltaV code from the Spring 2003 ICS125 team.
+ * @author      Joachim Feise (dav-exp@ics.uci.edu)
+ * @date        08 February 2004
+ * Changes:     Added Javadoc templates
  */
 
 package edu.uci.ics.DAVExplorer;
@@ -64,50 +67,61 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.util.Vector;
 
-/*--------------------------------------------------------
-This class creates the menus to be used in the application
-as well as the event handling for each of the items
-built in.
---------------------------------------------------------*/
 
+/**
+ *This class creates the menus to be used in the application
+ * as well as the event handling for each of the items
+ * built in.
+ */
 public class WebDAVMenu extends JMenuBar implements ActionListener
 {
-    /*--------------------------------------------------------
-    Internal class that takes care of adding listeners to the
-    menu items.
-    --------------------------------------------------------*/
-
+    /**
+     * Internal class that takes care of adding listeners to the
+     * menu items.
+     */
     class WebDAVMenuItem extends JMenuItem
     {
+        /**
+         * Constructor
+         * @param strMenuTag
+         * @param aL
+         * @param enabled
+         */
         public WebDAVMenuItem( String strMenuTag, ActionListener aL, boolean enabled )
-    {
+        {
             super( strMenuTag );
-        addActionListener( aL );
-        setEnabled( enabled );
-    }
+            addActionListener( aL );
+            setEnabled( enabled );
+        }
     }
 
+
+    /**
+     * 
+     */
     class WebDAVCheckBoxMenuItem extends JCheckBoxMenuItem
     {
+        /**
+         * 
+         * @param strMenuTag
+         * @param aL
+         * @param enabled
+         */
         public WebDAVCheckBoxMenuItem( String strMenuTag, ActionListener aL, boolean enabled )
-    {
+        {
             super( strMenuTag );
-        addActionListener( aL );
-        setEnabled( enabled );
+            addActionListener( aL );
+            setEnabled( enabled );
+        }
     }
-    }
-
-    /*--------------------------------------------------------
-    Public attributes section
-    --------------------------------------------------------*/
 
     /*--------------------------------------------------------
     Public methods section
     --------------------------------------------------------*/
 
-    /*
-    The constructor
-    */
+    /**
+     * Constructor
+     */
     public WebDAVMenu()
     {
         this.add(generateFileMenu());
@@ -118,10 +132,12 @@ public class WebDAVMenu extends JMenuBar implements ActionListener
         menuListeners = new Vector();
     }
 
-    /*
-    This method will take care of catching the events created
-    by the menuitems.
-    */
+
+    /**
+     * This method will take care of catching the events created
+     * by the menuitems.
+     * @param Event
+     */
     public void actionPerformed(ActionEvent Event)
     {
         Vector ls;
@@ -136,27 +152,41 @@ public class WebDAVMenu extends JMenuBar implements ActionListener
         }
     }
 
-    /*
-    Add new menu event listeners to the vector
-    */
+ 
+    /**
+     * Add new menu event listeners to the vector
+     * @param MenuListener
+     */
     public synchronized void addWebDAVMenuListener(ActionListener MenuListener)
     {
         menuListeners.addElement(MenuListener);
     }
 
-    /*
-    Remove a menu event listener from the vector
-    */
+ 
+    /**
+     * Remove a menu event listener from the vector
+     * @param MenuListener
+     */
     public synchronized void removeWebDAVMenuListener(ActionListener MenuListener)
     {
         menuListeners.removeElement(MenuListener);
     }
 
+
+    /**
+     * 
+     * @param newState
+     */
     public void setLogging( boolean newState )
     {
         logging.setState( newState );
     }
 
+
+    /**
+     * 
+     * @return
+     */
     public boolean getLogging()
     {
         return logging.getState();
@@ -172,9 +202,11 @@ public class WebDAVMenu extends JMenuBar implements ActionListener
     Protected methods section
     --------------------------------------------------------*/
 
-    /*
-    Generate the File menu
-    */
+    /**
+     * Generate the File menu
+     * 
+     * @return
+     */
     protected JMenu generateFileMenu()
     {
         JMenu mnu_FileMenu = new JMenu( "File", true );
@@ -200,32 +232,34 @@ public class WebDAVMenu extends JMenuBar implements ActionListener
         return mnu_FileMenu;
     }
 
-    /*
-    Generate the Edit menu
-    */
+ 
+    /**
+     * Generate the Edit menu
+     * 
+     * @return
+     */
     protected JMenu generateEditMenu()
     {
         JMenu mnu_EditMenu = new JMenu( "Edit", true );
 
         mnu_EditMenu.add(new WebDAVMenuItem( "Edit Lock Info",this, true ));
 
-//        if (!GlobalData.getGlobalData().isAppletMode())
-//        {
-            mnu_EditMenu.add( new WebDAVMenuItem( "Edit Proxy Info",this, true ) );
-            mnu_EditMenu.addSeparator();
-            mnu_EditMenu.add( new WebDAVMenuItem( "Clear Auth Buffer", this, true ) );
-            mnu_EditMenu.addSeparator();
-            logging = new WebDAVCheckBoxMenuItem( "HTTP Logging", this, true );
-            mnu_EditMenu.add( logging );
-//        }
+        mnu_EditMenu.add( new WebDAVMenuItem( "Edit Proxy Info",this, true ) );
+        mnu_EditMenu.addSeparator();
+        mnu_EditMenu.add( new WebDAVMenuItem( "Clear Auth Buffer", this, true ) );
+        mnu_EditMenu.addSeparator();
+        logging = new WebDAVCheckBoxMenuItem( "HTTP Logging", this, true );
+        mnu_EditMenu.add( logging );
 
         return mnu_EditMenu;
     }
 
 
-    /*
-    Generate the Version menu
-    */
+    /**
+     * Generate the Version menu
+     * 
+     * @return
+     */
     protected JMenu generateVersionMenu()
     {
         JMenu mnu_VersionMenu = new JMenu( "Versioning", true );
@@ -242,9 +276,11 @@ public class WebDAVMenu extends JMenuBar implements ActionListener
     }
 
 
-    /*
-    Generate the View menu
-    */
+    /**
+     * Generate the View menu
+     * 
+     * @return
+     */
     protected JMenu generateViewMenu()
     {
         JMenu mnu_ViewMenu = new JMenu( "View", true );
@@ -258,9 +294,11 @@ public class WebDAVMenu extends JMenuBar implements ActionListener
         return mnu_ViewMenu;
     }
 
-    /*
-    Generate the Help Menu
-    */
+    /**
+     * Generate the Help Menu
+     * 
+     * @return
+     */
     protected JMenu generateHelpMenu()
     {
         JMenu mnu_HelpMenu = new JMenu("Help", true);
@@ -269,6 +307,7 @@ public class WebDAVMenu extends JMenuBar implements ActionListener
 
         return mnu_HelpMenu;
     }
+
 
     private WebDAVCheckBoxMenuItem logging;
 }

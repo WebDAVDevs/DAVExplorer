@@ -20,7 +20,7 @@
 /**
  * Title:       DataNode
  * Description: Node holding information about resources and collections
- * Copyright:   Copyright (c) 1998-2003 Regents of the University of California. All rights reserved.
+ * Copyright:   Copyright (c) 1998-2004 Regents of the University of California. All rights reserved.
  * @author      Undergraduate project team ICS 126B 1998
  * @date        1998
  * @author      Yuzo Kanomata, Joachim Feise (dav-exp@ics.uci.edu)
@@ -41,6 +41,9 @@
  * @author      Joachim Feise (dav-exp@ics.uci.edu)
  * @date        04 February 2004
  * Changes:     Added workaround for Documentum Modified-Date bug
+ * @author      Joachim Feise (dav-exp@ics.uci.edu)
+ * @date        08 February 2004
+ * Changes:     Added Javadoc templates
  */
 
 package edu.uci.ics.DAVExplorer;
@@ -51,6 +54,9 @@ import java.text.DateFormat;
 import java.text.ParseException;
 
 
+/**
+ * Node holding information about resources and collections
+ */
 public class DataNode
 {
     protected String name;
@@ -64,6 +70,18 @@ public class DataNode
     protected Vector subNodes = null;
 
 
+    /**
+     * Constructor
+     * @param collection
+     * @param locked
+     * @param lockToken
+     * @param name
+     * @param display
+     * @param type
+     * @param size
+     * @param date
+     * @param subNodes
+     */
     public DataNode( boolean collection,
                      boolean locked,
                      String lockToken,
@@ -81,6 +99,18 @@ public class DataNode
     }
 
 
+    /**
+     * Constructor
+     * @param collection
+     * @param locked
+     * @param lockToken
+     * @param name
+     * @param display
+     * @param type
+     * @param size
+     * @param date
+     * @param subNodes
+     */
     public DataNode( boolean collection,
                      boolean locked,
                      String lockToken,
@@ -95,6 +125,18 @@ public class DataNode
     }
 
 
+    /**
+     * 
+     * @param collection
+     * @param locked
+     * @param lockToken
+     * @param name
+     * @param display
+     * @param type
+     * @param size
+     * @param date
+     * @param subNodes
+     */
     private void init( boolean collection,
                        boolean locked,
                        String lockToken,
@@ -117,48 +159,80 @@ public class DataNode
     }
 
 
+    /**
+     *
+     * @param subNodes 
+     */
     public void setSubNodes(Vector subNodes)
     {
         this.subNodes = subNodes;
     }
 
 
+    /**
+     * 
+     * @return
+     */
     public Vector getSubNodes()
     {
         return subNodes;
     }
 
 
+    /**
+     *
+     * @param newName 
+     */
     public void setName(String newName)
     {
         name = newName;
     }
 
 
+    /**
+     *
+     * @param newDisplay 
+     */
     public void setDisplay(String newDisplay)
     {
         display = newDisplay;
     }
 
 
+    /**
+     *
+     * @param newType 
+     */
     public void setType(String newType)
     {
         type = newType;
     }
 
 
+    /**
+     * 
+     * @param newSize
+     */
     public void setSize(long newSize)
     {
         size = newSize;
     }
 
 
+    /**
+     * 
+     * @param newDate
+     */
     public void setDate(String newDate)
     {
         lastModified = newDate;
     }
 
 
+    /**
+     *
+     * @param newDate 
+     */
     public void setDate(Date newDate)
     {
         DateFormat df = DateFormat.getDateTimeInstance();
@@ -166,6 +240,10 @@ public class DataNode
     }
 
 
+    /**
+     * 
+     * @param lockToken
+     */
     public void lock( String lockToken )
     {
         locked = true;
@@ -173,6 +251,9 @@ public class DataNode
     }
 
 
+    /**
+     * 
+     */
     public void unlock()
     {
         locked = false;
@@ -180,66 +261,97 @@ public class DataNode
     }
 
 
+    /**
+     * 
+     */
     public void makeCollection()
     {
         collection = true;
     }
 
 
+    /**
+     * 
+     */
     public void makeNonCollection()
     {
         collection = false;
     }
 
 
+    /**
+     * 
+     * @return
+     */
     public String getName()
     {
         return new String(name);
     }
 
 
+    /**
+     * 
+     * @return
+     */
     public String getDisplay()
     {
         return new String(display);
     }
 
 
+    /**
+     * 
+     * @return
+     */
     public String getType()
     {
         return new String(type);
     }
 
 
+    /**
+     * 
+     * @return
+     */
     public String getLockToken()
     {
         return lockToken;
     }
 
 
+    /**
+     * 
+     * @return
+     */
     public long getSize()
     {
         return size;
     }
 
 
+    /**
+     * 
+     * @return
+     */
     public Date getDate()
     {
         if( lastModified == null || lastModified.length() == 0 )
             return null;
 
-		// documentum workaround hack: they apparently use localized
-		// weekday abbreviations, which violates RFC 3518 and RFC 2616
-		// This hack checks for valid weekdays and removes anything that
-		// does not follow the RFCs
-		// Allowed formats:
-		// wkday "," ...
-		// wkday SP ...
-		// weekday "," ...
-		// with (see RFC 2616):
-		// wkday    = "Mon" | "Tue" | "Wed"
-		//		    | "Thu" | "Fri" | "Sat" | "Sun"
-		// weekday  = "Monday" | "Tuesday" | "Wednesday"
-		//			| "Thursday" | "Friday" | "Saturday" | "Sunday"
+        /* documentum workaround hack: they apparently use localized
+         * weekday abbreviations, which violates RFC 3518 and RFC 2616
+         * This hack checks for valid weekdays and removes anything that
+         * does not follow the RFCs
+         * Allowed formats:
+         * wkday "," ...
+         * wkday SP ...
+         * weekday "," ...
+         * with (see RFC 2616):
+         * wkday    = "Mon" | "Tue" | "Wed"
+         *		    | "Thu" | "Fri" | "Sat" | "Sun"
+         * weekday  = "Monday" | "Tuesday" | "Wednesday"
+         *			| "Thursday" | "Friday" | "Saturday" | "Sunday"
+         */
 		String[] wkday = {"Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"};
 		String[] weekday = {"Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday" };
 
@@ -328,12 +440,20 @@ public class DataNode
     }
 
 
+    /**
+     *
+     * @return 
+     */
     public boolean isLocked()
     {
         return locked;
     }
 
 
+    /**
+     * 
+     * @return 
+     */
     public boolean isCollection()
     {
         return collection;

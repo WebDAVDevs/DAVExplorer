@@ -138,7 +138,7 @@ public class Util
 	return tmp;
     }
 
-    final static NVPair[] resizeArray(NVPair[] src, int new_size)
+    final public static NVPair[] resizeArray(NVPair[] src, int new_size)
     {
 	NVPair tmp[] = new NVPair[new_size];
 	System.arraycopy(src, 0, tmp, 0,

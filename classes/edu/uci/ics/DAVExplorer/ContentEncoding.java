@@ -24,6 +24,9 @@
  * Copyright:   Copyright (C) 2004 Regents of the University of California. All rights reserved.
  * @author      Joachim Feise (dav-exp@ics.uci.edu)
  * @date        06 February 2004
+ * @author      Joachim Feise (dav-exp@ics.uci.edu)
+ * @date        08 February 2004
+ * Changes:     Added Javadoc templates
  */
 package edu.uci.ics.DAVExplorer;
 
@@ -41,10 +44,17 @@ import java.io.IOException;
 import java.util.Vector;
 
 
+/**
+ * 
+ */
 public class ContentEncoding extends ContentEncodingModule
 {
     /**
      * Invoked by the HTTPClient.
+     * @param req
+     * @param resp
+     * 
+     * @return
      */
     public int requestHandler(Request req, Response[] resp)
         throws ModuleException
@@ -125,6 +135,8 @@ public class ContentEncoding extends ContentEncodingModule
 
     /**
      * Invoked by the HTTPClient.
+     * @param resp
+     * @param req
      */
     public void responsePhase3Handler(Response resp, RoRequest req)
         throws IOException, ModuleException

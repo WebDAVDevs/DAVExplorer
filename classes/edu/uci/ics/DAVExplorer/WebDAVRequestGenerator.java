@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 1998-2003 Regents of the University of California.
+ * Copyright (c) 1998-2004 Regents of the University of California.
  * All rights reserved.
  *
  * This software was developed at the University of California, Irvine.
@@ -24,7 +24,7 @@
  *              sends an event indicating that another resource has been
  *              selected it is properly handled by either
  *              tableSelectionChanged() or treeSelectionChanged()
- * Copyright:   Copyright (c) 1998-2003 Regents of the University of California. All rights reserved.
+ * Copyright:   Copyright (c) 1998-2004 Regents of the University of California. All rights reserved.
  * @author      Robert Emmery
  * @date        2 April 1998
  * @author      Yuzo Kanomata, Joachim Feise (dav-exp@ics.uci.edu)
@@ -52,6 +52,9 @@
  * @author      Joachim Feise (dav-exp@ics.uci.edu)
  * @date        23 September 2003
  * Changes:     Code cleanup.
+ * @author      Joachim Feise (dav-exp@ics.uci.edu)
+ * @date        08 February 2004
+ * Changes:     Added Javadoc templates
  */
 
 package edu.uci.ics.DAVExplorer;
@@ -70,6 +73,10 @@ import com.ms.xml.om.Document;
 import com.ms.xml.util.XMLOutputStream;
 import com.ms.xml.util.Name;
 
+
+/**
+ * Generating a WebDAV request
+ */
 public class WebDAVRequestGenerator implements Runnable
 {
     protected static final int DEFAULT_PORT = 80;
@@ -105,6 +112,10 @@ public class WebDAVRequestGenerator implements Runnable
     protected boolean KeepAlive2;
     protected boolean secondTime = false;
 
+
+    /**
+     * reset the internal data
+     */
     public static void reset()
     {
         HostName = "";
@@ -123,26 +134,49 @@ public class WebDAVRequestGenerator implements Runnable
     }
 
 
+    /**
+     * Constructor
+     */
     public WebDAVRequestGenerator()
     {
         super();
     }
 
+
+    /**
+     * Store the user name
+     * @param username
+     */
     public void setUser(String username)
     {
         User = username;
     }
 
+
+    /**
+     * Store the user's password
+     * @param pass
+     */
     public void setPass(String pass)
     {
         Password = pass;
     }
 
+
+    /**
+     * Store the user agent string
+     * @param ua
+     */
     public void setUserAgent( String ua )
     {
         userAgent = ua;
     }
 
+
+    /**
+     * 
+     * @param e
+     */
     public void tableSelectionChanged(ViewSelectionEvent e)
     {
         if (e.getNode() != null)
@@ -160,13 +194,25 @@ public class WebDAVRequestGenerator implements Runnable
         }
     }
 
+
+    /**
+     * Indicate that we are generating a second request based on
+     * information from the response to an earlier one.
+     * This is used for example if we need to gather additional
+     * information before executing a request.
+     * @param  
+     */
     public void setSecondTime(boolean b)
     {
-    secondTime = b;
+        secondTime = b;
     }
 
-    //Yuzo
-    //SetResourceName to the value
+
+    /**
+     * 
+     * @param name
+     * @param node
+     */
     public void setResource(String name, WebDAVTreeNode node)
     {
         if( name == null )
@@ -186,11 +232,20 @@ public class WebDAVRequestGenerator implements Runnable
     }
 
 
+    /**
+     * 
+     * @param node
+     */
     public void setNode( WebDAVTreeNode node )
     {
         Node = node;
     }
 
+
+    /**
+     * 
+     * @param e
+     */
     public void treeSelectionChanged(ViewSelectionEvent e)
     {
         String Item;
@@ -198,6 +253,13 @@ public class WebDAVRequestGenerator implements Runnable
         ResourceName = Path + "/";
     }
 
+
+    /**
+     * 
+     * @param escape
+     * 
+     * @return
+     */
     public String parseResourceName( boolean escape )
     {
         if (ResourceName.equals(""))
@@ -219,6 +281,13 @@ public class WebDAVRequestGenerator implements Runnable
     }
 
 
+    /**
+     * 
+     * @param stripped
+     * @param escape
+     * 
+     * @return
+     */
     public String parseStripped( String stripped, boolean escape )
     {
         StringTokenizer str = new StringTokenizer(stripped, "/");
@@ -283,6 +352,12 @@ public class WebDAVRequestGenerator implements Runnable
     }
 
 
+    /**
+     * 
+     * @param appendix
+     * 
+     * @return
+     */
     public String getDefaultName( String appendix )
     {
         String defaultName = parseResourceName( false );
@@ -298,6 +373,9 @@ public class WebDAVRequestGenerator implements Runnable
     }
 
 
+    /**
+     * Execute a request
+     */
     public void execute()
     {
         AsGen.clear();
@@ -305,6 +383,10 @@ public class WebDAVRequestGenerator implements Runnable
         th.start();
     }
 
+
+    /**
+     * Sending a request to the server
+     */
     public void run()
     {
         if (Headers == null)
@@ -340,18 +422,35 @@ public class WebDAVRequestGenerator implements Runnable
     }
 
 
+    /**
+     * Add a listener
+     * 
+     * @param l     listener to add
+     */
     public synchronized void addRequestListener(WebDAVRequestListener l)
     {
         listeners.addElement(l);
     }
 
 
+    /**
+     * Remove a listener
+     * 
+     * @param l     listener to remove
+     */
     public synchronized void removeRequestListener(WebDAVRequestListener l)
     {
         listeners.removeElement(l);
     }
 
 
+    /**
+     * Generate a PROPFIND request to do lock discovery
+     * @see RFC 2518
+     * @param extra
+     * 
+     * @return  true if successful, false else  
+     */
     public synchronized boolean DiscoverLock(String extra)
     {
         if( GlobalData.getGlobalData().getDebugRequest() )
@@ -387,6 +486,19 @@ public class WebDAVRequestGenerator implements Runnable
     }
 
 
+    /**
+     * Generate a PROPFIND request to do lock discovery
+     * @see RFC 2518
+     * @param FullPath
+     * @param command
+     * @param Depth
+     * @param props
+     * @param schemas
+     * @param flag
+     * @param n
+     * 
+     * @return  true if successful, false else  
+     */
     public synchronized boolean GeneratePropFindForNode( String FullPath, String command,
                                                          String Depth, String[] props,
                                                          String[] schemas, boolean flag,
@@ -397,7 +509,14 @@ public class WebDAVRequestGenerator implements Runnable
     }
 
 
-    public synchronized boolean GenerateOptions(String FullPath  )
+    /**
+     * Generate an OPTIONS request
+     * @see RFC 2518
+     * @param FullPath
+     * 
+     * @return  true if successful, false else  
+     */
+    public synchronized boolean GenerateOptions( String FullPath )
     {
         if( GlobalData.getGlobalData().getDebugRequest() )
         {
@@ -434,7 +553,21 @@ public class WebDAVRequestGenerator implements Runnable
     }
 
 
-    public synchronized boolean GeneratePropFind(String FullPath, String command, String Depth, String[] props, String[] schemas, boolean flagGetFilesBelow )
+    /**
+     * Generate a PROPFIND request
+     * @see RFC 2518
+     * @param FullPath
+     * @param command
+     * @param Depth
+     * @param props
+     * @param schemas
+     * @param flagGetFilesBelow
+     * 
+     * @return  true if successful, false else  
+     */
+    public synchronized boolean GeneratePropFind( String FullPath, String command,
+                                                  String Depth, String[] props,
+                                                  String[] schemas, boolean flagGetFilesBelow )
     {
         if( GlobalData.getGlobalData().getDebugRequest() )
         {
@@ -560,12 +693,31 @@ public class WebDAVRequestGenerator implements Runnable
         return true;
     }
 
+
+    /**
+     * Add child to XML tree, do pretty formatting
+     * @param parent
+     * @param child
+     * @param tabcount
+     * @param leadingCR
+     */
     protected void addChild( Element parent, Element child, int tabcount, boolean leadingCR )
     {
         addChild( parent, child, tabcount, tabcount, leadingCR, true );
     }
 
-    protected void addChild( Element parent, Element child, int leadingTabcount, int trailingTabcount, boolean leadingCR, boolean trailingCR )
+
+    /**
+     * Add child to XML tree, do pretty formatting
+     * @param parent
+     * @param child
+     * @param leadingTabcount
+     * @param trailingTabcount
+     * @param leadingCR
+     * @param trailingCR
+     */
+    protected void addChild( Element parent, Element child, int leadingTabcount,
+                             int trailingTabcount, boolean leadingCR, boolean trailingCR )
     {
         if( parent != null )
         {
@@ -585,6 +737,14 @@ public class WebDAVRequestGenerator implements Runnable
         }
     }
 
+
+    /**
+     *
+     * @param doc
+     * @param e
+     * 
+     * @return 
+     */
     protected static boolean docContains(Document doc, Element e)
     {
         Enumeration docEnum = doc.getElements();
@@ -611,7 +771,19 @@ public class WebDAVRequestGenerator implements Runnable
         return false;
     }
 
-    public synchronized boolean GeneratePropPatch(String FullPath, Element addProps, Element removeProps, String locktoken )
+
+    /**
+     * Generate a PROPPATCH request
+     * @see RFC 2518
+     * @param FullPath
+     * @param addProps
+     * @param removeProps
+     * @param locktoken
+     * 
+     * @return  true if successful, false else  
+     */
+    public synchronized boolean GeneratePropPatch( String FullPath, Element addProps,
+                                                   Element removeProps, String locktoken )
     {
         if( GlobalData.getGlobalData().getDebugRequest() )
         {
@@ -703,6 +875,15 @@ public class WebDAVRequestGenerator implements Runnable
         return true;
     }
 
+
+    /**
+     * Generate a MKCOL request
+     * @see RFC 2518
+     * @param parentDir
+     * @param dirname
+     * 
+     * @return  true if successful, false else  
+     */
     public synchronized boolean GenerateMkCol( String parentDir, String dirname )
     {
         if( GlobalData.getGlobalData().getDebugRequest() )
@@ -735,6 +916,14 @@ public class WebDAVRequestGenerator implements Runnable
         return true;
     }
 
+
+    /**
+     * Generate a GET request
+     * @see RFC 2518
+     * @param localName
+     * 
+     * @return  true if successful, false else  
+     */
     public synchronized boolean GenerateGet(String localName)
     {
         if( GlobalData.getGlobalData().getDebugRequest() )
@@ -762,6 +951,14 @@ public class WebDAVRequestGenerator implements Runnable
         return true;
     }
 
+
+    /**
+     * Generate a DELETE request
+     * @see RFC 2518
+     * @param lockToken
+     * 
+     * @return  true if successful, false else  
+     */
     public synchronized boolean GenerateDelete(String lockToken)
     {
         if( GlobalData.getGlobalData().getDebugRequest() )
@@ -807,22 +1004,44 @@ public class WebDAVRequestGenerator implements Runnable
         return true;
     }
 
-    // Returns the parent Node , this is used to indicate which
-    // Node is beeing writen to by WebDAVResponseInterpreter:parsePut
-    // Parent in case of selection of collection in file view
-    // and the collection itself in the case of nothing selected in
-    // file view window
+
+    /**
+     * Returns the parent Node
+     * This is used to indicate which
+     * Node is beeing writen to by WebDAVResponseInterpreter:parsePut
+     * Parent in case of selection of collection in file view
+     * and the collection itself in the case of nothing selected in
+     * file view window
+     * 
+     * @return  parent node  
+     */
     public WebDAVTreeNode getPossibleParentOfSelectedCollectionNode()
     {
         return parentNode;
     }
 
+
+    /**
+     * 
+     */
     public void resetParentNode()
     {
         parentNode= null;
     }
 
-    public synchronized boolean GeneratePut(String fileName, String destDir, String lockToken, WebDAVTreeNode selectedCollection)
+
+    /**
+     * Generate a PUT request
+     * @see RFC 2518
+     * @param fileName
+     * @param destDir
+     * @param lockToken
+     * @param selectedCollection
+     * 
+     * @return  true if successful, false else  
+     */
+    public synchronized boolean GeneratePut( String fileName, String destDir,
+                                             String lockToken, WebDAVTreeNode selectedCollection )
     {
         if( GlobalData.getGlobalData().getDebugRequest() )
         {
@@ -897,7 +1116,18 @@ public class WebDAVRequestGenerator implements Runnable
         return true;
     }
 
-    public synchronized boolean GenerateCopy(String Dest, boolean Overwrite, boolean KeepAlive)
+
+    /**
+     * Generate a COPY request
+     * @see RFC 2518
+     * @param Dest
+     * @param Overwrite
+     * @param KeepAlive
+     * 
+     * @return  true if successful, false else  
+     */
+    public synchronized boolean GenerateCopy( String Dest, boolean Overwrite,
+                                              boolean KeepAlive )
     {
         if( GlobalData.getGlobalData().getDebugRequest() )
         {
@@ -1003,6 +1233,15 @@ public class WebDAVRequestGenerator implements Runnable
         return true;
     }
 
+
+    /**
+     * Generate a RENAME request
+     * @see RFC 2518
+     * @param Dest
+     * @param dir
+     * 
+     * @return  true if successful, false else  
+     */
     public synchronized boolean GenerateRename( String Dest, String dir )
     {
         if( GlobalData.getGlobalData().getDebugRequest() )
@@ -1016,7 +1255,22 @@ public class WebDAVRequestGenerator implements Runnable
         return DiscoverLock("rename:" + Dest + ":" + dir );
     }
 
-    public synchronized boolean GenerateMove(String Dest, String dir, boolean Overwrite, boolean KeepAlive, String lockToken, String extraPrefix)
+
+    /**
+     * Generate a MOVE request
+     * @see RFC 2518
+     * @param Dest
+     * @param dir
+     * @param Overwrite
+     * @param KeepAlive
+     * @param lockToken
+     * @param extraPrefix
+     * 
+     * @return  true if successful, false else  
+     */
+    public synchronized boolean GenerateMove( String Dest, String dir, boolean Overwrite,
+                                              boolean KeepAlive, String lockToken,
+                                              String extraPrefix )
     {
         if( GlobalData.getGlobalData().getDebugRequest() )
         {
@@ -1027,27 +1281,26 @@ public class WebDAVRequestGenerator implements Runnable
         Body = null;
         Extra = extraPrefix +  Dest;
 
-    if( secondTime)
-    {
-        Node = Node2;
-        ResourceName = ResourceName2;
-        Dest = Dest2;
-        dir = dir2;
-        Overwrite = Overwrite2;
-        KeepAlive = KeepAlive2;
-    }
-    else
-    {
-        Node2 = Node;
-        ResourceName2 = ResourceName;
-        Dest2 = Dest;
-        if( dir != null )
-            dir2 = dir;
-        else dir2 = null;
-        Overwrite2 = Overwrite;
-        KeepAlive2 = KeepAlive;
-    }
-
+        if( secondTime)
+        {
+            Node = Node2;
+            ResourceName = ResourceName2;
+            Dest = Dest2;
+            dir = dir2;
+            Overwrite = Overwrite2;
+            KeepAlive = KeepAlive2;
+        }
+        else
+        {
+            Node2 = Node;
+            ResourceName2 = ResourceName;
+            Dest2 = Dest;
+            if( dir != null )
+                dir2 = dir;
+            else dir2 = null;
+            Overwrite2 = Overwrite;
+            KeepAlive2 = KeepAlive;
+        }
 
         String srcFile = ResourceName;
         ResourceName = dir;
@@ -1152,7 +1405,17 @@ public class WebDAVRequestGenerator implements Runnable
     }
 
 
-    public synchronized boolean GenerateLock(String OwnerInfo, String lockToken, boolean exclusive )
+    /**
+     * Generate a LOCK request
+     * @see RFC 2518
+     * @param OwnerInfo
+     * @param lockToken
+     * @param exclusive
+     * 
+     * @return  true if successful, false else  
+     */
+    public synchronized boolean GenerateLock( String OwnerInfo, String lockToken,
+                                              boolean exclusive )
     {
         if( GlobalData.getGlobalData().getDebugRequest() )
         {
@@ -1259,7 +1522,15 @@ public class WebDAVRequestGenerator implements Runnable
         return true;
     }
 
-    public synchronized boolean GenerateUnlock(String lockToken)
+
+    /**
+     * Generate a UNLOCK request
+     * @see RFC 2518
+     * @param lockToken
+     * 
+     * @return  true if successful, false else  
+     */
+    public synchronized boolean GenerateUnlock( String lockToken )
     {
         if( GlobalData.getGlobalData().getDebugRequest() )
         {
@@ -1294,12 +1565,23 @@ public class WebDAVRequestGenerator implements Runnable
         return true;
     }
 
+
+    /**
+     * 
+     * @param info
+     */
     public synchronized void setExtraInfo(String info)
     {
         Extra = info;
     }
 
 
+    /**
+     * 
+     * @param file
+     * 
+     * @return
+     */
     protected String getContentType( String file )
     {
         String content = "application/octet-stream";
@@ -1320,6 +1602,11 @@ public class WebDAVRequestGenerator implements Runnable
         return content;
     }
 
+
+    /**
+     * When debugging is enabled, print the generated XML
+     * @param miniDoc   The XML document (pre-DOM)
+     */
     protected void printXML( Document miniDoc )
     {
         String debugOutput = System.getProperty( "debug", "false" );
@@ -1336,6 +1623,7 @@ public class WebDAVRequestGenerator implements Runnable
             }
         }
     }
+
 
     protected String[] extensions = { "htm", "text/html",
                                       "html", "text/html",

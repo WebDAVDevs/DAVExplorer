@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2001 Regents of the University of California.
+ * Copyright (c) 2001-2004 Regents of the University of California.
  * All rights reserved.
  *
  * This software was developed at the University of California, Irvine.
@@ -20,9 +20,12 @@
 /**
  * Title:       Property Node
  * Description: Nodes for the property tree
- * Copyright:   Copyright (c) 2001 Regents of the University of California. All rights reserved.
+ * Copyright:   Copyright (c) 2001-2004 Regents of the University of California. All rights reserved.
  * @author      Joachim Feise (dav-exp@ics.uci.edu)
  * @date        5 October 2001
+ * @author      Joachim Feise (dav-exp@ics.uci.edu)
+ * @date        08 February 2004
+ * Changes:     Added Javadoc templates
  */
 
 package edu.uci.ics.DAVExplorer;
@@ -31,8 +34,19 @@ import java.util.Enumeration;
 import java.util.Vector;
 import javax.swing.JTree;
 
+
+/**
+ * 
+ */
 public class PropNode
 {
+    /**
+     * Constructor
+     * @param tag
+     * @param ns
+     * @param value
+     * @param modified
+     */
     public PropNode( String tag, String ns, String value, boolean modified )
     {
         this.tag = tag;
@@ -41,6 +55,13 @@ public class PropNode
         this.modified = modified;
     }
 
+
+    /**
+     * Constructor
+     * @param tag
+     * @param ns
+     * @param value
+     */
     public PropNode( String tag, String ns, String value )
     {
         this.tag = tag;
@@ -49,22 +70,42 @@ public class PropNode
         this.modified = false;
     }
 
+
+    /**
+     * 
+     * @return
+     */
     public String getTag()
     {
         return tag;
     }
 
+
+    /**
+     * 
+     * @return
+     */
     public String getNamespace()
     {
         return ns;
     }
 
+
+    /**
+     * 
+     * @param ns
+     */
     public void setNamespace( String ns )
     {
         this.ns = ns;
         modified = true;
     }
 
+
+    /**
+     * 
+     * @return
+     */
     public String getValue()
     {
         if( value == null )
@@ -72,59 +113,113 @@ public class PropNode
         return value;
     }
 
+
+    /**
+     * 
+     * @param value
+     */
     public void setValue( String value )
     {
         this.value = value;
         modified = true;
     }
 
+
+    /**
+     * 
+     * @return
+     */
     public String toString()
     {
         return getTag();
     }
 
+
+    /**
+     * 
+     * @return
+     */
     public PropNode getParent()
     {
         return parent;
     }
 
+
+    /**
+     * 
+     * @param parent
+     */
     public void setParent( PropNode parent )
     {
         this.parent = parent;
     }
 
+
+    /**
+     * 
+     * @param child
+     */
     public void addChild( Object child )
     {
         children.add( child );
     }
 
+
+    /**
+     * 
+     * @param child
+     */
     public void removeChild( Object child )
     {
         children.remove(child);
         removedChildren.add(child);
     }
 
+
+    /**
+     * 
+     * @return
+     */
     public boolean isModified()
     {
         return modified;
     }
 
+
+    /**
+     * 
+     * @return
+     */
     public Object[] getChildren()
     {
         return children.toArray();
     }
 
+
+    /**
+     * 
+     * @return
+     */
     public Object[] getRemovedChildren()
     {
         return removedChildren.toArray();
     }
 
+
+    /**
+     *
+     */
     public void clear()
     {
         modified = false;
         removedChildren.clear();
     }
 
+
+    /**
+     * 
+     * @return
+     */
     public boolean isDAVProp()
     {
         // check if the property is defined in RFC2518 or if it is part of

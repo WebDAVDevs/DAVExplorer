@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 1998-2003 Regents of the University of California.
+ * Copyright (c) 1998-2004 Regents of the University of California.
  * All rights reserved.
  *
  * This software was developed at the University of California, Irvine.
@@ -20,7 +20,7 @@
 /**
  * Title:       WebDAV Toolbar
  * Description: Implements the main toolbar
- * Copyright:   Copyright (c) 1998-2003 Regents of the University of California. All rights reserved.
+ * Copyright:   Copyright (c) 1998-2004 Regents of the University of California. All rights reserved.
  * @author      Undergraduate project team ICS 126B 1998
  * @date        1998
  * @author      Yuzo Kanomata, Joachim Feise (dav-exp@ics.uci.edu)
@@ -46,6 +46,9 @@
  * @author      Joachim Feise (dav-exp@ics.uci.edu)
  * @date        23 September 2003
  * Changes:     Added DeltaV buttons.
+ * @author      Joachim Feise (dav-exp@ics.uci.edu)
+ * @date        08 February 2004
+ * Changes:     Added Javadoc templates
  */
 
 package edu.uci.ics.DAVExplorer;
@@ -62,11 +65,18 @@ import java.awt.event.ActionListener;
 import java.util.Vector;
 
 
+/**
+ * 
+ */
 public class WebDAVToolBar extends JPanel implements ActionListener
 {
     private JToolBar toolbar;
     private Vector toolbarListener;
 
+
+    /**
+     * Constructor
+     */
     public WebDAVToolBar()
     {
         super();
@@ -78,12 +88,26 @@ public class WebDAVToolBar extends JPanel implements ActionListener
         toolbarListener = new Vector();
     }
 
+
+    /**
+     * 
+     * @param tb
+     * @param name
+     * @param description
+     */
     private void addTool( JToolBar tb, String name, String description )
     {
         addTool( tb, name, name, description );
     }
 
 
+    /**
+     * 
+     * @param tb
+     * @param name
+     * @param iconName
+     * @param description
+     */
     private void addTool( JToolBar tb, String name, String iconName, String description )
     {
         JButton b = new JButton(GlobalData.getGlobalData().getImageIcon(iconName + ".gif", name));
@@ -95,6 +119,10 @@ public class WebDAVToolBar extends JPanel implements ActionListener
     }
 
 
+    /**
+     * 
+     * @return
+     */
     private Component createToolbar()
     {
         addTool( toolbar, "open", "Get File" );
@@ -116,21 +144,39 @@ public class WebDAVToolBar extends JPanel implements ActionListener
     }
 
 
+    /**
+     * 
+     * @param l
+     */
     public synchronized void addActionListener(ActionListener l)
     {
         toolbarListener.addElement(l);
     }
 
+
+    /**
+     * 
+     * @param l
+     */
     public synchronized void removeActionListener(ActionListener l)
     {
         toolbarListener.removeElement(l);
     }
 
+
+    /**
+     * 
+     */
     public void actionPerformed(ActionEvent evt)
     {
         notifyListener(evt);
     }
 
+
+    /**
+     * 
+     * @param e
+     */
     protected void notifyListener(ActionEvent e)
     {
         ActionEvent evt = new ActionEvent(this, ActionEvent.ACTION_PERFORMED, e.getActionCommand());

@@ -1,6 +1,6 @@
 /*
  * Copyright (c) 2003 Th. Rickert.
- * Copyright (c) 2003 Regents of the University of California.
+ * Copyright (c) 2003-2004 Regents of the University of California.
  * All rights reserved.
  *
  * This software was developed by Th. Rickert
@@ -30,13 +30,15 @@ import java.util.Vector;
  * The URIs are persisted in the DAVExplorer.dat file in java.home.
  *
  * Copyright:   Copyright (c) 2003 Thoralf Rickert
- * Copyright:   Copyright (c) 2003 Regents of the University of California. All rights reserved.
+ * Copyright:   Copyright (c) 2003-2004 Regents of the University of California. All rights reserved.
  * @author      Thoralf Rickert
  * @author      Joachim Feise (dav-exp@ics.uci.edu)
  * @version     0.1
  * @date        07 April 2003
+ * @author      Joachim Feise (dav-exp@ics.uci.edu)
+ * @date        08 February 2004
+ * Changes:     Added Javadoc templates
  */
-
 public class URIContainer
 {
     protected static URIContainer instance = null;
@@ -46,6 +48,9 @@ public class URIContainer
     private static Object URISaver = null;
 
 
+    /**
+     * 
+     */
     static
     {
         // the nearest thing to atexit() in JDK 1.2 and below
@@ -67,12 +72,19 @@ public class URIContainer
     }
 
 
+    /**
+     * Constructor
+     */
     protected URIContainer()
     {
         loadURIs();
     }
 
 
+    /**
+     * 
+     * @return
+     */
     public static URIContainer getInstance()
     {
         if( instance == null )
@@ -81,6 +93,9 @@ public class URIContainer
     }
 
 
+    /**
+     * 
+     */
     public void loadURIs()
     {
         Vector data = GlobalData.getGlobalData().ReadConfigEntry( "uri", true );
@@ -89,12 +104,19 @@ public class URIContainer
     }
 
 
+    /**
+     *
+     */
     public static void saveURIs()
     {
         GlobalData.getGlobalData().WriteConfigEntry( "uri", uris );
     }
 
 
+    /**
+     * 
+     * @param uri
+     */
     public void addURI(String uri)
     {
         if( uri == null )
@@ -105,6 +127,10 @@ public class URIContainer
     }
 
 
+    /**
+     * 
+     * @return
+     */
     public Vector getURIs()
     {
         return uris;

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2001 Regents of the University of California.
+ * Copyright (c) 2001-2004 Regents of the University of California.
  * All rights reserved.
  *
  * This software was developed at the University of California, Irvine.
@@ -20,7 +20,7 @@
 /**
  * Title:       Property Add Dialog
  * Description: Dialog for adding WebDAV properties
- * Copyright:   Copyright (c) 2001 Regents of the University of California. All rights reserved.
+ * Copyright:   Copyright (c) 2001-2004 Regents of the University of California. All rights reserved.
  * @author      Joachim Feise (dav-exp@ics.uci.edu)
  * @date        29 September 2001
  * @author      Joachim Feise (dav-exp@ics.uci.edu)
@@ -51,9 +51,17 @@ import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JTextField;
 
+
+/**
+ * 
+ */
 public class PropAddDialog extends JDialog implements ActionListener, DocumentListener
 {
-
+    /**
+     * Constructor
+     * @param resource
+     * @param selected
+     */
     public PropAddDialog( String resource, boolean selected )
     {
         super( GlobalData.getGlobalData().getMainFrame(), "Add Property", true );
@@ -160,7 +168,11 @@ public class PropAddDialog extends JDialog implements ActionListener, DocumentLi
         show();
     }
 
-    // ActionListener interface
+
+    /**
+     * ActionListener interface
+     * @param e
+     */
     public void actionPerformed(ActionEvent e)
     {
         if( e.getActionCommand().equals("OK") )
@@ -191,58 +203,108 @@ public class PropAddDialog extends JDialog implements ActionListener, DocumentLi
         }
     }
 
-    // DocumentListener interface
+
+    /**
+     * DocumentListener interface
+     * @param e 
+     */
     public void insertUpdate( DocumentEvent e )
     {
         checkEnableOk();
     }
 
+
+    /**
+     * DocumentListener interface
+     * @param e 
+     */
     public void removeUpdate( DocumentEvent e )
     {
         checkEnableOk();
     }
 
+
+    /**
+     * DocumentListener interface
+     * @param e 
+     */
     public void changedUpdate( DocumentEvent e )
     {
         checkEnableOk();
     }
 
+    /**
+     *
+     */
     public void Ok()
     {
         setVisible( false );
     }
 
+
+    /**
+     *
+     */
     public void cancel()
     {
         setVisible( false );
         cancel = true;
     }
 
+
+    /**
+     * 
+     * @return
+     */
     public boolean isCanceled()
     {
         return cancel;
     }
 
+
+    /**
+     * 
+     * @return
+     */
     public String getTag()
     {
         return tagField.getText();
     }
 
+
+    /**
+     * 
+     * @return
+     */
     public String getNamespace()
     {
         return NSField.getText();
     }
 
+
+    /**
+     * 
+     * @return
+     */
     public String getValue()
     {
         return valueField.getText();
     }
 
+
+    /**
+     * 
+     * @return
+     */
     public boolean isAddToRoot()
     {
         return addToRoot.isSelected();
     }
 
+
+    /**
+     *
+     */
     protected void checkEnableOk()
     {
         if( (tagField.getText().length()>0) && (NSField.getText().length()>0) )
@@ -254,6 +316,10 @@ public class PropAddDialog extends JDialog implements ActionListener, DocumentLi
             okButton.setEnabled( false );
     }
 
+
+    /**
+     *
+     */
     protected void center()
     {
         Rectangle recthDimensions = getParent().getBounds();
@@ -261,6 +327,7 @@ public class PropAddDialog extends JDialog implements ActionListener, DocumentLi
         setBounds(recthDimensions.x + (recthDimensions.width-bounds.width)/2,
              recthDimensions.y + (recthDimensions.height - bounds.height)/2, bounds.width, bounds.height );
     }
+
 
     private JTextField tagField;
     private JTextField NSField;
