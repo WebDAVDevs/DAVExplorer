@@ -103,7 +103,7 @@ public class WebDAVToolBar extends JPanel implements ActionListener
         toolbar.addSeparator();
         addTool( toolbar, "lock", "Lock" );
         addTool( toolbar, "unlock", "Unlock" );
-        addTool( toolbar, "propfind", "View Properties" );
+        addTool( toolbar, "propfind", "View/Modify Properties" );
         return toolbar;
     }
 
