@@ -103,17 +103,16 @@ class GlobalData
 
     static void reset()
     {
-        // RESET THIS CLASS
+        // reset this class
         globalData = null;
 
-        // RESET ALL STATIC VARIABLES IN ALL OTHER CLASSES
-        AppletAuthorizationPrompter.reset();
+        // reset all static variables in all other classes
         AsGen.clear();
         WebDAVRequestGenerator.reset();
         WebDAVResponseInterpreter.reset();
         WebDAVTreeNode.reset();
 
-        // CLEAN UP
+        // clean up
         System.gc();
     }
 
