@@ -128,14 +128,14 @@ public class WebDAVResponseInterpreter
         HostName = e.getHost();
         Port = e.getPort();
 
-	ByteArrayInputStream ar = new ByteArrayInputStream(e.getResource().getBytes());
+    ByteArrayInputStream ar = new ByteArrayInputStream(e.getResource().getBytes());
         EscapeInputStream iStream = new EscapeInputStream( ar, true );
-	DataInputStream dis = new DataInputStream( iStream );
-	try{
+    DataInputStream dis = new DataInputStream( iStream );
+    try{
             Resource = dis.readLine();
-	} catch(Exception exc) {
-	    System.out.println(exc);
-	}
+    } catch(Exception exc) {
+        System.out.println(exc);
+    }
 
         Node = e.getNode();
         try
@@ -200,51 +200,45 @@ public class WebDAVResponseInterpreter
         }
     }
 
-    public void saveProps(Element parent, Element fileProp, int tabs)
+    protected void saveProps( Element parent, Element prop, int tabs )
     {
         Element newProp = null;
-        if (fileProp.getType()  == Element.PCDATA)
+        if( prop.getType()  == Element.PCDATA )
         {
-            newProp = new ElementImpl(null,Element.PCDATA);
-            newProp.setText(fileProp.getText());
+            newProp = new ElementImpl( null,Element.PCDATA );
+            newProp.setText( prop.getText() );
         }
-        else if  (fileProp.getType() == Element.ELEMENT)
+        else if( prop.getType() == Element.ELEMENT )
         {
-            newProp = new ElementImpl(fileProp.getTagName(), Element.ELEMENT);
+            newProp = new ElementImpl( prop.getTagName(), Element.ELEMENT );
         }
         else
         {
             return;
         }
 
-        parent.addChild(WebDAVXML.elemDSpace,null);
-        parent.addChild(newProp,null);
-        parent.addChild(WebDAVXML.elemNewline,null);
+        parent.addChild( WebDAVXML.elemNewline,null );
+        for( int t=0; t<tabs; t++ )
+            parent.addChild( WebDAVXML.elemDSpace,null );
+        parent.addChild( newProp,null );
 
-        for (int t=0;t<tabs;t++)
-            parent.addChild(WebDAVXML.elemDSpace,null);
-
-        if (newProp.getType() == Element.PCDATA)
+        if( prop.numElements() > 0 )
         {
-            newProp.addChild(WebDAVXML.elemNewline,null);
-            for (int t=0;t<tabs + 1;t++)
-                newProp.addChild(WebDAVXML.elemDSpace,null);
-            return;
-        }
-        Enumeration propEnum = fileProp.getElements();
-        while (propEnum.hasMoreElements())
-        {
-            Element propEl = (Element) propEnum.nextElement();
-
-            if ( (propEl.getType() == Element.ELEMENT) || (propEl.getType() == Element.PCDATA) )
+            Enumeration propEnum = prop.getElements();
+            while (propEnum.hasMoreElements())
             {
-                newProp.addChild(WebDAVXML.elemNewline,null);
-                for (int t=0;t<tabs + 1;t++)
-                    newProp.addChild(WebDAVXML.elemDSpace,null);
-                saveProps( newProp, propEl, tabs+1 );
+                Element propEl = (Element) propEnum.nextElement();
+                if ( (propEl.getType() == Element.ELEMENT) || (propEl.getType() == Element.PCDATA) )
+                {
+                    saveProps( newProp, propEl, tabs+1 );
+                }
             }
+            newProp.addChild( WebDAVXML.elemNewline,null );
+            for( int t=0; t<tabs; t++ )
+                newProp.addChild( WebDAVXML.elemDSpace,null );
         }
     }
+
 
     public void parsePropFind()
     {
@@ -419,6 +413,7 @@ public class WebDAVResponseInterpreter
                     break;
                 ppatchDoc.addChild(nameEl,null);
             }
+            ppatchDoc.addChild(WebDAVXML.elemNewline,null);
 
             // write header
             ByteArrayOutputStream byte_prop = new ByteArrayOutputStream();
@@ -1098,15 +1093,15 @@ public class WebDAVResponseInterpreter
                         // create a tree of all property tags, nicely formatted
                         AsGen alias = new AsGen();
                         Element outProp = WebDAVXML.createElement( WebDAVXML.ELEM_PROP, Element.ELEMENT, null, alias );
-                        outProp.addChild(WebDAVXML.elemNewline,null);
                         Enumeration propValEnum = current.getElements();
                         while (propValEnum.hasMoreElements())
                         {
                             Element propValEl = (Element) propValEnum.nextElement();
                             if (propValEl.getType() != Element.ELEMENT)
                                 continue;
-                            saveProps(outProp,propValEl,0);
+                            saveProps( outProp, propValEl, 1 );
                         }
+                        outProp.addChild(WebDAVXML.elemNewline,null);
                         outProp.save(xml_prop);
                         return;
                     }
