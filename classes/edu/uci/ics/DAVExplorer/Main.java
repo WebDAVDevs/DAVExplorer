@@ -178,6 +178,12 @@ public class Main extends JFrame
         webdavManager = new WebDAVManager();
         webdavManager.addResponseListener(new ResponseListener());
 
+        /* To allow retries for PUT using HTTPOutputStream, this has
+         * to be set.
+         * See @link HTTPResponse#retryRequest() HTTPResponse.retryRequest
+         */
+        System.setProperty( "HTTPClient.deferStreamed", "true" );
+        
         buildFrame(); // 08DEC03 John_Barton@hpl.hp.com factored to allow override
 
         try

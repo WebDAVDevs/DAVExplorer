@@ -1,2 +1,2 @@
-@echo off
-java -jar DAVExplorer.jar
+@echo off
+java -jar DAVExplorer.jar

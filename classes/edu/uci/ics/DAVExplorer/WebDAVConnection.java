@@ -142,22 +142,30 @@ public class WebDAVConnection extends HTTPConnection
         long fileSize = file.length();
 
         HttpOutputStream out = new HttpOutputStream( fileSize );
-        HTTPResponse response = ExtensionMethod( "PUT", filename, out, headers );
-
-        FileInputStream file_in = new FileInputStream( file );
-        byte[] b = new byte[65536];     // in my MacOS9 tests, this value seemed to work best
-                                        // The 1MB value I had here before resulted in timeouts
-        long off = 0;
-        int rcvd = 0;
+        HTTPResponse response = null;
+        /* The do ... while loop is needed in case authentication is required.
+         * See @link HTTPOutputStream HTTPOutputStream
+         * and @link HTTPResponse#retryRequest() HTTPResponse.retryRequest
+         */ 
         do
         {
-            off += rcvd;
-            rcvd = file_in.read(b);
-            if( rcvd != -1 )
-                out.write(b, 0, rcvd);
-        }
-        while (rcvd != -1 && off+rcvd < fileSize);
-        out.close();
+            response = ExtensionMethod( "PUT", filename, out, headers );
+
+            FileInputStream file_in = new FileInputStream( file );
+            byte[] b = new byte[65536];     // in my MacOS9 tests, this value seemed to work best
+                                            // The 1MB value I had here before resulted in timeouts
+            long off = 0;
+            int rcvd = 0;
+            do
+            {
+                off += rcvd;
+                rcvd = file_in.read(b);
+                if( rcvd != -1 )
+                    out.write(b, 0, rcvd);
+            }
+            while (rcvd != -1 && off+rcvd < fileSize);
+            out.close();
+        } while( response.retryRequest() );        
         return response;
     }
 

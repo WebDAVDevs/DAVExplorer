@@ -116,6 +116,7 @@ public class WebDAVTreeView implements ViewSelectionListener, CopyResponseListen
      */
     public WebDAVTreeView()
     {
+        GlobalData.methodEnter( "Constructor", "WebDAVTreeView", GlobalData.getGlobalData().getDebugTreeView() );
         GlobalData.getGlobalData().setTree(this);
         tree = new JTree(treeModel);
 
@@ -183,7 +184,9 @@ public class WebDAVTreeView implements ViewSelectionListener, CopyResponseListen
      * 
      * @return
      */
-    public DefaultMutableTreeNode getRoot() {
+    public DefaultMutableTreeNode getRoot()
+    {
+        GlobalData.methodEnter( "getRoot", "WebDAVTreeView", GlobalData.getGlobalData().getDebugTreeView() );
         return root;
     }
 
@@ -194,6 +197,7 @@ public class WebDAVTreeView implements ViewSelectionListener, CopyResponseListen
      */
     public void setUserAgent( String ua )
     {
+        GlobalData.methodEnter( "setUserAgent", "WebDAVTreeView", GlobalData.getGlobalData().getDebugTreeView() );
         userAgent = ua;
         ((WebDAVTreeNode)root).setUserAgent( userAgent );
     }
@@ -210,10 +214,7 @@ public class WebDAVTreeView implements ViewSelectionListener, CopyResponseListen
          */
         public void treeExpanded( TreeExpansionEvent evt )
         {
-            if( GlobalData.getGlobalData().getDebugTreeView() )
-            {
-                System.err.println( "WebDAVTreeView::treeExpansionListener::treeExpanded" );
-            }
+            GlobalData.methodEnter( "treeExpanded", "WebDAVTreeView::treeExpansionListener", GlobalData.getGlobalData().getDebugTreeView() );
 
             TreePath selectedPath = selectionModel.getSelectionPath();
             GlobalData.getGlobalData().setCursor( Cursor.getPredefinedCursor( Cursor.WAIT_CURSOR ) );
@@ -238,6 +239,7 @@ public class WebDAVTreeView implements ViewSelectionListener, CopyResponseListen
          */
         public void treeCollapsed( TreeExpansionEvent evt )
         {
+            GlobalData.methodEnter( "treeCollapsed", "WebDAVTreeView::treeExpansionListener", GlobalData.getGlobalData().getDebugTreeView() );
         }
     }
 
@@ -250,10 +252,7 @@ public class WebDAVTreeView implements ViewSelectionListener, CopyResponseListen
      */
     public void PutEventResponse(PutEvent e)
     {
-        if( GlobalData.getGlobalData().getDebugTreeView() )
-        {
-            System.err.println( "WebDAVTreeView::PutEventResponse" );
-        }
+        GlobalData.methodEnter( "PutEventResponse", "WebDAVTreeView", GlobalData.getGlobalData().getDebugTreeView() );
 
         WebDAVTreeNode tn = e.getNode();
 
@@ -277,10 +276,7 @@ public class WebDAVTreeView implements ViewSelectionListener, CopyResponseListen
      */
     public synchronized void CopyEventResponse(CopyResponseEvent e)
     {
-        if( GlobalData.getGlobalData().getDebugTreeView() )
-        {
-            System.err.println( "WebDAVTreeView::CopyEventResponse" );
-        }
+        GlobalData.methodEnter( "CopyEventResponse", "WebDAVTreeView", GlobalData.getGlobalData().getDebugTreeView() );
 
         WebDAVTreeNode tn = e.getNode();
 
@@ -308,6 +304,7 @@ public class WebDAVTreeView implements ViewSelectionListener, CopyResponseListen
     {
         // We package the whole TreeView inside a Scroll Pane, returned
         // by this function.
+        GlobalData.methodEnter( "getScrollPane", "WebDAVTreeView", GlobalData.getGlobalData().getDebugTreeView() );
         return(sp);
     }
 
@@ -320,6 +317,7 @@ public class WebDAVTreeView implements ViewSelectionListener, CopyResponseListen
      */
     public void selectionChanged(ViewSelectionEvent e)
     {
+        GlobalData.methodEnter( "selectionChanged", "WebDAVTreeView", GlobalData.getGlobalData().getDebugTreeView() );
         tableSelectionChanged(e);
     }
 
@@ -332,10 +330,7 @@ public class WebDAVTreeView implements ViewSelectionListener, CopyResponseListen
      */
     protected void tableSelectionChanged(ViewSelectionEvent e)
     {
-        if( GlobalData.getGlobalData().getDebugTreeView() )
-        {
-            System.err.println( "WebDAVTreeView::tableSelectionChanged" );
-        }
+        GlobalData.methodEnter( "tableSelectionChanged", "WebDAVTreeView", GlobalData.getGlobalData().getDebugTreeView() );
 
         WebDAVTreeNode tn = (WebDAVTreeNode)e.getNode();
         TreePath tp = (TreePath)e.getPath();
@@ -403,10 +398,7 @@ public class WebDAVTreeView implements ViewSelectionListener, CopyResponseListen
      */
     public void refresh()
     {
-        if( GlobalData.getGlobalData().getDebugTreeView() )
-        {
-            System.err.println( "WebDAVTreeView::refresh" );
-        }
+        GlobalData.methodEnter( "refresh", "WebDAVTreeView", GlobalData.getGlobalData().getDebugTreeView() );
 
         // Make sure the directory structure is current.
         int row = tree.getRowForPath(currPath);
@@ -421,6 +413,7 @@ public class WebDAVTreeView implements ViewSelectionListener, CopyResponseListen
      */
     public synchronized void addViewSelectionListener(ViewSelectionListener l)
     {
+        GlobalData.methodEnter( "addViewSelectionListener", "WebDAVTreeView", GlobalData.getGlobalData().getDebugTreeView() );
         // Register a listener
         selListeners.addElement(l);
     }
@@ -432,6 +425,7 @@ public class WebDAVTreeView implements ViewSelectionListener, CopyResponseListen
      */
     public synchronized void removeViewSelectionListener(ViewSelectionListener l)
     {
+        GlobalData.methodEnter( "removeViewSelectionListener", "WebDAVTreeView", GlobalData.getGlobalData().getDebugTreeView() );
         selListeners.removeElement(l);
     }
 
@@ -443,11 +437,7 @@ public class WebDAVTreeView implements ViewSelectionListener, CopyResponseListen
      */
     public void setSelectedNode( WebDAVTreeNode tn )
     {
-        if( GlobalData.getGlobalData().getDebugTreeView() )
-        {
-            System.err.println( "WebDAVTreeView::setSelectedNode" );
-        }
-
+        GlobalData.methodEnter( "setSelectedNode", "WebDAVTreeView", GlobalData.getGlobalData().getDebugTreeView() );
 
         // Could make sure of currPath by geeting it fro tn
         TreePath tp = new TreePath(tn.getPath());
@@ -491,10 +481,7 @@ public class WebDAVTreeView implements ViewSelectionListener, CopyResponseListen
          */
         public void valueChanged(TreeSelectionEvent e)
         {
-        if( GlobalData.getGlobalData().getDebugTreeView() )
-        {
-            System.err.println( "WebDAVTreeView::SelectionChangeListener::valueChanged" );
-        }
+            GlobalData.methodEnter( "valueChanged", "WebDAVTreeView::SelectionChangeListener", GlobalData.getGlobalData().getDebugTreeView() );
 
             //Need to make sure that the newly selected node (dir)
             //has its children's children loaded.  This is needed to
@@ -548,6 +535,7 @@ public class WebDAVTreeView implements ViewSelectionListener, CopyResponseListen
      */
     public void initTree()
     {
+        GlobalData.methodEnter( "initTree", "WebDAVTreeView", GlobalData.getGlobalData().getDebugTreeView() );
         // For initialization purposes.
         // This function is called when the client starts.
         if (startDirName != null && GlobalData.getGlobalData().doAddStartDir())
@@ -584,6 +572,7 @@ public class WebDAVTreeView implements ViewSelectionListener, CopyResponseListen
      */
     public String constructPath(TreePath the_path)
     {
+        GlobalData.methodEnter( "constructPath", "WebDAVTreeView", GlobalData.getGlobalData().getDebugTreeView() );
         // This will iterate through the path array, and construct
         // the appropriate path for method generation purposes.
         String newPath = "";
@@ -633,10 +622,7 @@ public class WebDAVTreeView implements ViewSelectionListener, CopyResponseListen
      */
     public boolean addRowToRoot(String name, boolean local, boolean deltaV )
     {
-        if( GlobalData.getGlobalData().getDebugTreeView() )
-        {
-            System.err.println( "WebDAVTreeView::addRowToRoot" );
-        }
+        GlobalData.methodEnter( "addRowToRoot", "WebDAVTreeView", GlobalData.getGlobalData().getDebugTreeView() );
 
         // Add item to the tree. If local == true, the item is
         // considered to be a file on a local file system.
@@ -712,6 +698,7 @@ public class WebDAVTreeView implements ViewSelectionListener, CopyResponseListen
      */
     public String getCurrentPath()
     {
+        GlobalData.methodEnter( "getCurrentPath", "WebDAVTreeView", GlobalData.getGlobalData().getDebugTreeView() );
         return constructPath( currPath );
     }
 
@@ -722,6 +709,7 @@ public class WebDAVTreeView implements ViewSelectionListener, CopyResponseListen
      */
     public void addTreeSelectionListener(TreeSelectionListener tsl)
     {
+        GlobalData.methodEnter( "addTreeSelectionListener", "WebDAVTreeView", GlobalData.getGlobalData().getDebugTreeView() );
         tree.addTreeSelectionListener(tsl);
     }
 
@@ -733,6 +721,7 @@ public class WebDAVTreeView implements ViewSelectionListener, CopyResponseListen
      */
     public String getLockToken( String curFile )
     {
+        GlobalData.methodEnter( "getLockToken", "WebDAVTreeView", GlobalData.getGlobalData().getDebugTreeView() );
         if( currPath == null )
             return null;
         currNode = (WebDAVTreeNode) currPath.getLastPathComponent();
@@ -748,6 +737,7 @@ public class WebDAVTreeView implements ViewSelectionListener, CopyResponseListen
      */
     public void setLock( String curFile, String token )
     {
+        GlobalData.methodEnter( "setLock", "WebDAVTreeView", GlobalData.getGlobalData().getDebugTreeView() );
         currNode = (WebDAVTreeNode) currPath.getLastPathComponent();
         DataNode node = ((WebDAVTreeNode)currNode).getDataNode();
         node = getCurrentDataNode( node, curFile );
@@ -764,6 +754,7 @@ public class WebDAVTreeView implements ViewSelectionListener, CopyResponseListen
      */
     public void resetLock( String curFile )
     {
+        GlobalData.methodEnter( "resetLock", "WebDAVTreeView", GlobalData.getGlobalData().getDebugTreeView() );
         currNode = (WebDAVTreeNode) currPath.getLastPathComponent();
         DataNode node = ((WebDAVTreeNode)currNode).getDataNode();
         node = getCurrentDataNode( node, curFile );
@@ -781,6 +772,7 @@ public class WebDAVTreeView implements ViewSelectionListener, CopyResponseListen
      */
     public boolean isCollection( String curFile )
     {
+        GlobalData.methodEnter( "isCollection", "WebDAVTreeView", GlobalData.getGlobalData().getDebugTreeView() );
         int pos;
         if( isRemote( curFile ) )
             pos = curFile.lastIndexOf( "/" );
@@ -819,6 +811,7 @@ public class WebDAVTreeView implements ViewSelectionListener, CopyResponseListen
      */
     public boolean isRemote( String curFile )
     {
+        GlobalData.methodEnter( "isRemote", "WebDAVTreeView", GlobalData.getGlobalData().getDebugTreeView() );
         if( curFile.startsWith(GlobalData.WebDAVPrefix) || curFile.startsWith(GlobalData.WebDAVPrefixSSL) )
             return true;
         else
@@ -832,6 +825,7 @@ public class WebDAVTreeView implements ViewSelectionListener, CopyResponseListen
      */
     public boolean isDeltaV()
     {
+        GlobalData.methodEnter( "isDeltaV", "WebDAVTreeView", GlobalData.getGlobalData().getDebugTreeView() );
         return getDeltaV();
     }
     
@@ -842,6 +836,7 @@ public class WebDAVTreeView implements ViewSelectionListener, CopyResponseListen
      */
     public boolean getDeltaV()
     {
+        GlobalData.methodEnter( "getDeltaV", "WebDAVTreeView", GlobalData.getGlobalData().getDebugTreeView() );
         if( currPath==null || currPath.getPathCount()<1 )
             return false;
 
@@ -858,6 +853,7 @@ public class WebDAVTreeView implements ViewSelectionListener, CopyResponseListen
      */
     public boolean getDeltaVReports()
     {
+        GlobalData.methodEnter( "getDeltaVReports", "WebDAVTreeView", GlobalData.getGlobalData().getDebugTreeView() );
         if( currPath==null || currPath.getPathCount()<1 )
             return false;
 
@@ -875,6 +871,7 @@ public class WebDAVTreeView implements ViewSelectionListener, CopyResponseListen
      */
     public void setVersions( String curFile, Vector versions )
     {
+        GlobalData.methodEnter( "setVersions", "WebDAVTreeView", GlobalData.getGlobalData().getDebugTreeView() );
         currNode = (WebDAVTreeNode) currPath.getLastPathComponent();
         DataNode node = ((WebDAVTreeNode)currNode).getDataNode();
         node = getCurrentDataNode( node, curFile );
@@ -891,10 +888,7 @@ public class WebDAVTreeView implements ViewSelectionListener, CopyResponseListen
      */
     public void refreshLocalNoSelection( WebDAVTreeNode n )
     {
-        if( GlobalData.getGlobalData().getDebugTreeView() )
-        {
-            System.err.println( "WebDAVTreeView::refreshLocalNoSelection" );
-        }
+        GlobalData.methodEnter( "refreshLocalNoSelection", "WebDAVTreeView", GlobalData.getGlobalData().getDebugTreeView() );
 
         tree.removeTreeExpansionListener(treeExpListener);
         tree.removeTreeSelectionListener(treeSelectionListener);
@@ -916,10 +910,7 @@ public class WebDAVTreeView implements ViewSelectionListener, CopyResponseListen
      */
     public void refreshLocal( WebDAVTreeNode n )
     {
-        if( GlobalData.getGlobalData().getDebugTreeView() )
-        {
-            System.err.println( "WebDAVTreeView::refreshLocal" );
-        }
+        GlobalData.methodEnter( "refreshLocal", "WebDAVTreeView", GlobalData.getGlobalData().getDebugTreeView() );
 
         if( n == null )
             return;
@@ -971,6 +962,7 @@ public class WebDAVTreeView implements ViewSelectionListener, CopyResponseListen
      */
     private String getLockToken( DataNode node, String curFile )
     {
+        GlobalData.methodEnter( "getLockToken", "WebDAVTreeView", GlobalData.getGlobalData().getDebugTreeView() );
         if( node == null )
             return null;
 
@@ -1000,6 +992,7 @@ public class WebDAVTreeView implements ViewSelectionListener, CopyResponseListen
      */
     private DataNode getCurrentDataNode( DataNode node, String curFile )
     {
+        GlobalData.methodEnter( "getCurrentDataNode", "WebDAVTreeView", GlobalData.getGlobalData().getDebugTreeView() );
         if( node == null )
             return null;
 

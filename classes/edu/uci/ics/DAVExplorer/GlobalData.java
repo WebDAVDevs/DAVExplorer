@@ -122,7 +122,7 @@ class GlobalData
 
 
     /**
-     * Protected constructor
+     * Protected constructor.
      */
     protected GlobalData()
     {
@@ -131,7 +131,7 @@ class GlobalData
 
 
     /**
-     * 
+     * Reset static variables to default values, and run the garbage collector.
      */
     static void reset()
     {
@@ -150,9 +150,9 @@ class GlobalData
 
 
     /**
-     * Get the singleton instance
+     * Get the singleton instance.
      *  
-     * @return      The singleton GlobalData instance
+     * @return  The singleton GlobalData instance
      */
     static GlobalData getGlobalData()
     {
@@ -163,18 +163,9 @@ class GlobalData
 
 
     /**
+     * Store the root of the navigation tree view.
      * 
-     * @return
-     */
-    public WebDAVTreeView getTree()
-    {
-        return tree;
-    }
-
-
-    /**
-     * 
-     * @param theTree
+     * @param theTree   The object representing the root of the tree view
      */
     public void setTree(WebDAVTreeView theTree)
     {
@@ -183,8 +174,20 @@ class GlobalData
 
 
     /**
+     * Get the root of the navigation tree view.
      * 
-     * @return
+     * @return  The WebDAVTreeView object representing the root of the tree view 
+     */
+    public WebDAVTreeView getTree()
+    {
+        return tree;
+    }
+
+
+    /**
+     * Check if DAV Explorer is running as applet.
+     * 
+     * @return  True if running as applet, false else
      */
     public boolean isAppletMode()
     {
@@ -193,8 +196,9 @@ class GlobalData
 
 
     /**
+     * Set/unset applet mode.
      * 
-     * @param isAnApplet
+     * @param isAnApplet    Indicates if applet mode is set or unset
      */
     public void setAppletMode(boolean isAnApplet)
     {
@@ -203,8 +207,10 @@ class GlobalData
 
 
     /**
+     * Set the initial WebDAV sites to connect to. Used in applet mode
+     * from parameters given on the webpage.
      * 
-     * @param initialSiteList
+     * @param initialSiteList   Array of sites, together with usernames and passwords
      */
     public void setInitialSites(String[][] initialSiteList)
     {
@@ -214,8 +220,9 @@ class GlobalData
 
 
     /**
+     * Get the list of initial WebDAV sites to connect to. Used in applet mode.
      * 
-     * @return
+     * @return  Array of sites, together with usernames and passwords
      */
     public String[][] getInitialSites()
     {
@@ -225,7 +232,10 @@ class GlobalData
 
     /**
      * 
-     * @param proxy
+     * Set a proxy server to use. Used in applet mode from parameters given
+     * on the webpage.
+     * 
+     * @param proxy The URI of the proxy server to use
      */
     public void setProxy( String proxy )
     {
@@ -234,8 +244,9 @@ class GlobalData
 
 
     /**
+     * Get the URI of the proxy server in use. Used in applet mode.
      * 
-     * @return
+     * @return  The URI of the proxy server in use, or null if none
      */
     public String getProxy()
     {
@@ -244,8 +255,9 @@ class GlobalData
 
 
     /**
-     * 
-     * @return
+     * The URI box is hidden in applet mode.
+     *   
+     * @return  True if the URI box is hidden, false else
      */
     public boolean hideURIBox()
     {
@@ -254,8 +266,9 @@ class GlobalData
 
 
     /**
-     * 
-     * @param visible
+     * Hide or show the URI box.
+     *  
+     * @param visible   True if URI box should be visible, false else
      */
     public void setHideURIBox(boolean visible)
     {
@@ -264,38 +277,9 @@ class GlobalData
 
 
     /**
-     * 
-     * @return
-     */
-    public boolean doAddStartDir()
-    {
-        return doAddStartDir;
-    }
-
-
-    /**
-     * 
-     * @param doIt
-     */
-    public void setAddStartDir(boolean doIt)
-    {
-        doAddStartDir = doIt;
-    }
-
-
-    /**
-     * 
-     * @return
-     */
-    public URIBox getURIBox()
-    {
-        return uriBox;
-    }
-
-
-    /**
-     * 
-     * @param theURIBox
+     * Store the object representing the URI box.
+     *   
+     * @param theURIBox The object representing the URI box
      */
     public void setURIBox(URIBox theURIBox)
     {
@@ -304,8 +288,44 @@ class GlobalData
 
 
     /**
+     * Get the object representing the URI box.
+     *  
+     * @return  The object representing the URI box
+     */
+    public URIBox getURIBox()
+    {
+        return uriBox;
+    }
+
+
+    /**
+     * Check if the start directory of a WebDAV server should be
+     * added to the treeview.
      * 
-     * @return
+     * @return  True if the start directory should be added, false else
+     */
+    public boolean doAddStartDir()
+    {
+        return doAddStartDir;
+    }
+
+
+    /**
+     * Configure if the start directory of a WebDAV server should be
+     * added to the tree view.
+     * 
+     * @param doIt  True if the start directory should be added, false else
+     */
+    public void setAddStartDir(boolean doIt)
+    {
+        doAddStartDir = doIt;
+    }
+
+
+    /**
+     * Returns the debug all flag as set on the command line.
+     * 
+     * @return  True if debug all flag was set, false else
      */
     public boolean getDebugAll()
     {
@@ -314,8 +334,9 @@ class GlobalData
 
 
     /**
+     * Set/unset the debug all flag.
      * 
-     * @param debug
+     * @param debug The debug all flag
      */
     public void setDebugAll( boolean debug )
     {
@@ -325,8 +346,9 @@ class GlobalData
 
 
     /**
-     * 
-     * @return
+     * Returns true if the flag to debug requests was set on the command line.
+     *  
+     * @return  True if the debug requests flag was set, false else 
      */
     public boolean getDebugRequest()
     {
@@ -335,8 +357,9 @@ class GlobalData
 
 
     /**
+     * Set/unset the debug request flag.
      * 
-     * @param debug
+     * @param debug The debug request flag
      */
     public void setDebugRequest( boolean debug )
     {
@@ -346,8 +369,9 @@ class GlobalData
 
 
     /**
-     * 
-     * @return
+     * Returns true if the flag to debug responses was set on the command line.
+     *  
+     * @return  True if the debug response flag was set, false else 
      */
     public boolean getDebugResponse()
     {
@@ -356,8 +380,9 @@ class GlobalData
 
 
     /**
+     * Set/unset the debug response flag.
      * 
-     * @param debug
+     * @param debug The debug response flag
      */
     public void setDebugResponse( boolean debug )
     {
@@ -367,8 +392,9 @@ class GlobalData
 
 
     /**
-     * 
-     * @return
+     * Returns true if the flag to debug the treeview was set on the command line.
+     *  
+     * @return  True if the debug treeview flag was set, false else 
      */
     public boolean getDebugTreeView()
     {
@@ -377,8 +403,9 @@ class GlobalData
 
 
     /**
+     * Set/unset the debug treeview flag.
      * 
-     * @param debug
+     * @param debug The debug treeview flag
      */
     public void setDebugTreeView( boolean debug )
     {
@@ -388,8 +415,10 @@ class GlobalData
 
 
     /**
-     * 
-     * @return
+     * Returns true if the flag to debug treenodes within the treeview
+     *  was set on the command line.
+     *  
+     * @return  True if the debug treenode flag was set, false else 
      */
     public boolean getDebugTreeNode()
     {
@@ -398,8 +427,9 @@ class GlobalData
 
 
     /**
+     * Set/unset the debug treenode flag.
      * 
-     * @param debug
+     * @param debug The debug treenode flag
      */
     public void setDebugTreeNode( boolean debug )
     {
@@ -409,8 +439,9 @@ class GlobalData
 
 
     /**
-     * 
-     * @return
+     * Returns true if the flag to debug the file view was set on the command line.
+     *  
+     * @return  True if the debug fileview flag was set, false else 
      */
     public boolean getDebugFileView()
     {
@@ -419,8 +450,9 @@ class GlobalData
 
 
     /**
+     * Set/unset the debug fileview flag.
      * 
-     * @param debug
+     * @param debug The debug fileview flag
      */
     public void setDebugFileView( boolean debug )
     {
@@ -430,8 +462,9 @@ class GlobalData
 
 
     /**
-     * 
-     * @return
+     * Returns a reference to the main window object.
+     *  
+     * @return  The main window object 
      */
     public JFrame getMainFrame()
     {
@@ -440,8 +473,9 @@ class GlobalData
 
 
     /**
-     * 
-     * @param frame
+     * Store a reference to the main window object.
+     *  
+     * @param frame The main window object
      */
     public void setMainFrame( JFrame frame )
     {
@@ -452,8 +486,9 @@ class GlobalData
 
 
     /**
-     * 
-     * @param str
+     * Show a dialog box with an error message.
+     *  
+     * @param str   The error message to show
      */
     public void errorMsg(String str)
     {
@@ -464,7 +499,8 @@ class GlobalData
 
     /**
      * Set a new cursor
-     * @param c     The new cursor
+     * 
+     * @param c The new cursor
      */
     public void setCursor( Cursor c )
     {
@@ -485,11 +521,11 @@ class GlobalData
 
     /**
      * HTTP-unescape string
-     * @param text          Escaped string
-     * @param sourceEncoding
-     * @param targetEncoding      Target encoding
-     * @return              The unescaped string, or an empty string if the
-     *                      function failed.
+     * @param text              Escaped string
+     * @param sourceEncoding    Source encoding
+     * @param targetEncoding    Target encoding
+     * @return                  The unescaped string, or an empty string if the
+     *                          function failed.
      */
     public String unescape( String text, String sourceEncoding, String targetEncoding )
     {
@@ -680,8 +716,9 @@ class GlobalData
     
 
     /**
-     * 
-     * @param SSL
+     * Set a flag to indicate if the program is using SSL or not.
+     *  
+     * @param SSL   True for using SSL, false else
      */
     public void setSSL( boolean SSL )
     {
@@ -690,8 +727,9 @@ class GlobalData
 
 
     /**
-     * 
-     * @return
+     * Return true when the program is using SSL.
+     *  
+     * @return  True if using SSL, false else
      */
     public boolean getSSL()
     {
@@ -700,8 +738,9 @@ class GlobalData
 
 
     /**
+     * Set/unset a flag to control the compression of the HTTP datastream
      * 
-     * @param compression
+     * @param compression   True if compression is allowed, false else
      */
     public void setCompressions( boolean compression )
     {
@@ -710,8 +749,9 @@ class GlobalData
     
     
     /**
+     * Return true if compression of the HTTP datastream is allowed.
      * 
-     * @return
+     * @return  True if compression is allowed, false else
      */
     public boolean getCompression()
     {
@@ -721,9 +761,9 @@ class GlobalData
 
     /**
      * Reads the entry defined by the token from the configuration file. 
-     * @param token             The token to look for
-     * @param defaultString     The default return if the token is not found
-     * @return                  The entry referenced by the token
+     * @param token         The token to look for
+     * @param defaultString The default return if the token is not found
+     * @return              The entry referenced by the token
      */
     public String ReadConfigEntry( String token, String defaultString )
     {
@@ -740,8 +780,8 @@ class GlobalData
 
     /**
      * Reads the entry defined by the token from the configuration file. 
-     * @param token             The token to look for
-     * @return                  The entry referenced by the token
+     * @param token The token to look for
+     * @return      The entry referenced by the token
      */
     public String ReadConfigEntry( String token )
     {
@@ -751,9 +791,9 @@ class GlobalData
 
     /**
      * Reads multiple entries defined by the token from the configuration file. 
-     * @param token             The token to look for
-     * @param multiple          True if multiple entries should be returned
-     * @return                  The entries referenced by the token
+     * @param token     The token to look for
+     * @param multiple  True if multiple entries should be returned
+     * @return          The entries referenced by the token
      */
     public Vector ReadConfigEntry( String token, boolean multiple )
     {
@@ -799,9 +839,11 @@ class GlobalData
 
 
     /**
+     * Write an entry to the configuration file.
+     * Entries are property-value pairs in the form of "property=value".
      * 
-     * @param token
-     * @param data
+     * @param token The property string
+     * @param data  The value string
      */
     public void WriteConfigEntry( String token, String data )
     {
@@ -810,9 +852,12 @@ class GlobalData
 
 
     /**
+     * Write an entry to the configuration file.
+     * Entries are property-value pairs in the form of "property=value".
+     * This method associates multiple values with a particular property.
      * 
-     * @param token
-     * @param data
+     * @param token The property string
+     * @param data  Array of value strings associated with the property
      */
     public void WriteConfigEntry( String token, Vector data )
     {
@@ -829,10 +874,14 @@ class GlobalData
 
 
     /**
+     * Write an entry to the configuration file, possibly overwriting
+     * existing entries.
+     * Entries are property-value pairs in the form of "property=value".
+     * This method associates multiple values with a particular property.
      * 
-     * @param token
-     * @param data
-     * @param overwrite
+     * @param token     The property string
+     * @param data      Array of value strings associated with the property
+     * @param overwrite True if overwriting is allowed, false else
      */
     public void WriteConfigEntry( String token, Vector data, boolean overwrite )
     {
@@ -849,10 +898,13 @@ class GlobalData
 
 
     /**
+     * Write an entry to the configuration file, possibly overwriting
+     * existing entries.
+     * Entries are property-value pairs in the form of "property=value".
      * 
-     * @param token
-     * @param data
-     * @param overwrite
+     * @param token     The property string
+     * @param data      The value string associated with the property
+     * @param overwrite True if overwriting is allowed, false else
      */
     public void WriteConfigEntry( String token, String data, boolean overwrite )
     {
@@ -909,8 +961,11 @@ class GlobalData
 
 
     /**
-     * 
-     * @param readFromProperties
+     * Initialize the static variables, possibly from user-defined
+     * properties entered on the command line.
+     *  
+     * @param readFromProperties    True to trigger initialization from
+     *                              the user-defined properties
      */
     private void init( boolean readFromProperties )
     {
@@ -956,10 +1011,11 @@ class GlobalData
 
 
     /**
-     * 
-     * @param name
-     * @param description
-     * @return
+     * Get a named icon from the DAV Explorer jar file.
+     *  
+     * @param name          The icon's name
+     * @param description   The icon's tooltip
+     * @return              The ImageIcon object containing the icon data
      */
     public ImageIcon getImageIcon(String name, String description)
     {
@@ -977,9 +1033,10 @@ class GlobalData
 
 
     /**
-     * 
-     * @param is
-     * @return
+     * Convert a Java InputStream to a byte array.
+     *  
+     * @param is        InputStream to convert to a byte array
+     * @return byte[]   The data from the InputStream as byte array
      * @throws IOException
      */
     public static byte[] toByteArray(InputStream is)
@@ -997,5 +1054,35 @@ class GlobalData
             output.write(chunk, 0, bytesRead);
         }
         return output.toByteArray();
+    }
+
+
+    /**
+     * 
+     * @param methodName
+     * @param className
+     * @param debugFlag
+     */
+    public static void methodEnter( String methodName, String className, boolean debugFlag )
+    {
+        if( debugFlag )
+        {
+            System.err.println( className + "::" + methodName + " entered." );
+        }
+    }
+    
+    
+    /**
+     * 
+     * @param methodName
+     * @param className
+     * @param debugFlag
+     */
+    public static void methodLeave( String methodName, String className, boolean debugFlag )
+    {
+        if( debugFlag )
+        {
+            System.err.println( className + "::" + methodName + " left." );
+        }
     }
 }

@@ -411,7 +411,9 @@ public class WebDAVRequestGenerator implements Runnable
             Headers[size+1] = new NVPair( "User-Agent", userAgent );
         }
 
-        WebDAVRequestEvent e = new WebDAVRequestEvent(this, Method,HostName,Port,StrippedResource, Headers, Body, Extra, User, Password, Node );
+        WebDAVRequestEvent e = new WebDAVRequestEvent( this, Method, HostName, Port,
+                                                       StrippedResource, Headers, Body,
+                                                       Extra, User, Password, Node );
         Node = null;
         for (int i=0;i<ls.size();i++)
         {

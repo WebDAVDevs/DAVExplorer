@@ -143,6 +143,8 @@ Thanks to everybody.
 6. CHANGELOG
 
 Changes for version 0.91-dev:
+- Re-Enabled authentication requests for PUT, broken by changing to streaming
+  PUT data in 0.82 (thanks to Marc Richard for alerting us to the problem.)
 - Added support for proxy entry in applet settings (thanks to Luís Ferreira
   for the suggestion.)
 - Fixed usage of webpage-provided username/password for applet usage.
@@ -289,9 +291,9 @@ Changes for version 0.56:
   request               function traces related to HTTP requests are enabled
   response              function traces related to HTTP responses are enabled
   treeview              function traces related to the tree view on the left
-  			side of the DAVExplorer window are enabled
+                        side of the DAVExplorer window are enabled
   treenode              function traces related to each node in the tree view
-  			are enabled
+                        are enabled
   fileview              function traces related to the file view on the right
-  			side of the DAVExplorer window are enabled
+                        side of the DAVExplorer window are enabled
   The trace output is written to stderr.
