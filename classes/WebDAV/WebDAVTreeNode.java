@@ -127,7 +127,7 @@ public class WebDAVTreeNode extends DefaultMutableTreeNode {
       Name multiTag = multiElem.getTagName();
       if (multiTag == null)
         continue;
-      if (!multiTag.getName().equals(WebDAVXML.ELEM_MULTISTATUS.getName()))
+      if (!multiTag.getName().equals(WebDAVXML.ELEM_MULTISTATUS))
         continue;
       found = true;
       break;
@@ -139,7 +139,7 @@ public class WebDAVTreeNode extends DefaultMutableTreeNode {
         Name respTag = respElem.getTagName();
         if (respTag == null)
           continue;
-        if (!respTag.getName().equals(WebDAVXML.ELEM_RESPONSE.getName()))
+        if (!respTag.getName().equals(WebDAVXML.ELEM_RESPONSE))
           continue;
 	parseResponse(respElem, ResourceName, nodesChildren);
       } 
@@ -172,7 +172,7 @@ public class WebDAVTreeNode extends DefaultMutableTreeNode {
       Name tag = e.getTagName();
       if (tag == null)
 	continue;
-      if (!tag.getName().equals(WebDAVXML.ELEM_HREF.getName()))
+      if (!tag.getName().equals(WebDAVXML.ELEM_HREF))
 	continue;
 
       Enumeration enumHref = e.getElements();
@@ -189,7 +189,7 @@ public class WebDAVTreeNode extends DefaultMutableTreeNode {
         Name propstatTag = propstatElem.getTagName();
         if (propstatTag == null) 
           continue;
-        if (!propstatTag.getName().equals(WebDAVXML.ELEM_PROPSTAT.getName()))
+        if (!propstatTag.getName().equals(WebDAVXML.ELEM_PROPSTAT))
 	  continue;
         Enumeration enumPropstat = propstatElem.getElements();
         while (enumPropstat.hasMoreElements()) {
@@ -197,7 +197,7 @@ public class WebDAVTreeNode extends DefaultMutableTreeNode {
           Name propTag = propElem.getTagName();
           if (propTag == null)
             continue;
-          if (!propTag.getName().equals(WebDAVXML.ELEM_PROP.getName()))
+          if (!propTag.getName().equals(WebDAVXML.ELEM_PROP))
             continue;
           parseProps(propElem,ResourceName, resName, fullName,nodesChildren);
           break;
@@ -254,7 +254,7 @@ public class WebDAVTreeNode extends DefaultMutableTreeNode {
                 Name valueName = value.getTagName();
                 if (valueName == null)
                   continue;
-                if (valueName.getName().equals(WebDAVXML.ELEM_COLLECTION.getName()))
+                if (valueName.getName().equals(WebDAVXML.ELEM_COLLECTION))
                   isColl = true;
                 break;
               }              

@@ -62,20 +62,24 @@ public class WebDAVRequestGenerator implements Runnable {
 
   public WebDAVRequestGenerator() { }
  
-  public WebDAVRequestGenerator(JFrame mainFrame) {
+  public WebDAVRequestGenerator(JFrame mainFrame)
+  {
     super();
     this.mainFrame = mainFrame;
   }
 
-
-  public void setUser(String username) {
+  public void setUser(String username)
+  {
     User = username;
   }
-  public void setPass(String pass) {
+  
+  public void setPass(String pass)
+  {
     Password = pass;
   }
-  public void tableSelectionChanged(ViewSelectionEvent e) {
-
+  
+  public void tableSelectionChanged(ViewSelectionEvent e)
+  {
     if (e.getNode() != null) {
       return;
     }
@@ -87,30 +91,31 @@ public class WebDAVRequestGenerator implements Runnable {
       ResourceName = Path + tableResource;
     }
     
-//    System.out.println("RequestGenerator: ");
-//    System.out.println(" * ResourceName = " + ResourceName);
-
+    System.out.println("RequestGenerator: ");
+    System.out.println(" * ResourceName = " + ResourceName);
   }
 
-  public void treeSelectionChanged(ViewSelectionEvent e) {
+  public void treeSelectionChanged(ViewSelectionEvent e)
+  {
     String Item;
     Path = e.getPath();
     ResourceName = Path;
 
     if (Path.startsWith(WebDAVPrefix)) {    
     }
-//    System.out.println("RequestGenerator: ");
-//    System.out.println(" * ResourceName = " + ResourceName);
+    System.out.println("RequestGenerator: ");
+    System.out.println(" * ResourceName = " + ResourceName);
   }
 
-  public boolean parseResourceName() {
+  public boolean parseResourceName()
+  {
     if (ResourceName.equals("")) {
-//      System.out.println("ResourceName empty");
+      System.out.println("ResourceName empty");
         errorMsg("No resource selected!");
       return false;
     }
     if (!ResourceName.startsWith(WebDAVPrefix)) {
-//      System.out.println("ResourceName is local");
+      System.out.println("ResourceName is local");
         errorMsg("This operation cannot be executed\non a local resource.");
       return false;
     }
@@ -118,9 +123,8 @@ public class WebDAVRequestGenerator implements Runnable {
     return parseStripped(stripped);
   }
 
-  public boolean parseStripped(String stripped) {
-
-    
+  public boolean parseStripped(String stripped)
+  {
     StringTokenizer str = new StringTokenizer(stripped, "/");
     boolean isColl = false;
 
@@ -154,8 +158,8 @@ public class WebDAVRequestGenerator implements Runnable {
     String newRes = "";
     while (str.hasMoreTokens())
       newRes = newRes + "/" + str.nextToken();
-    if ( (!newRes.endsWith("/")) && (isColl) )
-      newRes += "/";
+//    if ( (!newRes.endsWith("/")) && (isColl) )
+//      newRes += "/";
     if (newRes.length() == 0)
       newRes = "/";
    
@@ -164,14 +168,17 @@ public class WebDAVRequestGenerator implements Runnable {
      
   }
 
-  public void execute() {
+  public void execute()
+  {
     Thread th = new Thread(this);
     th.start();
   }
-  public void run() {
+  
+  public void run()
+  {
     if (Headers == null) {
-//      System.out.println("Invalid Request");
-//        errorMsg("Invalid Request.");
+      System.out.println("Invalid Request");
+        errorMsg("Invalid Request.");
       return;
     }
     Vector ls;
@@ -180,20 +187,25 @@ public class WebDAVRequestGenerator implements Runnable {
     }
  
     WebDAVRequestEvent e = new WebDAVRequestEvent(this, Method,HostName,Port,StrippedResource,
-						  Headers, Body, Extra, User, Password);
+                          Headers, Body, Extra, User, Password);
     for (int i=0;i<ls.size();i++) {
       WebDAVRequestListener l = (WebDAVRequestListener) ls.elementAt(i);
       l.requestFormed(e); 
     }
-  } 
-  public synchronized void addRequestListener(WebDAVRequestListener l) {
+  }
+  
+  public synchronized void addRequestListener(WebDAVRequestListener l)
+  {
     listeners.addElement(l);  
   }
-  public synchronized void removeRequestListener(WebDAVRequestListener l) {
+  
+  public synchronized void removeRequestListener(WebDAVRequestListener l)
+  {
     listeners.removeElement(l);
   }
 
-  public synchronized void DiscoverLock(String method) {
+  public synchronized void DiscoverLock(String method)
+  {
     Extra = new String(method);
     String[] prop = new String[1];
     String[] schema = new String[1];
@@ -204,8 +216,8 @@ public class WebDAVRequestGenerator implements Runnable {
     execute();
   }
 
-  public synchronized void GeneratePropFind(String FullPath, String command, String Depth, String[] props, String[] schemas) {
-
+  public synchronized void GeneratePropFind(String FullPath, String command, String Depth, String[] props, String[] schemas)
+  {
     Headers = null;
     Body = null;
 
@@ -214,7 +226,7 @@ public class WebDAVRequestGenerator implements Runnable {
       ok = parseStripped(FullPath);
     else {
       if (Extra.equals("refresh")) {
-	ResourceName = Path;
+    ResourceName = Path;
       }
       ok = parseResourceName();
     }
@@ -224,7 +236,7 @@ public class WebDAVRequestGenerator implements Runnable {
       System.out.println("Error Generating PROPFIND Method for " + StrippedResource);
       return;
     }
-//    System.out.println("Generating Propfind PROPFIND Method for: " + StrippedResource);
+    System.out.println("Generating Propfind PROPFIND Method for: " + StrippedResource);
     String com = "allprop";
     String dep = "infinity";
     if ( command.equalsIgnoreCase("prop") || command.equalsIgnoreCase("propname"))
@@ -240,48 +252,35 @@ public class WebDAVRequestGenerator implements Runnable {
     Document miniDoc = new Document();
     miniDoc.setVersion("1.0");
     miniDoc.addChild(WebDAVXML.elemNewline,null);
-    WebDAVXML.addNamespace(miniDoc,WebDAVProp.DAV_SCHEMA, AsGen.DAV_AS);
 
-    Element propFind = new ElementImpl(WebDAVXML.ELEM_PROPFIND, Element.ELEMENT);
+    AsGen asgen = new AsGen();
+    WebDAVXML.createNamespace( asgen, null );
+    Element propFind = WebDAVXML.createElement( WebDAVXML.ELEM_PROPFIND, Element.ELEMENT, null, asgen );
+//    propFind.setAttribute(Name.create("D","xmlns"),"DAV:");
     propFind.addChild(WebDAVXML.elemNewline,null);
-    propFind.addChild(WebDAVXML.elemTab, null);
-    if (com.equals("allprop")) {
-      Element allpropElem = new ElementImpl(WebDAVXML.ELEM_ALLPROP,Element.ELEMENT);
-      propFind.addChild(allpropElem,null);
-      propFind.addChild(WebDAVXML.elemNewline, null);
+    if (com.equals("allprop"))
+    {
+        Element allpropElem = WebDAVXML.createElement( WebDAVXML.ELEM_ALLPROP, Element.ELEMENT, propFind, asgen );
+        addChild( propFind, allpropElem, 1 );
     }
-    else if (com.equals("propname")) {
-      Element propnameElem = new ElementImpl(WebDAVXML.ELEM_PROPNAME,Element.ELEMENT);
-      propFind.addChild(propnameElem,null);
-      propFind.addChild(WebDAVXML.elemNewline, null);
+    else if (com.equals("propname"))
+    {
+        Element propnameElem = WebDAVXML.createElement( WebDAVXML.ELEM_PROPNAME,Element.ELEMENT, propFind, asgen );
+        addChild( propFind, propnameElem, 1 );
     }
-    else {
-      Element propElem = new ElementImpl(WebDAVXML.ELEM_PROP, Element.ELEMENT);
-      propElem.addChild(WebDAVXML.elemNewline,null);
-      propElem.addChild(WebDAVXML.elemTab,null);
-
-      propFind.addChild(propElem,null);
-      propFind.addChild(WebDAVXML.elemNewline,null);
-      AsGen asgen = new AsGen();
-      String as = null;
-      for (int i=0;i<props.length;i++) {
-        if (!schemas[i].equals(WebDAVProp.DAV_SCHEMA)) {
-          as = asgen.getNextAs();
-          WebDAVXML.addNamespace(miniDoc, schemas[i],as);
+    else
+    {
+        Element propElem = WebDAVXML.createElement( WebDAVXML.ELEM_PROP, Element.ELEMENT, propFind, asgen );
+        propFind.addChild(WebDAVXML.elemNewline,null);
+        for (int i=0;i<props.length;i++)
+        {
+            Element prop = WebDAVXML.createElement( props[i], Element.ELEMENT, propElem, asgen );
+            addChild( propElem, prop, 2 );
         }
-        else
-          as = AsGen.DAV_AS;
-
-        Element prop = new ElementImpl(Name.create(props[i], as), Element.ELEMENT);
-        propElem.addChild(WebDAVXML.elemTab, null);
-        propElem.addChild(prop, null);
-        propElem.addChild(WebDAVXML.elemNewline,null);
-        propElem.addChild(WebDAVXML.elemTab,null);
-      }
+        addChild( propFind, propElem, 1 );
     }
     miniDoc.addChild(propFind,null);
     miniDoc.addChild(WebDAVXML.elemNewline, null);
- 
 
     ByteArrayOutputStream byte_str = new ByteArrayOutputStream();
     XMLOutputStream xml_out = new XMLOutputStream(byte_str);
@@ -289,7 +288,7 @@ public class WebDAVRequestGenerator implements Runnable {
     try {
       miniDoc.save(xml_out);
       Body = byte_str.toByteArray();
-
+      
       Headers = new NVPair[4];
       if (Port == 0 || Port == DEFAULT_PORT) {
         Headers[0] = new NVPair("Host", HostName);
@@ -300,25 +299,36 @@ public class WebDAVRequestGenerator implements Runnable {
       Headers[2] = new NVPair("Content-Type", "text/xml");
       Headers[3] = new NVPair("Content-Length", new Long(Body.length).toString());
 
-//      System.out.println("generated xml: " );
-//      XMLOutputStream out = new XMLOutputStream(System.out);
-//      miniDoc.save(out);
+      System.out.println("generated xml: " );
+      XMLOutputStream out = new XMLOutputStream(System.out);
+      miniDoc.save(out);
     }
     catch (Exception e) {
       errorMsg("XML generation error: \n" + e);
-//      System.out.println("XML Generator Error: " + e);
+      System.out.println("XML Generator Error: " + e);
     }
-
   }
-  private static boolean docContains(Document doc, Element e) {
 
+  private void addChild( Element parent, Element child, int tabcount )
+  {
+    if( parent != null )
+    {
+        for( int i=0; i<tabcount; i++ )
+            parent.addChild( WebDAVXML.elemTab, null );
+        parent.addChild( child, null );
+        parent.addChild( WebDAVXML.elemNewline, null );
+    }
+  }
+  
+  private static boolean docContains(Document doc, Element e)
+  {
     Enumeration docEnum = doc.getElements();
     while (docEnum.hasMoreElements()) {
       Element propEl = (Element) docEnum.nextElement();
       Name propTag = propEl.getTagName();
       if (propTag == null)
         continue;
-      if (!propTag.getName().equals(WebDAVXML.ELEM_PROP.getName()))
+      if (!propTag.getName().equals(WebDAVXML.ELEM_PROP))
         continue;
       Enumeration propEnum = propEl.getElements();
       while (propEnum.hasMoreElements()) {
@@ -333,8 +343,9 @@ public class WebDAVRequestGenerator implements Runnable {
     }
     return false;
   }
-  public synchronized void GeneratePropPatch(String Host, int port, String Res, Document old_xml, Document new_xml) {
-
+  
+  public synchronized void GeneratePropPatch(String Host, int port, String Res, Document old_xml, Document new_xml)
+  {
     // need to determine here the patches (if any)
 
     Headers = null;
@@ -346,38 +357,18 @@ public class WebDAVRequestGenerator implements Runnable {
     miniDoc.setVersion("1.0");
     miniDoc.addChild(WebDAVXML.elemNewline,null);
 
-    Element setEl = new ElementImpl(WebDAVXML.ELEM_SET,Element.ELEMENT);
-    Element removeEl = new ElementImpl(WebDAVXML.ELEM_REMOVE, Element.ELEMENT);
-    Element setProp = new ElementImpl(WebDAVXML.ELEM_PROP,Element.ELEMENT);
-    Element removeProp = new ElementImpl(WebDAVXML.ELEM_PROP,Element.ELEMENT);
-
-    setEl.addChild(WebDAVXML.elemNewline,null);
-    setEl.addChild(WebDAVXML.elemTab,null);
-    setEl.addChild(WebDAVXML.elemTab,null);
-    setEl.addChild(setProp,null);
-    setEl.addChild(WebDAVXML.elemNewline,null);
-    setEl.addChild(WebDAVXML.elemTab,null);
-
-    setProp.addChild(WebDAVXML.elemNewline,null);
-    setProp.addChild(WebDAVXML.elemTab,null);
-    setProp.addChild(WebDAVXML.elemTab,null);
-
-    removeEl.addChild(WebDAVXML.elemNewline,null);
-    removeEl.addChild(WebDAVXML.elemTab,null);
-    removeEl.addChild(WebDAVXML.elemTab,null);
-    removeEl.addChild(removeProp,null);
-    removeEl.addChild(WebDAVXML.elemNewline,null);
-    removeEl.addChild(WebDAVXML.elemTab,null);
-
-    removeProp.addChild(WebDAVXML.elemNewline,null);
-    removeProp.addChild(WebDAVXML.elemTab,null);
-    removeProp.addChild(WebDAVXML.elemTab,null);
-
-
-    Element propUpdate = new ElementImpl(WebDAVXML.ELEM_PROPERTY_UPDATE, Element.ELEMENT);
+    AsGen asgen = new AsGen();
+    WebDAVXML.createNamespace( asgen, null );
+    Element propUpdate = WebDAVXML.createElement( WebDAVXML.ELEM_PROPERTY_UPDATE, Element.ELEMENT, null, asgen );
     propUpdate.addChild(WebDAVXML.elemNewline,null);
 
-   // add new namespace if any
+    Element setEl = WebDAVXML.createElement( WebDAVXML.ELEM_SET, Element.ELEMENT, propUpdate, asgen );
+    setEl.addChild(WebDAVXML.elemNewline,null);
+    Element removeEl = WebDAVXML.createElement( WebDAVXML.ELEM_REMOVE, Element.ELEMENT, propUpdate, asgen );
+    Element setProp = WebDAVXML.createElement( WebDAVXML.ELEM_PROP, Element.ELEMENT, setEl, asgen );
+    Element removeProp = WebDAVXML.createElement( WebDAVXML.ELEM_PROP, Element.ELEMENT, removeEl, asgen );
+    addChild( setEl, setProp, 2 );
+    addChild( removeEl, removeProp, 2 );
 
     Enumeration namesEnum = new_xml.getElements();
     while (namesEnum.hasMoreElements()) {
@@ -390,7 +381,6 @@ public class WebDAVRequestGenerator implements Runnable {
 
    // if any of the properties were added, insert them into set elem
 
-
     miniDoc.addChild(propUpdate,null);
     miniDoc.addChild(WebDAVXML.elemNewline,null);
 
@@ -400,7 +390,7 @@ public class WebDAVRequestGenerator implements Runnable {
       Name propTag = propElem.getTagName();
       if (propTag == null)
         continue;
-      if (!propTag.getName().equals(WebDAVXML.ELEM_PROP.getName()))
+      if (!propTag.getName().equals(WebDAVXML.ELEM_PROP))
         continue;
       Enumeration propEnum = propElem.getElements();
       while (propEnum.hasMoreElements()) {
@@ -424,7 +414,7 @@ public class WebDAVRequestGenerator implements Runnable {
       Name propTag = propElem.getTagName();
       if (propTag == null)
         continue;
-      if (!propTag.getName().equals(WebDAVXML.ELEM_PROP.getName()))
+      if (!propTag.getName().equals(WebDAVXML.ELEM_PROP))
         continue;
       Enumeration propEnum = propElem.getElements();
       while (propEnum.hasMoreElements()) {
@@ -443,7 +433,7 @@ public class WebDAVRequestGenerator implements Runnable {
       }
     }
     if ( (!setUsed) && (!removeUsed)) {
-//      System.out.println("No changes.");      
+      System.out.println("No changes.");      
       return;
     }
 
@@ -477,19 +467,20 @@ public class WebDAVRequestGenerator implements Runnable {
       Headers[1] = new NVPair("Content-Type", "text/xml");
       Headers[2] = new NVPair("Content-Length", new Long(Body.length).toString());
 
-//      System.out.println("generated xml: " );
-//      XMLOutputStream out = new XMLOutputStream(System.out);
-//      miniDoc.save(out);
+      System.out.println("generated xml: " );
+      XMLOutputStream out = new XMLOutputStream(System.out);
+      miniDoc.save(out);
     }
     catch (Exception e) {
-//      System.out.println("XML Generator Error: " + e);
+      System.out.println("XML Generator Error: " + e);
         errorMsg("XML Generator Error: \n" + e);
     }
 
     execute();
   }
-  public synchronized void GenerateMkCol() {
-
+  
+  public synchronized void GenerateMkCol()
+  {
     Headers = null;
     Body = null;
 
@@ -497,7 +488,7 @@ public class WebDAVRequestGenerator implements Runnable {
       System.out.println("Error Generating MKCOL Method...");
       return;
     }
-//    System.out.println("Generating MKCOL Method...");
+    System.out.println("Generating MKCOL Method...");
 
     Method = "MKCOL";
     Headers = new NVPair[1];
@@ -508,8 +499,9 @@ public class WebDAVRequestGenerator implements Runnable {
 
 
   }
-  public synchronized void GenerateGet(String localName) {
-
+  
+  public synchronized void GenerateGet(String localName)
+  {
     Headers = null;
     Body = null;
 
@@ -517,7 +509,7 @@ public class WebDAVRequestGenerator implements Runnable {
       System.out.println("Error Generating GET Method...");
       return;
     }
-//    System.out.println("Generating GET Method...");
+    System.out.println("Generating GET Method...");
 
     Extra = localName;
     Method = "GET";
@@ -529,8 +521,9 @@ public class WebDAVRequestGenerator implements Runnable {
       Headers[0] = new NVPair("Host",HostName + ":" + Port);
 
   }
-  public synchronized void GenerateDelete(String lockToken) {
-
+  
+  public synchronized void GenerateDelete(String lockToken)
+  {
     Headers = null;
     Body = null;
 
@@ -538,7 +531,7 @@ public class WebDAVRequestGenerator implements Runnable {
       System.out.println("Error Generating DELETE Method...");
       return;
     }
-//    System.out.println("Generating DELETE Method...");
+    System.out.println("Generating DELETE Method...");
 
     Method = "DELETE";
     Body = null;
@@ -555,23 +548,25 @@ public class WebDAVRequestGenerator implements Runnable {
       Headers[0] = new NVPair("Host",HostName + ":" + Port);
 
   }
-  public synchronized void GeneratePut(String fileName, String lockToken) {
+  
+  public synchronized void GeneratePut(String fileName, String lockToken)
+  {
     Headers = null;
     Body = null;
 
     if (!parseResourceName()) {
-//      System.out.println("File is not local");
+      System.out.println("File is not local");
       return;
     }
-//    System.out.println("Generating PUT Method...");
+    System.out.println("Generating PUT Method...");
     if ( (fileName == null) || (fileName.equals("")) ) {
       errorMsg("WebDAV Generator:\nFile not found!\n");
       return;
     }
-//    System.out.println("filename: " + fileName);
+    System.out.println("filename: " + fileName);
     File file = new File(fileName);
     if (!file.exists()) {
-//      System.out.println("invalid file");
+      System.out.println("invalid file");
          errorMsg("Invalid File.");
       return;
     }
@@ -609,39 +604,41 @@ public class WebDAVRequestGenerator implements Runnable {
         return;
      }
   }
-  public synchronized void GenerateCopy(String Dest, boolean Overwrite, boolean KeepAlive) {
+  
+  public synchronized void GenerateCopy(String Dest, boolean Overwrite, boolean KeepAlive)
+  {
     Headers = null;
     Body = null;
 
     if (!parseResourceName()) {
-//      System.out.println("Error Generating COPY Method...");
+      System.out.println("Error Generating COPY Method...");
       return;
     }  
-//    System.out.println("Generating COPY Method :");
-//    System.out.println("Source: " + StrippedResource);
-//    System.out.println("Destination: " + Dest);
+    System.out.println("Generating COPY Method :");
+    System.out.println("Source: " + StrippedResource);
+    System.out.println("Destination: " + Dest);
     String ow = (Overwrite) ? "T" : "F";
     if (Dest == null)
       Dest = StrippedResource + "_copy";
 
     Method = "COPY";
     Body = null;
-    if (KeepAlive) {
-
+    if (KeepAlive)
+    {
       Document miniDoc = new Document();
       miniDoc.setVersion("1.0");
       miniDoc.addChild(WebDAVXML.elemNewline,null);
-      WebDAVXML.addNamespace(miniDoc,WebDAVProp.DAV_SCHEMA, AsGen.DAV_AS);
 
-      Element propBehavior = new ElementImpl(WebDAVXML.ELEM_PROPERTY_BEHAVIOR, Element.ELEMENT);
-      propBehavior.addChild(WebDAVXML.elemNewline,null);
-      propBehavior.addChild(WebDAVXML.elemTab, null);
-      Element keepAlv = new ElementImpl(WebDAVXML.ELEM_KEEP_ALIVE, Element.ELEMENT);
-      Element val = new ElementImpl(null, Element.PCDATA);
+      AsGen asgen = new AsGen();
+      WebDAVXML.createNamespace( asgen, null );
+      Element propBehavior = WebDAVXML.createElement( WebDAVXML.ELEM_PROPERTY_BEHAVIOR, Element.ELEMENT, null, asgen );
+      propBehavior.addChild( WebDAVXML.elemNewline, null );
+
+      Element keepAlv = WebDAVXML.createElement( WebDAVXML.ELEM_KEEP_ALIVE, Element.ELEMENT, propBehavior, asgen );
+      Element val = WebDAVXML.createElement( null, Element.PCDATA, keepAlv, asgen );
       val.setText("*");
-      keepAlv.addChild(val, null);
-      propBehavior.addChild(keepAlv, null);
-      propBehavior.addChild(WebDAVXML.elemNewline,null);
+      addChild( keepAlv, val, 1 );
+      addChild( propBehavior, keepAlv, 0 );
 
       miniDoc.addChild(propBehavior, null);
       miniDoc.addChild(WebDAVXML.elemNewline, null);
@@ -662,11 +659,11 @@ public class WebDAVRequestGenerator implements Runnable {
         Headers[2] = new NVPair("Content-Type", "text/xml");
         Headers[3] = new NVPair("Content-Length", new Long(Body.length).toString());
         Headers[4] = new NVPair("Overwrite", ow);
-//        System.out.println("generated xml: " );
-//        XMLOutputStream out = new XMLOutputStream(System.out);
-//        miniDoc.save(out);
+        System.out.println("generated xml: " );
+        XMLOutputStream out = new XMLOutputStream(System.out);
+        miniDoc.save(out);
       } catch (Exception e) {
-//          System.out.println("XML Generator Eror...");
+          System.out.println("XML Generator Eror...");
             errorMsg("XML Generator Error: \n" + e);
         }
     }
@@ -680,23 +677,27 @@ public class WebDAVRequestGenerator implements Runnable {
       Headers[2] = new NVPair("Overwrite", ow);
     }
   }
-  public synchronized void GenerateRename(String Dest) {
+  
+  public synchronized void GenerateRename(String Dest)
+  {
     Extra = new String(tableResource);
     DiscoverLock("rename:" + Dest);
   }
-  public synchronized void GenerateMove(String Dest, boolean Overwrite, boolean KeepAlive, String lockToken) {
+  
+  public synchronized void GenerateMove(String Dest, boolean Overwrite, boolean KeepAlive, String lockToken)
+  {
     Headers = null;
     Body = null;
     if (!parseResourceName()) {
-//      System.out.println("Error Generating MOVE Method...");
+      System.out.println("Error Generating MOVE Method...");
       return;
     }  
-//    System.out.println("Generating MOVE Method :");
-//    System.out.println("Source: " + StrippedResource);
-//    System.out.println("Destination: " + Dest);
+    System.out.println("Generating MOVE Method :");
+    System.out.println("Source: " + StrippedResource);
+    System.out.println("Destination: " + Dest);
     String ow = (Overwrite) ? "T" : "F";
     if (Dest == null) {
-//      System.out.println("Invalid Destination ");
+      System.out.println("Invalid Destination ");
       return;
     }
     Method = "MOVE";
@@ -706,17 +707,16 @@ public class WebDAVRequestGenerator implements Runnable {
       Document miniDoc = new Document();
       miniDoc.setVersion("1.0");
       miniDoc.addChild(WebDAVXML.elemNewline,null);
-      WebDAVXML.addNamespace(miniDoc,WebDAVProp.DAV_SCHEMA, AsGen.DAV_AS);
 
-      Element propBehavior = new ElementImpl(WebDAVXML.ELEM_PROPERTY_BEHAVIOR, Element.ELEMENT);
-      propBehavior.addChild(WebDAVXML.elemNewline,null);
-      propBehavior.addChild(WebDAVXML.elemTab, null);
-      Element keepAlv = new ElementImpl(WebDAVXML.ELEM_KEEP_ALIVE, Element.ELEMENT);
-      Element val = new ElementImpl(null, Element.PCDATA);
+      AsGen asgen = new AsGen();
+      WebDAVXML.createNamespace( asgen, null );
+      Element propBehavior = WebDAVXML.createElement( WebDAVXML.ELEM_PROPERTY_BEHAVIOR, Element.ELEMENT, null, asgen );
+      propBehavior.addChild( WebDAVXML.elemNewline, null );
+      Element keepAlv = WebDAVXML.createElement( WebDAVXML.ELEM_KEEP_ALIVE, Element.ELEMENT, propBehavior, asgen );
+      Element val = WebDAVXML.createElement( null, Element.PCDATA, keepAlv, asgen );
       val.setText("*");
-      keepAlv.addChild(val, null);
-      propBehavior.addChild(keepAlv, null);
-      propBehavior.addChild(WebDAVXML.elemNewline,null);
+      addChild( keepAlv, val, 1 );
+      addChild( propBehavior, keepAlv, 0 );
 
       miniDoc.addChild(propBehavior, null);
       miniDoc.addChild(WebDAVXML.elemNewline, null);
@@ -742,11 +742,11 @@ public class WebDAVRequestGenerator implements Runnable {
         Headers[2] = new NVPair("Content-Type", "text/xml");
         Headers[3] = new NVPair("Content-Length", new Long(Body.length).toString());
         Headers[4] = new NVPair("Overwrite", ow);
-//        System.out.println("generated xml: " );
-//        XMLOutputStream out = new XMLOutputStream(System.out);
-//        miniDoc.save(out);
+        System.out.println("generated xml: " );
+        XMLOutputStream out = new XMLOutputStream(System.out);
+        miniDoc.save(out);
       } catch (Exception e) {
-//          System.out.println("XML Generator Eror...");
+          System.out.println("XML Generator Eror...");
             errorMsg("XML Generator Error: \n" + e);
         }
     }
@@ -759,10 +759,10 @@ public class WebDAVRequestGenerator implements Runnable {
       Headers[1] = new NVPair("Destination", Dest);
       Headers[2] = new NVPair("Overwrite", ow);
     }
-
-
   }
-  public synchronized void GenerateLock(String OwnerInfo, String lockToken) {
+  
+  public synchronized void GenerateLock(String OwnerInfo, String lockToken)
+  {
     Headers = null;
     Body = null;
     // Only exclusive write lock is supported at the time
@@ -771,50 +771,38 @@ public class WebDAVRequestGenerator implements Runnable {
       System.out.println("Error Generating LOCK Method for " + StrippedResource);
       return;
     }  
-//    System.out.println("Generating LOCK Method for: " + StrippedResource);
+    System.out.println("Generating LOCK Method for: " + StrippedResource);
 
     Method = "LOCK";
     Body = null;
 
     if (lockToken == null) {
     // new lock
-      
       Document miniDoc = new Document();
       miniDoc.setVersion("1.0");
       miniDoc.addChild(WebDAVXML.elemNewline,null);
-      WebDAVXML.addNamespace(miniDoc,WebDAVProp.DAV_SCHEMA, AsGen.DAV_AS);
 
-      Element lockInfoElem = new ElementImpl(WebDAVXML.ELEM_LOCK_INFO, Element.ELEMENT);
+      AsGen asgen = new AsGen();
+      WebDAVXML.createNamespace( asgen, null );
+      Element lockInfoElem = WebDAVXML.createElement( WebDAVXML.ELEM_LOCK_INFO, Element.ELEMENT, null, asgen );
       lockInfoElem.addChild(WebDAVXML.elemNewline,null);
-      Element lockTypeElem = new ElementImpl(WebDAVXML.ELEM_LOCK_TYPE, Element.ELEMENT);
-      Element typeValue = new ElementImpl(WebDAVXML.ELEM_WRITE, Element.ELEMENT);
-      Element scopeElem = new ElementImpl(WebDAVXML.ELEM_LOCK_SCOPE, Element.ELEMENT);
-      Element scopeVal = new ElementImpl(WebDAVXML.ELEM_EXCLUSIVE, Element.ELEMENT);
-      Element ownerElem = new ElementImpl(WebDAVXML.ELEM_OWNER, Element.ELEMENT);
-      ownerElem.addChild(WebDAVXML.elemNewline, null);
-      ownerElem.addChild(WebDAVXML.elemTab, null);
-      Element ownerHref = new ElementImpl(WebDAVXML.ELEM_HREF, Element.ELEMENT);
-      Element ownerVal = new ElementImpl(null, Element.PCDATA);
+      
+      Element lockTypeElem = WebDAVXML.createElement( WebDAVXML.ELEM_LOCK_TYPE, Element.ELEMENT, lockInfoElem, asgen );
+      Element scopeElem = WebDAVXML.createElement( WebDAVXML.ELEM_LOCK_SCOPE, Element.ELEMENT, lockInfoElem, asgen );
+      Element ownerElem = WebDAVXML.createElement( WebDAVXML.ELEM_OWNER, Element.ELEMENT, lockInfoElem, asgen );
+      
+      Element typeValue = WebDAVXML.createElement( WebDAVXML.ELEM_WRITE, Element.ELEMENT, lockTypeElem, asgen );
+      Element scopeVal = WebDAVXML.createElement( WebDAVXML.ELEM_EXCLUSIVE, Element.ELEMENT, scopeElem, asgen );
+      Element ownerHref = WebDAVXML.createElement( WebDAVXML.ELEM_HREF, Element.ELEMENT, ownerElem, asgen );
+      Element ownerVal = WebDAVXML.createElement( null, Element.PCDATA, ownerElem, asgen );
       ownerVal.setText(OwnerInfo);
-      ownerHref.addChild(ownerVal,null);
-      ownerElem.addChild(WebDAVXML.elemTab, null);
-      ownerElem.addChild(ownerHref,null);
-      ownerElem.addChild(WebDAVXML.elemNewline, null);
-      ownerElem.addChild(WebDAVXML.elemTab,null);
-      lockTypeElem.addChild(typeValue, null);
-      scopeElem.addChild(scopeVal, null);
- 
-      lockInfoElem.addChild(WebDAVXML.elemTab, null);
-      lockInfoElem.addChild(lockTypeElem, null);
-      lockInfoElem.addChild(WebDAVXML.elemNewline, null);
-
-      lockInfoElem.addChild(WebDAVXML.elemTab, null);
-      lockInfoElem.addChild(scopeElem, null);
-      lockInfoElem.addChild(WebDAVXML.elemNewline, null);
-
-      lockInfoElem.addChild(WebDAVXML.elemTab, null);
-      lockInfoElem.addChild(ownerElem, null);
-      lockInfoElem.addChild(WebDAVXML.elemNewline, null);
+      addChild( ownerHref, ownerVal, 3 );
+      addChild( ownerElem, ownerHref, 2 );
+      addChild( lockTypeElem, typeValue, 2 );
+      addChild( scopeElem, scopeVal, 2 );
+      addChild( lockInfoElem, lockTypeElem, 1 );
+      addChild( lockInfoElem, scopeElem, 1 );
+      addChild( lockInfoElem, ownerElem, 1 );
 
       miniDoc.addChild(lockInfoElem,null);
       miniDoc.addChild(WebDAVXML.elemNewline, null);
@@ -834,12 +822,12 @@ public class WebDAVRequestGenerator implements Runnable {
         Headers[1] = new NVPair("Content-Type", "text/xml");
         Headers[2] = new NVPair("Content-Length", new Long(Body.length).toString());
 
-//        System.out.println("generated xml: " );
-//        XMLOutputStream out = new XMLOutputStream(System.out);
-//        miniDoc.save(out);
+        System.out.println("generated xml: " );
+        XMLOutputStream out = new XMLOutputStream(System.out);
+        miniDoc.save(out);
       }
       catch (Exception e) {
-//        System.out.println("XML Generator Error: " + e);
+        System.out.println("XML Generator Error: " + e);
           errorMsg("XML Generator Error: \n" + e);
       }
 
@@ -859,13 +847,15 @@ public class WebDAVRequestGenerator implements Runnable {
         Headers[2] = new NVPair("If", token);
 
       } catch (Exception e) {
-//          System.out.println(e);
+          System.out.println(e);
             errorMsg(e.toString());
           return;
         }
     }
   }
-  public synchronized void GenerateUnlock(String lockToken) {
+  
+  public synchronized void GenerateUnlock(String lockToken)
+  {
     Headers = null;
     Body = null;
 
@@ -889,11 +879,14 @@ public class WebDAVRequestGenerator implements Runnable {
       System.out.println("Error Generating UNLOCK..");
       }
   }
-  public synchronized void setExtraInfo(String info) {
+  
+  public synchronized void setExtraInfo(String info)
+  {
     Extra = info;
   }
 
-  public void handlePropPatch(PropDialogEvent e) {
+  public void handlePropPatch(PropDialogEvent e)
+  {
 
     String hostname = e.getHost();
     String host = null;
@@ -927,19 +920,19 @@ public class WebDAVRequestGenerator implements Runnable {
    
     }
     catch (Exception ex) {
-//      System.out.println("Error Reading XML Document");
-//      System.out.println("PROPPATCH failed");
-//      ex.printStackTrace();
+      System.out.println("Error Reading XML Document");
+      System.out.println("PROPPATCH failed");
+      ex.printStackTrace();
         errorMsg("PROPPATCH Failed! \nXML Parsing Error: \n\n" + e);
       return;
     }
     GeneratePropPatch(host,port,res,oldProp,newProp);
   }
-  public void errorMsg(String str) {
-
+  
+  public void errorMsg(String str)
+  {
     JOptionPane pane = new JOptionPane();
     Object [] options = { "OK" };
     pane.showOptionDialog(mainFrame,str, "Error Message", JOptionPane.DEFAULT_OPTION, JOptionPane.ERROR_MESSAGE, null,options, options[0]);
   }
-
 }

@@ -198,8 +198,9 @@ public class WebDAVResponseInterpreter {
       }
       ByteArrayInputStream byte_in = new ByteArrayInputStream(body);
       Document xml_doc = new Document();
-//      XMLOutputStream out = new XMLOutputStream(System.out); 
       xml_doc.load(byte_in);
+//      System.out.println("Received xml:");
+//      XMLOutputStream out = new XMLOutputStream(System.out); 
 //      xml_doc.save(out);
 
 
@@ -226,7 +227,7 @@ public class WebDAVResponseInterpreter {
           Name respTag = respElem.getTagName();
           if (respTag == null)
             continue;
-          if (!respTag.getName().equals(WebDAVXML.ELEM_RESPONSE.getName()))
+          if (!respTag.getName().equals(WebDAVXML.ELEM_RESPONSE))
             continue;
           Enumeration enumResp = respElem.getElements();
           while (enumResp.hasMoreElements()) {
@@ -234,7 +235,7 @@ public class WebDAVResponseInterpreter {
             Name propstatTag = e.getTagName();
             if (propstatTag == null)
               continue;
-            if (!propstatTag.getName().equals(WebDAVXML.ELEM_PROPSTAT.getName()))
+            if (!propstatTag.getName().equals(WebDAVXML.ELEM_PROPSTAT))
               continue;
             Enumeration propEnum = e.getElements();
             while (propEnum.hasMoreElements()) {
@@ -242,7 +243,7 @@ public class WebDAVResponseInterpreter {
               Name propTag = propElem.getTagName();
               if (propTag == null)
                 continue;
-              if (!propTag.getName().equals(WebDAVXML.ELEM_PROP.getName()))
+              if (!propTag.getName().equals(WebDAVXML.ELEM_PROP))
                 continue;
               Enumeration propNameEnum = propElem.getElements();
               while (propNameEnum.hasMoreElements()) {
@@ -250,7 +251,7 @@ public class WebDAVResponseInterpreter {
               Name propNam = propEl.getTagName();
               if (propNam == null)
                 continue;
-              if (!propNam.getName().equals(WebDAVProp.PROP_LOCKDISCOVERY.getName()))
+              if (!propNam.getName().equals(WebDAVProp.PROP_LOCKDISCOVERY))
                 continue;
               Enumeration lockEnum = propEl.getElements();
               while (lockEnum.hasMoreElements()) {
@@ -258,7 +259,7 @@ public class WebDAVResponseInterpreter {
                 Name activeTag = activeEl.getTagName();
                 if (activeTag == null)
                   continue;
-                if (!activeTag.getName().equals(WebDAVXML.ELEM_ACTIVE_LOCK.getName()))
+                if (!activeTag.getName().equals(WebDAVXML.ELEM_ACTIVE_LOCK))
                   continue;
                 Enumeration activeEnum = activeEl.getElements();
                 while (activeEnum.hasMoreElements()) {
@@ -266,14 +267,14 @@ public class WebDAVResponseInterpreter {
                   Name tokenTag = tokenEl.getTagName();
                   if (tokenTag == null)
                     continue;
-                  if (tokenTag.getName().equals(WebDAVXML.ELEM_LOCK_TOKEN.getName())) {                    
+                  if (tokenTag.getName().equals(WebDAVXML.ELEM_LOCK_TOKEN)) {                    
                     Enumeration tokenEnum = tokenEl.getElements();
                     while (tokenEnum.hasMoreElements()) {
                       Element hrefEl = (Element) tokenEnum.nextElement();
                       Name hrefTag = hrefEl.getTagName();
                       if (hrefTag == null)
                         continue;
-                      if (!hrefTag.getName().equals(WebDAVXML.ELEM_HREF.getName()))
+                      if (!hrefTag.getName().equals(WebDAVXML.ELEM_HREF))
                         continue;
                       Enumeration hrefEnum = hrefEl.getElements();
                       while (hrefEnum.hasMoreElements()) {
@@ -286,7 +287,7 @@ public class WebDAVResponseInterpreter {
                       }
                     }
                   } // locktocken
-                  else if (tokenTag.getName().equals(WebDAVXML.ELEM_LOCK_TYPE.getName())) {                    
+                  else if (tokenTag.getName().equals(WebDAVXML.ELEM_LOCK_TYPE)) {                    
                     Enumeration tokenEnum = tokenEl.getElements();
                     while (tokenEnum.hasMoreElements()) {
                       Element val = (Element) tokenEnum.nextElement();
@@ -297,7 +298,7 @@ public class WebDAVResponseInterpreter {
                       break;
                     }
                   } // locktype
-                  else if (tokenTag.getName().equals(WebDAVXML.ELEM_LOCK_SCOPE.getName())) {                    
+                  else if (tokenTag.getName().equals(WebDAVXML.ELEM_LOCK_SCOPE)) {                    
                     Enumeration tokenEnum = tokenEl.getElements();
                     while (tokenEnum.hasMoreElements()) {
                       Element val = (Element) tokenEnum.nextElement();
@@ -308,7 +309,7 @@ public class WebDAVResponseInterpreter {
                       break;
                     }
                   } // lockscope
-                  else if (tokenTag.getName().equals(WebDAVXML.ELEM_OWNER.getName())) {                    
+                  else if (tokenTag.getName().equals(WebDAVXML.ELEM_OWNER)) {                    
                     Enumeration tokenEnum = tokenEl.getElements();
                     while (tokenEnum.hasMoreElements()) {
                       Element hrefEl = (Element) tokenEnum.nextElement();
@@ -319,7 +320,7 @@ public class WebDAVResponseInterpreter {
                       Name hrefTag = hrefEl.getTagName();
                       if (hrefTag == null)
                         continue;
-                      if (!hrefTag.getName().equals(WebDAVXML.ELEM_HREF.getName()))
+                      if (!hrefTag.getName().equals(WebDAVXML.ELEM_HREF))
                         continue;
                       Enumeration hrefEnum = hrefEl.getElements();
                       while (hrefEnum.hasMoreElements()) {
@@ -331,7 +332,7 @@ public class WebDAVResponseInterpreter {
                       }
                     }
                   } // owner
-                  else if (tokenTag.getName().equals(WebDAVXML.ELEM_TIMEOUT.getName())) {                    
+                  else if (tokenTag.getName().equals(WebDAVXML.ELEM_TIMEOUT)) {                    
                     Enumeration tokenEnum = tokenEl.getElements();
                     while (tokenEnum.hasMoreElements()) {
                       Element val = (Element) tokenEnum.nextElement();
@@ -341,7 +342,7 @@ public class WebDAVResponseInterpreter {
                       break;
                     }
                   } // timeout
-                  else if (tokenTag.getName().equals(WebDAVXML.ELEM_LOCK_DEPTH.getName())) {                    
+                  else if (tokenTag.getName().equals(WebDAVXML.ELEM_LOCK_DEPTH)) {                    
                     Enumeration tokenEnum = tokenEl.getElements();
                     while (tokenEnum.hasMoreElements()) {
                       Element val = (Element) tokenEnum.nextElement();
@@ -435,7 +436,7 @@ public class WebDAVResponseInterpreter {
           Name resptag = responseElem.getTagName();
           if (resptag == null)
             continue;
-          if (!resptag.getName().equals(WebDAVXML.ELEM_RESPONSE.getName()))
+          if (!resptag.getName().equals(WebDAVXML.ELEM_RESPONSE))
             continue;
 
           Enumeration enumResp = responseElem.getElements();
@@ -444,7 +445,7 @@ public class WebDAVResponseInterpreter {
               Name hrefTag = e.getTagName();
               if (hrefTag == null)
                 continue;
-              if (!hrefTag.getName().equals(WebDAVXML.ELEM_HREF.getName()))
+              if (!hrefTag.getName().equals(WebDAVXML.ELEM_HREF))
 	        continue;
               Enumeration hrefEnum = e.getElements();
 	      while (hrefEnum.hasMoreElements()) {
@@ -466,7 +467,7 @@ public class WebDAVResponseInterpreter {
 		  Name propstatTag = propstatElem.getTagName();
 		  if (propstatTag == null)
 		    continue;
-                  if (!propstatTag.getName().equals(WebDAVXML.ELEM_PROPSTAT.getName()))
+                  if (!propstatTag.getName().equals(WebDAVXML.ELEM_PROPSTAT))
                     continue;
                   Enumeration enumProp = propstatElem.getElements();
                   while (enumProp.hasMoreElements()) {
@@ -474,9 +475,10 @@ public class WebDAVResponseInterpreter {
                     Name propTag = propElem.getTagName();
                     if (propTag == null)
                       continue;
-                    if (!propTag.getName().equals(WebDAVXML.ELEM_PROP.getName()))
+                    if (!propTag.getName().equals(WebDAVXML.ELEM_PROP))
                       continue;
-                    Element outProp = new ElementImpl(WebDAVXML.ELEM_PROP, Element.ELEMENT);
+                    AsGen alias = new AsGen();
+                    Element outProp = WebDAVXML.createElement( WebDAVXML.ELEM_PROP, Element.ELEMENT, null, alias );
                     outProp.addChild(WebDAVXML.elemNewline,null); 
 		    Enumeration propValEnum = propElem.getElements();
 	            while (propValEnum.hasMoreElements()) {

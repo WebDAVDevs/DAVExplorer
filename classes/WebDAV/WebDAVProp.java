@@ -39,18 +39,18 @@ public class WebDAVProp
 
 
 	public static final String DAV_SCHEMA	= new String("DAV:");
-
-        public static final Name PROP_CREATIONDATE = Name.create("creationdate",AsGen.DAV_AS);
-        public static final Name PROP_DISPLAYNAME = Name.create("displayname",AsGen.DAV_AS);
-        public static final Name PROP_GETCONTENTLANGUAGE = Name.create("getcontentlanguage",AsGen.DAV_AS);
-        public static final Name PROP_GETCONTENTLENGTH = Name.create("getcontentlength",AsGen.DAV_AS);
-        public static final Name PROP_GETCONTENTTYPE = Name.create("getcontenttype", AsGen.DAV_AS);
-        public static final Name PROP_GETETAG = Name.create("getetag",AsGen.DAV_AS);
-        public static final Name PROP_GETLASTMODIFIED = Name.create("getlastmodified",AsGen.DAV_AS);
-        public static final Name PROP_LOCKDISCOVERY = Name.create("lockdiscovery",AsGen.DAV_AS);
-        public static final Name PROP_RESOURCETYPE = Name.create("resourcetype", AsGen.DAV_AS);
-        public static final Name PROP_SOURCE = Name.create("source", AsGen.DAV_AS);
-        public static final Name PROP_SUPPORTEDLOCK = Name.create("supportedlock", AsGen.DAV_AS);
+// JF: TODO: set namespace
+        public static final Name PROP_CREATIONDATE = Name.create("creationdate");
+        public static final Name PROP_DISPLAYNAME = Name.create("displayname");
+        public static final Name PROP_GETCONTENTLANGUAGE = Name.create("getcontentlanguage");
+        public static final Name PROP_GETCONTENTLENGTH = Name.create("getcontentlength");
+        public static final Name PROP_GETCONTENTTYPE = Name.create("getcontenttype");
+        public static final Name PROP_GETETAG = Name.create("getetag");
+        public static final Name PROP_GETLASTMODIFIED = Name.create("getlastmodified");
+        public static final Name PROP_LOCKDISCOVERY = Name.create("lockdiscovery");
+        public static final Name PROP_RESOURCETYPE = Name.create("resourcetype");
+        public static final Name PROP_SOURCE = Name.create("source");
+        public static final Name PROP_SUPPORTEDLOCK = Name.create("supportedlock");
 
 	public static Enumeration getDavProps() {
 	  Vector prop_list = new Vector();

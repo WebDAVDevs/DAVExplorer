@@ -27,48 +27,134 @@
 
 package WebDAV;
 
-public class AsGen {
+class AsNode
+{
+    public AsNode( String schema, String alias, AsNode parent )
+    {
+        m_schema = schema;
+        m_alias = alias;
+        m_parent = parent;
+    }
+    
+    public String getAlias()
+    {
+        return m_alias;
+    }
+    
+    public String getSchema()
+    {
+        return m_schema;
+    }
+    
+    public boolean isAttributeSet()
+    {
+        return m_attributeSet;
+    }
+    
+    public void setAttribute()
+    {
+        m_attributeSet = true;
+    }
+    
+    public AsNode getParent()
+    {
+        return m_parent;
+    }
+    
+    AsNode m_parent = null;
+    String m_schema;
+    String m_alias;
+    boolean m_attributeSet = false;
+};
 
-  String _lastGenerated;
-  public static final String DAV_AS = "D";
 
-  public AsGen() {
-    _lastGenerated = DAV_AS;
-  }
+public class AsGen
+{
+    public AsGen()
+    {
+        m_lastGenerated = "@";
+    }
 
-  public String getNextAs() {
- 
-  String str = _lastGenerated;
+    public void createNamespace( String schema )
+    {
+        AsNode node = new AsNode( schema, getNextAs(), m_current );
+        m_current = node;
+    }
 
-  int len = str.length();
-  byte[] byte_str = str.getBytes();
-  if (str.endsWith("Z")) {
-    byte_str[len-1] = 'A';
-    boolean found = false;
-    boolean append = true;
-    int i = len-2;
-    while( (i>=0) && (!found) ) {
-      if (byte_str[i] != 'Z') {
-        append = false;
-        found = true;
-        byte_str[i]++;
-      }
-      else
-        byte_str[i] = 'A';
+    public void up()
+    {
+        if( m_current != null )
+            m_current = m_current.getParent();
+    }
+    
+    public String getAlias()
+    {
+        if( m_current == null )
+            return null;
+        else
+            return m_current.getAlias();
+    }
 
-       i--;
-     }
-    str = new String(byte_str);
-    if (append)
-      str += 'A';
-  }
-  else {
-    byte_str[len-1]++;
-    str = new String(byte_str);
-  }
-  _lastGenerated = str;
-  return str;
+    public String getSchema()
+    {
+        if( m_current == null )
+            return null;
+        else
+            return m_current.getSchema();
+    }
+    
+    public boolean isAttributeSet()
+    {
+        if( m_current == null )
+            return false;
+        else
+            return m_current.isAttributeSet();
+    }
 
-  }
+    public void setAttribute()
+    {
+        if( m_current != null )
+            m_current.setAttribute();
+    }
+    
+    private String getNextAs()
+    {
+        String str = m_lastGenerated;
 
+        int len = str.length();
+        byte[] byte_str = str.getBytes();
+        if (str.endsWith("Z"))
+        {
+            byte_str[len-1] = 'A';
+            boolean found = false;
+            boolean append = true;
+            int i = len-2;
+            while( (i>=0) && (!found) )
+            {
+                if (byte_str[i] != 'Z') {
+                    append = false;
+                    found = true;
+                    byte_str[i]++;
+                }
+                else
+                {
+                    byte_str[i] = 'A';
+                }
+                i--;
+            }
+            str = new String(byte_str);
+            if (append)
+                str += 'A';
+        }
+        else
+        {
+            byte_str[len-1]++;
+            str = new String(byte_str);
+        }
+        m_lastGenerated = str;
+        return str;
+    }
+
+    AsNode m_current = null;
+    String m_lastGenerated;
 }
