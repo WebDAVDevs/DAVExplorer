@@ -98,7 +98,7 @@ public class WebDAVConnection extends HTTPConnection
         {
             removeModule( Class.forName("HTTPClient.RedirectionModule") );
         }
-        catch (ClassNotFoundException cnfe)
+        catch( ClassNotFoundException cnfe )
         {
             // just ignore it
         }

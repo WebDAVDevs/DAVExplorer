@@ -35,6 +35,9 @@
  * @author      Joachim Feise (dav-exp@ics.uci.edu)
  * @date        1 October 2001
  * Changes:     Change of package name
+ * @author      Joachim Feise (dav-exp@ics.uci.edu)
+ * @date        19 November 2001
+ * Changes:     Added handling of untrusted certificates by asking user
  */
 
 package edu.uci.ics.DAVExplorer;
@@ -47,7 +50,10 @@ import HTTPClient.NVPair;
 import HTTPClient.ModuleException;
 import java.util.Vector;
 import java.util.StringTokenizer;
-
+import com.sun.net.ssl.KeyManager;
+import com.sun.net.ssl.TrustManager;
+import com.sun.net.ssl.SSLContext;
+import javax.net.ssl.SSLSocketFactory;
 
 public class WebDAVManager
 {
@@ -140,7 +146,9 @@ public class WebDAVManager
                         Con = new WebDAVConnection( "https", Hostname, Port );
                     }
                     else
+                    {
                         Con = new WebDAVConnection(Hostname, Port);
+                    }
                 }
                 else
                 {
@@ -150,7 +158,9 @@ public class WebDAVManager
                         Con = new WebDAVConnection( "https", Hostname, 443 );
                     }
                     else
+                    {
                         Con = new WebDAVConnection(Hostname);
+                    }
                 }
                 Con.setLogging( logging, logFilename );
             }
@@ -196,7 +206,47 @@ public class WebDAVManager
         }
         catch (IOException exception)
         {
-            GlobalData.getGlobalData().errorMsg("Connection error: \n" + exception);
+            // account for the possibility of JSSE not being installed
+            // This dynamic check using reflection prevents a
+            // NoClassDefFoundError when JSSE is not installed
+            Object o = null;
+            try
+            {
+                Class c = Class.forName( "javax.net.ssl.SSLPeerUnverifiedException" );
+                if( exception.getClass().equals(c) )
+                {
+                    SSLTrustDialog dlg = new SSLTrustDialog();
+                    if( dlg.getTrust( Hostname ) )
+                    {
+                        TrustManager[] tm = { new RelaxedX509TrustManager() };
+                        SSLContext sslContext = SSLContext.getInstance("SSL");
+                        sslContext.init( null, tm, new java.security.SecureRandom() );
+                        SSLSocketFactory sf = sslContext.getSocketFactory();
+                        Con.setSSLSocketFactory( sf );
+                        try
+                        {
+                            Response = Con.Generic(MethodName, ResourceName, Body, Headers);
+
+                            WebDAVResponseEvent webdavResponse  = GenerateWebDAVResponse(Response,tn);
+                            fireResponse(webdavResponse);
+                        }
+                        catch( IOException ex )
+                        {
+                            GlobalData.getGlobalData().errorMsg("Connection error: \n" + exception);
+                            // give up
+                        }
+                    }
+                }
+                else
+                {
+                    GlobalData.getGlobalData().errorMsg("Connection error: \n" + exception);
+                }
+            }
+            catch( Throwable t )
+            {
+                // class not found, SSL not available
+                GlobalData.getGlobalData().errorMsg("Connection error: \n" + exception);
+            }
         }
         catch (ModuleException exception)
         {
