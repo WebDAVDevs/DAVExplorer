@@ -1,22 +1,22 @@
 /*
- * @(#)Request.java					0.3-1 10/02/1999
+ * @(#)Request.java					0.3-2 18/06/1999
  *
  *  This file is part of the HTTPClient package
  *  Copyright (C) 1996-1999  Ronald Tschalär
  *
  *  This library is free software; you can redistribute it and/or
- *  modify it under the terms of the GNU Library General Public
+ *  modify it under the terms of the GNU Lesser General Public
  *  License as published by the Free Software Foundation; either
  *  version 2 of the License, or (at your option) any later version.
  *
  *  This library is distributed in the hope that it will be useful,
  *  but WITHOUT ANY WARRANTY; without even the implied warranty of
  *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
- *  Library General Public License for more details.
+ *  Lesser General Public License for more details.
  *
- *  You should have received a copy of the GNU Library General Public
+ *  You should have received a copy of the GNU Lesser General Public
  *  License along with this library; if not, write to the Free
- *  Software Foundation, Inc., 59 Temple Place - Suite 330, Boston,
+ *  Software Foundation, Inc., 59 Temple Place, Suite 330, Boston,
  *  MA 02111-1307, USA
  *
  *  For questions, suggestions, bug-reports, enhancement-requests etc.
@@ -33,7 +33,7 @@ package HTTPClient;
  * This class represents an http request. It's used by classes which
  * implement the HTTPClientModule interface.
  *
- * @version	0.3-1  10/02/1999
+ * @version	0.3-2  18/06/1999
  * @author	Ronald Tschalär
  */
 
@@ -71,8 +71,7 @@ public final class Request implements RoRequest
             int            num_retries = 0;
 
     /** disable pipelining of following request */
-//            boolean        dont_pipeline = false;
-            boolean        dont_pipeline = true;
+            boolean        dont_pipeline = false;
 
     /** was this request aborted by the user? */
             boolean        aborted = false;
@@ -100,11 +99,8 @@ public final class Request implements RoRequest
     {
 	this.connection = con;
 	this.method     = method;
-	this.req_uri    = req_uri;
-	if (headers != null)
-	    this.headers = headers;
-	else
-	    this.headers = empty;
+	setRequestURI(req_uri);
+	setHeaders(headers);
 	this.data       = data;
 	this.stream     = stream;
 	this.allow_ui   = allow_ui;
@@ -160,7 +156,15 @@ public final class Request implements RoRequest
      */
     public void setRequestURI(String req_uri)
     {
-	this.req_uri = req_uri;
+	if (req_uri != null  &&  req_uri.trim().length() > 0)
+	{
+	    req_uri = req_uri.trim();
+	    if (req_uri.charAt(0) != '/'  &&  !req_uri.equals("*"))
+		req_uri = "/" + req_uri;
+	    this.req_uri = req_uri;
+	}
+	else
+	    this.req_uri = "/";
     }
 
 

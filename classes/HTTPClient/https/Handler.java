@@ -1,22 +1,22 @@
 /*
- * @(#)Handler.java					0.3-1 09/02/1999
+ * @(#)Handler.java					0.3-2 18/06/1999
  *
  *  This file is part of the HTTPClient.https package 
  *  Copyright (C) 1996-1999  Ronald Tschalär
  *
  *  This library is free software; you can redistribute it and/or
- *  modify it under the terms of the GNU Library General Public
+ *  modify it under the terms of the GNU Lesser General Public
  *  License as published by the Free Software Foundation; either
  *  version 2 of the License, or (at your option) any later version.
  *
  *  This library is distributed in the hope that it will be useful,
  *  but WITHOUT ANY WARRANTY; without even the implied warranty of
  *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
- *  Library General Public License for more details.
+ *  Lesser General Public License for more details.
  *
- *  You should have received a copy of the GNU Library General Public
+ *  You should have received a copy of the GNU Lesser General Public
  *  License along with this library; if not, write to the Free
- *  Software Foundation, Inc., 59 Temple Place - Suite 330, Boston,
+ *  Software Foundation, Inc., 59 Temple Place, Suite 330, Boston,
  *  MA 02111-1307, USA
  *
  *  For questions, suggestions, bug-reports, enhancement-requests etc.
@@ -40,7 +40,7 @@ import HTTPClient.ProtocolNotSuppException;
  * can use the HTTPClient package as a replacement for the JDKs client.
  * To do so define the property java.protocol.handler.pkgs=HTTPClient .
  *
- * @version	0.3-1  09/02/1999
+ * @version	0.3-2  18/06/1999
  * @author	Ronald Tschalär
  */
 

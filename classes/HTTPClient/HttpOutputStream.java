@@ -1,22 +1,22 @@
 /*
- * @(#)HttpOutputStream.java				0.3-1 10/02/1999
+ * @(#)HttpOutputStream.java				0.3-2 18/06/1999
  *
  *  This file is part of the HTTPClient package
  *  Copyright (C) 1996-1999  Ronald Tschalär
  *
  *  This library is free software; you can redistribute it and/or
- *  modify it under the terms of the GNU Library General Public
+ *  modify it under the terms of the GNU Lesser General Public
  *  License as published by the Free Software Foundation; either
  *  version 2 of the License, or (at your option) any later version.
  *
  *  This library is distributed in the hope that it will be useful,
  *  but WITHOUT ANY WARRANTY; without even the implied warranty of
  *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
- *  Library General Public License for more details.
+ *  Lesser General Public License for more details.
  *
- *  You should have received a copy of the GNU Library General Public
+ *  You should have received a copy of the GNU Lesser General Public
  *  License along with this library; if not, write to the Free
- *  Software Foundation, Inc., 59 Temple Place - Suite 330, Boston,
+ *  Software Foundation, Inc., 59 Temple Place, Suite 330, Boston,
  *  MA 02111-1307, USA
  *
  *  For questions, suggestions, bug-reports, enhancement-requests etc.
@@ -68,13 +68,22 @@ import java.io.IOException;
  * this variable could be set correctly. Not all servers are willing to do
  * this.
  *
+ * <P>If you cannot use the <var>HttpOutputStream(length)</var> constructor and
+ * are having problems sending requests (usually a 411 response) then you can
+ * try setting the system property <var>HTTPClient.dontChunkRequests</var> to
+ * <var>true</var> (this needs to be done either on the command line or
+ * somewhere in the code before the HTTPConnection is first accessed). This
+ * will prevent the client from using the chunked encoding in this case and
+ * will cause the HttpOutputStream to buffer all the data instead, sending it
+ * only when close() is invoked.
+ *
  * <P>The behaviour of a request sent with an output stream may differ from
  * that of a request sent with a data parameter. The reason for this is that
  * the various modules cannot resend a request which used an output stream.
  * Therefore such things as authorization and retrying of requests won't be
- * done by the HTTPClient for such a request.
+ * done by the HTTPClient for such requests.
  *
- * @version	0.3-1  10/02/1999
+ * @version	0.3-2  18/06/1999
  * @author	Ronald Tschalär
  * @since	V0.3
  */

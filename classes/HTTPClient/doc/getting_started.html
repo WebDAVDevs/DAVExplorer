@@ -23,6 +23,7 @@
 <LI><A HREF="#cookies">Cookies</A>
 <LI><A HREF="#parsing">Parsing Headers</A>
 <LI><A HREF="#urlcon">Replacing the JDK's HttpClient</A>
+<LI><A HREF="#hotjava">Using the HTTPClient with HotJava</A>
 </UL>
 
 
@@ -72,7 +73,7 @@ use something like the following:
 	if (rsp.getStatusCode() &gt;= 300)
 	{
 	    System.err.println("Received Error: "+rsp.getReasonLine());
-	    System.err.println(new String(rsp.getData(),0));
+	    System.err.println(new String(rsp.getData()));
 	}
 	else
 	    data = rsp.getData();
@@ -81,7 +82,7 @@ use something like the following:
 	if (rsp.getStatusCode() &gt;= 300)
 	{
 	    System.err.println("Received Error: "+rsp.getReasonLine());
-	    System.err.println(new String(rsp.getData(),0));
+	    System.err.println(new String(rsp.getData()));
 	}
 	else
 	    other_data = rsp.getData();
@@ -128,7 +129,7 @@ and <var>e-mail</var>, whose contents are stored in the variables
 	if (rsp.getStatusCode() &gt= 300)
 	{
 	    System.err.println("Received Error: "+rsp.getReasonLine());
-	    System.err.println(new String(rsp.getData(),0));
+	    System.err.println(new String(rsp.getData()));
 	}
 	else
 	    stream = rsp.getInputStream();
@@ -160,7 +161,7 @@ server supports http PUT) you could do something like the following:
 	if (rsp.getStatusCode() &gt= 300)
 	{
 	    System.err.println("Received Error: "+rsp.getReasonLine());
-	    System.err.println(new String(rsp.getData(),0));
+	    System.err.println(new String(rsp.getData()));
 	}
 	else
 	    data = rsp.getData();
@@ -224,7 +225,9 @@ setting any authorization info. Example:
 </pre>
 
 <P>By default HTTPClient will handle both Basic and Digest authentication
-schemes.
+schemes. For more info on authorization handling see the
+<A HREF="advanced_info.html#auth_mod">AuthorizationModule</A>
+documentation.
 
 
 <H3>Authorization Realms</H3>
@@ -295,12 +298,12 @@ of cookies. By default, when the server tries to set a cookie a dialog box
 is brought up to ask the user whether the cookie should be accepted. This
 allows her simple control over which cookies are set. For more info on
 disabling cookies or using your own policy handler see the
-<A HREF="advanced_info.html#cookie_module">Advanced Info</A>.
+<A HREF="advanced_info.html#cookie_mod">Advanced Info</A>.
 
 <P>Cookies may also be saved at the end of the session and loaded again at
-startup. To enable this set the system property
+startup. To enable this set the java system property
 <var>HTTPClient.cookies.save</var> to <var>true</var>. Again, see
-<A HREF="advanced_info.html#cookie_module">Advanced Info</A> for more
+<A HREF="advanced_info.html#cookie_mod">Advanced Info</A> for more
 details.
 
 
@@ -317,20 +320,62 @@ unambiguously parseable.
 
 <H2><A NAME="urlcon">Replacing the JDK's HttpClient</A></H2>
 
-<P>An <A HREF="api/HTTPClient.HttpURLConnection.html">HttpURLConnection</A>
-class and the necessary <code>URLStreamHandlers</code> are provided so that
-you may easily replace the JDK's HttpClient with the HTTPClient. All you
-need to do is define the property <var>java.protocol.handler.pkgs</var> as
-<var>HTTPClient</var>. For example, on the command line this would look
-like
+<P>An <A
+HREF="api/HTTPClient.HttpURLConnection.html">HttpURLConnection</A> class
+and the necessary <code>URLStreamHandlers</code> are provided so that you
+may easily replace the JDK's HttpClient with the HTTPClient. All you need
+to do is define the java system property
+<var>java.protocol.handler.pkgs</var> as <var>HTTPClient</var>. For
+example, on the command line this would look like
 <PRE>
     java -Djava.protocol.handler.pkgs=HTTPClient MyApp
 </PRE>
 Invoking <code>URL.openConnection()</code> will then return an instance
 of <A
 HREF="api/HTTPClient.HttpURLConnection.html">HTTPClient.HttpURLConnection</A>.
-You can also use this to run HotJava with the HTTPClient - this gives you
-an HTTP/1.1 capable browser.
+
+<P>Note that there are a couple small differences compared to Sun's
+HttpClient when POSTing - please see the class documentation for more
+information.
+
+
+<H2><A NAME="hotjava">Using the HTTPClient with HotJava</A></H2>
+
+<P>You can also use the HTTPClient to turn HotJava into a fully HTTP/1.1
+compliant browser (contrary to what Sun claims, HotJava does
+<strong>not</strong> do HTTP/1.1 at all). Unfortunaly, sometime between
+HotJava 1.1.2 and HotJava 1.1.5 they started setting the system property
+<var>java.protocol.handler.pkgs</var> inside hotjava, overriding any
+settings applied on the command line or in the hotjava properties file.
+The only solution left is to provide a Handler in the package
+sunw.hotjava.protocol.http which points to the HTTPClient. Such a handler
+is provided in the alt/HotJava subdirectory. All that needs to be done
+then is set up the classpath so that this directory precedes all other
+entries.
+
+<H3>HotJava 3.0</H3>
+
+<P>To use the HTTPClient with HotJava 3.0 edit the hotjava.lax properties
+file (in the hotjava installation directory) and change the lax.class.path
+property definition to:
+<PRE>
+  lax.class.path=&lt;HTTPClient-dir&gt;/alt/HotJava:&lt;HTTPClient-dir&gt;:Browser.jar:lax.jar </PRE>
+where &lt;HTTPClient-dir&gt; is the full path to the HTTPClient directory.
+So, assuming you installed the HTTPClient in /home/joe/classes/ then the
+definition would be
+<PRE>
+  lax.class.path=/home/joe/classes/HTTPClient/alt/HotJava:/home/joe/classes/HTTPClient:Browser.jar:lax.jar </PRE>
+
+<H3>HotJava 1.1.5</H3>
+
+<P>This unfortunately requires editing of the hotjava startup script
+itself. In the section "Set Paths" add a third hjclasses line after the
+other two:
+<PRE>
+  hjclasses="&lt;HTTPClient-dir&gt;/alt/HotJava:&lt;HTTPClient-dir&gt;:${hjclasses}" </PRE>
+Again, using the above example installation it would be
+<PRE>
+  hjclasses="/home/joe/classes/HTTPClient/alt/HotJava:/home/joe/classes/HTTPClient:${hjclasses}" </PRE>
 
 
 <P>
@@ -339,7 +384,7 @@ an HTTP/1.1 capable browser.
 <HR>
 
 <ADDRESS>
-Ronald Tschal&auml;r / 10. February 1999 /
+Ronald Tschal&auml;r / 18. June 1999 /
 <A HREF="mailto:ronald@innovation.ch">ronald@innovation.ch</A>.
 </ADDRESS>
 

@@ -1,22 +1,22 @@
 /*
- * @(#)HttpURLConnection.java				0.3-1 10/02/1999
+ * @(#)HttpURLConnection.java				0.3-2 18/06/1999
  *
  *  This file is part of the HTTPClient package
  *  Copyright (C) 1996-1999  Ronald Tschalär
  *
  *  This library is free software; you can redistribute it and/or
- *  modify it under the terms of the GNU Library General Public
+ *  modify it under the terms of the GNU Lesser General Public
  *  License as published by the Free Software Foundation; either
  *  version 2 of the License, or (at your option) any later version.
  *
  *  This library is distributed in the hope that it will be useful,
  *  but WITHOUT ANY WARRANTY; without even the implied warranty of
  *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
- *  Library General Public License for more details.
+ *  Lesser General Public License for more details.
  *
- *  You should have received a copy of the GNU Library General Public
+ *  You should have received a copy of the GNU Lesser General Public
  *  License along with this library; if not, write to the Free
- *  Software Foundation, Inc., 59 Temple Place - Suite 330, Boston,
+ *  Software Foundation, Inc., 59 Temple Place, Suite 330, Boston,
  *  MA 02111-1307, USA
  *
  *  For questions, suggestions, bug-reports, enhancement-requests etc.
@@ -39,7 +39,6 @@ import java.io.BufferedInputStream;
 import java.io.ByteArrayOutputStream;
 import java.util.Date;
 import java.util.Hashtable;
-import java.util.Properties;
 import java.util.Enumeration;
 
 
@@ -51,7 +50,41 @@ import java.util.Enumeration;
  * HTTPClient by defining the property
  * <code>java.protocol.handler.pkgs=HTTPClient</code>.
  *
- * @version	0.3-1  10/02/1999
+ * <P>One difference between Sun's HttpClient and this one is that this
+ * one will provide you with a real output stream if possible. This leads
+ * to two changes: you should set the request property "Content-Length",
+ * if possible, before invoking getOutputStream(); and in many cases
+ * getOutputStream() implies connect(). This should be transparent, though,
+ * apart from the fact that you can't change any headers or other settings
+ * anymore once you've gotten the output stream.
+ * So, for large data do:
+ * <PRE>
+ *   HttpURLConnection con = (HttpURLConnection) url.openConnection();
+ *
+ *   con.setDoOutput(true);
+ *   con.setRequestProperty("Content-Length", ...);
+ *   OutputStream out = con.getOutputStream();
+ *
+ *   out.write(...);
+ *   out.close();
+ *
+ *   if (con.getResponseCode() != 200)
+ *       ...
+ * </PRE>
+ *
+ * <P>The HTTPClient will send the request data using the chunked transfer
+ * encoding when no Content-Length is specified and the server is HTTP/1.1
+ * compatible. Because cgi-scripts can't usually handle this, you may
+ * experience problems trying to POST data. For this reason, whenever
+ * the Content-Type is application/x-www-form-urlencoded getOutputStream()
+ * will buffer the data before sending it so as prevent chunking. If you
+ * are sending requests with a different Content-Type and are experiencing
+ * problems then you may want to try setting the system property
+ * <var>HTTPClient.dontChunkRequests</var> to <var>true</var> (this needs
+ * to be done either on the command line or somewhere in the code before
+ * the first URLConnection.openConnection() is invoked).
+ *
+ * @version	0.3-2  18/06/1999
  * @author	Ronald Tschalär
  * @since	V0.3
  */
@@ -60,7 +93,7 @@ public class HttpURLConnection extends java.net.HttpURLConnection
 			       implements GlobalConstants
 {
     /** a list of HTTPConnections */
-    private static CIHashtable  connections = new CIHashtable();
+    private static Hashtable  connections = new Hashtable();
 
     /** the current connection */
     private HTTPConnection    con;
@@ -92,25 +125,9 @@ public class HttpURLConnection extends java.net.HttpURLConnection
     /** the output stream used for POST and PUT */
     private OutputStream      output_stream;
 
-    /** HotJava hacks */
-    private static boolean    in_hotjava = false;
-
 
     static
     {
-	// This is a hack for HotJava
-	try
-	{
-	    String browser = System.getProperty("browser");
-	    if (browser != null  &&  browser.equals("HotJava"))
-	    {
-		setFollowRedirects(false);
-		in_hotjava = true;
-	    }
-	}
-	catch (SecurityException se)
-	    { }
-
 	// The default allowUserAction in java.net.URLConnection is
 	// false.
 	try
@@ -220,7 +237,8 @@ public class HttpURLConnection extends java.net.HttpURLConnection
 
 	String php = url.getProtocol() + ":" + url.getHost() + ":" +
 		     ((url.getPort() != -1) ? url.getPort() :
-					Util.defaultPort(url.getProtocol()));
+					URI.defaultPort(url.getProtocol()));
+	php = php.toLowerCase();
 
 	HTTPConnection con = (HTTPConnection) connections.get(php);
 	if (con != null)  return con;
@@ -279,16 +297,7 @@ public class HttpURLConnection extends java.net.HttpURLConnection
 	if (!connected)  connect();
 
 	try
-	{
-	    if (in_hotjava  &&  resp.getStatusCode() >= 300)
-	    {
-		try
-		    { resp.getData(); }	// force response stream to be read
-		catch (InterruptedIOException iioe)
-		    { disconnect(); }
-	    }
-	    return resp.getStatusCode();
-	}
+	    { return resp.getStatusCode(); }
 	catch (ModuleException me)
 	    { throw new IOException(me.toString()); }
     }
@@ -469,20 +478,7 @@ public class HttpURLConnection extends java.net.HttpURLConnection
 
 	InputStream stream;
 	try
-	{
-	    stream = resp.getInputStream();
-
-	    if (resp.pe != null  &&  resp.getHeader("Content-length") != null)
-	    {
-		try
-		    { stream = new sun.net.www.MeteredStream(stream, resp.pe); }
-		catch (Throwable t)
-		    { if (DebugURLC)  t.printStackTrace(); }
-	    }
-	    else
-		// some things expect this stream to support mark/reset
-		stream = new BufferedInputStream(stream);
-	}
+	    { stream = resp.getInputStream(); }
 	catch (ModuleException e)
 	    { throw new IOException(e.toString()); }
 
@@ -558,17 +554,24 @@ public class HttpURLConnection extends java.net.HttpURLConnection
 	    if (DebugURLC)
 		System.err.println("URLC:  (" +url+ ") creating output stream");
 
-	    // Hack: because of restrictions when using true output streams
-	    // and because form-data is usually quite limited in size, we
-	    // first collect all data before sending it if this is form-data.
-	    if (getRequestProperty("Content-type").equals(
-		"application/x-www-form-urlencoded"))
-		output_stream = new ByteArrayOutputStream(300);
+	    String cl = getRequestProperty("Content-Length");
+	    if (cl != null)
+		output_stream = new HttpOutputStream(Integer.parseInt(cl));
 	    else
 	    {
-		output_stream = new HttpOutputStream();
-		connect();
+		// Hack: because of restrictions when using true output streams
+		// and because form-data is usually quite limited in size, we
+		// first collect all data before sending it if this is
+		// form-data.
+		if (getRequestProperty("Content-type").equals(
+			"application/x-www-form-urlencoded"))
+		    output_stream = new ByteArrayOutputStream(300);
+		else
+		    output_stream = new HttpOutputStream();
 	    }
+
+	    if (output_stream instanceof HttpOutputStream)
+		connect();
 	}
 
 	return output_stream;
@@ -760,11 +763,6 @@ public class HttpURLConnection extends java.net.HttpURLConnection
 	}
 
 	connected = true;
-
-	try
-	    { resp.setProgressEntry(new sun.net.ProgressEntry(url.getFile(), null)); }
-	catch (Throwable t)
-	    { if (DebugURLC)  t.printStackTrace(); }
     }
 
 
@@ -777,28 +775,6 @@ public class HttpURLConnection extends java.net.HttpURLConnection
 	    System.err.println("URLC:  (" + url + ") Disconnecting ...");
 
 	con.stop();
-
-	/*
-	try
-	{
-	    if (connected)
-		resp.getInputStream().close();
-	}
-	catch (Exception e)
-	    { }
-	*/
-
-	if (resp != null)
-	    resp.unsetProgressEntry();
-    }
-
-
-    protected void finalize()  throws Throwable
-    {
-	if (resp != null)
-	    resp.unsetProgressEntry();
-
-	super.finalize();
     }
 
 

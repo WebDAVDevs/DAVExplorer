@@ -1,22 +1,22 @@
 /*
- * @(#)HTTPResponse.java                0.3-1 10/02/1999
+ * @(#)HTTPResponse.java				0.3-2 18/06/1999
  *
  *  This file is part of the HTTPClient package
  *  Copyright (C) 1996-1999  Ronald Tschalär
  *
  *  This library is free software; you can redistribute it and/or
- *  modify it under the terms of the GNU Library General Public
+ *  modify it under the terms of the GNU Lesser General Public
  *  License as published by the Free Software Foundation; either
  *  version 2 of the License, or (at your option) any later version.
  *
  *  This library is distributed in the hope that it will be useful,
  *  but WITHOUT ANY WARRANTY; without even the implied warranty of
  *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
- *  Library General Public License for more details.
+ *  Lesser General Public License for more details.
  *
- *  You should have received a copy of the GNU Library General Public
+ *  You should have received a copy of the GNU Lesser General Public
  *  License along with this library; if not, write to the Free
- *  Software Foundation, Inc., 59 Temple Place - Suite 330, Boston,
+ *  Software Foundation, Inc., 59 Temple Place, Suite 330, Boston,
  *  MA 02111-1307, USA
  *
  *  For questions, suggestions, bug-reports, enhancement-requests etc.
@@ -31,14 +31,12 @@ package HTTPClient;
 import java.io.IOException;
 import java.io.EOFException;
 import java.io.InterruptedIOException;
+import java.io.FileOutputStream;
 import java.io.InputStream;
 import java.io.ByteArrayInputStream;
-import java.io.FileOutputStream;
 import java.net.URL;
 import java.util.Date;
 import java.util.Enumeration;
-
-import sun.net.ProgressEntry;
 
 
 /**
@@ -47,9 +45,9 @@ import sun.net.ProgressEntry;
  * the modules handle the response before finally giving the info to
  * the user.
  *
- * @version 0.3-1  10/02/1999
- * @author  Ronald Tschalär
- * @since   0.3
+ * @version	0.3-2  18/06/1999
+ * @author	Ronald Tschalär
+ * @since	0.3
  */
 
 public class HTTPResponse implements GlobalConstants, HTTPClientModuleConstants
@@ -130,18 +128,18 @@ public class HTTPResponse implements GlobalConstants, HTTPClientModuleConstants
      */
     HTTPResponse(HTTPClientModule[] modules, int timeout, Request orig)
     {
-    this.modules = modules;
-    this.timeout = timeout;
-    try
-    {
-        this.OriginalURI = new URI(orig.getConnection().getProtocol(),
-                       orig.getConnection().getHost(),
-                       orig.getConnection().getPort(),
-                       orig.getRequestURI());
-    }
-    catch (ParseException pe)
-        { }
-    this.method = orig.getMethod();
+	this.modules = modules;
+	this.timeout = timeout;
+	try
+	{
+	    this.OriginalURI = new URI(orig.getConnection().getProtocol(),
+				       orig.getConnection().getHost(),
+				       orig.getConnection().getPort(),
+				       orig.getRequestURI());
+	}
+	catch (ParseException pe)
+	    { }
+	this.method = orig.getMethod();
     }
 
 
@@ -151,12 +149,11 @@ public class HTTPResponse implements GlobalConstants, HTTPClientModuleConstants
      */
     void set(Request req, Response resp)
     {
-    this.request   = req;
-    this.response  = resp;
-    resp.http_resp = this;
-    setLogging( resp );
-    resp.timeout   = timeout;
-    this.aborted   = resp.final_resp;
+	this.request   = req;
+	this.response  = resp;
+	resp.http_resp = this;
+	resp.timeout   = timeout;
+	this.aborted   = resp.final_resp;
     }
 
 
@@ -166,9 +163,8 @@ public class HTTPResponse implements GlobalConstants, HTTPClientModuleConstants
      */
     void set(Request req, HttpOutputStream out_stream)
     {
-    this.request    = req;
-    this.out_stream = out_stream;
-    setLogging( req );
+	this.request    = req;
+	this.out_stream = out_stream;
     }
 
 
@@ -189,8 +185,8 @@ public class HTTPResponse implements GlobalConstants, HTTPClientModuleConstants
      */
     public final int getStatusCode()  throws IOException, ModuleException
     {
-    if (!initialized)  handleResponse();
-    return StatusCode;
+	if (!initialized)  handleResponse();
+	return StatusCode;
     }
 
     /**
@@ -201,8 +197,8 @@ public class HTTPResponse implements GlobalConstants, HTTPClientModuleConstants
      */
     public final String getReasonLine()  throws IOException, ModuleException
     {
-    if (!initialized)  handleResponse();
-    return ReasonLine;
+	if (!initialized)  handleResponse();
+	return ReasonLine;
     }
 
     /**
@@ -213,8 +209,8 @@ public class HTTPResponse implements GlobalConstants, HTTPClientModuleConstants
      */
     public final String getVersion()  throws IOException, ModuleException
     {
-    if (!initialized)  handleResponse();
-    return Version;
+	if (!initialized)  handleResponse();
+	return Version;
     }
 
     /**
@@ -228,8 +224,8 @@ public class HTTPResponse implements GlobalConstants, HTTPClientModuleConstants
      */
     public final String getServer()  throws IOException, ModuleException
     {
-    if (!initialized)  handleResponse();
-    return getHeader("Server");
+	if (!initialized)  handleResponse();
+	return getHeader("Server");
     }
 
 
@@ -240,7 +236,7 @@ public class HTTPResponse implements GlobalConstants, HTTPClientModuleConstants
      */
     public final URI getOriginalURI()
     {
-    return OriginalURI;
+	return OriginalURI;
     }
 
 
@@ -257,10 +253,10 @@ public class HTTPResponse implements GlobalConstants, HTTPClientModuleConstants
      */
     public final URL getEffectiveURL()  throws IOException, ModuleException
     {
-    if (!initialized)  handleResponse();
-    if (EffectiveURI != null)
-        return EffectiveURI.toURL();
-    return null;
+	if (!initialized)  handleResponse();
+	if (EffectiveURI != null)
+	    return EffectiveURI.toURL();
+	return null;
     }
 
 
@@ -276,10 +272,10 @@ public class HTTPResponse implements GlobalConstants, HTTPClientModuleConstants
      */
     public final URI getEffectiveURI()  throws IOException, ModuleException
     {
-    if (!initialized)  handleResponse();
-    if (EffectiveURI != null)
-        return EffectiveURI;
-    return OriginalURI;
+	if (!initialized)  handleResponse();
+	if (EffectiveURI != null)
+	    return EffectiveURI;
+	return OriginalURI;
     }
 
 
@@ -293,8 +289,8 @@ public class HTTPResponse implements GlobalConstants, HTTPClientModuleConstants
      */
     public String getHeader(String hdr)  throws IOException, ModuleException
     {
-    if (!initialized)  handleResponse();
-    return (String) Headers.get(hdr.trim());
+	if (!initialized)  handleResponse();
+	return (String) Headers.get(hdr.trim());
     }
 
     /**
@@ -309,9 +305,9 @@ public class HTTPResponse implements GlobalConstants, HTTPClientModuleConstants
      * @exception ModuleException if any module encounters an exception.
      */
     public int getHeaderAsInt(String hdr)
-        throws IOException, ModuleException, NumberFormatException
+		throws IOException, ModuleException, NumberFormatException
     {
-    return Integer.parseInt(getHeader(hdr));
+	return Integer.parseInt(getHeader(hdr));
     }
 
     /**
@@ -329,32 +325,32 @@ public class HTTPResponse implements GlobalConstants, HTTPClientModuleConstants
      * @exception ModuleException if any module encounters an exception.
      */
     public Date getHeaderAsDate(String hdr)
-        throws IOException, IllegalArgumentException, ModuleException
+		throws IOException, IllegalArgumentException, ModuleException
     {
-    String raw_date = getHeader(hdr);
-    if (raw_date == null) return null;
+	String raw_date = getHeader(hdr);
+	if (raw_date == null) return null;
 
-    // asctime() format is missing an explicit GMT specifier
-    if (raw_date.toUpperCase().indexOf("GMT") == -1)
-        raw_date += " GMT";
+	// asctime() format is missing an explicit GMT specifier
+	if (raw_date.toUpperCase().indexOf("GMT") == -1)
+	    raw_date += " GMT";
 
-    Date   date;
+	Date   date;
 
-    try
-        { date = new Date(raw_date); }
-    catch (IllegalArgumentException iae)
-    {
-        // some servers erroneously send a number, so let's try that
-        long time;
-        try
-        { time = Long.parseLong(raw_date); }
-        catch (NumberFormatException nfe)
-        { throw iae; }  // give up
-        if (time < 0)  time = 0;
-        date = new Date(time * 1000L);
-    }
+	try
+	    { date = new Date(raw_date); }
+	catch (IllegalArgumentException iae)
+	{
+	    // some servers erroneously send a number, so let's try that
+	    long time;
+	    try
+		{ time = Long.parseLong(raw_date); }
+	    catch (NumberFormatException nfe)
+		{ throw iae; }	// give up
+	    if (time < 0)  time = 0;
+	    date = new Date(time * 1000L);
+	}
 
-    return date;
+	return date;
     }
 
     /**
@@ -365,8 +361,8 @@ public class HTTPResponse implements GlobalConstants, HTTPClientModuleConstants
      */
     public Enumeration listHeaders()  throws IOException, ModuleException
     {
-    if (!initialized)  handleResponse();
-    return Headers.keys();
+	if (!initialized)  handleResponse();
+	return Headers.keys();
     }
 
 
@@ -383,8 +379,8 @@ public class HTTPResponse implements GlobalConstants, HTTPClientModuleConstants
      */
     public String getTrailer(String trailer) throws IOException, ModuleException
     {
-    if (!got_trailers)  getTrailers();
-    return (String) Trailers.get(trailer.trim());
+	if (!got_trailers)  getTrailers();
+	return (String) Trailers.get(trailer.trim());
     }
 
     /**
@@ -399,9 +395,9 @@ public class HTTPResponse implements GlobalConstants, HTTPClientModuleConstants
      * @exception ModuleException if any module encounters an exception.
      */
     public int getTrailerAsInt(String trailer)
-        throws IOException, ModuleException, NumberFormatException
+		throws IOException, ModuleException, NumberFormatException
     {
-    return Integer.parseInt(getTrailer(trailer));
+	return Integer.parseInt(getTrailer(trailer));
     }
 
     /**
@@ -419,32 +415,32 @@ public class HTTPResponse implements GlobalConstants, HTTPClientModuleConstants
      * @exception ModuleException if any module encounters an exception.
      */
     public Date getTrailerAsDate(String trailer)
-        throws IOException, IllegalArgumentException, ModuleException
+		throws IOException, IllegalArgumentException, ModuleException
     {
-    String raw_date = getTrailer(trailer);
-    if (raw_date == null) return null;
+	String raw_date = getTrailer(trailer);
+	if (raw_date == null) return null;
 
-    // asctime() format is missing an explicit GMT specifier
-    if (raw_date.toUpperCase().indexOf("GMT") == -1)
-        raw_date += " GMT";
+	// asctime() format is missing an explicit GMT specifier
+	if (raw_date.toUpperCase().indexOf("GMT") == -1)
+	    raw_date += " GMT";
 
-    Date   date;
+	Date   date;
 
-    try
-        { date = new Date(raw_date); }
-    catch (IllegalArgumentException iae)
-    {
-        // some servers erroneously send a number, so let's try that
-        long time;
-        try
-        { time = Long.parseLong(raw_date); }
-        catch (NumberFormatException nfe)
-        { throw iae; }  // give up
-        if (time < 0)  time = 0;
-        date = new Date(time * 1000L);
-    }
+	try
+	    { date = new Date(raw_date); }
+	catch (IllegalArgumentException iae)
+	{
+	    // some servers erroneously send a number, so let's try that
+	    long time;
+	    try
+		{ time = Long.parseLong(raw_date); }
+	    catch (NumberFormatException nfe)
+		{ throw iae; }	// give up
+	    if (time < 0)  time = 0;
+	    date = new Date(time * 1000L);
+	}
 
-    return date;
+	return date;
     }
 
     /**
@@ -455,8 +451,8 @@ public class HTTPResponse implements GlobalConstants, HTTPClientModuleConstants
      */
     public Enumeration listTrailers()  throws IOException, ModuleException
     {
-    if (!got_trailers)  getTrailers();
-    return Trailers.keys();
+	if (!got_trailers)  getTrailers();
+	return Trailers.keys();
     }
 
 
@@ -478,38 +474,38 @@ public class HTTPResponse implements GlobalConstants, HTTPClientModuleConstants
      * @return an array containing the data (body) returned. If no data
      *         was returned then it's set to a zero-length array.
      * @exception IOException If any io exception occured while reading
-     *                the data
+     *			      the data
      * @exception ModuleException if any module encounters an exception.
      */
     public synchronized byte[] getData()  throws IOException, ModuleException
     {
-    if (!initialized)  handleResponse();
+	if (!initialized)  handleResponse();
 
-    if (Data == null)
-    {
-        try
-        { readResponseData(inp_stream); }
-        catch (InterruptedIOException ie)       // don't intercept
-        {
-        throw ie;
-        }
-        catch (IOException ioe)
-        {
-        if (DebugResp)
-        {
-            System.err.println("HResp: (\"" + method + " " +
-                       OriginalURI.getPath() + "\")");
-            System.err.print("       ");
-            ioe.printStackTrace();
-        }
-        try { inp_stream.close(); } catch (Exception e) { }
-        throw ioe;
-        }
+	if (Data == null)
+	{
+	    try
+		{ readResponseData(inp_stream); }
+	    catch (InterruptedIOException ie)		// don't intercept
+	    {
+		throw ie;
+	    }
+	    catch (IOException ioe)
+	    {
+		if (DebugResp)
+		{
+		    System.err.println("HResp: (\"" + method + " " +
+				       OriginalURI.getPath() + "\")");
+		    System.err.print("       ");
+		    ioe.printStackTrace();
+		}
+		try { inp_stream.close(); } catch (Exception e) { }
+		throw ioe;
+	    }
 
-        inp_stream.close();
-    }
+	    inp_stream.close();
+	}
 
-    return Data;
+	return Data;
     }
 
     /**
@@ -523,17 +519,17 @@ public class HTTPResponse implements GlobalConstants, HTTPClientModuleConstants
      * @exception ModuleException if any module encounters an exception.
      */
     public synchronized InputStream getInputStream()
-        throws IOException, ModuleException
+	    throws IOException, ModuleException
     {
-    if (!initialized)  handleResponse();
+	if (!initialized)  handleResponse();
 
-    if (Data == null)
-        return inp_stream;
-    else
-    {
-        getData();      // ensure complete data is read
-        return new ByteArrayInputStream(Data);
-    }
+	if (Data == null)
+	    return inp_stream;
+	else
+	{
+	    getData();		// ensure complete data is read
+	    return new ByteArrayInputStream(Data);
+	}
     }
 
 
@@ -544,50 +540,50 @@ public class HTTPResponse implements GlobalConstants, HTTPClientModuleConstants
      */
     public String toString()
     {
-    if (!initialized)
-    {
-        try
-        { handleResponse(); }
-        catch (Exception e)
-        {
-        if (DebugResp  &&  !(e instanceof InterruptedIOException))
-        {
-            System.err.println("HResp: (\"" + method + " " +
-                       OriginalURI.getPath() + "\")");
-            System.err.print("       ");
-            e.printStackTrace();
-        }
-        return "Failed to read headers: " + e;
-        }
-    }
+	if (!initialized)
+	{
+	    try
+		{ handleResponse(); }
+	    catch (Exception e)
+	    {
+		if (DebugResp  &&  !(e instanceof InterruptedIOException))
+		{
+		    System.err.println("HResp: (\"" + method + " " +
+				       OriginalURI.getPath() + "\")");
+		    System.err.print("       ");
+		    e.printStackTrace();
+		}
+		return "Failed to read headers: " + e;
+	    }
+	}
 
-    String nl = System.getProperty("line.separator", "\n");
+	String nl = System.getProperty("line.separator", "\n");
 
-    StringBuffer str = new StringBuffer(Version);
-    str.append(' ');
-    str.append(StatusCode);
-    str.append(' ');
-    str.append(ReasonLine);
-    str.append(nl);
+	StringBuffer str = new StringBuffer(Version);
+	str.append(' ');
+	str.append(StatusCode);
+	str.append(' ');
+	str.append(ReasonLine);
+	str.append(nl);
 
-    if (EffectiveURI != null)
-    {
-        str.append("Effective-URI: ");
-        str.append(EffectiveURI);
-        str.append(nl);
-    }
+	if (EffectiveURI != null)
+	{
+	    str.append("Effective-URI: ");
+	    str.append(EffectiveURI);
+	    str.append(nl);
+	}
 
-    Enumeration hdr_list = Headers.keys();
-    while (hdr_list.hasMoreElements())
-    {
-        String hdr = (String) hdr_list.nextElement();
-        str.append(hdr);
-        str.append(": ");
-        str.append(Headers.get(hdr));
-        str.append(nl);
-    }
+	Enumeration hdr_list = Headers.keys();
+	while (hdr_list.hasMoreElements())
+	{
+	    String hdr = (String) hdr_list.nextElement();
+	    str.append(hdr);
+	    str.append(": ");
+	    str.append(Headers.get(hdr));
+	    str.append(nl);
+	}
 
-    return str.toString();
+	return str.toString();
     }
 
 
@@ -596,7 +592,7 @@ public class HTTPResponse implements GlobalConstants, HTTPClientModuleConstants
 
     HTTPClientModule[] getModules()
     {
-    return modules;
+	return modules;
     }
 
 
@@ -612,103 +608,102 @@ public class HTTPResponse implements GlobalConstants, HTTPClientModuleConstants
      */
     synchronized boolean handleResponse()  throws IOException, ModuleException
     {
-    if (initialized)  return false;
+	if (initialized)  return false;
 
 
-    /* first get the response if necessary */
+	/* first get the response if necessary */
 
-    if (out_stream != null)
-    {
-        response           = out_stream.getResponse();
-        response.http_resp = this;
-        setLogging( response );
-        out_stream         = null;
-    }
+	if (out_stream != null)
+	{
+	    response           = out_stream.getResponse();
+	    response.http_resp = this;
+	    out_stream         = null;
+	}
 
 
-    /* go through modules and handle them */
+	/* go through modules and handle them */
 
-    doModules: while (true)
-    {
+	doModules: while (true)
+	{
 
-    Phase1: for (int idx=0; idx<modules.length && !aborted; idx++)
-    {
-        try
-        { modules[idx].responsePhase1Handler(response, request); }
-        catch (RetryException re)
-        {
-        if (re.restart)
-            continue doModules;
-        else
-            throw re;
-        }
-    }
+	Phase1: for (int idx=0; idx<modules.length && !aborted; idx++)
+	{
+	    try
+		{ modules[idx].responsePhase1Handler(response, request); }
+	    catch (RetryException re)
+	    {
+		if (re.restart)
+		    continue doModules;
+		else
+		    throw re;
+	    }
+	}
 
-    Phase2: for (int idx=0; idx<modules.length && !aborted; idx++)
-    {
+	Phase2: for (int idx=0; idx<modules.length && !aborted; idx++)
+	{
             int sts = modules[idx].responsePhase2Handler(response, request);
             switch (sts)
             {
-                case RSP_CONTINUE:  // continue processing
+                case RSP_CONTINUE:	// continue processing
                     break;
 
-                case RSP_RESTART:   // restart response processing
+                case RSP_RESTART:	// restart response processing
                     idx = -1;
-            continue doModules;
+		    continue doModules;
 
-                case RSP_SHORTCIRC: // stop processing and return
+                case RSP_SHORTCIRC:	// stop processing and return
                     break doModules;
 
-                case RSP_REQUEST:   // go to phase 1
-                case RSP_NEWCON_REQ:    // process the request using a new con
-            response.getInputStream().close();
-            if (handle_trailers) invokeTrailerHandlers(true);
-            if (request.internal_subrequest)  return true;
-            request.getConnection().
-                handleRequest(request, this, response, true);
-            if (initialized)  break doModules;
+                case RSP_REQUEST:	// go to phase 1
+                case RSP_NEWCON_REQ:	// process the request using a new con
+		    response.getInputStream().close();
+		    if (handle_trailers) invokeTrailerHandlers(true);
+		    if (request.internal_subrequest)  return true;
+		    request.getConnection().
+				handleRequest(request, this, response, true);
+		    if (initialized)  break doModules;
 
                     idx = -1;
-            continue doModules;
+		    continue doModules;
 
-                case RSP_SEND:      // send the request immediately
-                case RSP_NEWCON_SND:    // send the request using a new con
-            response.getInputStream().close();
-            if (handle_trailers) invokeTrailerHandlers(true);
-            if (request.internal_subrequest)  return true;
-            request.getConnection().
-                handleRequest(request, this, response, false);
+                case RSP_SEND:		// send the request immediately
+                case RSP_NEWCON_SND:	// send the request using a new con
+		    response.getInputStream().close();
+		    if (handle_trailers) invokeTrailerHandlers(true);
+		    if (request.internal_subrequest)  return true;
+		    request.getConnection().
+				handleRequest(request, this, response, false);
                     idx = -1;
-            continue doModules;
+		    continue doModules;
 
                 default:                // not valid
                     throw new Error("HTTPClient Internal Error: invalid status"+
                                     " " + sts + " returned by module " +
                                     modules[idx].getClass().getName());
-        }
-    }
+	    }
+	}
 
-    Phase3: for (int idx=0; idx<modules.length && !aborted; idx++)
-    {
+	Phase3: for (int idx=0; idx<modules.length && !aborted; idx++)
+	{
             modules[idx].responsePhase3Handler(response, request);
-    }
+	}
 
-    break doModules;
-    }
+	break doModules;
+	}
 
-    /* force a read on the response in case none of the modules did */
-    response.getStatusCode();
+	/* force a read on the response in case none of the modules did */
+	response.getStatusCode();
 
-    /* all done, so copy data */
-    if (!request.internal_subrequest)
-        init(response);
-    else if( logging )
-        doBodyLogging();
+	/* all done, so copy data */
+	if (!request.internal_subrequest)
+	    init(response);
+        else if( logging )
+            doBodyLogging();
 
-    if (handle_trailers)
-        invokeTrailerHandlers(false);
+	if (handle_trailers)
+	    invokeTrailerHandlers(false);
 
-    return false;
+	return false;
     }
 
 
@@ -719,40 +714,23 @@ public class HTTPResponse implements GlobalConstants, HTTPClientModuleConstants
      */
     void init(Response resp)
     {
-    if (initialized)  return;
+	if (initialized)  return;
 
-    this.StatusCode    = resp.StatusCode;
-    this.ReasonLine    = resp.ReasonLine;
-    this.Version       = resp.Version;
-    this.EffectiveURI  = resp.EffectiveURI;
-    this.ContentLength = resp.ContentLength;
-    this.Headers       = resp.Headers;
-    this.inp_stream    = resp.inp_stream;
-    this.Data          = resp.Data;
-    initialized        = true;
-    setLogging( resp );
+	this.StatusCode    = resp.StatusCode;
+	this.ReasonLine    = resp.ReasonLine;
+	this.Version       = resp.Version;
+	this.EffectiveURI  = resp.EffectiveURI;
+	this.ContentLength = resp.ContentLength;
+	this.Headers       = resp.Headers;
+	this.inp_stream    = resp.inp_stream;
+	this.Data          = resp.Data;
+	initialized        = true;
+        setLogging( resp );
 
-    // for HotJava (or anybody else)
-    try
-    {
-        if (pe != null  &&  ContentLength != -1)
-        {
-        pe.setType(Util.getPath(request.getRequestURI()),
-               getHeader("Content-type"));
-        sun.net.ProgressData.pdata.register(pe);
-        pe.update(0, ContentLength);
-        }
-    }
-    catch (Throwable t)
-    {
-        if (DebugResp)
-        {
-        System.err.print("Resp:  ");
-        t.printStackTrace();
-        }
-    }
+        // ????????? jfeise
         if( logging )
             doBodyLogging();
+
     }
 
 
@@ -768,54 +746,22 @@ public class HTTPResponse implements GlobalConstants, HTTPClientModuleConstants
      * @exception ModuleException if thrown by any module
      */
     void invokeTrailerHandlers(boolean force)
-        throws IOException, ModuleException
+	    throws IOException, ModuleException
     {
-    if (trailers_handled)  return;
+	if (trailers_handled)  return;
 
-    if (!force  &&  !initialized)
-    {
-        handle_trailers = true;
-        return;
-    }
+	if (!force  &&  !initialized)
+	{
+	    handle_trailers = true;
+	    return;
+	}
 
-    for (int idx=0; idx<modules.length && !aborted; idx++)
-    {
+	for (int idx=0; idx<modules.length && !aborted; idx++)
+	{
             modules[idx].trailerHandler(response, request);
-    }
+	}
 
-    trailers_handled = true;
-    }
-
-
-    ProgressEntry pe = null;
-
-    /**
-     * The ProgressEntry is used by HotJava to monitor the loading progress.
-     * HttpURLConnection sets this.
-     *
-     * @param pe a ProgressEntry
-     */
-    void setProgressEntry(ProgressEntry pe)
-    {
-    this.pe = pe;
-    }
-
-
-    /**
-     * Unset and unregister any ProgressEntry.
-     *
-     * @see #setProgressEntry(sun.net.ProgressEntry)
-     */
-    void unsetProgressEntry()
-    {
-    if (pe != null)
-    {
-        try
-        { sun.net.ProgressData.pdata.unregister(pe); }
-        catch (Throwable t)
-        { }
-        pe = null;
-    }
+	trailers_handled = true;
     }
 
 
@@ -825,7 +771,7 @@ public class HTTPResponse implements GlobalConstants, HTTPClientModuleConstants
      */
     void markAborted()
     {
-    aborted = true;
+	aborted = true;
     }
 
 
@@ -834,14 +780,14 @@ public class HTTPResponse implements GlobalConstants, HTTPClientModuleConstants
      */
     private synchronized void getTrailers()  throws IOException, ModuleException
     {
-    if (got_trailers)  return;
-    if (!initialized)  handleResponse();
+	if (got_trailers)  return;
+	if (!initialized)  handleResponse();
 
-    response.getTrailer("Any");
-    Trailers = response.Trailers;
-    got_trailers = true;
+	response.getTrailer("Any");
+	Trailers = response.Trailers;
+	got_trailers = true;
 
-    invokeTrailerHandlers(false);
+	invokeTrailerHandlers(false);
     }
 
 
@@ -853,75 +799,78 @@ public class HTTPResponse implements GlobalConstants, HTTPClientModuleConstants
      * @exception IOException if any read on the input stream fails
      */
     private void readResponseData(InputStream inp)
-        throws IOException, ModuleException
+	    throws IOException, ModuleException
     {
-    if (Data == null)
-        Data = new byte[0];
+	if (ContentLength == 0)
+	    return;
+
+	if (Data == null)
+	    Data = new byte[0];
 
 
-    // read response data
+	// read response data
 
-    int off = Data.length;
+	int off = Data.length;
 
-    try
-    {
-        // check Content-length header in case CE-Module removed it
-        if (getHeader("Content-Length") != null)
-        {
-        int rcvd = 0;
-        Data = new byte[ContentLength];
+	try
+	{
+	    // check Content-length header in case CE-Module removed it
+	    if (getHeader("Content-Length") != null)
+	    {
+		int rcvd = 0;
+		Data = new byte[ContentLength];
 
-        do
-        {
-            off  += rcvd;
-            rcvd  = inp.read(Data, off, ContentLength-off);
-        } while (rcvd != -1  &&  off+rcvd < ContentLength);
+		do
+		{
+		    off  += rcvd;
+		    rcvd  = inp.read(Data, off, ContentLength-off);
+		} while (rcvd != -1  &&  off+rcvd < ContentLength);
 
                 /* Don't do this!
-         * If we do, then getData() won't work after a getInputStream()
-         * because we'll never get all the expected data. Instead, let
-         * the underlying RespInputStream throw the EOF.
-        if (rcvd == -1) // premature EOF
-        {
-            throw new EOFException("Encountered premature EOF while " +
-                        "reading headers: received " + off +
-                        " bytes instead of the expected " +
-                        ContentLength + " bytes");
-        }
-        */
-        }
-        else
-        {
-        int inc  = 1000,
-            rcvd = 0;
+		 * If we do, then getData() won't work after a getInputStream()
+		 * because we'll never get all the expected data. Instead, let
+		 * the underlying RespInputStream throw the EOF.
+		if (rcvd == -1)	// premature EOF
+		{
+		    throw new EOFException("Encountered premature EOF while " +
+					    "reading headers: received " + off +
+					    " bytes instead of the expected " +
+					    ContentLength + " bytes");
+		}
+		*/
+	    }
+	    else
+	    {
+		int inc  = 1000,
+		    rcvd = 0;
 
-        do
-        {
-            off  += rcvd;
-            Data  = Util.resizeArray(Data, off+inc);
-        } while ((rcvd = inp.read(Data, off, inc)) != -1);
+		do
+		{
+		    off  += rcvd;
+		    Data  = Util.resizeArray(Data, off+inc);
+		} while ((rcvd = inp.read(Data, off, inc)) != -1);
 
-        Data = Util.resizeArray(Data, off);
-        }
-    }
-    catch (IOException ioe)
-    {
-        Data = Util.resizeArray(Data, off);
-        throw ioe;
-    }
-    finally
-    {
-        try
-        { inp.close(); }
-        catch (IOException ioe)
-        { }
-    }
+		Data = Util.resizeArray(Data, off);
+	    }
+	}
+	catch (IOException ioe)
+	{
+	    Data = Util.resizeArray(Data, off);
+	    throw ioe;
+	}
+	finally
+	{
+	    try
+		{ inp.close(); }
+	    catch (IOException ioe)
+		{ }
+	}
     }
 
 
     int getTimeout()
     {
-    return timeout;
+	return timeout;
     }
 
     public void setLogging( boolean logging, String filename )
@@ -976,5 +925,4 @@ public class HTTPResponse implements GlobalConstants, HTTPClientModuleConstants
         }
     }
 }
-
 

@@ -1,22 +1,22 @@
 /*
- * @(#)AuthorizationInfo.java				0.3-1 10/02/1999
+ * @(#)AuthorizationInfo.java				0.3-2 18/06/1999
  *
  *  This file is part of the HTTPClient package
  *  Copyright (C) 1996-1999  Ronald Tschalär
  *
  *  This library is free software; you can redistribute it and/or
- *  modify it under the terms of the GNU Library General Public
+ *  modify it under the terms of the GNU Lesser General Public
  *  License as published by the Free Software Foundation; either
  *  version 2 of the License, or (at your option) any later version.
  *
  *  This library is distributed in the hope that it will be useful,
  *  but WITHOUT ANY WARRANTY; without even the implied warranty of
  *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
- *  Library General Public License for more details.
+ *  Lesser General Public License for more details.
  *
- *  You should have received a copy of the GNU Library General Public
+ *  You should have received a copy of the GNU Lesser General Public
  *  License along with this library; if not, write to the Free
- *  Software Foundation, Inc., 59 Temple Place - Suite 330, Boston,
+ *  Software Foundation, Inc., 59 Temple Place, Suite 330, Boston,
  *  MA 02111-1307, USA
  *
  *  For questions, suggestions, bug-reports, enhancement-requests etc.
@@ -81,7 +81,7 @@ import java.util.Enumeration;
  * AuthorizationInfo instances. There can be only one instance per host,
  * port, scheme, and realm combination (see <A HREF="#equals">equals()</A>).
  *
- * @version	0.3-1  10/02/1999
+ * @version	0.3-2  18/06/1999
  * @author	Ronald Tschalär
  * @since	V0.1
  */
@@ -575,16 +575,35 @@ public class AuthorizationInfo implements GlobalConstants, Cloneable
 					      String realm, String user,
 					      String passwd, Object context)
     {
-	String A1 = user + ":" + realm + ":" + passwd;
-	String[] info = { new MD5(A1).asHex(), null, null };
+	AuthorizationInfo prev =
+			getAuthorization(host, port, "Digest", realm, context);
+	NVPair[] params;
 
-	NVPair[] params = new NVPair[4];
-	params[0] = new NVPair("username", user);
-	params[1] = new NVPair("uri", "");
-	params[2] = new NVPair("nonce", "");
-	params[3] = new NVPair("response", "");
+	if (prev == null)
+	{
+	    params = new NVPair[4];
+	    params[0] = new NVPair("username", user);
+	    params[1] = new NVPair("uri", "");
+	    params[2] = new NVPair("nonce", "");
+	    params[3] = new NVPair("response", "");
+	}
+	else
+	{
+	    params = prev.getParams();
+	    for (int idx=0; idx<params.length; idx++)
+	    {
+		if (params[idx].getName().equalsIgnoreCase("username"))
+		{
+		    params[idx] = new NVPair("username", user);
+		    break;
+		}
+	    }
+	}
 
-	addAuthorization(host, port, "Digest", realm, null, params, info,
+	String[] extra = { new MD5(user + ":" + realm + ":" + passwd).asHex(),
+			   null };
+
+	addAuthorization(host, port, "Digest", realm, null, params, extra,
 			 context);
     }
 

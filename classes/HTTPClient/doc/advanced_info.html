@@ -17,12 +17,15 @@
 <UL>
 <LI><A HREF="#proxies">Proxies</A>
 <LI><A HREF="#timeouts">Timeouts</A>
+<LI><A HREF="#out_streams">Output Streams</A>
 <LI><A HREF="#contexts">Contexts</A>
 <LI><A HREF="#pers_con">Persistent Connections (Keep-Alive's)</A>
 <LI><A HREF="#pipelining">Pipelining</A>
+<LI><A HREF="#threading">Multithreading</A>
+<LI><A HREF="#urlcon">HttpURLConnection</A>
 <LI><A HREF="#prot_vers">Protocol Version</A>
 <LI><A HREF="#modules">Modules</A>
-<LI><A HREF="#properties">System Properties recognized by HTTPClient</A>
+<LI><A HREF="#properties">Java System Properties recognized by HTTPClient</A>
 <LI><A HREF="#headers">HTTP Headers</A>
 <LI><A HREF="#specs">HTTP (and related) Specifications</A>
 </UL>
@@ -33,16 +36,29 @@
 <P>Support for proxies (including SOCKS) is fully implemented. However,
 using proxies in Applets is subject to a number of security restrictions
 (see <A HREF="security.html">security</A> for more information on the
-various security policies and the consequences that arise from them).
-If you are using an http proxy then use the <A
-HREF="api/HTTPClient.HTTPConnection.html#setProxyServer(java.lang.String, int)">HTTPConnection.setProxyServer()</A>
-method to set the default proxy for all connections, and <A
-HREF="api/HTTPClient.HTTPConnection.html#setCurrentProxy(java.lang.String, int)">HTTPConnection.setCurrentProxy()</A>
-to set a proxy for the current connection only. You can also manipulate a
-list of hosts for which no proxy is to be used with the methods <A
-HREF="api/HTTPClient.HTTPConnection.html#dontProxyFor(java.lang.String)">HTTPConnection.dontProxyFor()</A>
-and <A
-HREF="api/HTTPClient.HTTPConnection.html#doProxyFor(java.lang.String)">HTTPConnection.doProxyFor()</A>.
+various security policies and the consequences that arise from them). If
+you are using an http proxy then use the
+<A HREF="api/HTTPClient.HTTPConnection.html#setProxyServer(java.lang.String, int)">HTTPConnection.setProxyServer()</A>
+method to set the default proxy for all connections;
+<A HREF="api/HTTPClient.HTTPConnection.html#setCurrentProxy(java.lang.String, int)">HTTPConnection.setCurrentProxy()</A>
+can be used to set a proxy for the current connection only. You can also
+manipulate a list of hosts for which no proxy is to be used with the
+methods
+<A HREF="api/HTTPClient.HTTPConnection.html#dontProxyFor(java.lang.String)">HTTPConnection.dontProxyFor()</A>
+and
+<A HREF="api/HTTPClient.HTTPConnection.html#doProxyFor(java.lang.String)">HTTPConnection.doProxyFor()</A>.
+Example:
+<PRE>
+    HTTPConnection.setProxyServer("my.proxy.dom", 8008);
+    HTTPConnection.dontProxyFor("localhost");
+    HTTPConnection.dontProxyFor(".mycompany.com");
+    AuthorizationInfo.addBasicAuthorization("my.proxy.dom", 8008, realm, user, passwd);
+    ...
+    HTTPConnection con = new HTTPConnection(...);
+</PRE>
+This will cause all connections to use the proxy (and automatically
+authenticate with it) except when connecting to localhost or any other
+machine within the company.
 
 <P>If you are using SOCKS then the method to use is <A
 HREF="api/HTTPClient.HTTPConnection.html#setSocksServer(java.lang.String)">setSocksServer()</A>.
@@ -85,6 +101,25 @@ always disabled while reading the response body. The rationale for this is
 that otherwise I'd have to make all the input streams (which may be pushed
 onto the response input stream) reentrant, and this would include writing
 my own versions of GZIPInputStream etc.
+
+
+<H2><A NAME="out_streams">Output Streams</A></H2>
+
+<P>All request methods which may send data (such as POST and PUT) take
+either a byte[] or an <A
+HREF="api/HTTPClient.HttpOutputStream.html">HttpOutputStream</A>. Using
+the latter may be beneficial when sending large amounts of data because
+it streams the data directly over the socket in many cases. However,
+restrictions on many servers may prevent the streaming, necessitating
+buffering of the data by the HttpOutputStream. The class documentation
+gives the full details, but in summary here are the things to consider:
+if you know the length of the data beforehand then use the appropriate
+constructor and you will be able to stream the data to any server. If
+you do not know the length beforehand then you may encounter problems,
+in which case you'll need to set the java system property
+<var>HTTPClient.dontChunkRequests</var> to <var>true</var>, and all data
+will be buffered by the client and only sent when the stream is
+close()'d.
 
 
 <H2><A NAME="contexts">Contexts</A></H2>
@@ -174,29 +209,81 @@ body, or the receipt of certain error status codes.
 
 <H2><A NAME="pipelining">Pipelining</A></H2>
 
-<P>If the connection is kept open across request then the request may be
-pipelined. Pipelining here means that a new request is sent before the
-response to a previous request is received. It is obvious that this may
-speed up requests, so HTTPClient supports pipelining (at the expense of
-some extra code to keep track of the outstanding requests).
+<P>If the connection is kept open across request then the request may
+be pipelined. Pipelining here means that a new request is sent before
+the response to a previous request is received. Since this can
+obviously enhance performance by reducing the overall roundtrip time
+for a series of requests to the same server, the HTTPClient has been
+written to support pipelining (at the expense of some extra code to
+keep track of the outstanding requests).
 
-<P>In spite of all the possible pipelining going on underneath, the
-programming model still stays simple: for every request you send you
-get a reponse back which contains the headers and data of the servers
-response. Now with pipelining the fields in the reponse aren't
-necessarily filled yet (i.e. the actual response headers and data
+<P>The programming model is always the same: for every request you send
+you get a response back which contains the headers and data of the
+servers response. Now, to support pipelining, the fields in the
+response aren't necessarily filled in yet when the HTTPResponse object
+is returned to the caller (i.e. the actual response headers and data
 haven't been read off the net), but the first call to any method in the
-reponse (e.g. a <var>getStatusCode()</var>) will wait till the reponse
-has actually been read and parsed. Also any previous requests will be
-forced to read their responses if they have not already done so (so
-e.g.  if you send two consecutive requests and receive responses
+response (e.g. a <var>getStatusCode()</var>) will wait till the
+response has actually been read and parsed. Also any previous requests
+will be forced to read their responses if they have not already done so
+(so e.g.  if you send two consecutive requests and receive responses
 <var>r1</var> and <var>r2</var>, calling
 <code>r2.getHeader("Content-type")</code> will first force the complete
 response <var>r1</var> to be read before reading the response
 <var>r2</var>). All this should be completely transparent, except for
-the fact that invoking a method on one response may sometimes take a few
-seconds to complete, while the same method on a different response will
-return immediately with the desired info.
+the fact that invoking a method on one response may sometimes take a
+few seconds to complete, while the same method on a different response
+will return immediately with the desired info.
+
+
+<H2><A NAME="threading">Multithreading</A></H2>
+
+<P>The HTTPClient is completely multithread safe (or at least should be
+;-). A single HTTPConnection instance may be shared between multiple
+threads, multiple requests may be run concurrently on a single or
+multiple HTTPConnection instances, and you may even have multiple
+threads reading on a single response (though I'm not sure that the
+latter makes much sense). Because a number of parameters are on a per
+HTTPConnection instance basis (such as the module list, proxy settings,
+default headers, etc), care should be taken when modifying these
+parameters if the HTTPConnection instance is shared among multiple
+threads.
+
+
+<H2><A NAME="urlcon">HttpURLConnection</A></H2>
+
+<P>The <A HREF="api/HTTPClient.HttpURLConnection.html">HttpURLConnection</A>
+class provides a java.net.HttpURLConnection compatible interface to
+the HTTPClient. It exists mainly to allow the HTTPClient to be used as
+a replacement for Sun's HttpClient (part of the JDK).
+
+<P>The HttpURLConnection follows the model of
+<var>java.net.URLConnection</var> and
+<var>java.net.HttpURLConnection</var> in that each instance is only
+capable of doing a single request (i.e. a new instance must be created
+for each request, usually via <code>URL.openConnection()</code> or
+<code>URL.openStream()</code>). To enable reuse of connections,
+HttpURLConnection manages a pool of HTTPConnection's internally.
+Different instances of HttpURLConnection will use the same
+HTTPConnection if they have the same host and port.  This way socket
+connections are reused as much as possible (i.e. you still get to take
+advantage of the persistent connections capability).  In addition, <A
+HREF="api/HTTPClient.HttpURLConnection.html#connect">connect()</A> will
+only send the request but not read or parse the response; only when a
+method such as <code>getInputStream()</code>,
+<code>getResponseCode()</code>, etc, is invoked is the response read
+and parsed. This, together with the reuse of HTTPConnection's, allows
+requests to be pipelined by explicitly invoking
+<code>connect()</code>.  Example:
+
+<PRE>
+    URLConnection con1 = url1.openConnection();
+    con1.connect();				// sends first request
+    URLConnection con2 = url2.openConnection();
+    con2.connect();				// sends second request
+    InputStream is1 = con1.getInputStream();	// waits for first response
+    InputStream is2 = con2.getInputStream();	// waits for second response
+</PRE>
 
 
 <H2><A NAME="prot_vers">Protocol Version</A></H2>
@@ -260,16 +347,18 @@ HREF="api/HTTPClient.HTTPConnection.html#addModule(java.lang.Class, int)">HTTPCo
 HREF="api/HTTPClient.HTTPConnection.html#removeModule(java.lang.Class)">HTTPConnection.removeModule()</A>
 and <A
 HREF="api/HTTPClient.HTTPConnection.html#getModules()">HTTPConnection.getModules()</A>
-manipulate and return the list of current modules for an connection.
+manipulate and return the list of current modules for an connection. Note
+that for the modules which are not public you must get their Class objects
+via <var>Class.forName()</var>.
 
-<P>The default list of modules is initialized from the property
+<P>The default list of modules is initialized from the java system property
 <var>HTTPClient.Modules</var>. This property must be a "|" separated list
 of class names. If this property is not set it defaults to all the classes
 listed below. Normally if during class initialization any module in the
 list does not exist or cannot be instantiated then an Error is thrown.
-However, if this is being used in an Applet then the error is supressed.
+However, if this is being used in an Applet then the error is suppressed.
 This way Applets can limit the modules loaded over the net by simply not
-providing them (remember, they can't set properties due to security
+providing them (remember, they can't set system properties due to security
 restrictions).
 
 <P>You may create your own modules and add them using the above methods.
@@ -284,7 +373,7 @@ freely available, let me know.
 <P>Here is a short description of each module.
 
 
-<H3>AuthorizationModule</H3>
+<H3><A NAME="auth_mod">AuthorizationModule</A></H3>
 
 <P>Authorization briefly described in <A HREF="getting_started.html#auth">
 Getting Started</A>. As mentioned, this module will handle both server and
@@ -327,7 +416,7 @@ box is activated) or the list is exhausted, in which case the response to
 the last failed request is returned.
 
 
-<H3>RedirectionModule</H3>
+<H3><A NAME="redir_mod">RedirectionModule</A></H3>
 
 <P>This module handles the redirection status codes 301, 302, 303, 305
 and 307. 301 and 307 responses are only redirected if the request method
@@ -343,7 +432,7 @@ code 301) and will preemptively redirect requests for these. This list is
 volatile (i.e. it will be lost when the client exits).
 
 
-<H3><A HREF="api/HTTPClient.CookieModule.html" NAME="cookie_module">CookieModule</A></H3>
+<H3><A HREF="api/HTTPClient.CookieModule.html" NAME="cookie_mod">CookieModule</A></H3>
 
 <P>This module implements cookies as defined by Netscape's <A
 HREF="http://home.netscape.com/newsref/std/cookie_spec.html">cookie
@@ -360,14 +449,14 @@ which always returns <var>false</var>. The handler must implement the <A
 HREF="api/HTTPClient.CookiePolicyHandler.html">CookiePolicyHandler</A>
 interface.
 
-<P>The CookieModule will save and restore cookies if the system property
-<var>HTTPClient.cookies.save</var> is set to <var>true</var>. All cookies
-which are meant to persist across invocations are then saved to a file
-when the application exists and read from that file when the CookieModule
-is loaded. The format of the file is a serialized Hashtable of Cookies.
-The name of file can controlled through the system property
-<var>HTTPClient.cookies.jar</var>. If this is not set, as system
-dependent name is used:
+<P>The CookieModule will save and restore cookies if the java system
+property <var>HTTPClient.cookies.save</var> is set to <var>true</var>. All
+cookies which are meant to persist across invocations are then saved to a
+file when the application exists and read from that file when the
+CookieModule is loaded. The format of the file is a serialized Hashtable
+of Cookies.  The name of file can controlled through the system property
+<var>HTTPClient.cookies.jar</var>. If this is not set, as system dependent
+name is used:
 <UL>
 <LI>Unix: <var>$HOME/.httpclient_cookies</var>
 <LI>Mac: <var>System Folder:Preferences:HTTPClientCookies</var>
@@ -376,11 +465,11 @@ dependent name is used:
 <LI>WinNT: <var>$HOME/.httpclient_cookies</var>
 </UL>
 
-(where $HOME is the value of the system property "user.home", and
-$JAVA_HOME is the value of the system property "java.home").
+(where $HOME is the value of the java system property "user.home", and
+$JAVA_HOME is the value of the java system property "java.home").
 
 
-<H3>ContentEncodingModule</H3>
+<H3><A NAME="ce_mod">ContentEncodingModule</A></H3>
 
 <P>Servers may apply various content encodings to the content. The most
 widely used encodings are compressions: <var>gzip</var>,
@@ -402,7 +491,7 @@ HTTPClient for things like web-copying where storing the compressed
 document makes sense.
 
 
-<H3>TransferEncodingModule</H3>
+<H3><A NAME="te_mod">TransferEncodingModule</A></H3>
 
 <P>This is similar to the ContentEncoding module except that it applies
 to transfer encodings. It also handles <var>gzip</var> and
@@ -410,7 +499,7 @@ to transfer encodings. It also handles <var>gzip</var> and
 1.1 or later.
 
 
-<H3>ContentMD5Module</H3>
+<H3><A NAME="md5_mod">ContentMD5Module</A></H3>
 
 <P>Some servers may generate a <var>Content-MD5</var> header which
 contains an MD5 hash of the message body (after any content encoding, but
@@ -420,13 +509,13 @@ the stream is closed or the end of the data is reached the calculated
 hash is compared to the one in the <var>Content-MD5</var> header and if
 they don't match an <var>IOException</var> is thrown.
 
-<H3>DefaultModule</H3>
+<H3><A NAME="def_mod">DefaultModule</A></H3>
 
 <P>This handles the response stati 408 (request timeout) and 411
 (length required).
 
 
-<H3>RetryModule</H3>
+<H3><A NAME="retry_mod">RetryModule</A></H3>
 
 <P>This module is special. It is responsible for automatically retrying
 requests which were aborted due to an IOException on the socket. It is
@@ -474,16 +563,27 @@ observed:
 </UL>
 
 
-<H2><A NAME="properties">System Properties recognized by HTTPClient</A></H2>
+<H2><A NAME="properties">Java System Properties recognized by HTTPClient</A></H2>
 
-<P>There are a number of system properties which are used by the HTTPClient.
-Most are documented somewhere in the api docs. Some of the properties
-may contain a list of elements, in which case the elements are separated
-by vertical bars ("|"). White space is ignored, except that a <tt>"| |"</tt>
-produces an empty element whereas <tt>"||"</tt> is treated like a single
-delimiter (i.e. <tt>"|"</tt>).
+<P>There are a number of java system properties which are used by the
+HTTPClient.  Most are documented somewhere in the api docs. Some of the
+properties may contain a list of elements, in which case the elements are
+separated by vertical bars ("|"). White space is ignored, except that a
+<tt>"| |"</tt> produces an empty element whereas <tt>"||"</tt> is treated
+like a single delimiter (i.e. <tt>"|"</tt>).
 
-Here is summary of all properties recognized:
+<P>The properties are read once, when the class that uses them is loaded
+(i.e. they're read in the class' static intializer). This means they need
+to be set either on the command line via the -D option, as in
+<PRE>
+    java -DHTTPClient.dontChunkRequests=true MyApp </PRE>
+or early in your application before the class is first accessed:
+<PRE>
+    System.getProperties().put("HTTPClient.dontChunkRequests", "true");
+    ...
+    HTTPConnection.setDefaultHeaders(...); </PRE>
+
+<P>Here is summary of all properties recognized:
 
 <DL>
 <DT>http.proxyHost
@@ -588,6 +688,14 @@ Here is summary of all properties recognized:
 	if the server could only handle HTTP/1.0, and causes the HTTP-version
 	in the request-line to be sent as HTTP/1.0.
 
+<DT>HTTPClient.dontChunkRequests
+    <DD>Read by <A
+	HREF="api/HTTPClient.HTTPConnection.html">HTTPConnection</A>.
+	Used to prevent the client from using the chunked transfer encoding
+	on requests. Setting this to <var>true</var> causes all data written
+	to an HttpOutputStream (that was not constructed with a content
+	length) to be buffered and only sent when the stream is closed.
+
 <DT>HTTPClient.cookies.hosts.accept
     <DD>Read by <A
 	HREF="api/HTTPClient.CookieModule.html">CookieModule</A>.
@@ -616,6 +724,12 @@ Here is summary of all properties recognized:
 	HREF="api/HTTPClient.CookieModule.html">CookieModule</A>.
 	This specifies the cookie jar to use for reading and saving
 	cookies. If not set, a system dependent name is used.
+
+<DT>HTTPClient.HttpURLConnection.AllowUI
+    <DD>Read by <A
+	HREF="api/HTTPClient.HttpURLConnection.html">HttpURLConnection</A>.
+	If set to true then set the defaultAllowUserInteraction to true.
+	By default this is set to false in java.net.URLConnection.
 
 <DT>http.agent
     <DD>Read by <A
@@ -754,7 +868,7 @@ read just the part that interests you and ignore the rest).
 <HR>
 
 <ADDRESS>
-Ronald Tschal&auml;r / 10. February 1999 /
+Ronald Tschal&auml;r / 18. June 1999 /
 <A HREF="mailto:ronald@innovation.ch">ronald@innovation.ch</A>.
 </ADDRESS>
 

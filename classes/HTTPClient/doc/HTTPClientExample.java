@@ -86,6 +86,7 @@ public class HTTPClientExample extends Applet implements Runnable
 	{
 	    disp = "Error POSTing: " + e;
 	    e.printStackTrace();
+	    repaint();
 	}
     }
 

@@ -1,22 +1,22 @@
 /*
- * @(#)RetryModule.java					0.3-1 10/02/1999
+ * @(#)RetryModule.java					0.3-2 18/06/1999
  *
  *  This file is part of the HTTPClient package
  *  Copyright (C) 1996-1999  Ronald Tschalär
  *
  *  This library is free software; you can redistribute it and/or
- *  modify it under the terms of the GNU Library General Public
+ *  modify it under the terms of the GNU Lesser General Public
  *  License as published by the Free Software Foundation; either
  *  version 2 of the License, or (at your option) any later version.
  *
  *  This library is distributed in the hope that it will be useful,
  *  but WITHOUT ANY WARRANTY; without even the implied warranty of
  *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
- *  Library General Public License for more details.
+ *  Lesser General Public License for more details.
  *
- *  You should have received a copy of the GNU Library General Public
+ *  You should have received a copy of the GNU Lesser General Public
  *  License along with this library; if not, write to the Free
- *  Software Foundation, Inc., 59 Temple Place - Suite 330, Boston,
+ *  Software Foundation, Inc., 59 Temple Place, Suite 330, Boston,
  *  MA 02111-1307, USA
  *
  *  For questions, suggestions, bug-reports, enhancement-requests etc.
@@ -42,7 +42,7 @@ import java.io.IOException;
  * also resend all other requests in the chain. Also, it rethrows the
  * RetryException in Phase1 to restart the processing of the modules.
  *
- * @version	0.3-1  10/02/1999
+ * @version	0.3-2  18/06/1999
  * @author	Ronald Tschalär
  * @since	V0.3
  */
@@ -182,6 +182,7 @@ class RetryModule implements HTTPClientModule, GlobalConstants
 			req.num_retries++;
 		    e.response.http_resp.set(req,
 				    con.sendRequest(req, e.response.timeout));
+		    e.exception = null;
 		    e.first = null;
 		}
 	    }
@@ -190,6 +191,8 @@ class RetryModule implements HTTPClientModule, GlobalConstants
 		{ if (got_lock)  throw npe; }
 	    catch (ParseException pe)
 		{ throw new IOException(pe.getMessage()); }
+
+	    if (re.exception != null)  throw re.exception;
 
 	    re.restart = true;
 	    throw re;

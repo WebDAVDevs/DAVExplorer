@@ -1,22 +1,22 @@
 /*
- * @(#)DefaultAuthHandler.java				0.3-1 10/02/1999
+ * @(#)DefaultAuthHandler.java				0.3-2 18/06/1999
  *
  *  This file is part of the HTTPClient package
  *  Copyright (C) 1996-1999  Ronald Tschalär
  *
  *  This library is free software; you can redistribute it and/or
- *  modify it under the terms of the GNU Library General Public
+ *  modify it under the terms of the GNU Lesser General Public
  *  License as published by the Free Software Foundation; either
  *  version 2 of the License, or (at your option) any later version.
  *
  *  This library is distributed in the hope that it will be useful,
  *  but WITHOUT ANY WARRANTY; without even the implied warranty of
  *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
- *  Library General Public License for more details.
+ *  Lesser General Public License for more details.
  *
- *  You should have received a copy of the GNU Library General Public
+ *  You should have received a copy of the GNU Lesser General Public
  *  License along with this library; if not, write to the Free
- *  Software Foundation, Inc., 59 Temple Place - Suite 330, Boston,
+ *  Software Foundation, Inc., 59 Temple Place, Suite 330, Boston,
  *  MA 02111-1307, USA
  *
  *  For questions, suggestions, bug-reports, enhancement-requests etc.
@@ -56,7 +56,7 @@ import java.awt.event.WindowAdapter;
  * Currently only handles the authentication types "Basic", "Digest" and
  * "SOCKS5" (used for the SocksClient and not part of HTTP per se).
  *
- * @version	0.3-1  10/02/1999
+ * @version	0.3-2  18/06/1999
  * @author	Ronald Tschalär
  * @since	V0.2
  */
@@ -229,7 +229,7 @@ class DefaultAuthHandler implements AuthorizationHandler, GlobalConstants
 
 
     /**
-     * We handle the "Authentication-info" and "Proxy-Authentication-info"
+     * We handle the "Authentication-Info" and "Proxy-Authentication-Info"
      * headers here.
      */
     public void handleAuthHeaders(Response resp, RoRequest req,
@@ -261,7 +261,7 @@ class DefaultAuthHandler implements AuthorizationHandler, GlobalConstants
 
 
     /**
-     * We handle the "Authentication-info" and "Proxy-Authentication-info"
+     * We handle the "Authentication-Info" and "Proxy-Authentication-Info"
      * trailers here.
      */
     public void handleAuthTrailers(Response resp, RoRequest req,
@@ -528,6 +528,9 @@ class DefaultAuthHandler implements AuthorizationHandler, GlobalConstants
 		params[cnonce] = new NVPair("cnonce", hash.asHex());
 	    }
 
+
+	    // select qop option
+
 	    if (ch_qop != -1)
 	    {
 		if (qop == -1)
@@ -585,7 +588,7 @@ class DefaultAuthHandler implements AuthorizationHandler, GlobalConstants
 		 *       same order as they pass through here, but in MT apps
 		 *       it's possible for one request to "overtake" another
 		 *       between here and the synchronized block in
-		 *       sendRequet().
+		 *       sendRequest().
 		 */
 		if (nc == -1)
 		{
@@ -877,7 +880,7 @@ class DefaultAuthHandler implements AuthorizationHandler, GlobalConstants
 	    verifier = new VerifyRspAuth(params[uri].getValue(),
 			      ((String[]) prev.getExtraInfo())[0],
 			      (alg == -1 ? null : params[alg].getValue()),
-			      params[nonce].getValue(),
+						  params[nonce].getValue(),
 			      (cnonce == -1 ? "" : params[cnonce].getValue()),
 			      (nc == -1 ? "" : params[nc].getValue()),
 			      hdr_name, resp);
@@ -1205,8 +1208,7 @@ class VerifyRspAuth implements HashVerifier, GlobalConstants
 
 
     public VerifyRspAuth(String uri, String HA1, String alg, String nonce,
-			 String cnonce, String nc, String hdr,
-			 RoResponse resp)
+			 String cnonce, String nc, String hdr, RoResponse resp)
     {
 	this.uri    = uri;
 	this.HA1    = HA1;
@@ -1366,30 +1368,6 @@ class VerifyDigest implements HashVerifier, GlobalConstants
 	String tlr = resp.getTrailer(hdr_name);
 	return (hdr != null ? hdr : (tlr != null ? tlr : ""));
     }
-
-
-    private static final String[] split(String header, char sep)
-    {
-	String[] tmp = new String[5];
-	char[] buf = header.toCharArray();
-
-	int last = 0, idx = 0;
-	for (int pos=0; pos<buf.length; pos++)
-	{
-	    if (buf[pos] == sep)
-	    {
-		tmp[idx++] = header.substring(last, pos);
-		last = pos+1;
-		if (tmp.length == idx)
-		    tmp = Util.resizeArray(tmp, idx+5);
-	    }
-	}
-	tmp[idx++] = header.substring(last, buf.length);
-	if (tmp.length != idx)
-	    tmp = Util.resizeArray(tmp, idx);
-
-	return tmp;
-    }
 }
 
 
@@ -1397,7 +1375,7 @@ class VerifyDigest implements HashVerifier, GlobalConstants
  * This class implements a simple popup that request username and password
  * used for the "basic" and "digest" authentication schemes.
  *
- * @version	0.3-1  10/02/1999
+ * @version	0.3-2  18/06/1999
  * @author	Ronald Tschalär
  */
 class BasicAuthBox extends Frame
@@ -1472,7 +1450,7 @@ class BasicAuthBox extends Frame
     /**
      * our event handlers
      */
-    class Ok implements ActionListener
+    private class Ok implements ActionListener
     {
 	public void actionPerformed(ActionEvent ae)
 	{
@@ -1481,7 +1459,7 @@ class BasicAuthBox extends Frame
 	}
     }
 
-    class Clear implements ActionListener
+    private class Clear implements ActionListener
     {
 	public void actionPerformed(ActionEvent ae)
 	{
@@ -1491,7 +1469,7 @@ class BasicAuthBox extends Frame
 	}
     }
 
-    class Cancel implements ActionListener
+    private class Cancel implements ActionListener
     {
 	public void actionPerformed(ActionEvent ae)
 	{
@@ -1501,7 +1479,7 @@ class BasicAuthBox extends Frame
     }
 
 
-    class Close extends WindowAdapter
+    private class Close extends WindowAdapter
     {
 	public void windowClosing(WindowEvent we)
 	{
@@ -1525,7 +1503,9 @@ class BasicAuthBox extends Frame
 	line2.invalidate();
 	line3.invalidate();
 
+	setResizable(true);
 	pack();
+	setResizable(false);
 	setLocation((screen.width-getPreferredSize().width)/2,
 		    (int) ((screen.height-getPreferredSize().height)/2*.7));
 	user.requestFocus();

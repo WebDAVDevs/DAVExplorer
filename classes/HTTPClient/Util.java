@@ -1,22 +1,22 @@
 /*
- * @(#)Util.java					0.3-1 10/02/1999
+ * @(#)Util.java					0.3-2 18/06/1999
  *
  *  This file is part of the HTTPClient package
  *  Copyright (C) 1996-1999  Ronald Tschalär
  *
  *  This library is free software; you can redistribute it and/or
- *  modify it under the terms of the GNU Library General Public
+ *  modify it under the terms of the GNU Lesser General Public
  *  License as published by the Free Software Foundation; either
  *  version 2 of the License, or (at your option) any later version.
  *
  *  This library is distributed in the hope that it will be useful,
  *  but WITHOUT ANY WARRANTY; without even the implied warranty of
  *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
- *  Library General Public License for more details.
+ *  Lesser General Public License for more details.
  *
- *  You should have received a copy of the GNU Library General Public
+ *  You should have received a copy of the GNU Lesser General Public
  *  License along with this library; if not, write to the Free
- *  Software Foundation, Inc., 59 Temple Place - Suite 330, Boston,
+ *  Software Foundation, Inc., 59 Temple Place, Suite 330, Boston,
  *  MA 02111-1307, USA
  *
  *  For questions, suggestions, bug-reports, enhancement-requests etc.
@@ -42,7 +42,7 @@ import java.util.Locale;
 /**
  * This class holds various utility methods.
  *
- * @version	0.3-1  10/02/1999
+ * @version	0.3-2  18/06/1999
  * @author	Ronald Tschalär
  */
 
@@ -846,8 +846,8 @@ public class Util
 	    return false;
 
 	int port1 = url1.getPort(), port2 = url2.getPort();
-	if (port1 == -1)  port1 = defaultPort(url1.getProtocol());
-	if (port2 == -1)  port2 = defaultPort(url1.getProtocol());
+	if (port1 == -1)  port1 = URI.defaultPort(url1.getProtocol());
+	if (port2 == -1)  port2 = URI.defaultPort(url1.getProtocol());
 	if (port1 != port2)
 	    return false;
 
@@ -863,6 +863,8 @@ public class Util
      *
      * @param protocol the protocol
      * @return the port number, or 0 if unknown
+     * @deprecated use URI.defaultPort() instead
+     * @see HTTPClient.URI#defaultPort(java.lang.String)
      */
     public final static int defaultPort(String protocol)
     {

@@ -21,7 +21,8 @@ Here are a few of the capabilites and tradeoffs.
   <TH><P>HTTPClient</TH>
 <TR><TH><P>Methods</TH>
   <TD><P>JDK 1.0.2: Only has GET and POST.
-      <BR>JDK 1.1: HEAD, GET, POST, PUT, DELETE, TRACE and OPTIONS
+      <BR>JDK 1.1: HEAD, GET, POST, PUT, DELETE, TRACE and OPTIONS (except
+	  for Netscape, which still only has GET and POST)
   <TD><P>Has HEAD, GET, POST, PUT, DELETE, TRACE and OPTIONS, plus any
       arbitrary method.
 <TR><TH><P>Headers</TH>
@@ -42,8 +43,8 @@ Here are a few of the capabilites and tradeoffs.
       browser.
 <TR><TH><P>Authorization</TH>
   <TD><P>Full support for Basic Authentication in Netscape (can use info
-      given by the user for normal accesses outside of the applet); no
-      support in appletviewer or applications.
+      given by the user for normal accesses outside of the applet);
+      support in appletviewer or applications only with JDK 1.2 (or later).
   <TD><P>Support for Basic and Digest Authentication; other schemes can be
       added. However cannot access info from a browser, thereby possibly
       requiring the user to enter info (s)he has already given for a
@@ -61,12 +62,15 @@ Here are a few of the capabilites and tradeoffs.
 <TR><TH><P>Pipelining of Requests</TH>
   <TD><P>No.
   <TD><P>Yes.
+<TR><TH><P>Can set Timeouts</TH>
+  <TD><P>No.
+  <TD><P>Yes.
 <TR><TH><P>Can handle protocols other than HTTP</TH>
   <TD><P>Theoretically; however only http is currently implemented.
   <TD><P>No.
 <TR><TH><P>Can do HTTP over SSL (https)</TH>
   <TD><P>Under Netscape, yes. Using Appletviewer or in an application, no.
-  <TD><P>No (not yet).
+  <TD><P>Patches are available for various commercial SSL packages
 <TR><TH><P>Source code available</TH>
   <TD><P>No.
   <TD><P>Yes.
@@ -79,7 +83,7 @@ Here are a few of the capabilites and tradeoffs.
 <HR>
 
 <ADDRESS>
-Ronald Tschal&auml;r / 30. January 1998 /
+Ronald Tschal&auml;r / 18. June 1999 /
 <A HREF="mailto:ronald@innovation.ch">ronald@innovation.ch</A>.
 </ADDRESS>
 

@@ -1,5 +1,5 @@
 
-This is Version 0.3-1 of the HTTPClient package. The latest version should
+This is Version 0.3-2 of the HTTPClient package. The latest version should
 always be available at http://www.innovation.ch/java/HTTPClient/ .
 Copyright (C) 1996-1999  Ronald Tschalär
 
@@ -7,6 +7,9 @@ The HTTPClient is fairly full-featured http client library. It implements
 most of the relevant parts of HTTP/1.1, and automatically handles things
 like redirections, authorization, and cookies. The functionality can be
 easily extended through the use of modules.
+
+This package includes an MD5 implementation from Santeri Paavolainen:
+http://www.cs.hut.fi/~santtu/java/
 
 
 Installation:
@@ -21,6 +24,16 @@ for new packages all you have to do is unpack them into a subdirectory
 under the main directory and away you go. Now add a 'import
 HTTPClient.*;' statement to each of your files that use any part of the
 package and you're set to go.
+
+Alternatively you can put everything into a zip file and add that file
+to your CLASSPATH. If your JDK/development-environment supports
+compressed zip files and you downloaded the HTTPClient.zip file then
+you can just add that file to your CLASSPATH. If you downloaded the
+tar file, or if your JDK does not support compressed zip files, then
+unpack the HTTPClient and create an uncompressed zip file to put in
+the CLASSPATH with something like the following:
+
+  zip -r0 HTTPClient.zip HTTPClient -i '*.class'
 
 
 Directory Structure:
@@ -37,6 +50,8 @@ Directory Structure:
    +-- alt ---- alternative versions of the core classes
    |    |
    |    +-- jdk_1.0.2 -- the JDK 1.0.2 compatible replacement classes
+   |    |
+   |    +-- HotJava ---- the HotJava specific replacement classes
    |
    +-- doc -- all the documentation
          |

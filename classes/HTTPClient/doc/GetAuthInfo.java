@@ -137,7 +137,7 @@ class MyAuthHandler implements AuthorizationHandler
 	System.out.println("Realm:  " + challenge.getRealm());
 
 	System.out.println();
-	System.out.println("Set the auth info as follows:");
+	System.out.println("Add the following line near the beginning of your application:");
 	System.out.println();
 
 	if (challenge.getScheme().equalsIgnoreCase("Basic"))

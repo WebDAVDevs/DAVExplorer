@@ -12,12 +12,43 @@
 
 <H1>HTTPClient FAQ</H1>
 
-<H2>General</H2>
+<H2>Contents</H2>
+
+<UL>
+<LI><A HREF="#general">General</A>
+    <UL>
+    <LI><A HREF="#hang">Dialog box doesn't appear or hangs</A>
+    <LI><A HREF="#handler">Displaying images and playing sound</A>
+    <LI><A HREF="#formdata">File upload using multipart/form-data</A>
+    <LI><A HREF="#url">UnknownHostException: http://www.foo.bar/x</A>
+    <LI><A HREF="#ssl">https support</A>
+    <LI><A HREF="#V0.4">When will V0.4 be out?</A>
+    <LI><A HREF="#license">What are the licensing conditions?</A>
+    <LI><A HREF="#diffres">I'm trying to emulate Netscape/Exploder/whatever
+                           but I'm getting different results</A>
+    <LI><A HREF="#hiddenf">I'm trying to POST to a form but I'm not getting
+                           the expected results</A>
+    <li><A HREF="#cookiesns">The site is saying "Your browser doesn't support
+                             cookies"</A>
+    </UL>
+<LI><A HREF="#applet">Applet specific</A>
+    <UL>
+    <LI><A HREF="#se-prop">SecurityException: properties</A>
+    <LI><A HREF="#se-thread">SecurityException: thread</A>
+    </UL>
+<LI><A HREF="#application">Application specific</A>
+    <UL>
+    <LI><A HREF="#exit">Application doesn't exit</A>
+    </UL>
+</UL>
+
+<H2><A NAME="general">General</A></H2>
 
 
-<H4>All goes fine, until I try to do a request to a site that requires
-    authorization or tries to set cookies. The dialog box either doesn't
-    appear, or it appears but then everything hangs.</H4>
+<H4><A NAME="hang">All goes fine, until I try to do a request to a site
+    that requires authorization or tries to set cookies. The dialog box
+    either doesn't appear, or it appears but then everything hangs.</A>
+    </H4>
 
 <BLOCKQUOTE>
     <P>What you are probably doing is issuing the request from inside
@@ -60,8 +91,9 @@
 </BLOCKQUOTE>
 
 
-<H4>How can I display an image or play an audio file retrieved via the
-    HTTPClient? Do I have to write my own ContentHandler's?</H4>
+<H4><A NAME="handler">How can I display an image or play an audio file
+    retrieved via the HTTPClient? Do I have to write my own
+    ContentHandler's?</A></H4>
 
 <BLOCKQUOTE>
     <P>You certainly could write your own ContentHandler's, but there
@@ -76,86 +108,154 @@
 	    import sun.audio.AudioStream;
 
 	    AudioStream as = new AudioStream(resp.getStream());
-	    AudioPlayer.player.start(as);
-	</PRE>
+	    AudioPlayer.player.start(as); </PRE>
     <DT>Images (gif and jpeg)
     <DD>This is from <A HREF="http://www.dtack.com/java/dtack/hinweis/imagedecode/imagedecode.html">a tip by David Erb</A>.
 	The <A HREF="ImageFromResponse.java">ImageFromResponse</A> class
 	will return an <var>Image</var> given an <var>HTTPResponse</var>
 	and a <var>java.awt.Component</var>:
 	<PRE>
-	    Image img = ImageFromResponse.create(resp, component);
-	</PRE>
+	    Image img = ImageFromResponse.create(resp, component); </PRE>
     </DL>
 </BLOCKQUOTE>
 
 
-<H4>I would like to upload files using POST and the
+<H4><A NAME="formdata">I would like to upload files using POST and the
     multipart/form-data encoding just like certain browsers do - how do I
-    do this with the HTTPClient?</H4>
+    do this with the HTTPClient?</A></H4>
+
 <BLOCKQUOTE>
     <P>See <A HREF="api/HTTPClient.Codecs.html#mpFormDataEncode(HTTPClient.NVPair[], HTTPClient.NVPair[], HTTPClient.NVPair[])">Codecs.mpFormDataEncode()</A>.
 </BLOCKQUOTE>
 
 
-<H4>Does HTTPClient support <var>HTTPS</var> (i.e. HTTP on top of SSL)?</H4>
+<H4><A NAME="url">I'm having trouble creating a connection. All I get is
+    <PRE>        java.net.UnknownHostException: http://www.foo.bar/x </PRE>
+    The code I use looks like:
+    <PRE>        con = new HTTPConnection("http://www.foo.bar"); </PRE>
+    </A></H4>
+
+<BLOCKQUOTE>
+    <P>You are passing the wrong data to that particular constructor -
+    it expects a <em>host name</em>, not a full url. Either use
+    <PRE>        con = new HTTPConnection("www.foo.bar"); </PRE>
+    or use something like
+    <PRE>        con = new HTTPConnection(new URL("http://www.foo.bar")); </PRE>.
+</BLOCKQUOTE>
+
+
+<H4><A NAME="ssl">Does HTTPClient support <var>HTTPS</var> (i.e. HTTP on
+    top of SSL)?</A></H4>
 
 <BLOCKQUOTE>
     <P>No, not yet. This is on the top of the list of things to do for
     version 0.4. The only real problem is finding a suitable SSL
-    implementation.
-
-    <P>If you're desperate you can modify the client now to support
-    HTTPS by uncommenting (and suitably modifying) the line
-    <PRE>
-	sock = new SSLSocket(sock); </PRE>
-    in <var>HTTPConnection.java</var> and by changing the line
-    <PRE>
-	if (!prot.equals("http")) </PRE>
-    to read
-    <PRE>
-	if (!prot.equals("http")  &&  !prot.equals("https")) </PRE>.
-
-    Note that you'll need an SSL implementation with a constructor
-    which takes an already established socket (this is because the
-    HTTPClient needs to create the raw connection itself, possibly
-    going through SOCKS or http proxies, and only then can the SSL
-    handshake be invoked).
-
-    <P>I have a couple modified HTTPConnection classes which work with
-    <A HREF="http://www.rsa.com/rsa/products/sslj/index.html">SSL-J</A>
-    (from RSA) and
-    <A HREF="http://www.phaos.com/products/sslava.htm">SSLava</A>
-    (from Phaos), but both these SSL implementations are commercial
-    packages. If you are willing to buy one of these you can
-    <A HREF="mailto:ronald@innovation.ch">contact me</A> for the
-    necessary HTTPConnection class (which is free, of course).
-    If you are choosing between one of these two I recomment SSL-J
-    because it has the necessary constructor so that the HTTPClient
-    will work through proxies; SSLava does not provide the necessary
-    constructor or hooks and therefore the HTTPClient/SSLava/https
-    combination will not work through proxies. Note that I have no
-    connection whatsoever with these companies - I just happened to
-    have received info and patches for these two packages from folks
-    who had used them to add https support to the HTTPClient.
+    implementation. However, see the <A HREF="https.html">https support</A>
+    page for a list of patches available for various commercial SSL
+    packages.
 </BLOCKQUOTE>
 
 
-<H4>When will V0.4 be available?</H4>
+<H4><A NAME="V0.4">When will V0.4 be available?</A></H4>
 
 <BLOCKQUOTE>
     <P>I don't know. I'm fairly busy with a job and helping to renovate
     a house, so it'll definitely be a few months more.
 </BLOCKQUOTE>
 
+<H4><A NAME="license">May I use the HTTPClient in a commercial product?
+    What are the conditions? How much does it cost?</A></H4>
+
+<BLOCKQUOTE>
+    <P>The HTTPClient is covered by the GNU <A HREF="../0LICENSE">Lesser
+    General Public License</A> (LGPL). Note that this is
+    <strong>not</strong> the same as the GPL, which is quite a bit more
+    restrictive. One of the main differences is that the copyleft only
+    applies to modifications of the library code itself, not to any
+    product using the HTTPClient or to modules and handlers you write
+    for the HTTPClient.
+
+    <P>Here is a summary of the most important points:
+    <UL>
+    <LI>You may use the HTTPClient in any product you wish, whether
+        commercial or otherwise. This product may be put under any
+	license you wish (i.e. the HTTPClient's license is not
+	infectious), and no source for the product need be distributed.
+    <LI>The above liberties also apply to any modules and handlers you
+        may have written for the HTTPClient.
+    <LI>The HTTPClient itself is free for all uses, and will stay so.
+        Others (including you) may however redistribute the HTTPClient
+	too and charge for the cost of distribution.
+    <LI>You may package the HTTPClient with your product, or you may
+        even redistribute the HTTPClient by itself, provided you
+	either distribute the complete HTTPClient package (including
+	the source to it) or, if distributed over the net, provide
+	pointers to where the source and the license to the HTTPClient
+	can be obtained.
+    <LI>You may make any modifications to the HTTPClient that you wish.
+	However, if you distribute the modified HTTPClient then you must
+	put those modifications under LGPL too and distribute them at no
+	cost (or at the cost of distribution). This is the only infectious
+	part of the license. Again, to restate: this applies only to
+	modifications of the HTTPClient source itself.
+    </UL>
+</BLOCKQUOTE>
+
+<H4><A NAME="diffres">I'm trying to emulate Netscape/Exploder/whatever
+		      but I'm getting different results</A></H4>
+
+<BLOCKQUOTE>
+    <P>Here are a few things that may be causing problems:
+    <UL>
+	<LI>The site may be expecting certain browser types, i.e it may
+	    be looking at the User-Agent field. You can try setting the
+	    User-Agent header with something like the following:
+	    <PRE>
+            HTTPConnection.setDefaultHeaders(
+                new NVPair[] { new NVPair("User-Agent", "Mozilla/4.5") });</PRE>
+	    (do this before you create the HTTPConnection).
+	<LI>The site may be expecting a Referer header containing a valid
+	    url. Try setting that header appropriately.
+	<LI>The site may be requiring cookies. Try accepting any cookies it
+	    sends.
+    </UL>
+</BLOCKQUOTE>
+
+<H4><A NAME="hiddenf">I'm trying to POST a form but I'm not getting the
+		      expected results</A></H4>
+
+<BLOCKQUOTE>
+    <P>Any number of things may be happening here too. But first, check
+    that you are not forgetting any data. Many forms have hidden fields
+    (<code>&lt;INPUT TYPE=HIDDEN NAME=... VALUE=...&gt;</code>). If you
+    are taking an html form and trying to do the same request as a browser
+    would then make sure your sending along the info from those fields too
+    (the fields may be anywhere on the page, so look closely). If that
+    isn't the problem, see <A HREF="#diffres">above</A>.
+</BLOCKQUOTE>
+
+<H4><A NAME="cookiesns">The site is saying "Your browser doesn't support
+			cookies"</A></H4>
+
+<BLOCKQUOTE>
+    <P>yahoo.com and similarly broken sites just look at the User-Agent
+    header to determine if the client supports cookies or not. Therefore,
+    just set the header to something used by Netscape or Exploder.
+    Example:
+    <PRE>
+    HTTPConnection.setDefaultHeaders(
+            new NVPair[] { new NVPair("User-Agent", "Mozilla/4.5") });</PRE>
+    (do this before you create the HTTPConnection).
+</BLOCKQUOTE>
 
 <HR>
-<H2>Applet specific</H2>
+<H2><A NAME="applet">Applet specific</A></H2>
 
 
-<H4>I keep getting the message "#Security Exception: properties"
-    (Netscape 3.x) or "#Security Exception: checkpropsaccess.key"
-    (Netscape 4.x) in the Java Console every time my Applet starts.</H4>
+<H4><A NAME="se-prop">I keep getting the message "#Security Exception:
+    properties" (Netscape 3.x) or "#Security Exception:
+    checkpropsaccess.key" (Netscape 4.x) in the Java Console every time
+    my Applet starts.</A></H4>
 
 <BLOCKQUOTE>
     <P>This can be ignored. What is happening is that the static
@@ -169,8 +269,8 @@
 </BLOCKQUOTE>
 
 
-<H4>I keep getting the message "#Security Exception: thread" in the
-    Java Console.</H4>
+<H4><A NAME="se-thread">I keep getting the message "#Security Exception:
+    thread" in the Java Console.</A></H4>
 
 <BLOCKQUOTE>
     <P>This one is a little trickier. I assume the HTTPClient is being
@@ -203,10 +303,11 @@
 
 
 <HR>
-<H2>Application specific</H2>
+<H2><A NAME="application">Application specific</A></H2>
 
 
-<H4>My application reaches the end, and then instead of exiting just hangs.</H4>
+<H4><A NAME="exit">My application reaches the end, and then instead of
+    exiting just hangs.</A></H4>
 
 <BLOCKQUOTE>
     <P>What is probably happening is that there are some (non daemon) threads
@@ -231,7 +332,7 @@
 <HR>
 
 <ADDRESS>
-Ronald Tschal&auml;r / 10. February 1999 /
+Ronald Tschal&auml;r / 18. June 1999 /
 <A HREF="mailto:ronald@innovation.ch">ronald@innovation.ch</A>.
 </ADDRESS>
 

@@ -11,14 +11,17 @@
 
 <H1>Running under JDK 1.0.2 (or equivalent)</H1>
 
-<P>If you wish to run the client under JDK 1.0.2 then you must copy
-the classes in the <var>alt/jdk_1.0.2/</var> subdirectory to the
-<var>HTTPClient</var> directory. This subdirectory contains JDK 1.0.2
-compatible replacements for the <var>Util</var>, <var>HTTPResponse</var>,
-<var>HttpURLConnection</var>, <var>Cookie</var>, and <var>CookieModule</var>
-classes and for the popup boxes (both sources and class files are provided).
-All the other classes will run fine as they are under JDK 1.0.2. However,
-under JDK 1.0.2 the functionality is restricted as follows:
+<P>If you wish to run the client under JDK 1.0.2 then you must either copy
+the classes in the <var>HTTPClient/alt/jdk_1.0.2/HTTPClient/</var>
+subdirectory to the <var>HTTPClient</var> directory, or place the
+directory <var>HTTPClient/alt/jdk_1.0.2</var> before the
+<var>HTTPClient</var> directory in your CLASSPATH. This subdirectory
+contains JDK 1.0.2 compatible replacements for the <var>Util</var>,
+<var>HttpURLConnection</var>, <var>Cookie</var>, and
+<var>CookieModule</var> classes and for the popup boxes (both sources and
+class files are provided). All the other classes will run fine as they are
+under JDK 1.0.2. However, under JDK 1.0.2 the functionality is restricted
+as follows:
 
 <UL>
 <P><LI>The <A HREF="api/HTTPClient.HTTPConnection.html#setTimeout">timeout</A>
@@ -50,7 +53,7 @@ comment these out.
 <HR>
 
 <ADDRESS>
-Ronald Tschal&auml;r / 10. February 1999 /
+Ronald Tschal&auml;r / 18. June 1999 /
 <A HREF="mailto:ronald@innovation.ch">ronald@innovation.ch</A>.
 </ADDRESS>
 

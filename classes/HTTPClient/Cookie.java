@@ -1,22 +1,22 @@
 /*
- * @(#)Cookie.java					0.3-1 10/02/1999
+ * @(#)Cookie.java					0.3-2 18/06/1999
  *
  *  This file is part of the HTTPClient package
  *  Copyright (C) 1996-1999  Ronald Tschalär
  *
  *  This library is free software; you can redistribute it and/or
- *  modify it under the terms of the GNU Library General Public
+ *  modify it under the terms of the GNU Lesser General Public
  *  License as published by the Free Software Foundation; either
  *  version 2 of the License, or (at your option) any later version.
  *
  *  This library is distributed in the hope that it will be useful,
  *  but WITHOUT ANY WARRANTY; without even the implied warranty of
  *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
- *  Library General Public License for more details.
+ *  Lesser General Public License for more details.
  *
- *  You should have received a copy of the GNU Library General Public
+ *  You should have received a copy of the GNU Lesser General Public
  *  License along with this library; if not, write to the Free
- *  Software Foundation, Inc., 59 Temple Place - Suite 330, Boston,
+ *  Software Foundation, Inc., 59 Temple Place, Suite 330, Boston,
  *  MA 02111-1307, USA
  *
  *  For questions, suggestions, bug-reports, enhancement-requests etc.
@@ -39,7 +39,7 @@ import java.util.Hashtable;
  * <a href="http://home.netscape.com/newsref/std/cookie_spec.html">Netscape's
  * cookie spec</a>
  *
- * @version	0.3-1  10/02/1999
+ * @version	0.3-2  18/06/1999
  * @author	Ronald Tschalär
  * @since	V0.3
  */
@@ -188,9 +188,18 @@ public class Cookie implements java.io.Serializable
 
 		if (name.equalsIgnoreCase("expires"))
 		{
-		    int c = set_cookie.indexOf(',', beg);
-		    if (c != -1)
-			beg = c+1;	// cut off the "Wdy," in the expires
+		    /* cut off the weekday if it is there. This is a little
+		     * tricky because the comma is also used between cookies
+		     * themselves. To make sure we don't inadvertantly
+		     * mistake a date for a weekday we only skip letters.
+		     */
+		    int pos = beg;
+		    while (buf[pos] >= 'a'  &&  buf[pos] <= 'z'  ||
+			   buf[pos] >= 'A'  &&  buf[pos] <= 'Z')
+			pos++;
+		    pos = Util.skipSpace(buf, pos);
+		    if (buf[pos] == ',')
+			beg = pos+1;
 		}
 
 		int comma = set_cookie.indexOf(',', beg);
@@ -368,7 +377,7 @@ public class Cookie implements java.io.Serializable
      */
     public boolean hasExpired()
     {
-	return (expires != null  &&  expires().before(new Date()));
+	return (expires != null  &&  expires.getTime() <= System.currentTimeMillis());
     }
 
 
@@ -436,31 +445,6 @@ public class Cookie implements java.io.Serializable
 	if (domain != null)   string += "; domain=" + domain;
 	if (secure)           string += "; secure";
 	return string;
-    }
-
-
-    /**
-     * Read cookies from a file into a hashtable. Each entry in the
-     * hashtable will have the same key and value (i.e. we do a
-     * put(cookie, cookie)).
-     *
-     * @param file the cookie file
-     * @param list the hashtable to fill
-     */
-    static void readFromFile(File file, Hashtable list)
-    {
-	// in windows, skip the mm2048.dat and mm256.dat files
-    }
-
-
-    /**
-     * Saves the cookies in the hashtable to a file.
-     *
-     * @param file the cookie file
-     * @param list the hashtable of cookies
-     */
-    static void saveToFile(File file, Hashtable list)
-    {
     }
 }
 

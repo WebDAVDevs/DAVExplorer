@@ -1,5 +1,5 @@
 /*
- * $Header: /home/jfeise/cvs/dav_explorer/classes/HTTPClient/MD5.java,v 1.2 1999/05/01 04:02:01 webdav Exp $
+ * $Header: /home/jfeise/cvs/dav_explorer/classes/HTTPClient/MD5.java,v 1.3 1999/12/07 00:00:16 cvswrite Exp $
  *
  * MD5 in Java JDK Beta-2
  * written Santeri Paavolainen, Helsinki Finland 1996
@@ -34,11 +34,8 @@
  *
  *
  * $Log: MD5.java,v $
- * Revision 1.2  1999/05/01 04:02:01  webdav
- * merged JDK 1.2 branch
- *
- * Revision 1.1.1.1.2.1  1999/03/26 01:35:07  webdav
- * Update to JDK 1.2
+ * Revision 1.3  1999/12/07 00:00:16  cvswrite
+ * Updated to version 0.3-2
  *
  * Revision 1.6  1998/09/22 18:34:00  ronald
  * Made MD5State a private inner class
@@ -67,7 +64,7 @@ package HTTPClient;
 /**
  * Implementation of RSA's MD5 hash generator
  *
- * @version	0.3-1  10/02/1999
+ * @version	0.3-2  18/06/1999
  * @author	Santeri Paavolainen <sjpaavol@cc.helsinki.fi>
  */
 

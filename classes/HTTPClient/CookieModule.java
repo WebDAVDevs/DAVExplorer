@@ -1,22 +1,22 @@
 /*
- * @(#)CookieModule.java				0.3-1 10/02/1999
+ * @(#)CookieModule.java				0.3-2 18/06/1999
  *
  *  This file is part of the HTTPClient package
  *  Copyright (C) 1996-1999  Ronald Tschalär
  *
  *  This library is free software; you can redistribute it and/or
- *  modify it under the terms of the GNU Library General Public
+ *  modify it under the terms of the GNU Lesser General Public
  *  License as published by the Free Software Foundation; either
  *  version 2 of the License, or (at your option) any later version.
  *
  *  This library is distributed in the hope that it will be useful,
  *  but WITHOUT ANY WARRANTY; without even the implied warranty of
  *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
- *  Library General Public License for more details.
+ *  Lesser General Public License for more details.
  *
- *  You should have received a copy of the GNU Library General Public
+ *  You should have received a copy of the GNU Lesser General Public
  *  License along with this library; if not, write to the Free
- *  Software Foundation, Inc., 59 Temple Place - Suite 330, Boston,
+ *  Software Foundation, Inc., 59 Temple Place, Suite 330, Boston,
  *  MA 02111-1307, USA
  *
  *  For questions, suggestions, bug-reports, enhancement-requests etc.
@@ -71,16 +71,17 @@ import java.awt.event.WindowAdapter;
  * allows it, and a cookie from the cookie list is only sent if the handler
  * allows it.
  *
- * <P>A cookie jar can be used to store cookies between sessions. This file
- * is read when this class is loaded and is written when the application
- * exits; only cookies from the default context are saved. The name of the
- * file is controlled by the property <var>HTTPClient.cookies.jar</var> and
- * defaults to a system dependent name. The reading and saving of cookies
- * is enabled by setting the property <var>HTTPClient.cookies.save</var>.
+ * <P>A cookie jar can be used to store cookies between sessions. This file is
+ * read when this class is loaded and is written when the application exits;
+ * only cookies from the default context are saved. The name of the file is
+ * controlled by the system property <var>HTTPClient.cookies.jar</var> and
+ * defaults to a system dependent name. The reading and saving of cookies is
+ * enabled by setting the system property <var>HTTPClient.cookies.save</var>
+ * to <var>true</var>.
  *
  * @see <a href="http://home.netscape.com/newsref/std/cookie_spec.html">Netscape's cookie spec</a>
  * @see <a href="ftp://ds.internic.net/internet-drafts/draft-ietf-http-state-man-mec-10.txt">HTTP State Management Mechanism spec</a>
- * @version	0.3-1  10/02/1999
+ * @version	0.3-2  18/06/1999
  * @author	Ronald Tschalär
  * @since	V0.3
  */
@@ -132,10 +133,12 @@ public class CookieModule implements HTTPClientModule, GlobalConstants
 
     private static void loadCookies()
     {
-	cookie_jar = new File(getCookieJarName());
-	if (cookie_jar.isFile()  &&  cookie_jar.canRead())
+	// The isFile() etc need to be protected by the catch as signed
+	// applets may be allowed to read properties but not do IO
+	try
 	{
-	    try
+	    cookie_jar = new File(getCookieJarName());
+	    if (cookie_jar.isFile()  &&  cookie_jar.canRead())
 	    {
 		ObjectInputStream ois =
 		    new ObjectInputStream(new FileInputStream(cookie_jar));
@@ -143,16 +146,16 @@ public class CookieModule implements HTTPClientModule, GlobalConstants
 				      (Hashtable) ois.readObject());
 		ois.close();
 	    }
-	    catch (Throwable t)
-		{ }
 	}
+	catch (Throwable t)
+	    { cookie_jar = null; }
     }
 
 
     private static void saveCookies()
     {
-	if (cookie_jar != null  &&  cookie_jar.isFile()  &&
-	    cookie_jar.canWrite())
+	if (cookie_jar != null  &&  (!cookie_jar.exists()  ||
+	     cookie_jar.isFile()  &&  cookie_jar.canWrite()))
 	{
 	    Hashtable cookie_list = new Hashtable();
 	    Enumeration enum = Util.getList(cookie_cntxt_list,
@@ -808,7 +811,7 @@ class DefaultCookiePolicyHandler implements CookiePolicyHandler
  * A simple popup that asks whether the cookie should be accepted or rejected,
  * or if cookies from whole domains should be silently accepted or rejected.
  *
- * @version	0.3-1  10/02/1999
+ * @version	0.3-2  18/06/1999
  * @author	Ronald Tschalär
  */
 class BasicCookieBox extends Frame

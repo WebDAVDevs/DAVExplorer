@@ -1,22 +1,22 @@
 /*
- * @(#)StreamDemultiplexor.java				0.3-1 10/02/1999
+ * @(#)StreamDemultiplexor.java				0.3-2 18/06/1999
  *
  *  This file is part of the HTTPClient package
  *  Copyright (C) 1996-1999  Ronald Tschalär
  *
  *  This library is free software; you can redistribute it and/or
- *  modify it under the terms of the GNU Library General Public
+ *  modify it under the terms of the GNU Lesser General Public
  *  License as published by the Free Software Foundation; either
  *  version 2 of the License, or (at your option) any later version.
  *
  *  This library is distributed in the hope that it will be useful,
  *  but WITHOUT ANY WARRANTY; without even the implied warranty of
  *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
- *  Library General Public License for more details.
+ *  Lesser General Public License for more details.
  *
- *  You should have received a copy of the GNU Library General Public
+ *  You should have received a copy of the GNU Lesser General Public
  *  License along with this library; if not, write to the Free
- *  Software Foundation, Inc., 59 Temple Place - Suite 330, Boston,
+ *  Software Foundation, Inc., 59 Temple Place, Suite 330, Boston,
  *  MA 02111-1307, USA
  *
  *  For questions, suggestions, bug-reports, enhancement-requests etc.
@@ -38,7 +38,7 @@ import java.util.Enumeration;
  * This class handles the demultiplexing of input stream. This is needed
  * for things like keep-alive in HTTP/1.0, persist in HTTP/1.1 and in HTTP-NG.
  *
- * @version	0.3-1  10/02/1999
+ * @version	0.3-2  18/06/1999
  * @author	Ronald Tschalär
  */
 
@@ -806,6 +806,8 @@ class SocketTimeout extends Thread implements GlobalConstants
 
 	    synchronized(time_list)
 	    {
+		if (!alive)  return;
+
 		// remove from current position
 		next.prev = prev;
 		prev.next = next;
@@ -831,8 +833,10 @@ class SocketTimeout extends Thread implements GlobalConstants
 
 	    synchronized(time_list)
 	    {
+		if (prev == null)  return;
 		next.prev = prev;
 		prev.next = next;
+		prev = null;
 	    }
 	}
     }
@@ -880,6 +884,8 @@ class SocketTimeout extends Thread implements GlobalConstants
      */
     public void run()
     {
+	TimeoutEntry marked = null;
+
 	while (true)
 	{
 	    try { sleep(1000L); } catch (InterruptedException ie) { }
@@ -903,20 +909,26 @@ class SocketTimeout extends Thread implements GlobalConstants
 		     entry != time_list[current];
 		     entry = entry.next)
 		{
-		    try
+		    if (entry.alive  &&  !entry.hyber)
 		    {
-			synchronized(entry.demux)
-			{
-			    if (entry.alive  &&  !entry.hyber)
-			    {
-				entry.demux.markForClose(null);
-				entry.kill();
-			    }
-			}
+			TimeoutEntry prev = entry.prev;
+			entry.kill();
+			/* put on death row. Note: we must not invoke
+			 * markForClose() here because it is synch'd
+			 * and can therefore lead to a deadlock if that
+			 * thread is trying to do a reset() or kill()
+			 */
+			entry.next = marked;
+			marked = entry;
+			entry = prev;
 		    }
-		    catch (NullPointerException npe)
-			{ }
 		}
+	    }
+
+	    while (marked != null)
+	    {
+		marked.demux.markForClose(null);
+		marked = marked.next;
 	    }
 	}
     }
