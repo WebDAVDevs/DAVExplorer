@@ -522,7 +522,7 @@ public class WebDAVResponseInterpreter
         else
         {
             //  "refresh"
-            setRefresh();
+            setRefresh(Node);
             fireInsertionEvent(null);
         }
     }
@@ -558,25 +558,25 @@ public class WebDAVResponseInterpreter
         refresh = false;
     }
 
-    public void setRefresh()
+    public void setRefresh( WebDAVTreeNode node )
     {
         refresh = true;
+        Node = node;
+        // Piggy back on the Copy Response stuff
+        clearStream();
+        CopyResponseEvent e = new CopyResponseEvent( this, Node);
+        copyListener.CopyEventResponse(e);
     }
 
     public void parsePropPatch()
     {
         // inform the user
-        setRefresh();
+        setRefresh( Node );
         fireInsertionEvent(null);
     }
 
     public void parseMkCol()
     {
-    //old
-        // inform the user
-        //setRefresh();
-        //fireInsertionEvent(null);
-
         clearStream();
 
 	if (Extra.equals("mkcol"))
@@ -715,11 +715,6 @@ public class WebDAVResponseInterpreter
 
     public void parseDelete()
     {
-    //Old
-        // inform the user
-        //setRefresh();
-        //fireInsertionEvent(null);
-
         // Piggy back on the Copy Response stuff
         clearStream();
         CopyResponseEvent e = new CopyResponseEvent( this, Node);
@@ -749,7 +744,7 @@ public class WebDAVResponseInterpreter
     public void parseCopy()
     {
         // inform the user
-        setRefresh();
+        setRefresh( Node );
         fireInsertionEvent(null);
     }
 

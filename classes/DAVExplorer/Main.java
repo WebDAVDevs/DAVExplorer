@@ -65,7 +65,7 @@ public class Main extends JFrame
     WebDAVLoginDialog ld;
     Hashtable authTable;
     String authHost;
-    public final static String VERSION = "0.53";
+    public final static String VERSION = "0.54";
     public final static String UserAgent = "UCI DAV Explorer/" + VERSION;
     String writeToDir;
 
@@ -222,8 +222,8 @@ public class Main extends JFrame
             if (!str.endsWith("/"))
                 str += "/";
             requestGenerator.setExtraInfo("uribox");
-            requestGenerator.GeneratePropFind(str,"allprop","one",null,null,false);
-            requestGenerator.execute();
+            if( requestGenerator.GeneratePropFind(str,"allprop","one",null,null,false) )
+                requestGenerator.execute();
         }
     }
 
@@ -317,8 +317,14 @@ public class Main extends JFrame
                 WebDAVTreeNode n = fileView.getParentNode();
                 requestGenerator.setResource(s, n);
 
-                //requestGenerator.GenerateRename( str, treeView.getCurrentPath() );
-                requestGenerator.GenerateRename( str, fileView.getParentPath() );
+                boolean retval = false;
+		if( fileView.isSelectedLocked() ){
+		    retval = requestGenerator.GenerateMove(str, fileView.getParentPath(), false, true, fileView.getSelectedLockToken() );
+		} else {
+		    retval = requestGenerator.GenerateMove(str, fileView.getParentPath(), false, true, null );
+		}
+                if( retval )
+                    requestGenerator.execute();
             }
         }
     }
@@ -451,17 +457,19 @@ public class Main extends JFrame
                     }
                     WebDAVTreeNode parent = fileView.getParentNode();
 
+                    boolean retval = false;
                     if (n2 == null)
                     {
                         requestGenerator.setResource(s, parent);
-                        requestGenerator.GeneratePut(fullPath, s, token , null);
+                        retval = requestGenerator.GeneratePut(fullPath, s, token , null);
                     }
                     else
                     {
                         requestGenerator.setResource(s, n2);
-                        requestGenerator.GeneratePut( fullPath, s, token , parent);
+                        retval = requestGenerator.GeneratePut( fullPath, s, token , parent);
                     }
-                    requestGenerator.execute();
+                    if( retval )
+                        requestGenerator.execute();
                 }
             }
             else if (command.equals("Lock"))
@@ -515,8 +523,8 @@ public class Main extends JFrame
 
                     requestGenerator.setResource(s, n);
 
-                    requestGenerator.GenerateCopy( null, true, true );
-                    requestGenerator.execute();
+                    if( requestGenerator.GenerateCopy( null, true, true ) )
+                        requestGenerator.execute();
                 }
             }
             else if (command.equals("Delete"))
@@ -553,22 +561,22 @@ public class Main extends JFrame
 		    WebDAVTreeNode selected = fileView.getSelectedCollection();
                     if( treeView.isRemote( fileView.getParentPath() ) )
                     {
-
+                        boolean retval = false;
 			if (selected == null){
                             requestGenerator.setNode(n);
 
                             requestGenerator.setExtraInfo("mkcol");
 
-                            requestGenerator.GenerateMkCol( fileView.getParentPath(), dirname );
-                            requestGenerator.execute();
+                            retval = requestGenerator.GenerateMkCol( fileView.getParentPath(), dirname );
 			}
 			else
 			{
 			    requestGenerator.setNode( selected );
 			    requestGenerator.setExtraInfo("mkcolbelow");
-                            requestGenerator.GenerateMkCol( fileView.getSelected(), dirname );
-                            requestGenerator.execute();
+                            retval = requestGenerator.GenerateMkCol( fileView.getSelected(), dirname );
 			}
+                        if( retval )
+                            requestGenerator.execute();
                     }
                     else
                     {
@@ -667,8 +675,8 @@ public class Main extends JFrame
             }
             else if (command.equals("Refresh"))
             {
-                responseInterpreter.setRefresh();
-                treeView.refresh();
+                WebDAVTreeNode n = fileView.getParentNode();
+                responseInterpreter.setRefresh( n );
             }
             else if (command.equals("About DAV Explorer..."))
             {
@@ -688,8 +696,8 @@ public class Main extends JFrame
 
     protected void viewDocument()
     {
-        requestGenerator.GenerateGet("view");
-        requestGenerator.execute();
+        if( requestGenerator.GenerateGet("view") )
+            requestGenerator.execute();
     }
 
     protected void saveAsDocument()
@@ -703,8 +711,8 @@ public class Main extends JFrame
         {
             WebDAVTreeNode n = fileView.getParentNode();
             requestGenerator.setResource(s, n);
-            requestGenerator.GenerateGet("saveas");
-            requestGenerator.execute();
+            if( requestGenerator.GenerateGet("saveas") )
+                requestGenerator.execute();
         }
     }
 
@@ -737,7 +745,18 @@ public class Main extends JFrame
                 {
                     WebDAVTreeNode n = fileView.getParentNode();
                     requestGenerator.setResource(s, n);
-                    requestGenerator.DiscoverLock("delete");
+                    //requestGenerator.DiscoverLock("delete");
+		    requestGenerator.setExtraInfo("delete");
+                    boolean retval = false;
+		    if( fileView.isSelectedLocked() ){
+			retval = requestGenerator.GenerateDelete(fileView.getSelectedLockToken());
+		    } else {
+                        retval = requestGenerator.GenerateDelete(null);
+
+		    }
+                    if( retval )
+                        requestGenerator.execute();
+			
                 }
                 else
                 {
@@ -772,8 +791,8 @@ public class Main extends JFrame
         {
             requestGenerator.setResource(s, null);
             requestGenerator.setExtraInfo("properties");
-            requestGenerator.GeneratePropFind(null,"allprop","zero",null,null,false);
-            requestGenerator.execute();
+            if( requestGenerator.GeneratePropFind(null,"allprop","zero",null,null,false) )
+                requestGenerator.execute();
         }
     }
 

@@ -276,7 +276,7 @@ public class WebDAVRequestGenerator implements Runnable
         listeners.removeElement(l);
     }
 
-    public synchronized void DiscoverLock(String method)
+    public synchronized boolean DiscoverLock(String method)
     {
         Extra = new String(method);
         String[] prop = new String[1];
@@ -284,11 +284,13 @@ public class WebDAVRequestGenerator implements Runnable
 
         prop[0] = new String("lockdiscovery");
         schema[0] = new String(WebDAVProp.DAV_SCHEMA);
-        GeneratePropFind(null,"prop","zero",prop,schema, false);
-        execute();
+        boolean retval = GeneratePropFind(null,"prop","zero",prop,schema, false);
+        if( retval )
+            execute();
+        return retval;
     }
 
-    public synchronized void GeneratePropFindForNode(   String FullPath,
+    public synchronized boolean GeneratePropFindForNode(   String FullPath,
                             String command,
                             String Depth,
                             String[] props,
@@ -296,11 +298,11 @@ public class WebDAVRequestGenerator implements Runnable
                             boolean flag,
                         WebDAVTreeNode n )
     {
-    Node = n;
-    GeneratePropFind( FullPath, command, Depth, props, schemas, flag);
+        Node = n;
+        return GeneratePropFind( FullPath, command, Depth, props, schemas, flag);
     }
 
-    public synchronized void GeneratePropFind(String FullPath, String command, String Depth, String[] props, String[] schemas, boolean flagGetFilesBelow )
+    public synchronized boolean GeneratePropFind(String FullPath, String command, String Depth, String[] props, String[] schemas, boolean flagGetFilesBelow )
     {
         Headers = null;
         Body = null;
@@ -314,9 +316,10 @@ public class WebDAVRequestGenerator implements Runnable
             // selected tree node will actually have the
             // properties of the children of the node
             // loaded into our tree.
-        if (Extra.equals("select")){
-        // Skip on a selection
-        }
+            if (Extra.equals("select"))
+            {
+            // Skip on a selection
+            }
             else if (ResourceName.equals(FullPath))
             {
                 Extra = "index";
@@ -326,8 +329,7 @@ public class WebDAVRequestGenerator implements Runnable
                 Extra = "expand";
             }
             ResourceName = FullPath;
-            parseResourceName();
-            ok = true;
+            ok = parseResourceName();
         }
         else if (FullPath != null)
         {
@@ -335,17 +337,13 @@ public class WebDAVRequestGenerator implements Runnable
         }
         else
         {
-            if( (Extra != null) && (Extra.equals("refresh")) )
-            {
-                ResourceName = Path;
-            }
             ok = parseResourceName();
         }
 
         if (!ok)
         {
-            errorMsg( "Error Generating PROPFIND Method for " + StrippedResource );
-            return;
+            //errorMsg( "Error Generating PROPFIND Method for " + StrippedResource );
+            return false;
         }
         String com = "allprop";
         String dep = "infinity";
@@ -414,7 +412,9 @@ public class WebDAVRequestGenerator implements Runnable
         catch (Exception e)
         {
             errorMsg("XML generation error: \n" + e);
+            return false;
         }
+        return true;
     }
 
     private void addChild( Element parent, Element child, int tabcount, boolean leadingCR )
@@ -462,7 +462,7 @@ public class WebDAVRequestGenerator implements Runnable
         return false;
     }
 
-    public synchronized void GeneratePropPatch(String Host, int port, String Res, Document old_xml, Document new_xml)
+    public synchronized boolean GeneratePropPatch(String Host, int port, String Res, Document old_xml, Document new_xml)
     {
         // need to determine here the patches (if any)
         Headers = null;
@@ -556,7 +556,7 @@ public class WebDAVRequestGenerator implements Runnable
         }
         if ( (!setUsed) && (!removeUsed))
         {
-            return;
+            return false;
         }
 
         if (setUsed)
@@ -597,12 +597,14 @@ public class WebDAVRequestGenerator implements Runnable
         catch (Exception e)
         {
             errorMsg("XML Generator Error: \n" + e);
+            return false;
         }
 
         execute();
+        return true;
     }
 
-    public synchronized void GenerateMkCol( String parentDir, String dirname )
+    public synchronized boolean GenerateMkCol( String parentDir, String dirname )
     {
 
         Headers = null;
@@ -613,7 +615,7 @@ public class WebDAVRequestGenerator implements Runnable
         if (!parseResourceName())
         {
             errorMsg( "Error Generating MKCOL Method" );
-            return;
+            return false;
         }
         String dest = dirname;
         int pos = dest.lastIndexOf( File.separatorChar );
@@ -627,9 +629,10 @@ public class WebDAVRequestGenerator implements Runnable
             Headers[0] = new NVPair("Host",HostName);
         else
             Headers[0] = new NVPair("Host",HostName + ":" + Port);
+        return true;
     }
 
-    public synchronized void GenerateGet(String localName)
+    public synchronized boolean GenerateGet(String localName)
     {
         Headers = null;
         Body = null;
@@ -637,7 +640,7 @@ public class WebDAVRequestGenerator implements Runnable
         if (!parseResourceName())
         {
             errorMsg( "Error Generating GET Method" );
-            return;
+            return false;
         }
 
         Extra = localName;
@@ -648,9 +651,10 @@ public class WebDAVRequestGenerator implements Runnable
             Headers[0] = new NVPair("Host",HostName);
         else
             Headers[0] = new NVPair("Host",HostName + ":" + Port);
+        return true;
     }
 
-    public synchronized void GenerateDelete(String lockToken)
+    public synchronized boolean GenerateDelete(String lockToken)
     {
         Headers = null;
         Body = null;
@@ -658,7 +662,7 @@ public class WebDAVRequestGenerator implements Runnable
         if (!parseResourceName())
         {
             errorMsg( "Error Generating DELETE Method" );
-            return;
+            return false;
         }
 
         Method = "DELETE";
@@ -676,6 +680,7 @@ public class WebDAVRequestGenerator implements Runnable
             Headers[0] = new NVPair("Host",HostName);
         else
             Headers[0] = new NVPair("Host",HostName + ":" + Port);
+        return true;
     }
 
     // Returns the parent Node , this is used to indicate which
@@ -691,7 +696,7 @@ public class WebDAVRequestGenerator implements Runnable
         parentNode= null;
     }
 
-    public synchronized void GeneratePut(String fileName, String destDir, String lockToken, WebDAVTreeNode selectedCollection)
+    public synchronized boolean GeneratePut(String fileName, String destDir, String lockToken, WebDAVTreeNode selectedCollection)
     {
         Headers = null;
         Body = null;
@@ -702,7 +707,7 @@ public class WebDAVRequestGenerator implements Runnable
         if (!parseResourceName())
         {
             errorMsg( "File is not local" );
-            return;
+            return false;
         }
 
         // strip any directory info from the destination name
@@ -720,13 +725,13 @@ public class WebDAVRequestGenerator implements Runnable
         if ( (fileName == null) || (fileName.equals("")) )
         {
             errorMsg("DAV Generator:\nFile not found!\n");
-            return;
+            return false;
         }
         File file = new File(fileName);
         if (!file.exists())
         {
             errorMsg("Invalid File.");
-            return;
+            return false;
         }
 
         try
@@ -767,11 +772,12 @@ public class WebDAVRequestGenerator implements Runnable
         catch (Exception e)
         {
             errorMsg( "Error generating PUT\n" + e );
-            return;
+            return false;
         }
+        return true;
     }
 
-    public synchronized void GenerateCopy(String Dest, boolean Overwrite, boolean KeepAlive)
+    public synchronized boolean GenerateCopy(String Dest, boolean Overwrite, boolean KeepAlive)
     {
         Headers = null;
         Body = null;
@@ -780,7 +786,7 @@ public class WebDAVRequestGenerator implements Runnable
         if (!parseResourceName())
         {
             errorMsg( "Error Generating COPY Method" );
-            return;
+            return false;
         }
 
         String ow = (Overwrite) ? "T" : "F";
@@ -850,6 +856,7 @@ public class WebDAVRequestGenerator implements Runnable
             catch (Exception e)
             {
                 errorMsg("XML Generator Error: \n" + e);
+                return false;
             }
         }
         else
@@ -862,17 +869,17 @@ public class WebDAVRequestGenerator implements Runnable
             Headers[1] = new NVPair("Destination", Dest);
             Headers[2] = new NVPair("Overwrite", ow);
         }
+        return true;
     }
 
-    public synchronized void GenerateRename( String Dest, String dir )
+    public synchronized boolean GenerateRename( String Dest, String dir )
     {
         Extra = new String(tableResource);
 
-        DiscoverLock("rename:" + Dest + ":" + dir );
-
+        return DiscoverLock("rename:" + Dest + ":" + dir );
     }
 
-    public synchronized void GenerateMove(String Dest, String dir, boolean Overwrite, boolean KeepAlive, String lockToken)
+    public synchronized boolean GenerateMove(String Dest, String dir, boolean Overwrite, boolean KeepAlive, String lockToken)
     {
         Headers = null;
         Body = null;
@@ -892,13 +899,13 @@ public class WebDAVRequestGenerator implements Runnable
         if (!parseResourceName())
         {
             errorMsg( "Error Generating MOVE Method" );
-            return;
+            return false;
         }
         String ow = (Overwrite) ? "T" : "F";
         if (Dest == null)
         {
             errorMsg( "Invalid Destination" );
-            return;
+            return false;
         }
 
 
@@ -966,6 +973,7 @@ public class WebDAVRequestGenerator implements Runnable
             catch (Exception e)
             {
                 errorMsg("XML Generator Error: \n" + e);
+                return false;
             }
         }
         else
@@ -978,9 +986,10 @@ public class WebDAVRequestGenerator implements Runnable
             Headers[1] = new NVPair("Destination", Dest);
             Headers[2] = new NVPair("Overwrite", ow);
         }
+        return true;
     }
 
-    public synchronized void GenerateLock(String OwnerInfo, String lockToken)
+    public synchronized boolean GenerateLock(String OwnerInfo, String lockToken)
     {
         Headers = null;
         Body = null;
@@ -989,7 +998,7 @@ public class WebDAVRequestGenerator implements Runnable
         if (!parseResourceName())
         {
             errorMsg( "Error Generating LOCK Method for " + StrippedResource );
-            return;
+            return false;
         }
 
         Method = "LOCK";
@@ -1050,6 +1059,7 @@ public class WebDAVRequestGenerator implements Runnable
             catch (Exception e)
             {
                 errorMsg("XML Generator Error: \n" + e);
+                return false;
             }
         }
         else
@@ -1072,12 +1082,13 @@ public class WebDAVRequestGenerator implements Runnable
             catch (Exception e)
             {
                 errorMsg(e.toString());
-                return;
+                return false;
             }
         }
+        return true;
     }
 
-    public synchronized void GenerateUnlock(String lockToken)
+    public synchronized boolean GenerateUnlock(String lockToken)
     {
         Headers = null;
         Body = null;
@@ -1085,7 +1096,7 @@ public class WebDAVRequestGenerator implements Runnable
         if (!parseResourceName())
         {
             errorMsg( "Error Generating UNLOCK Method" );
-            return;
+            return false;
         }
 
         try
@@ -1102,7 +1113,9 @@ public class WebDAVRequestGenerator implements Runnable
         catch (Exception e)
         {
             errorMsg( "Error Generating UNLOCK\n" + e );
+            return false;
         }
+        return true;
     }
 
     public synchronized void setExtraInfo(String info)
