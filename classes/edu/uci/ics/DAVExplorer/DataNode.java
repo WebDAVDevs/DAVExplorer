@@ -445,11 +445,11 @@ public class DataNode
                                 // even strange date strings.
                                 try
                                 {
-                                    // some date strings are so screwed up
-                                    // that even the old Date ctor doesn't
-                                    // know what to do with it.
+                                    // some date strings we get can't be decoded
+                                    // even by the old Date ctor.
                                     // Example: Microsoft Exchange Server
-                                    // returns 2004-02-08T13:12:00.593Z
+                                    // returns an ISO 8601-format date for
+                                    // getlastmodified: 2004-02-08T13:12:00.593Z
                                     return new Date(lastModified);
                                 }
                                 catch( Exception e2 )
@@ -484,15 +484,18 @@ public class DataNode
     }
 
     /**
-     * Microsoft Exchange Server gives us a pretty weird date format:<br>
+     * Microsoft Exchange Server gives us an ISO 8601 Date for getlastmodified:
      * yyyy-mm-ddThh:mm:ss.sssZ<br>
      * i.e., 4-digit year, '-', 2-digit month, '-', 2-digit day, 'T',
      * 2-digit hour, ':', 2-digit minutes, ':', 2-digit seconds, '.',
      * 3-digit thousands of a second, timezone<br> 
      * Example: 2004-02-08T13:12:00.593Z<br>
-     * We try to decode it here.
+     * This violates RFC 2518.<br>
+     * We are decoding it here.
      * @param strDate       The date as a string
-     * 
+     * @see <a href="http://www.ietf.org/rfc/rfc2518.txt">RFC 2518, Section 13.1</a>
+     * @see <a href="http://www.ietf.org/rfc/rfc2518.txt">RFC 2518, Appendix 2</a>
+     *  
      * @return              The Date object derived from the input string,
      *                      or null if the string could not be decoded.
      */
