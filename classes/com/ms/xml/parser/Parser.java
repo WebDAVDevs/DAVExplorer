@@ -1,10 +1,10 @@
 /*
  * @(#)Parser.java 1.0 6/3/97
- * 
+ *
  * Copyright (c) 1997 Microsoft, Corp. All Rights Reserved.
- * 
+ *
  */
- 
+
 package com.ms.xml.parser;
 
 import com.ms.xml.om.Element;
@@ -26,14 +26,14 @@ import java.io.*;
 import java.net.*;
 
 /**
- * This class implements an eXtensible Markup Language (XML) parser according to the 
- * latest World Wide Web Consortium (W3C) working draft of the XML specification. 
+ * This class implements an eXtensible Markup Language (XML) parser according to the
+ * latest World Wide Web Consortium (W3C) working draft of the XML specification.
  * This parser class is used internally by the XML document
  * load method, so you shouldn't need to use it directly.
  * @version 1.0, 6/3/97
  */
 public class Parser
-{    
+{
     static final int TAGSTART       = '<';
     static final int TAGEND         = '>';
     static final int SLASH          = '/';
@@ -56,7 +56,7 @@ public class Parser
     static final int INVALIDTOKEN   = 0;
     static final int EOF            = -1;
     static final int WHITESPACE     = -2;
-    static final int WORDCHAR       = -3;   
+    static final int WORDCHAR       = -3;
     static final int NAME           = -4;
     static final int TEXT           = -5;
     static final int PITAGSTART     = -6;
@@ -102,18 +102,22 @@ public class Parser
 
     /**
      * Creates a new parser object.
-     */ 
-    public Parser() 
+     */
+    public Parser()
     {
         String version = System.getProperty("java.version");
         jdk11 = version.equals("1.1") ? true : false;
         // Joachim Feise (jfeise@ics.uci.edu), 25 March 1999:
-        // assume that JDK1.2 also supports JDK 1.1 features
+        // assume that JDK1.2 and later also support JDK 1.1 features
+        // Updated 26 February 2001: check for all JDKs > 1.1
         if( jdk11==false )
-            jdk11 = version.equals("1.2") ? true : false;
+        {
+            float v = Float.valueOf( version.substring(0, 3) ).floatValue();
+            jdk11 = (v >= 1.1) ? true : false;
+        }
         caseInsensitive = false;
     }
-        
+
     /**
      * Parses the XML document pointed to by the given URL and
      * creates the corresponding XML document hierarchy.
@@ -124,7 +128,7 @@ public class Parser
      * during parsing.
      * @param loadext whether to load external DTD's and/or entities
      * @exception ParseException if syntax or other error encountered.
-     */    
+     */
     public final void parse(URL url, ElementFactory factory, DTD dtd, Element root, boolean caseInsensitive, boolean loadExt) throws ParseException
     {
         this.dtd = dtd;
@@ -201,7 +205,7 @@ public class Parser
                 s = u.toString();
         }
         else if (e.owner instanceof Entity)
-        {  
+        {
             s = "Parsing <" + ((Entity)e.owner).name + ">";
         }
         else
@@ -223,13 +227,13 @@ public class Parser
 
     /**
      * Creates an output stream that best matches the XML data format
-     * found during parsing. 
+     * found during parsing.
      * For example, this will match big endian or little endian
      * XML data formats.
      * @param out  The output stream.
-     * @return an <code>XMLOutputStream</code> object that uses the newline 
+     * @return an <code>XMLOutputStream</code> object that uses the newline
      * separator
-     * defined by the system property "line.separator". 
+     * defined by the system property "line.separator".
      */
     public final XMLOutputStream createOutputStream(OutputStream out)
     {
@@ -240,53 +244,53 @@ public class Parser
 
     /**
      * throw error
-     */                                 
+     */
     final void error(String s) throws ParseException
     {
         int i = 1;
         // BUGBUG: the position may still be incorrect
         if (token == NAME)
-            i = name.toString().length(); 
+            i = name.toString().length();
         throw new ParseException(s, reader.line, reader.column - 1 - i, reader.owner);
     }
-        
-        
+
+
     /**
      * get next char and update line number / char position
-     */    
+     */
     final void advance() throws ParseException
     {
         lookahead = reader.read();
         // if EOF and reading 'included' entity pop it...
         while (lookahead == -1 && reader.owner != this)
-        {   
+        {
             // For external text entities there may be some PCDATA
             // left over that needs to be added also.
-            if (charAt != 0) 
+            if (charAt != 0)
             {
                 addPCDATA();
             }
-            reader = reader.prev;            
+            reader = reader.prev;
             pop(); // pop the entity element
             if (! inTag)
                 charAt = 0;
             lookahead = reader.read();
         }
     }
-            
+
     /**
      * return next token
      * @exception ParseException when syntax or other error is encountered.
-     */    
+     */
     final int nextToken() throws ParseException
     {
         bufAt = 0;
         int bufStart = bufAt;
-        if (inTag || ! current.preserveWS) 
+        if (inTag || ! current.preserveWS)
         {
             while (isWhiteSpaceChar((char)lookahead))
             {
-                if (! inTag) 
+                if (! inTag)
                 {
                     buf[bufAt++] = (char)lookahead;
                     seenWS = true;
@@ -380,9 +384,9 @@ public class Parser
         }
         else
         {
-            if (seenWS && ! current.lastWasWS && 
+            if (seenWS && ! current.lastWasWS &&
                 (lookahead == -1 || lookahead == '<') ) {
-                addNewElement( Element.WHITESPACE , null, false, 
+                addNewElement( Element.WHITESPACE , null, false,
                     new String(buf, bufStart, bufAt - bufStart));
             }
             switch (lookahead)
@@ -427,14 +431,14 @@ public class Parser
                                     conditionRef = n.getName();
                                     ref = true;       // entity reference encountered
                                 }
-                                else 
+                                else
                                 {
                                     conditionRef = null;
                                 }
 
                                 parseKeyword(0, "CDATA or Conditional section start tag");
 
-                                if (token == INCLUDETAGSTART || token == IGNORETAGSTART 
+                                if (token == INCLUDETAGSTART || token == IGNORETAGSTART
                                     || token == CDATA && !ref)
                                 {
                                     // scanned <![CDATA
@@ -447,7 +451,7 @@ public class Parser
                                     {
                                         advance();
                                     }
-                                    else 
+                                    else
                                     {
                                         if (token == CDATATAGSTART)
                                             error("Bad CDATA start syntax. Expected '['");
@@ -481,9 +485,9 @@ public class Parser
                             token = CDEND;
                             break;
                         }
-                        else 
+                        else
                         {
-                            reader.push((char)lookahead); 
+                            reader.push((char)lookahead);
                             reader.push(']');
                             lookahead = ']';
                         }
@@ -518,8 +522,8 @@ public class Parser
 
     final String tokenString(int token, String s)
     {
-        switch (token) 
-        {            
+        switch (token)
+        {
             case TAGSTART       : return "start tag(<)";
             case TAGEND         : return "tag end(>)";
             case SLASH          : return "/";
@@ -533,7 +537,7 @@ public class Parser
             case AMP            : return "&";
             case LEFTSQB        : return "[";
             case RIGHTSQB       : return "]";
-            case QUOTE          : return "quote(' or \")"; 
+            case QUOTE          : return "quote(' or \")";
             case OR             : return "|";
             case ASTERISK       : return "*";
             case PLUS           : return "+";
@@ -542,7 +546,7 @@ public class Parser
             case INVALIDTOKEN   : return "invalidtoken";
             case EOF            : return "EOF";
             case WHITESPACE     : return "whitespace";
-            case WORDCHAR       : return "word character";   
+            case WORDCHAR       : return "word character";
             case NAME           : if (s != null) return s;
                                   else return "NAME '" + name + "'";
             case TEXT           : return "TEXT '" + text + "'";
@@ -579,11 +583,11 @@ public class Parser
             case IGNORETAGSTART : return "IGNORETAGSTART";
             case NAMESPACE      : return "NAMESPACE";
             case PUBLIC         : return "PUBLIC";
-    
+
             default:            return s;
         }
     }
-    
+
     final int lookup(String n)
     {
         Object o = tokens.get(n);
@@ -598,10 +602,10 @@ public class Parser
 
         return token;
     }
-    
+
     /**
      * return true if character is whitespace
-     */    
+     */
     static final boolean isWhiteSpaceChar(char c)
     {
         if (c < 256)
@@ -613,13 +617,13 @@ public class Parser
             if (jdk11)
                 return Character.isWhitespace(c);
 
-            return Character.isSpace(c);    
+            return Character.isSpace(c);
         }
     }
 
     /**
      * return true if character can be part of a name
-     */    
+     */
     static final boolean isNameChar(char c)
     {
         if (c < 256)
@@ -628,9 +632,9 @@ public class Parser
         }
         else
         {
-            return  Character.isLetter(c) || 
+            return  Character.isLetter(c) ||
                     Character.isDigit(c) ||
-                    c == '-' ||  
+                    c == '-' ||
                     c == '_' ||
                     c == '.';
         }
@@ -639,13 +643,13 @@ public class Parser
 
     /**
      * Scan a name
-     */    
+     */
     final void scanName(String s) throws ParseException
     {
         String n = null;
         Atom ns = null;
         boolean scanned = false;
-        
+
         if (nameappend == 0)
         {
             bufAt = 0;
@@ -657,14 +661,14 @@ public class Parser
             scanned = true;
         }
 
-        if (nametoken == 0 && simplename == 0 && nameSpaceSeparator == (char)lookahead) 
+        if (nametoken == 0 && simplename == 0 && nameSpaceSeparator == (char)lookahead)
         {
             int nsgap = 1;
             bufAt++;
             advance();
             // Make second colon optional.
-            if (nameSpaceSeparator == (char)lookahead) 
-            { 
+            if (nameSpaceSeparator == (char)lookahead)
+            {
                 nsgap++;
                 bufAt++;
                 advance();
@@ -675,17 +679,17 @@ public class Parser
                      n = new String(buf, bufStart, bufAt - bufStart - nsgap).toUpperCase();
                 else n = new String(buf, bufStart, bufAt - bufStart - nsgap);
                 Atom atom = Atom.create(n);
-                if (DTD.isReservedNameSpace(atom)) 
+                if (DTD.isReservedNameSpace(atom))
                 {
                     ns = atom;
                 } else {
-                    // check the current context first 
+                    // check the current context first
                     ns = current.findNameSpace(atom);
                     if (ns == null)
                     {
                         // check the global name space when the name space is not defined in current context
                         ns = dtd.findLongNameSpace(atom);
-                        if (ns == null) 
+                        if (ns == null)
                         {
 //                          error("Name space not defined '" + n + "'");
                             ns = atom;
@@ -696,12 +700,12 @@ public class Parser
             }
             bufStart = bufAt;
             bufAt = scanSimpleName(bufAt, s);
-//            else 
+//            else
 //            {// report error and throw
 //                error("Expecting namespace separator ':' instead of '" + (char)lookahead + "'");
 //            }
-        }    
-        else 
+        }
+        else
         {
             if ((nametoken == 0 && simplename == 0) || inEntityRef > 0)
                 ns = current.defaultNameSpace;
@@ -709,11 +713,11 @@ public class Parser
 
         if ((nametoken == 0 && simplename == 0) || inEntityRef > 0)
             current.nameSpace = ns;
-        if ((keyword > 0 && inEntityRef == 0) || ns == null) 
+        if ((keyword > 0 && inEntityRef == 0) || ns == null)
             name = Name.create(buf, bufStart, bufAt - bufStart);
-        else 
-            name = Name.create(new String(buf, bufStart, bufAt - bufStart), ns);        
-        token = NAME; 
+        else
+            name = Name.create(new String(buf, bufStart, bufAt - bufStart), ns);
+        token = NAME;
     }
 
     final char toUpperCase(char c)
@@ -809,7 +813,7 @@ public class Parser
 
     /**
      * Scan text into a string
-     */    
+     */
     final void scanText(int eref, int cref, boolean stripws) throws ParseException
     {
         charAt = 0;
@@ -823,8 +827,8 @@ public class Parser
                 if (lookahead == '#')
                 {
                     scanCharRef();
-                } 
-                else if (isNameChar((char)lookahead)) 
+                }
+                else if (isNameChar((char)lookahead))
                 {
                     scanEntityRef(false);
                 }
@@ -835,9 +839,9 @@ public class Parser
             }
             else if (lookahead == eref)
             {
-                if (seenWS) 
-                { 
-                    chars[charAt++] = ' '; seenWS = false; 
+                if (seenWS)
+                {
+                    chars[charAt++] = ' '; seenWS = false;
                 }
                 advance();
                 if (isNameChar((char)lookahead))
@@ -857,9 +861,9 @@ public class Parser
                 }
                 else
                 {
-                    if (seenWS) 
-                    { 
-                        chars[charAt++] = ' '; seenWS = false; 
+                    if (seenWS)
+                    {
+                        chars[charAt++] = ' '; seenWS = false;
                     }
                     chars[charAt++] = (char)lookahead;
                 }
@@ -869,7 +873,7 @@ public class Parser
         token = TEXT;
     }
 
-    /** 
+    /**
      * Process entity reference
      * If successful lookahead contains the next character after the entity.
      * @param par if this is a parametrized entity.
@@ -889,7 +893,7 @@ public class Parser
         if (en == null)
         {
             String msg = "Missing entity '" + name + "'.";
-            if (! loadexternal) 
+            if (! loadexternal)
             {
                 msg += "\nPerhaps you need to change the loadexternal flag to 'true'.";
             }
@@ -905,10 +909,10 @@ public class Parser
 
         if (par) // in DTD
         {
-            // BUG: We still haven't finished this yet.  
+            // BUG: We still haven't finished this yet.
             // In the case where a parameter entity is used
             // inside an element declaration, for example,
-            // we will forget this fact in the saved document. 
+            // we will forget this fact in the saved document.
 
             if (! inTag) // add an entity reference node
             {
@@ -917,7 +921,7 @@ public class Parser
             if (en.getURL() == null) // parse entity text
             {
                 push(en,name,Element.ENTITY);
-                reader = en.getReader(reader);              
+                reader = en.getReader(reader);
             }
             else // get external DTD
             {
@@ -926,9 +930,9 @@ public class Parser
 
                 if (loadexternal)
                     loadDTD(en.getURL(), current.defaultNameSpace);
-            }   
+            }
         }
-        else  // in document 
+        else  // in document
         {
             // NOTE: in the following code, we pass the ElementDecl from
             // the current context to the new context, since we want to
@@ -937,6 +941,14 @@ public class Parser
 
             if (! inTag)
             {
+                // Joachim Feise (jfeise@ics.uci.edu), 26 February 2001:
+                // Got rid of the ENTITYREF node and store the value
+                // directly in the string
+                // Note: I'm not sure if this works in all cases
+                chars[charAt++] = en.cdata;
+                advance();
+                return en;
+/*
                 // Put current substring in new PCDATA node.
                 addPCDATA();
                 charAt = 0;
@@ -944,6 +956,7 @@ public class Parser
                 // node in the tree to remember where the entities
                 // are so we can save them back out.
                 addNewElement(Element.ENTITYREF, name,true, null);
+*/
             }
             if (en.getLength() == -1) // special characters
             {
@@ -951,7 +964,7 @@ public class Parser
                     // do not require parsing.
             }
             else {
-                if (! en.parsed) 
+                if (! en.parsed)
                 {
                     Context c = current;
                     if (c.parent != null)
@@ -974,14 +987,14 @@ public class Parser
                         // element context so we can do the validation correctly.
                         // See comments in addNewElement.
                         current.parent = c;
-                        try 
+                        try
                         {
                             URL u = new URL(url,en.getURL());
                             reader = new EntityReader(
                                 u.openStream(),
                                 reader.line, reader.column, reader, en);
-                        } 
-                        catch (Exception e) 
+                        }
+                        catch (Exception e)
                         {
                             error("Cannot load external text entity: " + name.toString());
                         }
@@ -1042,14 +1055,14 @@ public class Parser
         }
         advance();
     }
-    
+
     /**
      * Scan a quoted string
      *
      * @param q match the end
      * @param eref match entity reference start char (& or %) if not 0xffff
      * @param cref match character refence char (&# or &u) if not 0xffff
-     */    
+     */
     final void scanString(int endChar, int eref, int cref, int breakChar) throws ParseException
     {
         charAt = 0;
@@ -1065,17 +1078,17 @@ public class Parser
                 if (lookahead == '#')
                 {
                     scanCharRef();
-                } 
-                else if (isNameChar((char)lookahead)) 
-                { 
-                    if (expandNamedEntities) 
+                }
+                else if (isNameChar((char)lookahead))
+                {
+                    if (expandNamedEntities)
                     {
                         scanEntityRef(false);
                     } else {
                         chars[charAt++] = (char)cref;
                     }
-                } 
-                else 
+                }
+                else
                 {
                     chars[charAt++] = (char)lookahead;
                 }
@@ -1083,17 +1096,17 @@ public class Parser
             else if (lookahead == eref)
             {
                 advance();
-                if (isNameChar((char)lookahead)) 
+                if (isNameChar((char)lookahead))
                 {
                     boolean par = (eref == '%');
-                    if (expandNamedEntities)  // par || 
+                    if (expandNamedEntities)  // par ||
                     {
                         scanEntityRef(par);
                     } else {
                         chars[charAt++] = (char)eref;
                     }
-                } 
-                else 
+                }
+                else
                 {
                     chars[charAt++] = (char)lookahead;
                 }
@@ -1114,20 +1127,20 @@ public class Parser
         }
         text = new String(chars, 0, charAt);
     }
-    
+
     /**
      * scan URL string
-     */    
+     */
     final String scanUrl() throws ParseException
     {
         parseToken(QUOTE, "Url");
         scanString(quote, 0xFFFF, 0xFFFF, 0xFFFF);
         return text;
     }
-        
+
     /**
      * expect token type t
-     */    
+     */
     final void parseToken(int t, String s) throws ParseException
     {
         if (nextToken() != t)
@@ -1138,7 +1151,7 @@ public class Parser
 
     /**
      * expect token type t
-     */    
+     */
     final void checkToken(int t, String s) throws ParseException
     {
         if (token != t)
@@ -1146,11 +1159,11 @@ public class Parser
             error("Expected " + tokenString(t,s) + " instead of " + tokenString(token));
         }
     }
-    
-    
+
+
     /**
      * expect keyword k
-     */    
+     */
     final void parseKeyword(int k, String s) throws ParseException
     {
         keyword++;
@@ -1162,7 +1175,7 @@ public class Parser
         {
             parseToken(k, s);
         }
-        keyword--;        
+        keyword--;
     }
 
     /**
@@ -1183,7 +1196,7 @@ public class Parser
             {
                 buf[bufAt++] = ' ';
             }
-            
+
             names.addElement(name);
             i++;
             if (separator != INVALIDTOKEN && nextToken() != OR)
@@ -1195,12 +1208,12 @@ public class Parser
         }
         return i;
     }
-    
+
     /**
      * expect XML document
      *
      * Document ::= Prolog Element Misc*
-     */    
+     */
     final void parseDocument() throws ParseException
     {
         expandNamedEntities = true;
@@ -1209,14 +1222,14 @@ public class Parser
         contextAt = 0;
         standAlone = false;
 
-        // The default is to strip white space.  
+        // The default is to strip white space.
         // This default is also assumed in Document.save().
         // So changing the default would also require some changes
         // to the implementation of Document.save().
         newContext(root, null, Element.ELEMENT, false, null, null);
         parseProlog();
         parseRootElement();
-        
+
         if (lookahead != -1)
         {
             nextToken();
@@ -1226,7 +1239,7 @@ public class Parser
         }
         dtd.checkIDs();
     }
-    
+
     void newContext(Element e, Name n, int type, boolean preserveWS, Atom nameSpace, Hashtable spaceTable)
     {
         if (contextAt == contexts.size())
@@ -1248,17 +1261,17 @@ public class Parser
         newContext(e, n, type, current.preserveWS, current.nameSpace, current.spaceTable);
         return;
     }
-    
+
     final void pop()
     {
         current = (Context)contexts.elementAt(--contextAt);
     }
-    
+
     /**
      * expect prolog
      *
      * Prolog ::= XMLDecl Misc* DocTypeDecl? Misc*
-     */    
+     */
     final void parseProlog() throws ParseException
     {
         if (lookahead != -1)
@@ -1274,7 +1287,7 @@ public class Parser
 //                        error("An XML declaration can only appear in the very beginning of the document.");
                     parseXMLDecl();
                 }
-                else  
+                else
                 {
                     if (name == nameXMLNameSpace)
                         parseNameSpaceDecl(true, true);
@@ -1282,7 +1295,7 @@ public class Parser
                 }
                 nextToken();
                 firstLine = false;
-            }           
+            }
         }
         tryMisc();
         tryDocTypeDecl();
@@ -1334,7 +1347,7 @@ public class Parser
             if (value == nameYes)
             {
                 standAlone = true;
-            } 
+            }
             else if (value == nameNo)
             {
                 standAlone = false;
@@ -1355,7 +1368,7 @@ public class Parser
                        "\nLow level error: " + e.getMessage());
             }
         }
-        if (token != PITAGEND) 
+        if (token != PITAGEND)
             error("Expected " + tokenString(PITAGEND) + " instead of " + tokenString(token));
         current.ed = ed;
         pop();
@@ -1393,7 +1406,7 @@ public class Parser
             firstLine = false;
         }
     }
-     
+
     /**
      * check for document type declaration
      *
@@ -1425,11 +1438,12 @@ public class Parser
                         expandNamedEntities = false;
                         scanString(quote, 0xFFFF, 0xFFFF, 0xFFFF);
                         expandNamedEntities = true;
-                        factory.parsedAttribute(dtdElement,namePUBLICID,text);                         
+                        factory.parsedAttribute(dtdElement,namePUBLICID,text);
                     }
-                    else 
+                    else
                         error("Expected " + tokenString(QUOTE) + " instead of " + tokenString(token));
                     url = scanUrl();
+
                     factory.parsedAttribute(dtdElement,nameURL, url);
                     nextToken();
                     break;
@@ -1447,7 +1461,7 @@ public class Parser
                 {
                     error("Expected " + tokenString(RIGHTSQB));
                 }
-                // restore context 
+                // restore context
                 inTag = true;
                 internalSubset = false;
                 breakText = 0;
@@ -1468,7 +1482,7 @@ public class Parser
             }
         }
     }
-    
+
 
     public final void loadDTD(String urlStr, Atom nameSpace) throws ParseException
     {
@@ -1483,7 +1497,7 @@ public class Parser
             parser.newContext(root, null, Element.ELEMENT, false, nameSpace, current.spaceTable);
             parser.parseInternalSubset();
         } catch (IOException e) {
-            error("Couldn't find external DTD '" + urlStr + "'"); 
+            error("Couldn't find external DTD '" + urlStr + "'");
         }
     }
 
@@ -1524,7 +1538,7 @@ public class Parser
 
     /**
      * Parse DTD content
-     */    
+     */
     final void parseInternalSubset() throws ParseException
     {
         substitution++;
@@ -1537,7 +1551,7 @@ public class Parser
                         advance();
                         scanEntityRef(true);
                     }
-                    else 
+                    else
                     {
                         error("Unexpected text in DTD.");
                         return;
@@ -1575,18 +1589,18 @@ public class Parser
                             error("Unknown DTD keyword " + name);
                     }
                     break;
-                case INCLUDETAGSTART:  
+                case INCLUDETAGSTART:
                     parseIncludeSection();
                     break;
                 case IGNORETAGSTART:
                     parseIgnoreSection();
                     break;
-                default:  
+                default:
                     return;
             }
         }
     }
-    
+
     /**
      * Parses conditional section with keyword INCLUDE
      */
@@ -1611,10 +1625,10 @@ public class Parser
         // add contents as PCDATA, which includes the conditional section closing tag ']]>'
         if (charAt > 0)
         {
-            addNewElement(Element.PCDATA, null, true, 
+            addNewElement(Element.PCDATA, null, true,
                 new String(chars, 0, charAt));
             charAt = 0;
-        }  
+        }
         pop();
     }
 
@@ -1632,7 +1646,7 @@ public class Parser
         {
             addNewElement(Element.PCDATA, null, true,
                 new String(chars, 0, charAt));
-            charAt = 0;     
+            charAt = 0;
         }
         advance();
     }
@@ -1675,7 +1689,7 @@ public class Parser
         {
             switch (lookahead)
             {
-                case '\'':  
+                case '\'':
                 case '\"':  // SkipLit
                     int quote = lookahead;
                     addChar();
@@ -1684,7 +1698,7 @@ public class Parser
                         checkCDEND(false);
                         addChar();
                     }
-                    addChar(); 
+                    addChar();
                     break;
                 case '<':
                     addChar();
@@ -1714,7 +1728,7 @@ public class Parser
                                                 }
                                                 else
                                                 {
-                                                    error("Bad comment syntax. Expected '>'.");         
+                                                    error("Bad comment syntax. Expected '>'.");
                                                 }
                                             }
                                         }
@@ -1772,11 +1786,11 @@ public class Parser
      * Parse Entity declaration
      * EntityDecl ::= '<!ENTITY' S Name S EntityDef S? '>'
      *                | '<!ENTITY' S '%' S Name S EntityDef S? '>'
-     */    
+     */
     final void parseEntityDecl() throws ParseException
     {
         boolean par = false;
-        
+
         nouppercase++;
         if (nextToken() == PERCENT)
         {
@@ -1795,7 +1809,7 @@ public class Parser
         Entity en = dtd.findEntity(name);
         if (en != null)
         {
-            System.err.println("Warning: Entity '" + name + "' already defined, using the first definition."); 
+            System.err.println("Warning: Entity '" + name + "' already defined, using the first definition.");
             // soak up the duplicate and throw it away.
             en = new Entity(name, par);
         }
@@ -1809,7 +1823,7 @@ public class Parser
                 if (current.e != null)
                     current.e.addChild(en,null);
                 current.lastWasWS = false;
-            }    
+            }
         }
 
         // push so that we can give correct error message when an error is found in nextToken()
@@ -1824,7 +1838,7 @@ public class Parser
                 expandNamedEntities = false;
                 scanString(quote, 0xFFFF, 0xFFFF, 0xFFFF);
                 expandNamedEntities = true;
-                en.pubid = text; 
+                en.pubid = text;
                 token = SYSTEM; // assure to get url
             }
             else error("Expected " + tokenString(QUOTE) + " instead of " + tokenString(token));
@@ -1839,7 +1853,7 @@ public class Parser
                     expandNamedEntities = false;
                     scanString(quote, '%', '&', 0xFFFF);
                     expandNamedEntities = true;
-                    en.setText(text);   
+                    en.setText(text);
                     en.setPosition(line, column);
                 }
                 nextToken();
@@ -1873,7 +1887,7 @@ public class Parser
         }
         if (DTD.isReservedNameSpace(as))
             error(as.toString() + " is a reserved name space.");
-        if (global) 
+        if (global)
         {
             Atom aname = dtd.findShortNameSpace(href);
             if (aname != null)
@@ -1894,11 +1908,11 @@ public class Parser
     /**
      * Parse notation
      * NotationDecl ::= '<!NOTATION' S Name S ExternalID S? '>'
-     */    
+     */
     final void parseNotation() throws ParseException
     {
         parseToken(NAME, "Notation name");
-                  
+
         Notation no = dtd.findNotation(name);
         if (no != null)
         {
@@ -1913,7 +1927,7 @@ public class Parser
             if (current.e != null)
                 current.e.addChild(no,null);
             current.lastWasWS = false;
-        }    
+        }
 
         // needed to write correct error message
         push(no, name, Element.NOTATION);
@@ -1931,13 +1945,13 @@ public class Parser
                 expandNamedEntities = false;
                 scanString(quote, 0xFFFF, 0xFFFF, 0xFFFF);
                 expandNamedEntities = true;
-                no.pubid = text; 
+                no.pubid = text;
             }
             else error("Expected " + tokenString(QUOTE) + " instead of " + tokenString(token));
         }
 
-        no.setURL(scanUrl());   
-        
+        no.setURL(scanUrl());
+
         parseToken(TAGEND, ">");
         pop();
     }
@@ -1959,7 +1973,7 @@ public class Parser
         v.addElement(ed);
         return ed;
     }
-    
+
     /**
      * Parse element declaration
      */
@@ -1975,14 +1989,14 @@ public class Parser
             // Element tree so we can save it back out.
             if (current.e != null)
                 current.e.addChild(ed,null);
-        }   
+        }
         // push to handle name space
         push(ed, name,Element.ELEMENTDECL);
         ed.parseModel(this);
         checkToken(TAGEND, ">");
         pop();
     }
-    
+
     final ElementDecl findElementDecl(Vector v) throws ParseException
     {
         if (token != NAME)
@@ -1998,7 +2012,7 @@ public class Parser
         v.addElement(ed);
         return ed;
     }
-    
+
     /**
      * Parse element declaration
      * AttlistDecl ::= '<!ATTLIST' S Name AttDef+ S? '>'
@@ -2032,7 +2046,7 @@ public class Parser
 
     /**
      * expect element content
-     */    
+     */
     final void parseElement() throws ParseException
     {
         boolean empty = false;
@@ -2045,7 +2059,7 @@ public class Parser
 
             switch(token)
             {
-                case TAGSTART:                 
+                case TAGSTART:
                     scanName("element tag");
 
                     ElementDecl ed = dtd.findElementDecl(name);
@@ -2090,6 +2104,7 @@ public class Parser
                     break;
                 case TEXT:
                     parseText('&', '&');
+//                    parseText(-1, -1);
                     break;
                 case PITAGSTART:
                     parsePI(false);
@@ -2114,7 +2129,7 @@ public class Parser
                             // This little hack with the current context pointer
                             // makes sure that the namespace scope inside the tag
                             // is not applied to the end tag.  For example, if the
-                            // namespace "foo" is defined to point to DTD "xyz.dtd", 
+                            // namespace "foo" is defined to point to DTD "xyz.dtd",
                             // then tag <foo::bar> is started, then the namespace
                             // "foo" is redefined inside it to point to some other
                             // DTD then the end tag is found </foo::bar>, then the
@@ -2145,7 +2160,7 @@ public class Parser
                     pop();
                     break;
                 case EOF:
-                    if (contextAt == 1) 
+                    if (contextAt == 1)
                     {
                         error("Expected the end of root element instead of end of file.");
                         break;
@@ -2162,7 +2177,7 @@ public class Parser
 
     /**
      * parse root element
-     */    
+     */
     final void parseRootElement() throws ParseException
     {
         if (token != TAGSTART)  // error
@@ -2220,7 +2235,7 @@ public class Parser
             nextToken();
         }
         else {
-            nextToken(); 
+            nextToken();
             parseElement();
         }
         return;
@@ -2233,7 +2248,7 @@ public class Parser
         while (nextToken() == NAME)
         {
             Name currName = name;  // Because parseAttributes may reset name, currName
-                                   // is needed to hold name and check for nameXMLSpace 
+                                   // is needed to hold name and check for nameXMLSpace
 
             // make sure xml-space belongs to the XML namespace.
             if (currName.getName().equals(nameXMLSpace.getName()))
@@ -2255,12 +2270,12 @@ public class Parser
                 Name code = name;
                 parseToken(QUOTE, "string");
                 factory.parsedAttribute(e, currName, code.getName());
-            } 
+            }
             else if (current.ed != null && e != null)
             {
                 current.ed.parseAttribute(e, currName, this);
             }
-            else 
+            else
             {
                 parseToken(QUOTE, "string");
                 scanString(quote, '&', '&', '<');
@@ -2275,28 +2290,28 @@ public class Parser
             if (attr != null)
             {
                 String s = null;
-                if (attr instanceof String) 
+                if (attr instanceof String)
                 {
                     s = (String)attr;
-                } 
+                }
                 else if (attr instanceof Atom)
                 {
                     s = attr.toString();
                 }
                 else if (attr instanceof Name)
                 {
-                    s = ((Name)attr).getName().toString();   
+                    s = ((Name)attr).getName().toString();
                 }
 
-                if (s != null && s.equalsIgnoreCase("preserve")) 
+                if (s != null && s.equalsIgnoreCase("preserve"))
                 {
                     current.preserveWS = true;
-                } 
-                else if (s != null && s.equalsIgnoreCase("default")) 
+                }
+                else if (s != null && s.equalsIgnoreCase("default"))
                 {
                     current.preserveWS = false;
-                } 
-                else 
+                }
+                else
                 {
                     error("Invalid value '" + s + "' for xml-space attribute.");
                 }
@@ -2335,7 +2350,7 @@ public class Parser
                 default:
                     error("Bad token in element content: " + tokenString(token));
             }
-        }        
+        }
         if (!current.matched)
         {
             error("Content mismatch, stopped at state " + current.state);
@@ -2380,7 +2395,7 @@ public class Parser
         parseAttributes(e);
         pop();
 
-        if (PI && token != PITAGEND) 
+        if (PI && token != PITAGEND)
         {
             error("Expected PI tag end '?>' instead of " + tokenString(token));
         }
@@ -2394,7 +2409,7 @@ public class Parser
 
         if (asStr == null || hrefStr == null)
         {
-            error("Missing attribute 'prefix' or 'ns'");          
+            error("Missing attribute 'prefix' or 'ns'");
         }
 
         Atom as, href;
@@ -2423,7 +2438,7 @@ public class Parser
                 loadDTD(href.toString(), href);
             }
         }
-    
+
         return e;
     }
 
@@ -2473,7 +2488,7 @@ public class Parser
 
     final Element addPCDATA() throws ParseException
     {
-        if (charAt > 0 || seenWS) 
+        if (charAt > 0 || seenWS)
         {
             if (seenWS)
             {
@@ -2484,11 +2499,11 @@ public class Parser
             Element t = addNewElement(Element.PCDATA, null, true, text);
             return t;
         }
-        seenWS = false; 
+        seenWS = false;
         return null;
     }
 
- 
+
     /**
      * Parses comment <code> '<!--' comment '-->' </code>
      */
@@ -2546,7 +2561,7 @@ public class Parser
 
 
     /**
-     *  Parses CDATA <code> '<![CDATA[' data ']]>'  </code> 
+     *  Parses CDATA <code> '<![CDATA[' data ']]>'  </code>
      */
     final void parseCDATA() throws ParseException
     {
@@ -2568,7 +2583,7 @@ public class Parser
                     }
                     else
                     {
-                        reader.push((char)lookahead); 
+                        reader.push((char)lookahead);
                         lookahead = ']';
                     }
                 }
@@ -2603,26 +2618,26 @@ public class Parser
         String os = System.getProperty("os.name");
         boolean windows = (os.indexOf("Windows") == 0);
         boolean opt = msft && jdk11 && windows;
-            
+
         String err;
         //
         // on windows system, try to use optimized inputstream
         //
         if (opt)
         {
-            try 
+            try
             {
-                xmlIn = new XMLInputStream(u); 
+                xmlIn = new XMLInputStream(u);
                 reader = new EntityReader(xmlIn, 1, 1, null, this);
                 advance();
                 return;
-            } 
-            catch (IOException e) 
+            }
+            catch (IOException e)
             {
                 opt = false;
                 err = e.toString();
             }
-        } 
+        }
 
         //
         // If not on windows, or if on windows but failed to open the optimized
@@ -2634,9 +2649,9 @@ public class Parser
             {
                 setInputStream( new BufferedInputStream(url.openStream()));
             }
-            catch (IOException e) 
+            catch (IOException e)
             {
-                throw new ParseException("Error opening input stream for \"" + 
+                throw new ParseException("Error opening input stream for \"" +
                     url.toString() + "\": " + e.toString());
             }
         }
@@ -2649,26 +2664,26 @@ public class Parser
         advance();
     }
 
-    final private void setFactory(ElementFactory f) 
+    final private void setFactory(ElementFactory f)
     {
         factory = f;
     }
-    
+
     /**
      * Factory to create elements on the parse tree.
-     */    
+     */
     ElementFactory factory;
-    
+
     /**
      * DTD object.
-     */    
-    DTD dtd;      
-    
+     */
+    DTD dtd;
+
     /**
      * Root of tree.
      */
     Element root;
-    
+
     /**
      * Stack to keep track of contexts
      */
@@ -2679,10 +2694,10 @@ public class Parser
      * Current element context.
      */
     Context current;
-    
+
     /**
      * Inputstream used to read Unicode chars
-     */    
+     */
     EntityReader reader;
     XMLInputStream xmlIn;
 
@@ -2695,52 +2710,52 @@ public class Parser
      * true when scanner is still collapsing white space.
      */
     boolean seenWS;
-    
+
     /**
      * next character
-     */    
+     */
     int lookahead;
-    
+
     /**
      * quote char
-     */    
+     */
     char quote;
-    
+
     /**
      * chars collected up to 8K
-     */    
+     */
     char chars[] = new char[8192];
-    
+
     /**
      * char index into chars[]
-     */    
+     */
     int charAt;
-    
+
     /**
      * buf collected up to 8K
-     */    
+     */
     char buf[] = new char[8192];
-    
+
     /**
      * char index into buf[]
-     */    
+     */
     int bufAt;
 
-    /** 
+    /**
      * counter to allow collecting multiple names into buf
      */
     int nameappend;
-    
+
     /**
      * Token matching hashtable
-     */    
+     */
     static Hashtable tokens;
 
     /**
      * token type
-     */    
+     */
     int token;
-    
+
     /**
      * counter to allow keyword checking
      */
@@ -2760,20 +2775,20 @@ public class Parser
      * break char for parseInternalSubset
      */
     int breakText;
-    
+
     /**
      * switch to allow parsing name tokens in scanName
-     */    
+     */
     int nametoken;
 
     /**
      * switch to allow parsing unqualified name in scanName
-     */    
+     */
     int simplename;
 
     /**
      * switch to allow namespace when scan entity reference name in scanName
-     */    
+     */
     int inEntityRef;
 
     /**
@@ -2824,7 +2839,7 @@ public class Parser
     static ElementDecl XMLDecl;
 
     /**
-     * If the keyword of the latest conditional section is a parameter entity reference, this 
+     * If the keyword of the latest conditional section is a parameter entity reference, this
      * variable records the reference name; otherwise null.
      */
     Name conditionRef;
@@ -2832,7 +2847,7 @@ public class Parser
     /**
      * Whether standalone was specified in XML declaration.
      * (default is false).
-     */ 
+     */
     boolean standAlone;
 
     /**
@@ -2898,7 +2913,7 @@ public class Parser
         nameENCODING = Name.create("encoding");
         nameStandalone = Name.create("standalone");
         nameDOCTYPE = Name.create("DOCTYPE");
-        nameXML = Name.create("xml");        
+        nameXML = Name.create("xml");
         nameYes = Name.create("yes");
         nameNo = Name.create("no");
         nameURL = Name.create("URL");
@@ -2922,12 +2937,12 @@ public class Parser
         // S 'encoding' Eq QEncoding
         XMLDecl.addAttDef(new AttDef(nameENCODING, AttDef.CDATA, "UTF-8", AttDef.IMPLIED));
 
-        // SDDecl ::=  S 'standalone' Eq "'" ('yes' | 'no') "'"  
+        // SDDecl ::=  S 'standalone' Eq "'" ('yes' | 'no') "'"
         Vector an = new Vector(2);
         an.addElement(nameYes);
         an.addElement(nameNo);
         XMLDecl.addAttDef(new AttDef(nameStandalone, AttDef.ENUMERATION, (Name)an.elementAt(0), AttDef.IMPLIED, an));
-        
+
         // add recognized names to the hashtable
         tokens = new Hashtable();
         tokens.put("DOCTYPE", new Integer(DOCTYPE));
@@ -2940,12 +2955,12 @@ public class Parser
         tokens.put("PCDATA", new Integer(PCDATA));
         tokens.put("ATTLIST", new Integer(ATTLIST));
         tokens.put("CDATA", new Integer(CDATA));
-        tokens.put("ID", new Integer(ID));      
-        tokens.put("IDREF", new Integer(IDREF));  
-        tokens.put("IDREFS", new Integer(IDREFS));  
-        tokens.put("ENTITY", new Integer(ENTITY));  
+        tokens.put("ID", new Integer(ID));
+        tokens.put("IDREF", new Integer(IDREF));
+        tokens.put("IDREFS", new Integer(IDREFS));
+        tokens.put("ENTITY", new Integer(ENTITY));
         tokens.put("ENTITIES", new Integer(ENTITIES));
-        tokens.put("NMTOKEN", new Integer(NMTOKEN)); 
+        tokens.put("NMTOKEN", new Integer(NMTOKEN));
         tokens.put("NMTOKENS", new Integer(NMTOKENS));
         tokens.put("FIXED", new Integer(FIXED));
         tokens.put("REQUIRED", new Integer(REQUIRED));
@@ -2980,5 +2995,5 @@ public class Parser
         chartype['_'] |= FMISCNAME | FSTARTNAME;
         chartype[0xb7] |= FMISCNAME; // Extender
     }
-}    
+}
 
