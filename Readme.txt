@@ -65,7 +65,7 @@ DAV Explorer accepts the following command line options:
   		side of the DAVExplorer window are enabled
 
 -Dpropfind=allprop
-  This option results in using the <allprop> tag in PROPFIND. It is a useful
+  This option results in using the <allprop> tag in PROPFIND.
   
 -DSSL=yes
   This option enables the use of SSL.
@@ -84,6 +84,8 @@ DAV Explorer accepts the following command line options:
 
 Changes for version 0.82-dev:
 - Made sure that DAV Explorer runs with JDK 1.1.x, for MacOS 9 compatibility
+- Updated to run with JDK 1.4 on Windows
+- Incorporated Karen Schuchardt's changes to improve the loading of images
 
 Changes for version 0.81:
 - Fixed handling of default namespace in the view/modify property dialog
