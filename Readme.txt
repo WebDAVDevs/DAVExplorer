@@ -13,6 +13,7 @@ Changes for version 0.73-dev:
 - Copy and Move now allow entering the target, making them more flexible.
 - For initial contact with a server, we now send an OPTIONS request.
 - Rewrite of the View Property dialog
+- PROPPATCH support implemented (finally)
 
 Changes for version 0.72:
 - Support for operation through proxy servers
