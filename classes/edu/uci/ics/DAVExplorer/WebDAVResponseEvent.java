@@ -42,16 +42,28 @@ import HTTPClient.HTTPResponse;
 /**
  * 
  */
-public class WebDAVResponseEvent extends EventObject {
-    HTTPResponse httpResponse;
-    String MethodName;
-    String ExtraInfo;
-    String HostName;
-    int Port;
-    String Resource;
-
-    WebDAVTreeNode Node; // The node to which the expand is directed
-
+public class WebDAVResponseEvent extends EventObject
+{
+    public static final int URIBOX = 1;
+    public static final int SELECT = 2;
+    public static final int INDEX = 3;
+    public static final int EXPAND = 4;
+    public static final int PROPERTIES = 5;
+    public static final int SAVE_AS = 6;
+    public static final int EXCLUSIVE_LOCK = 10;
+    public static final int SHARED_LOCK = 11;
+    public static final int UNLOCK = 12;
+    public static final int DELETE = 20;
+    public static final int DELETE2 = 21;
+    public static final int RENAME = 30;
+    public static final int RENAME2 = 31;
+    public static final int COPY = 32;
+    public static final int MKCOL = 40;
+    public static final int MKCOLBELOW = 41;
+    public static final int DISPLAY = 50;
+    public static final int VIEW = 51;
+    public static final int EDIT = 52;
+    public static final int COMMIT = 60;
 
     /**
      * Constructor
@@ -62,9 +74,13 @@ public class WebDAVResponseEvent extends EventObject {
      * @param method
      * @param response
      * @param extra
+     * @param data
      * @param node
      */
-    public WebDAVResponseEvent(Object module, String hostname, int Port,String resource, String method, HTTPResponse response, String extra, WebDAVTreeNode node)
+    public WebDAVResponseEvent( Object module, String hostname, int Port,
+                                String resource, String method,
+                                HTTPResponse response, int code, String data,
+                                WebDAVTreeNode node )
     {
         super (module);
 
@@ -74,12 +90,13 @@ public class WebDAVResponseEvent extends EventObject {
         }
 
         this.httpResponse = response;
-        this.MethodName = method;
-        this.ExtraInfo = extra;
-        this.Resource = resource;
-        this.HostName = hostname;
-        this.Port = Port;
-        this.Node = node;
+        this.methodName = method;
+        this.extendedCode = code;
+        this.extendedData = data;
+        this.resource = resource;
+        this.hostName = hostname;
+        this.port = Port;
+        this.node = node;
     }
 
 
@@ -99,7 +116,7 @@ public class WebDAVResponseEvent extends EventObject {
      */
     public String getMethodName()
     {
-        return MethodName;
+        return methodName;
     }
 
 
@@ -107,9 +124,19 @@ public class WebDAVResponseEvent extends EventObject {
      * 
      * @return
      */
-    public String getExtraInfo()
+    public int getExtendedCode()
     {
-        return ExtraInfo;
+        return extendedCode;
+    }
+
+
+    /**
+     * 
+     * @return
+     */
+    public String getExtendedData()
+    {
+        return extendedData;
     }
 
 
@@ -119,7 +146,7 @@ public class WebDAVResponseEvent extends EventObject {
      */
     public String getHost()
     {
-        return HostName;
+        return hostName;
     }
 
 
@@ -129,7 +156,7 @@ public class WebDAVResponseEvent extends EventObject {
      */
     public int getPort()
     {
-        return Port;
+        return port;
     }
 
 
@@ -139,7 +166,7 @@ public class WebDAVResponseEvent extends EventObject {
      */
     public String getResource()
     {
-        return Resource;
+        return resource;
     }
 
 
@@ -149,6 +176,17 @@ public class WebDAVResponseEvent extends EventObject {
      */
     public WebDAVTreeNode getNode()
     {
-        return Node;
+        return node;
     }
+
+
+    private HTTPResponse httpResponse;
+    private String methodName;
+    private int extendedCode;
+    private String extendedData;
+    private String hostName;
+    private int port;
+    private String resource;
+
+    private WebDAVTreeNode node; // The node to which the expand is directed
 }

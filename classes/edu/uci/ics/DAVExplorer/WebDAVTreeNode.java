@@ -408,11 +408,11 @@ public class WebDAVTreeNode extends DefaultMutableTreeNode
                 interpreter.ResetRefresh();
                 if (select)
                 {
-                    generator.setExtraInfo("select");
+                    generator.setExtendedInfo( WebDAVResponseEvent.SELECT, null );
                 }
                 else
                 {
-                    generator.setExtraInfo("index");
+                    generator.setExtendedInfo( WebDAVResponseEvent.INDEX, null );
                 }
 
                 String pathToResource = name;
@@ -472,7 +472,7 @@ public class WebDAVTreeNode extends DefaultMutableTreeNode
                 hasLoaded = false;
                 dataNode = null;
                 interpreter.ResetRefresh();
-                generator.setExtraInfo("index");
+                generator.setExtendedInfo( WebDAVResponseEvent.INDEX, null );
 
                 String pathToResource = name;
                 for (int i=2; i < full_path.length; i++)

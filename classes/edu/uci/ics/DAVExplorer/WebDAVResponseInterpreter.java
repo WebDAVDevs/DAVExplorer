@@ -146,7 +146,8 @@ public class WebDAVResponseInterpreter
 
         res = e.getResponse();
         Method = e.getMethodName();
-        Extra = e.getExtraInfo();
+        extendedCode = e.getExtendedCode();
+        extendedData = e.getExtendedData();
         HostName = e.getHost();
         Port = e.getPort();
         Charset = getCharset();
@@ -172,7 +173,7 @@ public class WebDAVResponseInterpreter
                     if (Method.equals("MOVE"))
                     {
                     // check if this is the second trip
-                        if (Extra.startsWith("rename2:"))
+                        if( extendedCode == WebDAVResponseEvent.RENAME2 )
                         {
                             // Reset the name we attempted to change
                             ActionEvent ae = new ActionEvent(this, ActionEvent.ACTION_FIRST, "reset");
@@ -183,24 +184,21 @@ public class WebDAVResponseInterpreter
                         }
                         else  // first attempt
                         {
-                            int pos = Extra.indexOf(":");
-                            String tmp = Extra.substring(pos + 1);
-
                             clearStream();
-                            generator.DiscoverLock("rename2:" + tmp);
+                            generator.DiscoverLock( WebDAVResponseEvent.RENAME2, extendedData );
                         }
                     }
                     else
                     {
                         // check if this is the second trip
-                        if (Extra.startsWith("delete2:"))
+                        if( extendedCode == WebDAVResponseEvent.DELETE2 )
                         {
                             GlobalData.getGlobalData().errorMsg("Delete Failed\nStatus " + res.getStatusCode() + " " + res.getReasonLine() );
                         }
                         else  // first attempt
                         {
                             clearStream();
-                            generator.DiscoverLock("delete2:");
+                            generator.DiscoverLock( WebDAVResponseEvent.DELETE2, null );
                         }
                     }
                 }
@@ -317,7 +315,7 @@ public class WebDAVResponseInterpreter
     /**
      * Parse the response to an OPTIONS request
      */
-    public void parseOptions()
+    protected void parseOptions()
     {
         if( GlobalData.getGlobalData().getDebugResponse() )
         {
@@ -341,52 +339,19 @@ public class WebDAVResponseInterpreter
             return;
         }
 
-        if (Extra.equals("uribox"))
+        if( extendedCode == WebDAVResponseEvent.URIBOX )
         {
             // we got here from entering a URI, so now we need to do a PROPFIND
-            String str = HostName;
-            if (Port > 0)
-                str += ":" + Port;
-            str += Resource;
-            // 1999-June-08, Joachim Feise (dav-exp@ics.uci.edu):
-            // workaround for IBM's DAV4J, which does not handle propfind properly
-            // with the prop tag. To use the workaround, run DAV Explorer with
-            // 'java -jar -Dpropfind=allprop DAVExplorer.jar'
-            // Note that this prevents the detection of DeltaV information, since
-            // RFC 3253 states in section 3.11 that "A DAV:allprop PROPFIND request
-            // SHOULD NOT return any of the properties defined by this document."
-            String doAllProp = System.getProperty( "propfind" );
-            if( (doAllProp != null) && doAllProp.equalsIgnoreCase("allprop") )
-            {
-                if( generator.GeneratePropFind( str, "allprop", "one", null, null, false ) )
-                {
-                    generator.execute();
-                }
-            }
-            else
-            {
-                String[] props;
-                props = new String[6];
-                props[0] = "displayname";
-                props[1] = "resourcetype";
-                props[2] = "getcontenttype";
-                props[3] = "getcontentlength";
-                props[4] = "getlastmodified";
-                props[5] = "lockdiscovery";
-
-                if( generator.GeneratePropFind( str, "prop", "one", props, null, false ) )
-                {
-                    generator.execute();
-                }
-            }
+            generator.DoPropFind( Resource, false );
         }
     }
+
 
 
     /**
      * Parse the response to a PROPFIND request
      */
-    public void parsePropFind()
+    protected void parsePropFind()
     {
         if( GlobalData.getGlobalData().getDebugResponse() )
         {
@@ -418,264 +383,39 @@ public class WebDAVResponseInterpreter
 
         printXML( body );
 
-        if (Extra.equals("uribox"))
+        switch( extendedCode )
         {
-            // we got here from entering a URI, so now we need to add the uri
-            // to the tree
-            if( Port > 0 )
-            {
-                fireInsertionEvent(HostName + ":" + Port + Resource);
-            }
-            else
-            {
-                fireInsertionEvent(HostName + Resource);
-            }
-        }
-        else if( Extra.equals("exclusiveLock") || Extra.equals("sharedLock") || Extra.equals("unlock")
-                 || Extra.equals("delete") || Extra.startsWith("rename:")
-                 || Extra.equals("display") || Extra.equals("commit")
-                 || Extra.startsWith("rename2:") || Extra.startsWith("delete2:") )
-        {
-            // get lock information out of XML tree
-            String lockToken = null;
-            String ownerInfo = "";
-            String lockType = "";
-            String lockScope = "";
-            String lockTimeout = "";
-            String lockDepth = "";
-
-            String[] token = new String[2];
-            token[0] = new String( WebDAVXML.ELEM_RESPONSE );
-            token[1] = new String( WebDAVXML.ELEM_PROPSTAT );
-            Element rootElem = skipElements( xml_doc, token );
-            if( rootElem != null )
-            {
-                TreeEnumeration enumTree =  new TreeEnumeration( rootElem );
-                while( enumTree.hasMoreElements() )
-                {
-                    Element current = (Element)enumTree.nextElement();
-                    Name currentTag = current.getTagName();
-                    if( currentTag != null )
-                    {
-                        if( currentTag.getName().equals( WebDAVXML.ELEM_STATUS ) )
-                        {
-                            int status = getStatus( current );
-                            if( status < 300 )
-                            {
-                                // everything ok
-                            }
-                            else if( status < 400 )
-                            {
-                            }
-                            else if( status < 500 )
-                            {
-                                if( Extra.equals("exclusiveLock") || Extra.equals("sharedLock") || Extra.equals("unlock") )
-                                {
-                                    GlobalData.getGlobalData().errorMsg( "This resource does not support locking." );
-                                    return;
-                                }
-                            }
-                            else
-                            {
-                                GlobalData.getGlobalData().errorMsg( "Server error: " + status );
-                                return;
-                            }
-                        }
-                        else if( currentTag.getName().equals( WebDAVXML.ELEM_PROP ) )
-                        {
-                            token = new String[3];
-                            token[0] = new String( WebDAVXML.ELEM_PROP );
-                            token[1] = new String( WebDAVProp.PROP_LOCKDISCOVERY );
-                            token[2] = new String( WebDAVXML.ELEM_ACTIVE_LOCK );
-
-                            rootElem = skipElements( current, token );
-                            if( rootElem != null )
-                            {
-                                enumTree =  new TreeEnumeration( rootElem );
-                                while( enumTree.hasMoreElements() )
-                                {
-                                    current = (Element)enumTree.nextElement();
-                                    currentTag = current.getTagName();
-                                    if( currentTag != null )
-                                    {
-                                        if( currentTag.getName().equals( WebDAVXML.ELEM_LOCK_TOKEN ) )
-                                        {
-                                            lockToken = getLockToken( current );
-                                        }
-                                        else if( currentTag.getName().equals( WebDAVXML.ELEM_LOCK_TYPE ) )
-                                        {
-                                            lockType = getLockType( current );
-                                        }
-                                        else if( currentTag.getName().equals( WebDAVXML.ELEM_LOCK_SCOPE ) )
-                                        {
-                                            lockScope = getLockScope( current );
-                                        }
-                                        else if( currentTag.getName().equals( WebDAVXML.ELEM_OWNER ) )
-                                        {
-                                            ownerInfo = getOwnerInfo( current );
-                                        }
-                                        else if( currentTag.getName().equals( WebDAVXML.ELEM_TIMEOUT ) )
-                                        {
-                                            lockTimeout = getLockTimeout( current );
-                                        }
-                                        else if( currentTag.getName().equals( WebDAVXML.ELEM_LOCK_DEPTH ) )
-                                        {
-                                            lockDepth = getLockDepth( current );
-                                        }
-                                    }
-                                }
-                            }
-                        }
-                    }
-                }
-            }
-            if (lockToken != null)
-            {
-                lockToken.trim();
-                int pos = lockToken.indexOf("opaque");
-                if( pos >= 0 )
-                    lockToken = lockToken.substring(pos);
-            }
-            if (Extra.equals("exclusiveLock"))
-            {
-                    String lockInfo = getLockInfo();
-                    generator.GenerateLock( lockInfo, lockToken, true );
-                    generator.execute();
-            }
-            else if (Extra.equals("sharedLock"))
-            {
-                    String lockInfo = getLockInfo();
-                    generator.GenerateLock( lockInfo, lockToken, false );
-                    generator.execute();
-            }
-            else if (Extra.equals("unlock"))
-            {
-                if (lockToken != null)
-                {
-                    generator.GenerateUnlock(lockToken);
-                    generator.execute();
-                }
-            }
-            else if (Extra.equals("delete"))
-            {
-                generator.setNode(Node); // sets the Node which will be operated
-                generator.GenerateDelete(lockToken);
-                generator.execute();
-            }
-            else if (Extra.startsWith("rename:"))
-            {
-                int pos = Extra.indexOf(":");
-                String tmp = Extra.substring(pos + 1);
-                pos = tmp.indexOf( ":" );
-                String dest = null;
-                String dir = null;
-                if( pos >= 0 )
-                {
-                    dest = tmp.substring( 0, pos );
-                    dir = tmp.substring( pos + 1 );
-                }
-                else
-                    dest = tmp;
-
-                clearStream();
-                //Old
-                generator.setNode(Node);
-                generator.GenerateMove(dest, dir, false, true, lockToken, "rename");
-                generator.execute();
-            }
-            else if(Extra.startsWith("rename2:"))
-            {
-                // gets the response to the query DiscoverLock
-                generator.setSecondTime(true);
-                generator.GenerateMove(null, null, false, true, lockToken, "rename2:");
-                generator.setSecondTime(false);
-                clearStream();
-                generator.execute();
-            }
-            else if(Extra.startsWith("delete2:"))
-            {
-                // gets the response to the query DiscoverLock
-                generator.setSecondTime(true);
-                generator.GenerateDelete(lockToken);
-                generator.setSecondTime(false);
-                clearStream();
-                generator.execute();
-            }
-            else if (Extra.equals("display"))
-            {
-                displayLock(lockType, lockScope, lockDepth, lockToken, lockTimeout, ownerInfo);
-            }
-            else if (Extra.equals("commit"))
-            {
-                String newRes = Resource.substring(1);
-                String fileName =  WebDAVEditDir + File.separatorChar + newRes;
-                File theFile = new File(fileName);
-                if (!theFile.exists())
-                {
-                    GlobalData.getGlobalData().errorMsg("File not found!\n");
-                    return;
-                }
-                else
-                {
-                    generator.GeneratePut(fileName, newRes, lockToken, null);
-                    generator.execute();
-                }
-            }
-        }
-        else if (Extra.equals("properties"))
-        {
-            String locktoken = parseLock( true );
-            Document ppatchDoc = new Document();
-            ByteArrayOutputStream byte_prop = new ByteArrayOutputStream();
-            XMLOutputStream  xml_prop = new XMLOutputStream(byte_prop);
-            byte[] prop_out = null;
-            String[] token = new String[1];
-            token[0] = new String( WebDAVXML.ELEM_RESPONSE );
-            Element rootElem = skipElements( xml_doc, token );
-            if( rootElem != null )
-            {
-                TreeEnumeration enumTree =  new TreeEnumeration( rootElem );
-                while( enumTree.hasMoreElements() )
-                {
-                    Element current = (Element)enumTree.nextElement();
-                    Name currentTag = current.getTagName();
-                    if( currentTag != null )
-                    {
-                        if( currentTag.getName().equals( WebDAVXML.ELEM_PROPSTAT ) )
-                        {
-                            token = new String[2];
-                            token[0] = new String( WebDAVXML.ELEM_PROPSTAT );
-                            token[1] = new String( WebDAVXML.ELEM_PROP );
-                            rootElem = skipElements( current, token );
-                            if( rootElem != null )
-                            {
-                                String host = HostName;
-                                if (Port != 0)
-                                    host = HostName + ":" + Port;
-                                PropDialog pd = new PropDialog( rootElem, Resource, host, locktoken, true );
-                            }
-                        }
-                    }
-                }
-            }
-        }
-        else if(Extra.equals("expand"))
-        {
-            // Allow for post processing in Main ResponseListener
-        }
-        else if(Extra.equals("index"))
-        {
-            // Allow for post processing in Main ResponseListener
-        }
-        else if(Extra.equals("select"))
-        {
-            // Allow for post processing in Main ResponseListener
-        }
-        else
-        {
-            //  "refresh"
-            setRefresh(Node);
-            fireInsertionEvent(null);
+            case WebDAVResponseEvent.URIBOX:
+                handleUriBox();
+                break;
+            
+            case WebDAVResponseEvent.EXCLUSIVE_LOCK:
+            case WebDAVResponseEvent.SHARED_LOCK:
+            case WebDAVResponseEvent.UNLOCK:
+            case WebDAVResponseEvent.DELETE:
+            case WebDAVResponseEvent.DELETE2:
+            case WebDAVResponseEvent.RENAME:
+            case WebDAVResponseEvent.RENAME2:
+            case WebDAVResponseEvent.DISPLAY:
+            case WebDAVResponseEvent.COMMIT:
+                handleLocktoken( xml_doc );
+                break;
+            
+            case WebDAVResponseEvent.PROPERTIES:
+                handleProperties( xml_doc );
+                break;
+            
+            case WebDAVResponseEvent.EXPAND:
+            case WebDAVResponseEvent.INDEX:
+            case WebDAVResponseEvent.SELECT:
+                // Allow for post processing in Main ResponseListener
+                break;
+            
+            default:
+                //  "refresh"
+                setRefresh( Node );
+                fireInsertionEvent( null );
+                break;
         }
     }
 
@@ -733,7 +473,7 @@ public class WebDAVResponseInterpreter
     /**
      * Parse the result of a PROPPATCH request
      */
-    public void parsePropPatch()
+    protected void parsePropPatch()
     {
         if( GlobalData.getGlobalData().getDebugResponse() )
         {
@@ -745,7 +485,7 @@ public class WebDAVResponseInterpreter
     /**
      * Parse the result of a MKCOL request
      */
-    public void parseMkCol()
+    protected void parseMkCol()
     {
         if( GlobalData.getGlobalData().getDebugResponse() )
         {
@@ -754,19 +494,25 @@ public class WebDAVResponseInterpreter
 
         clearStream();
 
-        if (Extra.equals("mkcol"))
+        switch( extendedCode )
         {
+            case WebDAVResponseEvent.MKCOL:
+            {
                 CopyResponseEvent e = new CopyResponseEvent( this, Node);
                 copyListener.CopyEventResponse(e);
-        }
-        else if (Extra.equals("mkcolbelow"))
-        {
-            // Piggy Back on Put Event,
-            // This reloads the node on the selected collection,
-            // but should not change the selection.
-            WebDAVTreeNode parent = generator.getPossibleParentOfSelectedCollectionNode();
-            PutEvent e = new PutEvent( this, Node, parent);
-            putListener.PutEventResponse(e);
+                break;
+            }
+            
+            case WebDAVResponseEvent.MKCOLBELOW:
+            {
+                // Piggy Back on Put Event,
+                // This reloads the node on the selected collection,
+                // but should not change the selection.
+                WebDAVTreeNode parent = generator.getPossibleParentOfSelectedCollectionNode();
+                PutEvent e = new PutEvent( this, Node, parent);
+                putListener.PutEventResponse(e);
+                break;
+            }
         }
     }
 
@@ -774,7 +520,7 @@ public class WebDAVResponseInterpreter
     /**
      * Parse the result of a GET request
      */
-    public void parseGet()
+    protected void parseGet()
     {
         if( GlobalData.getGlobalData().getDebugResponse() )
         {
@@ -788,7 +534,7 @@ public class WebDAVResponseInterpreter
         {
             FileOutputStream fout = null;
             String newRes = Resource.substring(1);
-            if (Extra.equals("saveas"))
+            if( extendedCode == WebDAVResponseEvent.SAVE_AS )
             {
                 FileDialog fd = new FileDialog(GlobalData.getGlobalData().getMainFrame(), "Save As" , FileDialog.SAVE);
                 int pos = newRes.lastIndexOf( "/" );
@@ -832,11 +578,16 @@ public class WebDAVResponseInterpreter
                 if (!replaceFile(fileName))
                 {
                     bSave = false;
-                    if ( (Extra.equals("view")) || (Extra.equals("edit")) )
+                    switch( extendedCode )
                     {
-                        if( !launchAnyway() )
+                        case WebDAVResponseEvent.VIEW:
+                        case WebDAVResponseEvent.EDIT:
                         {
-                            return;
+                            if( !launchAnyway() )
+                            {
+                                return;
+                            }
+                            break;
                         }
                     }
                 }
@@ -851,16 +602,21 @@ public class WebDAVResponseInterpreter
                 fout.close();
             }
 
-            if( Extra.equals("view") || Extra.equals("edit") )
+            switch( extendedCode )
             {
-                String app = selectApplication();
-                if( (app != null) && (app != "") )
+                case WebDAVResponseEvent.VIEW:
+                case WebDAVResponseEvent.EDIT:
                 {
-                    Runtime rt = Runtime.getRuntime();
-                    String[] cmdarray =  new String[2];
-                    cmdarray[0] = app;
-                    cmdarray[1] = fileName;
-                    rt.exec( cmdarray );
+                    String app = selectApplication();
+                    if( (app != null) && (app != "") )
+                    {
+                        Runtime rt = Runtime.getRuntime();
+                        String[] cmdarray =  new String[2];
+                        cmdarray[0] = app;
+                        cmdarray[1] = fileName;
+                        rt.exec( cmdarray );
+                    }
+                    break;
                 }
             }
         }
@@ -874,7 +630,7 @@ public class WebDAVResponseInterpreter
     /**
      * Parse the result of a PUT request
      */
-    public void parsePut()
+    protected void parsePut()
     {
         if( GlobalData.getGlobalData().getDebugResponse() )
         {
@@ -907,7 +663,7 @@ public class WebDAVResponseInterpreter
     /**
      * Parse the result of a DELETE request
      */
-    public void parseDelete()
+    protected void parseDelete()
     {
         if( GlobalData.getGlobalData().getDebugResponse() )
         {
@@ -974,7 +730,7 @@ public class WebDAVResponseInterpreter
     /**
      * Parse the response to a COPY request 
      */
-    public void parseCopy()
+    protected void parseCopy()
     {
         if( GlobalData.getGlobalData().getDebugResponse() )
         {
@@ -990,7 +746,7 @@ public class WebDAVResponseInterpreter
     /**
      * Parse the response to a MOVE request 
      */
-    public void parseMove()
+    protected void parseMove()
     {
         if( GlobalData.getGlobalData().getDebugResponse() )
         {
@@ -1001,7 +757,7 @@ public class WebDAVResponseInterpreter
         {
             if (res.getStatusCode() >= 300)
             {
-                if( Extra.startsWith("rename"))
+                if( extendedCode == WebDAVResponseEvent.RENAME )
                 {
                     ActionEvent ae = new ActionEvent(this, ActionEvent.ACTION_FIRST, "reset");
                     actionListener.actionPerformed(ae);
@@ -1025,7 +781,7 @@ public class WebDAVResponseInterpreter
     /**
      * Parse the response to a LOCK request 
      */
-    public String parseLock( boolean secondary )
+    protected String parseLock( boolean secondary )
     {
         if( GlobalData.getGlobalData().getDebugResponse() )
         {
@@ -1100,7 +856,7 @@ public class WebDAVResponseInterpreter
     /**
      * Parse the response to a UNLOCK request
      */
-    public void parseUnlock()
+    protected void parseUnlock()
     {
         if( GlobalData.getGlobalData().getDebugResponse() )
         {
@@ -2243,7 +1999,8 @@ public class WebDAVResponseInterpreter
         generator = null;
         stream = null;
         Method = null;
-        Extra = null;
+        extendedCode = 0;
+        extendedData = null;
         res = null;
         HostName = null;
         Port = 0;
@@ -2297,11 +2054,282 @@ public class WebDAVResponseInterpreter
         return "UTF-8";
     }
 
+    
+    protected void handleUriBox()
+    {
+        // we got here from entering a URI, so now we need to add the uri
+        // to the tree
+        if( Port > 0 )
+        {
+            fireInsertionEvent(HostName + ":" + Port + Resource);
+        }
+        else
+        {
+            fireInsertionEvent(HostName + Resource);
+        }
+    }
 
+    
+    protected void handleLocktoken( Document xml_doc )
+    {
+        // get lock information out of XML tree
+        String lockToken = null;
+        String ownerInfo = "";
+        String lockType = "";
+        String lockScope = "";
+        String lockTimeout = "";
+        String lockDepth = "";
+
+        String[] token = new String[2];
+        token[0] = new String( WebDAVXML.ELEM_RESPONSE );
+        token[1] = new String( WebDAVXML.ELEM_PROPSTAT );
+        Element rootElem = skipElements( xml_doc, token );
+        if( rootElem != null )
+        {
+            TreeEnumeration enumTree =  new TreeEnumeration( rootElem );
+            while( enumTree.hasMoreElements() )
+            {
+                Element current = (Element)enumTree.nextElement();
+                Name currentTag = current.getTagName();
+                if( currentTag != null )
+                {
+                    if( currentTag.getName().equals( WebDAVXML.ELEM_STATUS ) )
+                    {
+                        int status = getStatus( current );
+                        if( status < 300 )
+                        {
+                            // everything ok
+                        }
+                        else if( status < 400 )
+                        {
+                        }
+                        else if( status < 500 )
+                        {
+                            switch( extendedCode )
+                            {
+                                case WebDAVResponseEvent.EXCLUSIVE_LOCK:
+                                case WebDAVResponseEvent.SHARED_LOCK:
+                                case WebDAVResponseEvent.UNLOCK:
+                                {
+                                    GlobalData.getGlobalData().errorMsg( "This resource does not support locking." );
+                                    return;
+                                }
+                            }
+                        }
+                        else
+                        {
+                            GlobalData.getGlobalData().errorMsg( "Server error: " + status );
+                            return;
+                        }
+                    }
+                    else if( currentTag.getName().equals( WebDAVXML.ELEM_PROP ) )
+                    {
+                        token = new String[3];
+                        token[0] = new String( WebDAVXML.ELEM_PROP );
+                        token[1] = new String( WebDAVProp.PROP_LOCKDISCOVERY );
+                        token[2] = new String( WebDAVXML.ELEM_ACTIVE_LOCK );
+
+                        rootElem = skipElements( current, token );
+                        if( rootElem != null )
+                        {
+                            enumTree =  new TreeEnumeration( rootElem );
+                            while( enumTree.hasMoreElements() )
+                            {
+                                current = (Element)enumTree.nextElement();
+                                currentTag = current.getTagName();
+                                if( currentTag != null )
+                                {
+                                    if( currentTag.getName().equals( WebDAVXML.ELEM_LOCK_TOKEN ) )
+                                    {
+                                        lockToken = getLockToken( current );
+                                    }
+                                    else if( currentTag.getName().equals( WebDAVXML.ELEM_LOCK_TYPE ) )
+                                    {
+                                        lockType = getLockType( current );
+                                    }
+                                    else if( currentTag.getName().equals( WebDAVXML.ELEM_LOCK_SCOPE ) )
+                                    {
+                                        lockScope = getLockScope( current );
+                                    }
+                                    else if( currentTag.getName().equals( WebDAVXML.ELEM_OWNER ) )
+                                    {
+                                        ownerInfo = getOwnerInfo( current );
+                                    }
+                                    else if( currentTag.getName().equals( WebDAVXML.ELEM_TIMEOUT ) )
+                                    {
+                                        lockTimeout = getLockTimeout( current );
+                                    }
+                                    else if( currentTag.getName().equals( WebDAVXML.ELEM_LOCK_DEPTH ) )
+                                    {
+                                        lockDepth = getLockDepth( current );
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+        if (lockToken != null)
+        {
+            lockToken.trim();
+            int pos = lockToken.indexOf("opaque");
+            if( pos >= 0 )
+                lockToken = lockToken.substring(pos);
+        }
+        switch( extendedCode )
+        {
+            case WebDAVResponseEvent.EXCLUSIVE_LOCK:
+            {
+                String lockInfo = getLockInfo();
+                generator.GenerateLock( lockInfo, lockToken, true );
+                generator.execute();
+                break;
+            }
+            
+            case WebDAVResponseEvent.SHARED_LOCK:
+            {
+                String lockInfo = getLockInfo();
+                generator.GenerateLock( lockInfo, lockToken, false );
+                generator.execute();
+                break;
+            }
+            
+            case WebDAVResponseEvent.UNLOCK:
+            {
+                if (lockToken != null)
+                {
+                    generator.GenerateUnlock(lockToken);
+                    generator.execute();
+                }
+                break;
+            }
+            
+            case WebDAVResponseEvent.DELETE:
+            {
+                generator.setNode(Node); // sets the Node which will be operated
+                generator.GenerateDelete(lockToken);
+                generator.execute();
+                break;
+            }
+            
+            case WebDAVResponseEvent.RENAME:
+            {
+                String tmp = extendedData;
+                int pos = tmp.indexOf( ":" );
+                String dest = null;
+                String dir = null;
+                if( pos >= 0 )
+                {
+                    dest = tmp.substring( 0, pos );
+                    dir = tmp.substring( pos + 1 );
+                }
+                else
+                    dest = tmp;
+
+                clearStream();
+                //Old
+                generator.setNode(Node);
+                generator.GenerateMove( dest, dir, false, true, lockToken,
+                                        WebDAVResponseEvent.RENAME );
+                generator.execute();
+                break;
+            }
+            
+            case WebDAVResponseEvent.RENAME2:
+            {
+                // gets the response to the query DiscoverLock
+                generator.setSecondTime(true);
+                generator.GenerateMove( null, null, false, true, lockToken,
+                                        WebDAVResponseEvent.RENAME2 );
+                generator.setSecondTime(false);
+                clearStream();
+                generator.execute();
+                break;
+            }
+            
+            case WebDAVResponseEvent.DELETE2:
+            {
+                // gets the response to the query DiscoverLock
+                generator.setSecondTime(true);
+                generator.GenerateDelete(lockToken);
+                generator.setSecondTime(false);
+                clearStream();
+                generator.execute();
+                break;
+            }
+            
+            case WebDAVResponseEvent.DISPLAY:
+            {
+                displayLock(lockType, lockScope, lockDepth, lockToken, lockTimeout, ownerInfo);
+                break;
+            }
+            
+            case WebDAVResponseEvent.COMMIT:
+            {
+                String newRes = Resource.substring(1);
+                String fileName =  WebDAVEditDir + File.separatorChar + newRes;
+                File theFile = new File(fileName);
+                if (!theFile.exists())
+                {
+                    GlobalData.getGlobalData().errorMsg("File not found!\n");
+                    return;
+                }
+                else
+                {
+                    generator.GeneratePut(fileName, newRes, lockToken, null);
+                    generator.execute();
+                }
+                break;
+            }
+        }
+    }
+
+
+    protected void handleProperties( Document xml_doc )
+    {
+        String locktoken = parseLock( true );
+        Document ppatchDoc = new Document();
+        ByteArrayOutputStream byte_prop = new ByteArrayOutputStream();
+        XMLOutputStream  xml_prop = new XMLOutputStream(byte_prop);
+        byte[] prop_out = null;
+        String[] token = new String[1];
+        token[0] = new String( WebDAVXML.ELEM_RESPONSE );
+        Element rootElem = skipElements( xml_doc, token );
+        if( rootElem != null )
+        {
+            TreeEnumeration enumTree =  new TreeEnumeration( rootElem );
+            while( enumTree.hasMoreElements() )
+            {
+                Element current = (Element)enumTree.nextElement();
+                Name currentTag = current.getTagName();
+                if( currentTag != null )
+                {
+                    if( currentTag.getName().equals( WebDAVXML.ELEM_PROPSTAT ) )
+                    {
+                        token = new String[2];
+                        token[0] = new String( WebDAVXML.ELEM_PROPSTAT );
+                        token[1] = new String( WebDAVXML.ELEM_PROP );
+                        rootElem = skipElements( current, token );
+                        if( rootElem != null )
+                        {
+                            String host = HostName;
+                            if (Port != 0)
+                                host = HostName + ":" + Port;
+                            PropDialog pd = new PropDialog( rootElem, Resource, host, locktoken, true );
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    
     protected static WebDAVRequestGenerator generator;
     protected static byte[] stream = null;
     protected static String Method;
-    protected static String Extra;
+    protected static int extendedCode;
+    protected static String extendedData;
     protected static HTTPResponse res;
     protected static String HostName;
     protected static int Port;

@@ -47,19 +47,6 @@ import HTTPClient.NVPair;
  */
 public class WebDAVRequestEvent extends EventObject
 {
-    private String HostName;
-    private int Port;
-    private String MethodName;
-    private String ResourceName;
-    private NVPair[] Headers;
-    private byte[] Body;
-    private String Extra;
-    private String User;
-    private String Pass;
-
-    private WebDAVTreeNode node;
-
-
     /**
      * Constructor
      * @param module
@@ -74,9 +61,10 @@ public class WebDAVRequestEvent extends EventObject
      * @param Pass
      * @param n
      */
-    public WebDAVRequestEvent( Object module, String MethodName, String HostName, int Port,
-                               String ResourceName, NVPair[] Headers, byte[] Body,
-                               String Extra, String User, String Pass, WebDAVTreeNode n )
+    public WebDAVRequestEvent( Object module, String MethodName, String HostName,
+                               int Port, String ResourceName, NVPair[] Headers,
+                               byte[] Body, int Extra, String Data,
+                               String User, String Pass, WebDAVTreeNode n )
     {
         super(module);
 
@@ -92,6 +80,7 @@ public class WebDAVRequestEvent extends EventObject
         this.Headers = Headers;
         this.Body = Body;
         this.Extra = Extra;
+        this.ExtraData = Data;
         this.User = User;
         this.Pass = Pass;
         this.node =n;
@@ -182,9 +171,19 @@ public class WebDAVRequestEvent extends EventObject
      * 
      * @return
      */
-    public String getExtraInfo()
+    public int getExtraInfo()
     {
         return Extra;
+    }
+
+
+    /**
+     * 
+     * @return
+     */
+    public String getExtraData()
+    {
+        return ExtraData;
     }
 
 
@@ -196,4 +195,18 @@ public class WebDAVRequestEvent extends EventObject
     {
         return node;
     }
+
+
+    private String HostName;
+    private int Port;
+    private String MethodName;
+    private String ResourceName;
+    private NVPair[] Headers;
+    private byte[] Body;
+    private int Extra;
+    private String ExtraData;
+    private String User;
+    private String Pass;
+
+    private WebDAVTreeNode node;
 }

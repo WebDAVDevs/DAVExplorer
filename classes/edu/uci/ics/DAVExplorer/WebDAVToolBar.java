@@ -57,6 +57,7 @@ import javax.swing.JPanel;
 import javax.swing.JToolBar;
 import javax.swing.JButton;
 import javax.swing.BorderFactory;
+import javax.swing.Icon;
 import java.awt.Component;
 import java.awt.BorderLayout;
 import java.awt.Insets;
@@ -74,6 +75,23 @@ public class WebDAVToolBar extends JPanel implements ActionListener
     private Vector toolbarListener;
 
 
+    class WebDAVTBButton extends JButton
+    {
+        public WebDAVTBButton( Icon icon, int id )
+        {
+            super( icon );
+            this.id = id;
+        }
+
+        public int getId()
+        {
+            return id;
+        }
+
+        private int id;
+    }
+    
+    
     /**
      * Constructor
      */
@@ -95,9 +113,9 @@ public class WebDAVToolBar extends JPanel implements ActionListener
      * @param name
      * @param description
      */
-    private void addTool( JToolBar tb, String name, String description )
+    private void addTool( JToolBar tb, String name, String description, int id )
     {
-        addTool( tb, name, name, description );
+        addTool( tb, name, name, description, id );
     }
 
 
@@ -107,10 +125,11 @@ public class WebDAVToolBar extends JPanel implements ActionListener
      * @param name
      * @param iconName
      * @param description
+     * @param id
      */
-    private void addTool( JToolBar tb, String name, String iconName, String description )
+    private void addTool( JToolBar tb, String name, String iconName, String description, int id )
     {
-        JButton b = new JButton(GlobalData.getGlobalData().getImageIcon(iconName + ".gif", name));
+        WebDAVTBButton b = new WebDAVTBButton( GlobalData.getGlobalData().getImageIcon(iconName + ".gif", name), id );
         b.setActionCommand( description );
         b.addActionListener(this);
         b.setToolTipText( description );
@@ -125,21 +144,21 @@ public class WebDAVToolBar extends JPanel implements ActionListener
      */
     private Component createToolbar()
     {
-        addTool( toolbar, "open", "Get File" );
-        addTool( toolbar, "save", "Write File" );
-        addTool( toolbar, "copy", "Copy" );
-        addTool( toolbar, "delete", "Delete" );
+        addTool( toolbar, "open", "Get File", WebDAVMenu.GET_FILE );
+        addTool( toolbar, "save", "Write File", WebDAVMenu.WRITE_FILE );
+        addTool( toolbar, "copy", "Copy", WebDAVMenu.COPY );
+        addTool( toolbar, "delete", "Delete", WebDAVMenu.DELETE );
         toolbar.addSeparator();
-        addTool( toolbar, "exclusiveLock", "lock", "Exclusive Lock" );
-        addTool( toolbar, "unlock", "Unlock" );
-        addTool( toolbar, "propfind", "View/Modify Properties" );
+        addTool( toolbar, "exclusiveLock", "lock", "Exclusive Lock", WebDAVMenu.EXCLUSIVE_LOCK );
+        addTool( toolbar, "unlock", "Unlock", WebDAVMenu.UNLOCK );
+        addTool( toolbar, "propfind", "View/Modify Properties", WebDAVMenu.VIEW_MODIFY_PROPS );
         // DeltaV support
         toolbar.addSeparator();
-        addTool( toolbar, "versioning", "Put Under Version Control");
-        addTool( toolbar, "checkout", "Check Out");
-        addTool( toolbar, "uncheckout", "Uncheckout");
-        addTool( toolbar, "checkin", "Check In");
-        addTool( toolbar, "versions", "Version Report");
+        addTool( toolbar, "versioning", "Put Under Version Control", WebDAVMenu.INIT_VERSION_CONTROL );
+        addTool( toolbar, "checkout", "Check Out", WebDAVMenu.CHECKOUT );
+        addTool( toolbar, "uncheckout", "Uncheckout", WebDAVMenu.UNCHECKOUT );
+        addTool( toolbar, "checkin", "Check In", WebDAVMenu.CHECKIN );
+        addTool( toolbar, "versions", "Version Report", WebDAVMenu.VERSION_REPORT );
         return toolbar;
     }
 
@@ -179,7 +198,8 @@ public class WebDAVToolBar extends JPanel implements ActionListener
      */
     protected void notifyListener(ActionEvent e)
     {
-        ActionEvent evt = new ActionEvent(this, ActionEvent.ACTION_PERFORMED, e.getActionCommand());
+        WebDAVTBButton b = (WebDAVTBButton)e.getSource();
+        ActionEvent evt = new ActionEvent(this, b.getId(), e.getActionCommand());
         Vector v;
         synchronized(this)
         {

@@ -91,7 +91,8 @@ public class WebDAVManager
     private String ResourceName;
     private NVPair[] Headers;
     private byte[] Body;
-    private String ExtraInfo;
+    private int ExtraInfo;
+    private String ExtraData;
     private Vector Listeners = new Vector();
 
     private boolean logging = false;
@@ -245,11 +246,12 @@ public class WebDAVManager
         Headers = e.getHeaders();
         Body = e.getBody();
         ExtraInfo = e.getExtraInfo();
+        ExtraData = e.getExtraData();
         try {
             if( e.getMethod().equals("PUT") )
             {
                 // special handling of PUT to allow for files > 2GB
-                Response = Con.Put( ResourceName, ExtraInfo, Headers );
+                Response = Con.Put( ResourceName, ExtraData, Headers );
             }
             else
             {
@@ -337,9 +339,13 @@ public class WebDAVManager
      * @param Node
      * @return
      */
-    public WebDAVResponseEvent GenerateWebDAVResponse(HTTPResponse Response, WebDAVTreeNode Node)
+    public WebDAVResponseEvent GenerateWebDAVResponse( HTTPResponse Response,
+                                                       WebDAVTreeNode Node )
     {
-        WebDAVResponseEvent e = new WebDAVResponseEvent(this,Hostname, Port, ResourceName,MethodName,Response,ExtraInfo, Node);
+        WebDAVResponseEvent e = new WebDAVResponseEvent( this, Hostname, Port,
+                                                         ResourceName, MethodName,
+                                                         Response, ExtraInfo,
+                                                         ExtraData, Node );
         return e;
     }
 

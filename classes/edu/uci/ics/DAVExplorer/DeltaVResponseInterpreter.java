@@ -96,7 +96,7 @@ public class DeltaVResponseInterpreter extends WebDAVResponseInterpreter
     
         res = e.getResponse();
         Method = e.getMethodName();
-        Extra = e.getExtraInfo();
+        extendedCode = e.getExtendedCode();
         HostName = e.getHost();
         Port = e.getPort();
         Charset = getCharset();
@@ -149,7 +149,7 @@ public class DeltaVResponseInterpreter extends WebDAVResponseInterpreter
     /**
      * Process the response to a VERSION-CONTROL request  
      */
-    public void parseVersionControl()
+    protected void parseVersionControl()
     {
         try
         {
@@ -168,7 +168,7 @@ public class DeltaVResponseInterpreter extends WebDAVResponseInterpreter
     /**
      * Process the response to a CHECKOUT request  
      */
-    public void parseCheckout()
+    protected void parseCheckout()
     {
         try
         {
@@ -187,7 +187,7 @@ public class DeltaVResponseInterpreter extends WebDAVResponseInterpreter
     /**
      * Process the response to an UNCHECKOUT request  
      */
-    public void parseUnCheckout()
+    protected void parseUnCheckout()
     {
         try{
             int code = res.getStatusCode();
@@ -205,7 +205,7 @@ public class DeltaVResponseInterpreter extends WebDAVResponseInterpreter
     /**
      * Process the response to a CHECKIN request  
      */
-    public void parseCheckin()
+    protected void parseCheckin()
     {
         try{
             int code = res.getStatusCode();
@@ -223,7 +223,7 @@ public class DeltaVResponseInterpreter extends WebDAVResponseInterpreter
     /**
      * Process the response to a REPORT request  
      */
-    public void parseReport()
+    protected void parseReport()
     {
         Vector nodesChildren = new Vector();
         String ResourceName = getResource();
@@ -282,7 +282,7 @@ public class DeltaVResponseInterpreter extends WebDAVResponseInterpreter
             }
         }
 
-        if(Extra.equals("display"))
+        if( extendedCode == WebDAVResponseEvent.DISPLAY )
         {
             String host = HostName;
             if (Port != 0)
@@ -304,7 +304,7 @@ public class DeltaVResponseInterpreter extends WebDAVResponseInterpreter
         {
             if( e.getActionCommand() != null )
                 generator.setResource( e.getActionCommand(), null );
-            if( generator.GenerateGet("saveas") )
+            if( generator.GenerateGet( WebDAVResponseEvent.SAVE_AS ) )
                 generator.execute();
         }
     }
@@ -725,7 +725,7 @@ public class DeltaVResponseInterpreter extends WebDAVResponseInterpreter
             full += Resource;
             deltaV.put( full, Boolean.valueOf(deltaVBase) );
             deltaVReports.put( full, Boolean.valueOf(reports) );
-            deltaVReports.put( full, Boolean.valueOf(activityFound) );
+            deltaVActivity.put( full, Boolean.valueOf(activityFound) );
             
             if( activityFound )
             {
@@ -733,7 +733,7 @@ public class DeltaVResponseInterpreter extends WebDAVResponseInterpreter
                 body = res.getData();
                 if( body == null )
                 {
-                    if (Extra.equals("uribox"))
+                    if( extendedCode == WebDAVResponseEvent.URIBOX )
                     {
                         // we got here from entering a URI, we only want to get the activity
                         // name in this case
@@ -761,48 +761,10 @@ public class DeltaVResponseInterpreter extends WebDAVResponseInterpreter
             return;
         }
 
-        if (Extra.equals("uribox"))
+        if( extendedCode == WebDAVResponseEvent.URIBOX )
         {
             // we got here from entering a URI, so now we need to do a PROPFIND
-            String str = HostName;
-            if (Port > 0)
-                str += ":" + Port;
-            str += Resource;
-            // 1999-June-08, Joachim Feise (dav-exp@ics.uci.edu):
-            // workaround for IBM's DAV4J, which does not handle propfind properly
-            // with the prop tag. To use the workaround, run DAV Explorer with
-            // 'java -jar -Dpropfind=allprop DAVExplorer.jar'
-            // Note that this prevents the detection of DeltaV information, since
-            // RFC 3253 states in section 3.11 that "A DAV:allprop PROPFIND request
-            // SHOULD NOT return any of the properties defined by this document."
-            String doAllProp = System.getProperty( "propfind" );
-            if( (doAllProp != null) && doAllProp.equalsIgnoreCase("allprop") )
-            {
-                if( generator.GeneratePropFind( str, "allprop", "one", null, null, false ) )
-                {
-                    generator.execute();
-                }
-            }
-            else
-            {
-                String[] props;
-                props = new String[9];
-                props[0] = "displayname";
-                props[1] = "resourcetype";
-                props[2] = "getcontenttype";
-                props[3] = "getcontentlength";
-                props[4] = "getlastmodified";
-                props[5] = "lockdiscovery";
-                // DeltaV support
-                props[6] = "checked-in";
-                props[7] = "checked-out";
-                props[8] = "version-name";
-
-                if( generator.GeneratePropFind( str, "prop", "one", props, null, false ) )
-                {
-                    generator.execute();
-                }
-            }
+            generator.DoPropFind( Resource, false );
         }
     }
 
@@ -1320,16 +1282,59 @@ public class DeltaVResponseInterpreter extends WebDAVResponseInterpreter
     }
 
 
+    public boolean isDeltaV( String resource )
+    {
+        Enumeration enum = deltaV.keys();
+        while( enum.hasMoreElements() )
+        {
+            String res = (String)enum.nextElement();
+            if( resource.indexOf(res) >= 0 )
+                return( ((Boolean)deltaV.get(res)).booleanValue() );
+        }
+        return false;
+    }
+
+
+    public boolean isDeltaVReports( String resource )
+    {
+        Enumeration enum = deltaVReports.keys();
+        while( enum.hasMoreElements() )
+        {
+            String res = (String)enum.nextElement();
+            if( resource.indexOf(res) >= 0 )
+                return( ((Boolean)deltaVReports.get(res)).booleanValue() );
+        }
+        return false;
+    }
+
+
+    public boolean isDeltaVActivity( String resource )
+    {
+        Enumeration enum = deltaVActivity.keys();
+        while( enum.hasMoreElements() )
+        {
+            String res = (String)enum.nextElement();
+            if( resource.indexOf(res) >= 0 )
+                return( ((Boolean)deltaVActivity.get(res)).booleanValue() );
+        }
+        return false;
+    }
+
+
     protected static Vector versionControlListeners = new Vector();
     protected static Vector checkoutListeners = new Vector();
     protected static Vector unCheckoutListeners = new Vector();
     protected static Vector checkinListeners = new Vector();
     protected static Vector mkActivityListeners = new Vector();
     protected static Vector mergeListeners = new Vector();
-    
+
+    // hashtables keeping track of which base url supports DeltaV and/or
+    // specifics of DeltaV
     protected Hashtable deltaV = new Hashtable();
     protected Hashtable deltaVReports = new Hashtable();
     protected Hashtable deltaVActivity = new Hashtable();
+    
+    // hashtables keeping track of open activities
     protected Hashtable activityCollection = new Hashtable();
     protected Hashtable activity = new Hashtable();
 }

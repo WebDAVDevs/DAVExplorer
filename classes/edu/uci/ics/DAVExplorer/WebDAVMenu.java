@@ -75,6 +75,47 @@ import java.util.Vector;
  */
 public class WebDAVMenu extends JMenuBar implements ActionListener
 {
+    // menu entry magic values
+    public static final int GET_FILE = 0;
+    public static final int WRITE_FILE = 1;
+    public static final int EXCLUSIVE_LOCK = 2;
+    public static final int SHARED_LOCK = 3;
+    public static final int UNLOCK = 4;
+    public static final int COPY = 5;
+    public static final int MOVE = 6;
+    public static final int DELETE = 7;
+    public static final int CREATE_COLLECTION = 8;
+    public static final int EXIT = 9;
+    public static final int EDIT_LOCK_INFO = 10;
+    public static final int EDIT_PROXY_INFO = 11;
+    public static final int CLEAR_AUTH_BUFFER = 12;
+    public static final int HTTP_LOGGING = 13;
+    public static final int VIEW_LOCK_PROPS = 14;
+    public static final int VIEW_MODIFY_PROPS = 15;
+    public static final int REFRESH = 16;
+    public static final int ABOUT = 17;
+    // versioning menu entries
+    public static final int INIT_VERSION_CONTROL = 100;
+    public static final int VERSION_REPORT = 101;
+    public static final int CHECKOUT = 102;
+    public static final int UNCHECKOUT = 103;
+    public static final int CHECKIN = 104;
+    public static final int MAKE_ACTIVITY = 105;
+    public static final int MERGE = 106;
+    // ACL menu entries
+    public static final int GET_OWNER = 200;
+    public static final int SET_OWNER = 201;
+    public static final int GET_GROUP = 202;
+    public static final int SET_GROUP = 203;
+    public static final int GET_SUPPORTED_PRIVILEGES = 204;
+    public static final int GET_USER_PRIVILEGES = 205;
+    public static final int GET_ACL = 206;
+    public static final int GET_SUPPORTED_ACL = 207;
+    public static final int SET_ACL = 208;
+    public static final int GET_INHERITED_ACL = 209;
+    public static final int GET_PRINCIPALS = 210;
+
+
     /**
      * Internal class that takes care of adding listeners to the
      * menu items.
@@ -87,12 +128,39 @@ public class WebDAVMenu extends JMenuBar implements ActionListener
          * @param aL
          * @param enabled
          */
-        public WebDAVMenuItem( String strMenuTag, ActionListener aL, boolean enabled )
+        public WebDAVMenuItem( String strMenuTag, int id, ActionListener aL, boolean enabled )
         {
             super( strMenuTag );
             addActionListener( aL );
             setEnabled( enabled );
+            this.id = id;
         }
+
+        /**
+         * Constructor
+         * 
+         * @param strMenuTag
+         * @param id
+         * @param aL
+         */
+        public WebDAVMenuItem( String strMenuTag, int id, ActionListener aL )
+        {
+            super( strMenuTag );
+            addActionListener( aL );
+            setEnabled( true );
+            this.id = id;
+        }
+
+        /**
+         * 
+         * @return
+         */
+        public int getId()
+        {
+            return id;
+        }
+        
+        private int id;
     }
 
 
@@ -107,12 +175,39 @@ public class WebDAVMenu extends JMenuBar implements ActionListener
          * @param aL
          * @param enabled
          */
-        public WebDAVCheckBoxMenuItem( String strMenuTag, ActionListener aL, boolean enabled )
+        public WebDAVCheckBoxMenuItem( String strMenuTag, int id, ActionListener aL, boolean enabled )
         {
             super( strMenuTag );
             addActionListener( aL );
             setEnabled( enabled );
+            this.id = id;
         }
+
+        /**
+         * Constructor
+         * 
+         * @param strMenuTag
+         * @param id
+         * @param aL
+         */
+        public WebDAVCheckBoxMenuItem( String strMenuTag, int id, ActionListener aL )
+        {
+            super( strMenuTag );
+            addActionListener( aL );
+            setEnabled( true );
+            this.id = id;
+        }
+
+        /**
+         * 
+         * @return
+         */
+        public int getId()
+        {
+            return id;
+        }
+        
+        private int id;
     }
 
     /*--------------------------------------------------------
@@ -127,6 +222,7 @@ public class WebDAVMenu extends JMenuBar implements ActionListener
         this.add(generateFileMenu());
         this.add(generateEditMenu());
         this.add(generateVersionMenu());
+        this.add(generateACLMenu());
         this.add(generateViewMenu());
         this.add(generateHelpMenu());
         menuListeners = new Vector();
@@ -145,10 +241,16 @@ public class WebDAVMenu extends JMenuBar implements ActionListener
         {
             ls = (Vector) menuListeners.clone();
         }
+        ActionEvent e = Event;
+        JMenuItem source = (JMenuItem)Event.getSource();
+        if( source instanceof WebDAVMenuItem )
+            e = new ActionEvent( source, ((WebDAVMenuItem)source).getId(), Event.getActionCommand() );
+        else if( source instanceof WebDAVCheckBoxMenuItem )
+            e = new ActionEvent( source, ((WebDAVCheckBoxMenuItem)source).getId(), Event.getActionCommand() );
         for (int i=0; i<ls.size();i++)
         {
             ActionListener l = (ActionListener) ls.elementAt(i);
-            l.actionPerformed(Event);
+            l.actionPerformed(e);
         }
     }
 
@@ -211,22 +313,22 @@ public class WebDAVMenu extends JMenuBar implements ActionListener
     {
         JMenu mnu_FileMenu = new JMenu( "File", true );
 
-        mnu_FileMenu.add( new WebDAVMenuItem( "Get File", this, true ) );
-        mnu_FileMenu.add( new WebDAVMenuItem( "Write File",this, true ) );
+        mnu_FileMenu.add( new WebDAVMenuItem( "Get File", GET_FILE, this ) );
+        mnu_FileMenu.add( new WebDAVMenuItem( "Write File", WRITE_FILE, this ) );
         mnu_FileMenu.addSeparator();
-        mnu_FileMenu.add( new WebDAVMenuItem( "Exclusive Lock", this, true ) );
-        mnu_FileMenu.add( new WebDAVMenuItem( "Shared Lock", this, true ) );
-        mnu_FileMenu.add( new WebDAVMenuItem( "Unlock", this, true ) );
+        mnu_FileMenu.add( new WebDAVMenuItem( "Exclusive Lock", EXCLUSIVE_LOCK, this ) );
+        mnu_FileMenu.add( new WebDAVMenuItem( "Shared Lock", SHARED_LOCK, this ) );
+        mnu_FileMenu.add( new WebDAVMenuItem( "Unlock", UNLOCK, this ) );
         mnu_FileMenu.addSeparator();
-        mnu_FileMenu.add( new WebDAVMenuItem( "Copy", this, true ) );
-        mnu_FileMenu.add( new WebDAVMenuItem( "Move", this, true ) );
-        mnu_FileMenu.add( new WebDAVMenuItem( "Delete", this, true ) );
+        mnu_FileMenu.add( new WebDAVMenuItem( "Copy", COPY, this ) );
+        mnu_FileMenu.add( new WebDAVMenuItem( "Move", MOVE, this ) );
+        mnu_FileMenu.add( new WebDAVMenuItem( "Delete", DELETE, this ) );
         mnu_FileMenu.addSeparator();
-        mnu_FileMenu.add( new WebDAVMenuItem( "Create Collection", this, true ) );
+        mnu_FileMenu.add( new WebDAVMenuItem( "Create Collection", CREATE_COLLECTION, this ) );
 
         if (!GlobalData.getGlobalData().isAppletMode()) {
-        mnu_FileMenu.addSeparator();
-        mnu_FileMenu.add(new WebDAVMenuItem( "Exit", this, true ));
+            mnu_FileMenu.addSeparator();
+            mnu_FileMenu.add(new WebDAVMenuItem( "Exit", EXIT, this ));
         }
 
         return mnu_FileMenu;
@@ -242,13 +344,12 @@ public class WebDAVMenu extends JMenuBar implements ActionListener
     {
         JMenu mnu_EditMenu = new JMenu( "Edit", true );
 
-        mnu_EditMenu.add(new WebDAVMenuItem( "Edit Lock Info",this, true ));
-
-        mnu_EditMenu.add( new WebDAVMenuItem( "Edit Proxy Info",this, true ) );
+        mnu_EditMenu.add(new WebDAVMenuItem( "Edit Lock Info", EDIT_LOCK_INFO, this ));
+        mnu_EditMenu.add( new WebDAVMenuItem( "Edit Proxy Info", EDIT_PROXY_INFO, this ) );
         mnu_EditMenu.addSeparator();
-        mnu_EditMenu.add( new WebDAVMenuItem( "Clear Auth Buffer", this, true ) );
+        mnu_EditMenu.add( new WebDAVMenuItem( "Clear Auth Buffer", CLEAR_AUTH_BUFFER, this ) );
         mnu_EditMenu.addSeparator();
-        logging = new WebDAVCheckBoxMenuItem( "HTTP Logging", this, true );
+        logging = new WebDAVCheckBoxMenuItem( "HTTP Logging", HTTP_LOGGING, this );
         mnu_EditMenu.add( logging );
 
         return mnu_EditMenu;
@@ -264,18 +365,47 @@ public class WebDAVMenu extends JMenuBar implements ActionListener
     {
         JMenu mnu_VersionMenu = new JMenu( "Versioning", true );
 
-        mnu_VersionMenu.add( new WebDAVMenuItem( "Put Under Version Control",this, true ) );
+        mnu_VersionMenu.add( new WebDAVMenuItem( "Put Under Version Control", INIT_VERSION_CONTROL, this ) );
         mnu_VersionMenu.addSeparator();
-        mnu_VersionMenu.add( new WebDAVMenuItem( "Version Report",this, true ) );
+        mnu_VersionMenu.add( new WebDAVMenuItem( "Version Report", VERSION_REPORT, this ) );
         mnu_VersionMenu.addSeparator();
-        mnu_VersionMenu.add( new WebDAVMenuItem( "Check Out", this, true ) );
-        mnu_VersionMenu.add( new WebDAVMenuItem( "Uncheckout", this, true ) );
-        mnu_VersionMenu.add( new WebDAVMenuItem( "Check In", this, true ) );
+        mnu_VersionMenu.add( new WebDAVMenuItem( "Check Out", CHECKOUT, this ) );
+        mnu_VersionMenu.add( new WebDAVMenuItem( "Uncheckout", UNCHECKOUT, this ) );
+        mnu_VersionMenu.add( new WebDAVMenuItem( "Check In", CHECKIN, this ) );
         //mnu_VersionMenu.addSeparator();
-        //mnu_VersionMenu.add( new WebDAVMenuItem( "Make Activity", this, true ) );
-        //mnu_VersionMenu.add( new WebDAVMenuItem( "Merge", this, true ) );
+        //mnu_VersionMenu.add( new WebDAVMenuItem( "Make Activity", MAKE_ACTIVITY, this ) );
+        //mnu_VersionMenu.add( new WebDAVMenuItem( "Merge", MERGE, this ) );
 
         return mnu_VersionMenu;
+    }
+
+
+    /**
+     * Generate the menus to handle Access control requests
+     * 
+     * @return
+     */
+    protected JMenu generateACLMenu()
+    {
+        JMenu mnu_ACLMenu = new JMenu( "Access Control", true );
+
+        mnu_ACLMenu.add( new WebDAVMenuItem( "Get Owner", GET_OWNER, this ) );
+        mnu_ACLMenu.add( new WebDAVMenuItem( "Set Owner", SET_OWNER, this ) );
+        mnu_ACLMenu.addSeparator();
+        mnu_ACLMenu.add( new WebDAVMenuItem( "Get Group", GET_GROUP, this ) );
+        mnu_ACLMenu.add( new WebDAVMenuItem( "Set Group", SET_GROUP, this ) );
+        mnu_ACLMenu.addSeparator();
+        mnu_ACLMenu.add( new WebDAVMenuItem( "Get Supported Privileges", GET_SUPPORTED_PRIVILEGES, this ) );
+        mnu_ACLMenu.add( new WebDAVMenuItem( "Get User's Privileges", GET_USER_PRIVILEGES, this ) );
+        mnu_ACLMenu.addSeparator();
+        mnu_ACLMenu.add( new WebDAVMenuItem( "Get ACLs", GET_ACL, this ) );
+        mnu_ACLMenu.add( new WebDAVMenuItem( "Get Supported ACLs", GET_SUPPORTED_ACL, this ) );
+        mnu_ACLMenu.add( new WebDAVMenuItem( "Set ACLs", SET_ACL, this ) );
+        mnu_ACLMenu.addSeparator();
+        mnu_ACLMenu.add( new WebDAVMenuItem( "Get Inherited ACLs", GET_INHERITED_ACL, this ) );
+        mnu_ACLMenu.add( new WebDAVMenuItem( "Get Principals", GET_PRINCIPALS, this ) );
+
+        return mnu_ACLMenu;
     }
 
 
@@ -288,11 +418,11 @@ public class WebDAVMenu extends JMenuBar implements ActionListener
     {
         JMenu mnu_ViewMenu = new JMenu( "View", true );
 
-        mnu_ViewMenu.add( new WebDAVMenuItem( "View Lock Properties", this, true ) );
+        mnu_ViewMenu.add( new WebDAVMenuItem( "View Lock Properties", VIEW_LOCK_PROPS, this ) );
         mnu_ViewMenu.addSeparator();
-        mnu_ViewMenu.add( new WebDAVMenuItem( "View/Modify Properties", this, true ) );
+        mnu_ViewMenu.add( new WebDAVMenuItem( "View/Modify Properties", VIEW_MODIFY_PROPS, this ) );
         mnu_ViewMenu.addSeparator();
-        mnu_ViewMenu.add( new WebDAVMenuItem( "Refresh",this, true ) );
+        mnu_ViewMenu.add( new WebDAVMenuItem( "Refresh", REFRESH, this ) );
 
         return mnu_ViewMenu;
     }
@@ -306,7 +436,7 @@ public class WebDAVMenu extends JMenuBar implements ActionListener
     {
         JMenu mnu_HelpMenu = new JMenu("Help", true);
 
-        mnu_HelpMenu.add( new WebDAVMenuItem("About DAV Explorer...", this, true ) );
+        mnu_HelpMenu.add( new WebDAVMenuItem("About DAV Explorer...", ABOUT, this ) );
 
         return mnu_HelpMenu;
     }

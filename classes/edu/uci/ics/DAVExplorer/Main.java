@@ -148,15 +148,11 @@ public class Main extends JFrame
         // allow all cookies
         CookieModule.setCookiePolicyHandler( null );
 
-
-
-        requestGenerator = new DeltaVRequestGenerator();
+        requestGenerator = new ACLRequestGenerator();
         requestGenerator.addRequestListener(new RequestListener());
-
         requestGenerator.setUserAgent( UserAgent );
 
-
-        responseInterpreter = new DeltaVResponseInterpreter( requestGenerator );
+        responseInterpreter = new ACLResponseInterpreter( requestGenerator );
         responseInterpreter.addInsertionListener(new TreeInsertionListener());
         responseInterpreter.addMoveUpdateListener(new MoveUpdateListener());
         responseInterpreter.addLockListener(new LockListener());
@@ -290,7 +286,6 @@ public class Main extends JFrame
 
       treeView.initTree();
       pack();
-
     }
 
 
@@ -392,42 +387,13 @@ public class Main extends JFrame
             String str = e.getActionCommand();
             if (!str.endsWith("/"))
                 str += "/";
-            requestGenerator.setExtraInfo("uribox");
+            requestGenerator.setExtendedInfo( WebDAVResponseEvent.URIBOX, null );
             // For easier debugging, the commandline option "options=no"
             // disables the initial sending of an OPTIONS request
             String options = System.getProperty( "options", "yes" );
             if( options.equalsIgnoreCase("no") )
             {
-                // 1999-June-08, Joachim Feise (dav-exp@ics.uci.edu):
-                // workaround for IBM's DAV4J, which does not handle propfind properly
-                // with the prop tag. To use the workaround, run DAV Explorer with
-                // 'java -jar -Dpropfind=allprop DAVExplorer.jar'
-                String doAllProp = System.getProperty( "propfind" );
-                if( (doAllProp != null) && doAllProp.equalsIgnoreCase("allprop") )
-                {
-                    if( requestGenerator.GeneratePropFind( str, "allprop", "one", null, null, false ) )
-                    {
-                        requestGenerator.execute();
-                    }
-                }
-                else
-                {
-                    String[] props = new String[9];
-                    props[0] = "displayname";
-                    props[1] = "resourcetype";
-                    props[2] = "getcontenttype";
-                    props[3] = "getcontentlength";
-                    props[4] = "getlastmodified";
-                    props[5] = "lockdiscovery";
-                    // DeltaV support
-                    props[6] = "checked-in";
-                    props[7] = "checked-out";
-                    props[8] = "version-name";
-                    if( requestGenerator.GeneratePropFind( str, "prop", "one", props, null, false ) )
-                    {
-                        requestGenerator.execute();
-                    }
-                }
+                requestGenerator.DoPropFind( str, true );
             }
             else
             {
@@ -728,7 +694,7 @@ public class Main extends JFrame
         {
             if( e.getActionCommand() != null )
                 requestGenerator.setResource( e.getActionCommand(), null );
-            requestGenerator.DiscoverLock("display");
+            requestGenerator.DiscoverLock( WebDAVResponseEvent.DISPLAY, null );
         }
     }
 
@@ -746,7 +712,7 @@ public class Main extends JFrame
         {
             if( e.getActionCommand() != null )
                 requestGenerator.setResource( e.getActionCommand(), null );
-            if( requestGenerator.GenerateVersionHistory("display") )
+            if( requestGenerator.GenerateVersionHistory( WebDAVResponseEvent.DISPLAY ) )
                 requestGenerator.execute();
         }
     }
@@ -773,11 +739,18 @@ public class Main extends JFrame
                 boolean retval = false;
                 if( fileView.isSelectedLocked() )
                 {
-                    retval = requestGenerator.GenerateMove(str, fileView.getParentPath(), false, true, fileView.getSelectedLockToken(), "rename:" );
+                    retval = requestGenerator.GenerateMove( str,
+                                                            fileView.getParentPath(),
+                                                            false, true,
+                                                            fileView.getSelectedLockToken(),
+                                                            WebDAVResponseEvent.RENAME );
                 }
                 else
                 {
-                    retval = requestGenerator.GenerateMove(str, fileView.getParentPath(), false, true, null , "rename:" );
+                    retval = requestGenerator.GenerateMove( str,
+                                                            fileView.getParentPath(),
+                                                            false, true, null ,
+                                                            WebDAVResponseEvent.RENAME );
                 }
                 if( retval )
                 {
@@ -831,33 +804,46 @@ public class Main extends JFrame
             // Post processing
             // These are actions designed to take place after the
             // response has been loaded
-            String extra = e.getExtraInfo();
+            int extendedCode = e.getExtendedCode();
             String method = e.getMethodName();
 
-            if ( method.equals("COPY") || method.equals("PUT") || extra==null )
+            if ( method.equals("COPY") || method.equals("PUT") )
             {
                 // skip
             }
-            else if( extra.equals("expand") || extra.equals("index") )
+            else
             {
-                WebDAVTreeNode tn = e.getNode();
-                if (tn != null)
+                switch( extendedCode )
                 {
-                    tn.finishLoadChildren();
+                    case WebDAVResponseEvent.EXPAND:
+                    case WebDAVResponseEvent.INDEX:
+                    {
+                        WebDAVTreeNode tn = e.getNode();
+                        if (tn != null)
+                        {
+                            tn.finishLoadChildren();
+                        }
+                        break;
+                    }
+                    
+                    case WebDAVResponseEvent.SELECT:
+                    {
+                        WebDAVTreeNode tn = e.getNode();
+                        if (tn != null)
+                        {
+                            tn.finishLoadChildren();
+                            treeView.setSelectedNode(tn);
+                        }
+                        break;
+                    }
+                    
+                    case WebDAVResponseEvent.URIBOX: 
+                    {
+                        //???? TODO: not needed????
+                        WebDAVTreeNode tn = e.getNode();
+                        break;
+                    }
                 }
-            }
-            else if ( extra.equals("select") )
-            {
-                WebDAVTreeNode tn = e.getNode();
-                if (tn != null)
-                {
-                    tn.finishLoadChildren();
-                    treeView.setSelectedNode(tn);
-                }
-            }
-            else if ( extra.equals("uribox") )
-            {
-                WebDAVTreeNode tn = e.getNode();
             }
         }
     }
@@ -874,409 +860,579 @@ public class Main extends JFrame
          */
         public void actionPerformed(ActionEvent e)
         {
-            String command = e.getActionCommand();
-
-            // never allow exit from inside an applet
-            if (command.equals("Exit") && !GlobalData.getGlobalData().isAppletMode())
-                System.exit(0);
-
-            else if (command.equals("Get File"))
+            switch( e.getID() )
             {
-                saveAsDocument();
-            }
-            else if (command.equals("Write File"))
-            {
-                FileDialog fd = new FileDialog(GlobalData.getGlobalData().getMainFrame(), "Write File" , FileDialog.LOAD);
+                case WebDAVMenu.EXIT:
+                    // never allow exit from inside an applet
+                    if( !GlobalData.getGlobalData().isAppletMode() )
+                        System.exit(0);
+                    break;
+                    
+                case WebDAVMenu.GET_FILE:
+                    saveAsDocument();
+                    break;
 
-                if (writeToDir != null)
+                case WebDAVMenu.WRITE_FILE:
                 {
-                    fd.setDirectory(writeToDir);
-                }
-
-                fd.setVisible(true);
-
-                String dirName =fd.getDirectory();
-
-                String fName = fd.getFile();
-                doWriteFile(dirName, fName);  // 08DEC03 John_Barton@hpl.hp.com factored into doWriteFile()
-
-            }
-            else if (command.equals("Exclusive Lock"))
-            {
-                String s = fileView.getSelected();
-                if( s == null )
-                {
-                    GlobalData.getGlobalData().errorMsg( "No resource selected." );
-                }
-                else
-                {
-                    WebDAVTreeNode n = fileView.getParentNode();
-                    requestGenerator.setResource(s, n);
-                    lockDocument( true );
-                }
-            }
-            else if (command.equals("Shared Lock"))
-            {
-                String s = fileView.getSelected();
-                if( s == null )
-                {
-                    GlobalData.getGlobalData().errorMsg( "No resource selected." );
-                }
-                else
-                {
-                    WebDAVTreeNode n = fileView.getParentNode();
-                    requestGenerator.setResource(s, n);
-                    lockDocument( false );
-                }
-            }
-            else if (command.equals("Unlock"))
-            {
-                String s = fileView.getSelected();
-                if( s == null )
-                {
-                    GlobalData.getGlobalData().errorMsg( "No resource selected." );
-                }
-                else
-                {
-                    WebDAVTreeNode n = fileView.getParentNode();
-                    requestGenerator.setResource(s, n);
-                    unlockDocument();
-                }
-            }
-            else if (command.equals("Copy"))
-            {
-                // Yuzo: I have the semantics set so that
-                // we get a string if something is selected in the
-                // FileView.
-                String s = fileView.getSelected();
-                if( (s == null) || (s.length() == 0) )
-                {
-                    GlobalData.getGlobalData().errorMsg( "No resource selected." );
-                }
-                else
-                {
-                    WebDAVTreeNode n = fileView.getParentNode();
-
-                    // This sets the resource name to s and the node to n
-                    // This is neccessary so that n is passed to
-                    // response interpretor, whc then routes a
-                    // message to the Tree Model.
-                    // This will then call for a rebuild of the Model at the
-                    // Parent node n.
-                    requestGenerator.setResource(s, n);
-
-                    String prompt = "Enter the name of the copy:";
-                    String title = "Copy Resource";
-                    String defaultName = requestGenerator.getDefaultName( "_copy" );
-                    //String overwrite = "Overwrite existing resource?";
-                    String fname = selectName( title, prompt, defaultName );
-                    if( fname != null )
+                    FileDialog fd = new FileDialog(GlobalData.getGlobalData().getMainFrame(), "Write File" , FileDialog.LOAD);
+                    if (writeToDir != null)
                     {
-                        if( requestGenerator.GenerateCopy( fname, true, true ) )
-                        {
-                            requestGenerator.execute();
-                        }
+                        fd.setDirectory(writeToDir);
                     }
-                }
-            }
-            else if (command.equals("Move"))
-            {
-                String s = fileView.getSelected();
-                if( (s == null) || (s.length() == 0) )
-                {
-                    GlobalData.getGlobalData().errorMsg( "No resource selected." );
-                }
-                else
-                {
-                    WebDAVTreeNode n = fileView.getParentNode();
+                    fd.setVisible(true);
 
-                    // This sets the resource name to s and the node to n
-                    // This is neccessary so that n is passed to
-                    // response interpretor, which then routes a
-                    // message to the Tree Model.
-                    // This will then call for a rebuild of the Model at the
-                    // Parent node n.
-                    requestGenerator.setResource(s, n);
-
-                    String prompt = "Enter the new name of the resource:";
-                    String title = "Move Resource";
-                    String defaultName = requestGenerator.getDefaultName( null );
-                    //String overwrite = "Overwrite existing resource?";
-                    String fname = selectName( title, prompt, defaultName );
-                    if( fname != null )
+                    String dirName = fd.getDirectory();
+                    String fName = fd.getFile();
+                    doWriteFile(dirName, fName);  // 08DEC03 John_Barton@hpl.hp.com factored into doWriteFile()
+                    break;
+                }
+                
+                case WebDAVMenu.EXCLUSIVE_LOCK:
+                {
+                    String s = fileView.getSelected();
+                    if( s == null )
                     {
-                        boolean retval = false;
-                        if( fileView.isSelectedLocked() )
-                            retval = requestGenerator.GenerateMove( fname, null, false, true, fileView.getSelectedLockToken(), "rename:" );
-                        else
-                            retval = requestGenerator.GenerateMove( fname, null, false, true, null , "rename:" );
-
-                        if( retval )
-                            requestGenerator.execute();
-                    }
-                }
-            }
-            else if (command.equals("Delete"))
-            {
-
-                String s = fileView.getSelected();
-                if( s == null )
-                {
-                    GlobalData.getGlobalData().errorMsg( "No resource selected." );
-                }
-                else
-                {
-                    //deleteDocument( treeView.isCollection( s ) );
-                    WebDAVTreeNode n = fileView.getSelectedCollection();
-                    if ( n == null)
-                    {
-                        deleteDocument( false );
+                        GlobalData.getGlobalData().errorMsg( "No resource selected." );
                     }
                     else
                     {
-                        deleteDocument(  true );
+                        WebDAVTreeNode n = fileView.getParentNode();
+                        requestGenerator.setResource(s, n);
+                        lockDocument( true );
                     }
+                    break;
                 }
-            }
-            else if (command.equals("Create Collection"))
-            {
-                WebDAVTreeNode n = fileView.getParentNode();
-                String prompt = new String( "Enter collection name:" );
-                String title = new String( "Create Collection" );
-                String dirname = selectName( title, prompt );
-
-                if( dirname != null )
+                
+                case WebDAVMenu.SHARED_LOCK:
                 {
-                    WebDAVTreeNode selected = fileView.getSelectedCollection();
-                    if( treeView.isRemote( fileView.getParentPath() ) )
+                    String s = fileView.getSelected();
+                    if( s == null )
                     {
-                        boolean retval = false;
-                        if (selected == null)
-                        {
-                            requestGenerator.setNode(n);
-                            requestGenerator.setExtraInfo("mkcol");
-                            retval = requestGenerator.GenerateMkCol( fileView.getParentPath(), dirname );
-                        }
-                        else
-                        {
-                            requestGenerator.setNode( selected );
-                            requestGenerator.setExtraInfo("mkcolbelow");
-                            retval = requestGenerator.GenerateMkCol( fileView.getSelected(), dirname );
-                        }
-                        if( retval )
-                        {
-                            requestGenerator.execute();
-                        }
+                        GlobalData.getGlobalData().errorMsg( "No resource selected." );
                     }
                     else
                     {
-                        if( !treeView.getCurrentPath().endsWith( String.valueOf(File.separatorChar) ) )
-                            dirname = fileView.getSelected() + File.separatorChar + dirname;
-                        else
-                            dirname = fileView.getSelected() + dirname;
-                        File f = new File( dirname );
-                        boolean result = f.mkdir();
-                        if ( selected == null )
-                        {
-                            treeView.refreshLocal( n );
-                        }
-                        else
-                        {
-                            treeView.refreshLocalNoSelection(selected);
-                        }
+                        WebDAVTreeNode n = fileView.getParentNode();
+                        requestGenerator.setResource(s, n);
+                        lockDocument( false );
                     }
+                    break;
                 }
-            }
-            else if (command.equals("Clear Auth Buffer"))
-            {
-                authTable.clear();
-            }
-            else if (command.equals("Edit Proxy Info"))
-            {
-                WebDAVProxyInfo proxyInfo = new WebDAVProxyInfo(GlobalData.getGlobalData().getMainFrame(), "Proxy Info", true);
-            }
-            else if (command.equals("Edit Lock Info"))
-            {
-                WebDAVLockInfo lockInfo = new WebDAVLockInfo(GlobalData.getGlobalData().getMainFrame(), "Lock Info", true);
-            }
-            else if (command.equals("Put Under Version Control"))
-            {
-                String s = fileView.getSelected();
-                if( (s == null) || (s.length() == 0) )
+                
+                case WebDAVMenu.UNLOCK:
                 {
-                    GlobalData.getGlobalData().errorMsg( "No resource selected." );
-                    return;
-                }
-                WebDAVTreeNode n = fileView.getParentNode();
-                requestGenerator.setResource( s, n );
-                if( requestGenerator.GenerateEnableVersioning() )
-                    requestGenerator.execute();
-            }
-            else if (command.equals("Version Report"))
-            {
-                String s = fileView.getSelected();
-                if( (s == null) || (s.length() == 0) )
-                {
-                    GlobalData.getGlobalData().errorMsg( "No resource selected." );
-                    return;
-                }
-                WebDAVTreeNode n = fileView.getParentNode();
-                requestGenerator.setResource( s, n );
-                if( requestGenerator.GenerateVersionHistory("display") )
-                    requestGenerator.execute();
-            }
-            else if (command.equals("Check Out"))
-            {
-                String s = fileView.getSelected();
-                if( (s == null) || (s.length() == 0) )
-                {
-                    GlobalData.getGlobalData().errorMsg( "No resource selected." );
-                    return;
-                }
-                WebDAVTreeNode n = fileView.getParentNode();
-                requestGenerator.setResource( s, n );
-                if( requestGenerator.GenerateCheckOut() )
-                    requestGenerator.execute();
-            }
-            else if (command.equals("Uncheckout"))
-            {
-                String s = fileView.getSelected();
-                if( (s == null) || (s.length() == 0) )
-                {
-                    GlobalData.getGlobalData().errorMsg( "No resource selected." );
-                    return;
-                }
-                WebDAVTreeNode n = fileView.getParentNode();
-                requestGenerator.setResource( s, n );
-                if( requestGenerator.GenerateUnCheckOut() )
-                    requestGenerator.execute();
-            }
-            else if (command.equals("Check In"))
-            {
-                String s = fileView.getSelected();
-                if( (s == null) || (s.length() == 0) )
-                {
-                    GlobalData.getGlobalData().errorMsg( "No resource selected." );
-                    return;
-                }
-                WebDAVTreeNode n = fileView.getParentNode();
-                requestGenerator.setResource( s, n );
-                if( requestGenerator.GenerateCheckIn() )
-                    requestGenerator.execute();
-            }
-            else if (command.equals("Make Activity"))
-            {
-                String s = fileView.getSelected();
-                if( (s == null) || (s.length() == 0) )
-                {
-                    GlobalData.getGlobalData().errorMsg( "No resource selected." );
-                    return;
-                }
-                WebDAVTreeNode n = fileView.getParentNode();
-                requestGenerator.setResource( s, n );
-                if( requestGenerator.GenerateMkActivity() )
-                    requestGenerator.execute();
-            }
-            else if (command.equals("Merge"))
-            {
-                String s = fileView.getSelected();
-                if( (s == null) || (s.length() == 0) )
-                {
-                    GlobalData.getGlobalData().errorMsg( "No resource selected." );
-                    return;
-                }
-                WebDAVTreeNode n = fileView.getParentNode();
-                requestGenerator.setResource( s, n );
-                if( requestGenerator.GenerateMerge() )
-                    requestGenerator.execute();
-            }
-            else if (command.equals("HTTP Logging"))
-            {
-                boolean logging = false;
-                String logFilename = null;
-                if( CommandMenu.getLogging() )
-                {
-                    String message = new String( "WARNING: The logfile may get very large,\nsince all data is logged.\n" +
-                                                 "Hit Cancel now if you don't want to log the data." );
-                    int opt = JOptionPane.showConfirmDialog( GlobalData.getGlobalData().getMainFrame(), message, "HTTP Logging", JOptionPane.OK_CANCEL_OPTION );
-                    if( opt == JOptionPane.OK_OPTION )
+                    String s = fileView.getSelected();
+                    if( s == null )
                     {
-                        JFileChooser fd = new JFileChooser();
-                        fd.setDialogType( JFileChooser.SAVE_DIALOG );
-                        fd.setFileSelectionMode( JFileChooser.FILES_ONLY );
-                        fd.setDialogTitle( "Select Logging File" );
-                        String os = (System.getProperty( "os.name" )).toLowerCase();
-                        String dirName = null;
-                        if( os.indexOf( "windows" ) == -1 )
-                            dirName = System.getProperty("user.home");
-                        if( dirName == null )
-                            dirName = new Character(File.separatorChar).toString();
-                        fd.setCurrentDirectory( new File(dirName) );
-                        fd.setApproveButtonMnemonic( 'U' );
-                        fd.setApproveButtonToolTipText( "Use the selected file for logging" );
-                        int val = fd.showDialog( GlobalData.getGlobalData().getMainFrame(), "Logging" );
-                        if( val == JFileChooser.APPROVE_OPTION)
+                        GlobalData.getGlobalData().errorMsg( "No resource selected." );
+                    }
+                    else
+                    {
+                        WebDAVTreeNode n = fileView.getParentNode();
+                        requestGenerator.setResource(s, n);
+                        unlockDocument();
+                    }
+                    break;
+                }
+                
+                case WebDAVMenu.COPY:
+                {
+                    // Yuzo: I have the semantics set so that
+                    // we get a string if something is selected in the
+                    // FileView.
+                    String s = fileView.getSelected();
+                    if( (s == null) || (s.length() == 0) )
+                    {
+                        GlobalData.getGlobalData().errorMsg( "No resource selected." );
+                    }
+                    else
+                    {
+                        WebDAVTreeNode n = fileView.getParentNode();
+    
+                        // This sets the resource name to s and the node to n
+                        // This is neccessary so that n is passed to
+                        // response interpretor, whc then routes a
+                        // message to the Tree Model.
+                        // This will then call for a rebuild of the Model at the
+                        // Parent node n.
+                        requestGenerator.setResource(s, n);
+    
+                        String prompt = "Enter the name of the copy:";
+                        String title = "Copy Resource";
+                        String defaultName = requestGenerator.getDefaultName( "_copy" );
+                        //String overwrite = "Overwrite existing resource?";
+                        String fname = selectName( title, prompt, defaultName );
+                        if( fname != null )
                         {
-                            logFilename = fd.getSelectedFile().getAbsolutePath();
-                            try
+                            if( requestGenerator.GenerateCopy( fname, true, true ) )
                             {
-                                File f = fd.getSelectedFile();
-                                if( f.exists() )
-                                    f.delete();
-                                logging = true;
-                            }
-                            catch( Exception exception )
-                            {
-                                System.out.println( "File could not be deleted.\n" + exception );
-                                logFilename = null;
+                                requestGenerator.execute();
                             }
                         }
                     }
+                    break;
                 }
-
-                CommandMenu.setLogging( logging );
-                webdavManager.setLogging( logging, logFilename );
-            }
-            else if (command.equals("View/Modify Properties"))
-            {
-                viewProperties();
-            }
-            else if (command.equals("View Lock Properties"))
-            {
-                // Yuzo test to stop repeat
-                String s = fileView.getSelected();
-                if( s == null )
+                
+                case WebDAVMenu.MOVE:
                 {
-                    GlobalData.getGlobalData().errorMsg( "No file selected." );
+                    String s = fileView.getSelected();
+                    if( (s == null) || (s.length() == 0) )
+                    {
+                        GlobalData.getGlobalData().errorMsg( "No resource selected." );
+                    }
+                    else
+                    {
+                        WebDAVTreeNode n = fileView.getParentNode();
+    
+                        // This sets the resource name to s and the node to n
+                        // This is neccessary so that n is passed to
+                        // response interpretor, which then routes a
+                        // message to the Tree Model.
+                        // This will then call for a rebuild of the Model at the
+                        // Parent node n.
+                        requestGenerator.setResource(s, n);
+    
+                        String prompt = "Enter the new name of the resource:";
+                        String title = "Move Resource";
+                        String defaultName = requestGenerator.getDefaultName( null );
+                        //String overwrite = "Overwrite existing resource?";
+                        String fname = selectName( title, prompt, defaultName );
+                        if( fname != null )
+                        {
+                            boolean retval = false;
+                            if( fileView.isSelectedLocked() )
+                                retval = requestGenerator.GenerateMove( fname, null,
+                                                                        false, true,
+                                                                        fileView.getSelectedLockToken(),
+                                                                        WebDAVResponseEvent.RENAME );
+                            else
+                                retval = requestGenerator.GenerateMove( fname, null,
+                                                                        false, true,
+                                                                        null ,
+                                                                        WebDAVResponseEvent.RENAME );
+    
+                            if( retval )
+                                requestGenerator.execute();
+                        }
+                    }
+                    break;
                 }
-                else
+                
+                case WebDAVMenu.DELETE:
+                {
+                    String s = fileView.getSelected();
+                    if( s == null )
+                    {
+                        GlobalData.getGlobalData().errorMsg( "No resource selected." );
+                    }
+                    else
+                    {
+                        //deleteDocument( treeView.isCollection( s ) );
+                        WebDAVTreeNode n = fileView.getSelectedCollection();
+                        if ( n == null)
+                        {
+                            deleteDocument( false );
+                        }
+                        else
+                        {
+                            deleteDocument(  true );
+                        }
+                    }
+                    break;
+                }
+                
+                case WebDAVMenu.CREATE_COLLECTION:
                 {
                     WebDAVTreeNode n = fileView.getParentNode();
-                    requestGenerator.setResource(s, n);
-
-                    requestGenerator.DiscoverLock("display");
+                    String prompt = new String( "Enter collection name:" );
+                    String title = new String( "Create Collection" );
+                    String dirname = selectName( title, prompt );
+    
+                    if( dirname != null )
+                    {
+                        WebDAVTreeNode selected = fileView.getSelectedCollection();
+                        if( treeView.isRemote( fileView.getParentPath() ) )
+                        {
+                            boolean retval = false;
+                            if (selected == null)
+                            {
+                                requestGenerator.setNode(n);
+                                requestGenerator.setExtendedInfo( WebDAVResponseEvent.MKCOL, null );
+                                retval = requestGenerator.GenerateMkCol( fileView.getParentPath(), dirname );
+                            }
+                            else
+                            {
+                                requestGenerator.setNode( selected );
+                                requestGenerator.setExtendedInfo( WebDAVResponseEvent.MKCOLBELOW, null );
+                                retval = requestGenerator.GenerateMkCol( fileView.getSelected(), dirname );
+                            }
+                            if( retval )
+                            {
+                                requestGenerator.execute();
+                            }
+                        }
+                        else
+                        {
+                            if( !treeView.getCurrentPath().endsWith( String.valueOf(File.separatorChar) ) )
+                                dirname = fileView.getSelected() + File.separatorChar + dirname;
+                            else
+                                dirname = fileView.getSelected() + dirname;
+                            File f = new File( dirname );
+                            boolean result = f.mkdir();
+                            if ( selected == null )
+                            {
+                                treeView.refreshLocal( n );
+                            }
+                            else
+                            {
+                                treeView.refreshLocalNoSelection(selected);
+                            }
+                        }
+                    }
+                    break;
                 }
-            }
-            else if (command.equals("Refresh"))
-            {
-                WebDAVTreeNode n = fileView.getParentNode();
-                responseInterpreter.setRefresh( n );
-            }
-            else if (command.equals("About DAV Explorer..."))
-            {
-                String message = new String("DAV Explorer Version "+ VERSION + "\n" +
-                COPYRIGHT + "\n" +
-                "Authors: Yuzo Kanomata, Joachim Feise\n" +
-                EMAIL + "\n\n" +
-                "Based on code from the UCI WebDAV Client Group of the ICS126B class\n" +
-                "Winter 1998: Gerair Balian, Mirza Baig, Robert Emmery, Thai Le, Tu Le.\n" +
-                "Basic DeltaV support based on code from the DeltaV Team of the ICS125\n" +
-                "class Spring 2003: Max Slabyak, Matt Story, Hyung Kim.\n" +
-                "Uses the HTTPClient library (http://www.innovation.ch/java/HTTPClient/).\n" +
-                "Uses Microsoft's XML parser published in June 1997.\n" +
-                "For other contributors see the contributors.txt file.");
-                Object [] options = { "OK" };
-				JOptionPane.showOptionDialog(GlobalData.getGlobalData().getMainFrame(), message, "About DAV Explorer", JOptionPane.DEFAULT_OPTION, JOptionPane.INFORMATION_MESSAGE, null, options, options[0]);
+                
+                case WebDAVMenu.CLEAR_AUTH_BUFFER:
+                    authTable.clear();
+                    break;
+                    
+                case WebDAVMenu.EDIT_PROXY_INFO:
+                    WebDAVProxyInfo proxyInfo = new WebDAVProxyInfo(GlobalData.getGlobalData().getMainFrame(), "Proxy Info", true);
+                    break;
+                    
+                case WebDAVMenu.EDIT_LOCK_INFO:
+                    WebDAVLockInfo lockInfo = new WebDAVLockInfo(GlobalData.getGlobalData().getMainFrame(), "Lock Info", true);
+                    break;
+                
+                case WebDAVMenu.INIT_VERSION_CONTROL:
+                {
+                    String s = fileView.getSelected();
+                    if( (s == null) || (s.length() == 0) )
+                    {
+                        GlobalData.getGlobalData().errorMsg( "No resource selected." );
+                        return;
+                    }
+                    WebDAVTreeNode n = fileView.getParentNode();
+                    requestGenerator.setResource( s, n );
+                    if( requestGenerator.GenerateEnableVersioning() )
+                        requestGenerator.execute();
+                    break;
+                }
+                
+                case WebDAVMenu.VERSION_REPORT:
+                {
+                    String s = fileView.getSelected();
+                    if( (s == null) || (s.length() == 0) )
+                    {
+                        GlobalData.getGlobalData().errorMsg( "No resource selected." );
+                        return;
+                    }
+                    WebDAVTreeNode n = fileView.getParentNode();
+                    requestGenerator.setResource( s, n );
+                    if( requestGenerator.GenerateVersionHistory( WebDAVResponseEvent.DISPLAY ) )
+                        requestGenerator.execute();
+                    break;
+                }
+                
+                case WebDAVMenu.CHECKOUT:
+                {
+                    String s = fileView.getSelected();
+                    if( (s == null) || (s.length() == 0) )
+                    {
+                        GlobalData.getGlobalData().errorMsg( "No resource selected." );
+                        return;
+                    }
+                    WebDAVTreeNode n = fileView.getParentNode();
+                    requestGenerator.setResource( s, n );
+                    if( requestGenerator.GenerateCheckOut() )
+                        requestGenerator.execute();
+                    break;
+                }
+                
+                case WebDAVMenu.UNCHECKOUT:
+                {
+                    String s = fileView.getSelected();
+                    if( (s == null) || (s.length() == 0) )
+                    {
+                        GlobalData.getGlobalData().errorMsg( "No resource selected." );
+                        return;
+                    }
+                    WebDAVTreeNode n = fileView.getParentNode();
+                    requestGenerator.setResource( s, n );
+                    if( requestGenerator.GenerateUnCheckOut() )
+                        requestGenerator.execute();
+                    break;
+                }
+                
+                case WebDAVMenu.CHECKIN:
+                {
+                    String s = fileView.getSelected();
+                    if( (s == null) || (s.length() == 0) )
+                    {
+                        GlobalData.getGlobalData().errorMsg( "No resource selected." );
+                        return;
+                    }
+                    WebDAVTreeNode n = fileView.getParentNode();
+                    requestGenerator.setResource( s, n );
+                    if( requestGenerator.GenerateCheckIn() )
+                        requestGenerator.execute();
+                    break;
+                }
+                
+                case WebDAVMenu.MAKE_ACTIVITY:
+                {
+                    String s = fileView.getSelected();
+                    if( (s == null) || (s.length() == 0) )
+                    {
+                        GlobalData.getGlobalData().errorMsg( "No resource selected." );
+                        return;
+                    }
+                    WebDAVTreeNode n = fileView.getParentNode();
+                    requestGenerator.setResource( s, n );
+                    if( requestGenerator.GenerateMkActivity() )
+                        requestGenerator.execute();
+                    break;
+                }
+                
+                case WebDAVMenu.MERGE:
+                {
+                    String s = fileView.getSelected();
+                    if( (s == null) || (s.length() == 0) )
+                    {
+                        GlobalData.getGlobalData().errorMsg( "No resource selected." );
+                        return;
+                    }
+                    WebDAVTreeNode n = fileView.getParentNode();
+                    requestGenerator.setResource( s, n );
+                    if( requestGenerator.GenerateMerge() )
+                        requestGenerator.execute();
+                    break;
+                }
+                
+                case WebDAVMenu.GET_OWNER:
+                {
+                    String s = fileView.getSelected();
+                    if( (s == null) || (s.length() == 0) )
+                    {
+                        GlobalData.getGlobalData().errorMsg( "No resource selected." );
+                        return;
+                    }
+                    WebDAVTreeNode n = fileView.getParentNode();
+                    requestGenerator.setResource( s, n );
+                    requestGenerator.GetOwner();
+                    break;
+                }
+                
+                case WebDAVMenu.GET_GROUP:
+                {
+                    String s = fileView.getSelected();
+                    if( (s == null) || (s.length() == 0) )
+                    {
+                        GlobalData.getGlobalData().errorMsg( "No resource selected." );
+                        return;
+                    }
+                    WebDAVTreeNode n = fileView.getParentNode();
+                    requestGenerator.setResource( s, n );
+                    requestGenerator.GetGroup();
+                    break;
+                }
+                
+                case WebDAVMenu.GET_SUPPORTED_PRIVILEGES:
+                {
+                    String s = fileView.getSelected();
+                    if( (s == null) || (s.length() == 0) )
+                    {
+                        GlobalData.getGlobalData().errorMsg( "No resource selected." );
+                        return;
+                    }
+                    WebDAVTreeNode n = fileView.getParentNode();
+                    requestGenerator.setResource( s, n );
+                    requestGenerator.GetSupportedPrivileges();
+                    break;
+                }
+                
+                case WebDAVMenu.GET_USER_PRIVILEGES:
+                {
+                    String s = fileView.getSelected();
+                    if( (s == null) || (s.length() == 0) )
+                    {
+                        GlobalData.getGlobalData().errorMsg( "No resource selected." );
+                        return;
+                    }
+                    WebDAVTreeNode n = fileView.getParentNode();
+                    requestGenerator.setResource( s, n );
+                    requestGenerator.GetUserPrivileges();
+                    break;
+                }
+                
+                case WebDAVMenu.GET_ACL:
+                {
+                    String s = fileView.getSelected();
+                    if( (s == null) || (s.length() == 0) )
+                    {
+                        GlobalData.getGlobalData().errorMsg( "No resource selected." );
+                        return;
+                    }
+                    WebDAVTreeNode n = fileView.getParentNode();
+                    requestGenerator.setResource( s, n );
+                    requestGenerator.GetACL();
+                    break;
+                }
+
+                case WebDAVMenu.SET_ACL:
+                {
+                    String s = fileView.getSelected();
+                    if( (s == null) || (s.length() == 0) )
+                    {
+                        GlobalData.getGlobalData().errorMsg( "No resource selected." );
+                        return;
+                    }
+                    // TODO: fill principal object
+                    ACLPrincipal[] principals = new ACLPrincipal[1];
+                    
+                    WebDAVTreeNode n = fileView.getParentNode();
+                    requestGenerator.setResource( s, n );
+                    if( requestGenerator.GenerateACL( principals ) )
+                        requestGenerator.execute();
+                    break;
+                }
+                
+                case WebDAVMenu.GET_SUPPORTED_ACL:
+                {
+                    String s = fileView.getSelected();
+                    if( (s == null) || (s.length() == 0) )
+                    {
+                        GlobalData.getGlobalData().errorMsg( "No resource selected." );
+                        return;
+                    }
+                    WebDAVTreeNode n = fileView.getParentNode();
+                    requestGenerator.setResource( s, n );
+                    requestGenerator.GetACLRestrictions();
+                    break;
+                }
+                
+                case WebDAVMenu.GET_INHERITED_ACL:
+                {
+                    String s = fileView.getSelected();
+                    if( (s == null) || (s.length() == 0) )
+                    {
+                        GlobalData.getGlobalData().errorMsg( "No resource selected." );
+                        return;
+                    }
+                    WebDAVTreeNode n = fileView.getParentNode();
+                    requestGenerator.setResource( s, n );
+                    requestGenerator.GetInheritedACLs();
+                    break;
+                }
+
+                case WebDAVMenu.GET_PRINCIPALS:
+                {
+                    String s = fileView.getSelected();
+                    if( (s == null) || (s.length() == 0) )
+                    {
+                        GlobalData.getGlobalData().errorMsg( "No resource selected." );
+                        return;
+                    }
+                    WebDAVTreeNode n = fileView.getParentNode();
+                    requestGenerator.setResource( s, n );
+                    requestGenerator.GetPrincipalCollections();
+                    break;
+                }
+                
+                case WebDAVMenu.HTTP_LOGGING:
+                {
+                    boolean logging = false;
+                    String logFilename = null;
+                    if( CommandMenu.getLogging() )
+                    {
+                        String message = new String( "WARNING: The logfile may get very large,\nsince all data is logged.\n" +
+                                                     "Hit Cancel now if you don't want to log the data." );
+                        int opt = JOptionPane.showConfirmDialog( GlobalData.getGlobalData().getMainFrame(), message, "HTTP Logging", JOptionPane.OK_CANCEL_OPTION );
+                        if( opt == JOptionPane.OK_OPTION )
+                        {
+                            JFileChooser fd = new JFileChooser();
+                            fd.setDialogType( JFileChooser.SAVE_DIALOG );
+                            fd.setFileSelectionMode( JFileChooser.FILES_ONLY );
+                            fd.setDialogTitle( "Select Logging File" );
+                            String os = (System.getProperty( "os.name" )).toLowerCase();
+                            String dirName = null;
+                            if( os.indexOf( "windows" ) == -1 )
+                                dirName = System.getProperty("user.home");
+                            if( dirName == null )
+                                dirName = new Character(File.separatorChar).toString();
+                            fd.setCurrentDirectory( new File(dirName) );
+                            fd.setApproveButtonMnemonic( 'U' );
+                            fd.setApproveButtonToolTipText( "Use the selected file for logging" );
+                            int val = fd.showDialog( GlobalData.getGlobalData().getMainFrame(), "Logging" );
+                            if( val == JFileChooser.APPROVE_OPTION)
+                            {
+                                logFilename = fd.getSelectedFile().getAbsolutePath();
+                                try
+                                {
+                                    File f = fd.getSelectedFile();
+                                    if( f.exists() )
+                                        f.delete();
+                                    logging = true;
+                                }
+                                catch( Exception exception )
+                                {
+                                    System.out.println( "File could not be deleted.\n" + exception );
+                                    logFilename = null;
+                                }
+                            }
+                        }
+                    }
+    
+                    CommandMenu.setLogging( logging );
+                    webdavManager.setLogging( logging, logFilename );
+                    break;
+                }
+                
+                case WebDAVMenu.VIEW_MODIFY_PROPS:
+                    viewProperties();
+                    break;
+                    
+                case WebDAVMenu.VIEW_LOCK_PROPS:
+                {
+                    String s = fileView.getSelected();
+                    if( s == null )
+                    {
+                        GlobalData.getGlobalData().errorMsg( "No file selected." );
+                    }
+                    else
+                    {
+                        WebDAVTreeNode n = fileView.getParentNode();
+                        requestGenerator.setResource(s, n);
+    
+                        requestGenerator.DiscoverLock( WebDAVResponseEvent.DISPLAY, null );
+                    }
+                    break;
+                }
+                
+                case WebDAVMenu.REFRESH:
+                {
+                    WebDAVTreeNode n = fileView.getParentNode();
+                    responseInterpreter.setRefresh( n );
+                    break;
+                }
+                
+                case WebDAVMenu.ABOUT:
+                {
+                    String message = new String("DAV Explorer Version "+ VERSION + "\n" +
+                    COPYRIGHT + "\n" +
+                    "Authors: Yuzo Kanomata, Joachim Feise\n" +
+                    EMAIL + "\n\n" +
+                    "Based on code from the UCI WebDAV Client Group of the ICS126B class\n" +
+                    "Winter 1998: Gerair Balian, Mirza Baig, Robert Emmery, Thai Le, Tu Le.\n" +
+                    "Basic DeltaV support based on code from the DeltaV Team of the ICS125\n" +
+                    "class Spring 2003: Max Slabyak, Matt Story, Hyung Kim.\n" +
+                    "Uses the HTTPClient library (http://www.innovation.ch/java/HTTPClient/).\n" +
+                    "Uses Microsoft's XML parser published in June 1997.\n" +
+                    "For other contributors see the contributors.txt file.");
+                    Object [] options = { "OK" };
+    				JOptionPane.showOptionDialog(GlobalData.getGlobalData().getMainFrame(), message, "About DAV Explorer", JOptionPane.DEFAULT_OPTION, JOptionPane.INFORMATION_MESSAGE, null, options, options[0]);
+                    break;
+                }
             }
         }
     }
@@ -1328,7 +1484,7 @@ public class Main extends JFrame
      */
     protected void viewDocument()
     {
-        if( requestGenerator.GenerateGet("view") )
+        if( requestGenerator.GenerateGet( WebDAVResponseEvent.VIEW ) )
         {
             requestGenerator.execute();
         }
@@ -1349,9 +1505,10 @@ public class Main extends JFrame
         {
             WebDAVTreeNode n = fileView.getParentNode();
             requestGenerator.setResource(s, n);
-            if( requestGenerator.GenerateGet("saveas") ){
+            if( requestGenerator.GenerateGet( WebDAVResponseEvent.SAVE_AS ) )
+            {
                 requestGenerator.execute();
-        }
+            }
         }
     }
 
@@ -1397,8 +1554,7 @@ public class Main extends JFrame
                 {
                     WebDAVTreeNode n = fileView.getParentNode();
                     requestGenerator.setResource(s, n);
-                    //requestGenerator.DiscoverLock("delete");
-                    requestGenerator.setExtraInfo("delete");
+                    requestGenerator.setExtendedInfo( WebDAVResponseEvent.DELETE, null );
                     boolean retval = false;
                     if( fileView.isSelectedLocked() ){
                     retval = requestGenerator.GenerateDelete(fileView.getSelectedLockToken());
@@ -1429,9 +1585,9 @@ public class Main extends JFrame
     protected void lockDocument( boolean exclusive )
     {
         if( exclusive )
-            requestGenerator.DiscoverLock("exclusiveLock");
+            requestGenerator.DiscoverLock( WebDAVResponseEvent.EXCLUSIVE_LOCK, null );
         else
-            requestGenerator.DiscoverLock("sharedLock");
+            requestGenerator.DiscoverLock( WebDAVResponseEvent.SHARED_LOCK, null );
     }
 
 
@@ -1440,7 +1596,7 @@ public class Main extends JFrame
      */
     protected void unlockDocument()
     {
-        requestGenerator.DiscoverLock("unlock");
+        requestGenerator.DiscoverLock( WebDAVResponseEvent.UNLOCK, null );
     }
 
 
@@ -1457,7 +1613,7 @@ public class Main extends JFrame
         else
         {
             requestGenerator.setResource(s, null);
-            requestGenerator.setExtraInfo("properties");
+            requestGenerator.setExtendedInfo( WebDAVResponseEvent.PROPERTIES, null );
             if( requestGenerator.GeneratePropFind(null,"allprop","zero",null,null,false) )
             {
                 requestGenerator.execute();
@@ -1768,8 +1924,8 @@ public class Main extends JFrame
     protected DropEnabler dropEnabler;
     protected WebDAVFileView fileView;
     protected WebDAVTreeView treeView;
-    protected DeltaVRequestGenerator requestGenerator;
-    protected DeltaVResponseInterpreter responseInterpreter;
+    protected ACLRequestGenerator requestGenerator;
+    protected ACLResponseInterpreter responseInterpreter;
     protected WebDAVManager webdavManager;
     protected WebDAVMenu CommandMenu;
     protected Hashtable authTable;

@@ -61,6 +61,23 @@ public class DeltaVRequestGenerator extends WebDAVRequestGenerator
     }
 
 
+    protected String[] preparePropFind()
+    {
+        String[] props = new String[9];
+        props[0] = "displayname";
+        props[1] = "resourcetype";
+        props[2] = "getcontenttype";
+        props[3] = "getcontentlength";
+        props[4] = "getlastmodified";
+        props[5] = "lockdiscovery";
+        // DeltaV support
+        props[6] = "checked-in";
+        props[7] = "checked-out";
+        props[8] = "version-name";
+        return props;
+    }
+    
+    
     /**
      * Generate VERSION-CONTROL request
      * @see     "RFC 3253, section 3.5"
@@ -265,14 +282,14 @@ public class DeltaVRequestGenerator extends WebDAVRequestGenerator
             asgen = WebDAVXML.createNamespace( new AsGen(), null );
 
         // should work, but at least Catacomb ignores this
-        Element topElem = WebDAVXML.createElement( "checkin", Element.ELEMENT, null, asgen );
+        Element topElem = WebDAVXML.createElement( DeltaVXML.ELEM_CHECKIN, Element.ELEMENT, null, asgen );
         topElem.addChild( WebDAVXML.elemNewline, null );
-        Element comment = WebDAVXML.createElement( "comment", Element.ELEMENT, topElem, asgen );
+        Element comment = WebDAVXML.createElement( DeltaVXML.ELEM_COMMENT, Element.ELEMENT, topElem, asgen );
         Element commentData = WebDAVXML.createElement( null, Element.PCDATA, topElem, asgen );
         //commentData.setText("this is a comment");
         addChild( comment, commentData, 0, 0, false, false );
         addChild( topElem, comment, 1, 0, false, true );
-        Element author = WebDAVXML.createElement( "creator-displayname", Element.ELEMENT, topElem, asgen );
+        Element author = WebDAVXML.createElement( DeltaVXML.ELEM_CREATOR_DISPLAYNAME, Element.ELEMENT, topElem, asgen );
         Element authorData = WebDAVXML.createElement( null, Element.PCDATA, topElem, asgen );
         //authorData.setText( "this is the author" );
         addChild( author, authorData, 0, 0, false, false );
@@ -310,14 +327,14 @@ public class DeltaVRequestGenerator extends WebDAVRequestGenerator
      * 
      * @return  true if successful, false else  
      */
-    public synchronized boolean GenerateVersionHistory(String extra )
+    public synchronized boolean GenerateVersionHistory( int code )
     {
         if( GlobalData.getGlobalData().getDebugRequest() )
         {
             System.err.println( "DeltaVRequestGenerator::GenerateReport" );
         }
         
-        Extra = extra;
+        extendedCode = code;
         Headers = null;
         Body = null;
         StrippedResource = parseResourceName( true );
@@ -337,25 +354,25 @@ public class DeltaVRequestGenerator extends WebDAVRequestGenerator
         if( asgen == null )
             asgen = WebDAVXML.createNamespace( new AsGen(), null );
         
-        Element reportElem = WebDAVXML.createElement( "version-tree", Element.ELEMENT, null, asgen );
+        Element reportElem = WebDAVXML.createElement( DeltaVXML.ELEM_VERSION_TREE, Element.ELEMENT, null, asgen );
         Element reportElem2 = WebDAVXML.createElement( WebDAVXML.ELEM_PROP, Element.ELEMENT, reportElem, asgen );
         reportElem2.addChild( WebDAVXML.elemNewline, null );
         
-        Element prop = WebDAVXML.createElement( "version-name", Element.ELEMENT, reportElem2, asgen );
+        Element prop = WebDAVXML.createElement( DeltaVXML.ELEM_VERSION_NAME, Element.ELEMENT, reportElem2, asgen );
         addChild( reportElem2, prop, 2, false );
-        prop = WebDAVXML.createElement( "creator-displayname", Element.ELEMENT, reportElem2, asgen );
+        prop = WebDAVXML.createElement( DeltaVXML.ELEM_CREATOR_DISPLAYNAME, Element.ELEMENT, reportElem2, asgen );
         addChild( reportElem2, prop, 2, false );
-        prop = WebDAVXML.createElement( "getlastmodified", Element.ELEMENT, reportElem2, asgen );
+        prop = WebDAVXML.createElement( DeltaVXML.ELEM_GETLASTMODIFIED, Element.ELEMENT, reportElem2, asgen );
         addChild( reportElem2, prop, 2, false );
-        prop = WebDAVXML.createElement( "getcontentlength", Element.ELEMENT, reportElem2, asgen );
+        prop = WebDAVXML.createElement( DeltaVXML.ELEM_GETCONTENTLENGTH, Element.ELEMENT, reportElem2, asgen );
         addChild( reportElem2, prop, 2, false );
-        prop = WebDAVXML.createElement( "successor-set", Element.ELEMENT, reportElem2, asgen );
+        prop = WebDAVXML.createElement( DeltaVXML.ELEM_SUCCESSOR_SET, Element.ELEMENT, reportElem2, asgen );
         addChild( reportElem2, prop, 2, false );
-        prop = WebDAVXML.createElement( "checked-in", Element.ELEMENT, reportElem2, asgen );
+        prop = WebDAVXML.createElement( DeltaVXML.ELEM_CHECKED_IN, Element.ELEMENT, reportElem2, asgen );
         addChild( reportElem2, prop, 2, false );
-        prop = WebDAVXML.createElement( "checked-out", Element.ELEMENT, reportElem2, asgen );
+        prop = WebDAVXML.createElement( DeltaVXML.ELEM_CHECKED_OUT, Element.ELEMENT, reportElem2, asgen );
         addChild( reportElem2, prop, 2, false );
-        prop = WebDAVXML.createElement( "comment", Element.ELEMENT, reportElem2, asgen );
+        prop = WebDAVXML.createElement( DeltaVXML.ELEM_COMMENT, Element.ELEMENT, reportElem2, asgen );
         addChild( reportElem2, prop, 2, false );
         
         addChild( reportElem, reportElem2, 1, true );

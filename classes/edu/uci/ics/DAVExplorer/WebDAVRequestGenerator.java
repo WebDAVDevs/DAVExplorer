@@ -91,7 +91,8 @@ public class WebDAVRequestGenerator implements Runnable
     protected static String StrippedResource = "";
     protected static NVPair[] Headers = null;
     protected static byte[] Body = null;
-    protected static String Extra = "";
+    protected static int extendedCode = 0;
+    protected static String extendedData = null;
     protected static String User = "";
     protected static String Password = "";
     protected static Vector listeners = new Vector();
@@ -129,7 +130,8 @@ public class WebDAVRequestGenerator implements Runnable
         StrippedResource = "";
         Headers = null;
         Body = null;
-        Extra = "";
+        extendedCode = 0;
+        extendedData = null;
         User = "";
         Password = "";
         listeners = new Vector();
@@ -175,6 +177,55 @@ public class WebDAVRequestGenerator implements Runnable
     }
 
 
+    public void DoPropFind( String resource, boolean fullPath )
+    {
+        String str = resource;
+        if( !fullPath )
+        {
+            str = HostName;
+            if (Port > 0)
+                str += ":" + Port;
+            str += resource;
+        }
+        // 1999-June-08, Joachim Feise (dav-exp@ics.uci.edu):
+        // workaround for IBM's DAV4J, which does not handle propfind properly
+        // with the prop tag. To use the workaround, run DAV Explorer with
+        // 'java -jar -Dpropfind=allprop DAVExplorer.jar'
+        // Note that this prevents the detection of DeltaV information, since
+        // RFC 3253 states in section 3.11 that "A DAV:allprop PROPFIND request
+        // SHOULD NOT return any of the properties defined by this document."
+        String doAllProp = System.getProperty( "propfind" );
+        if( (doAllProp != null) && doAllProp.equalsIgnoreCase("allprop") )
+        {
+            if( GeneratePropFind( str, "allprop", "one", null, null, false ) )
+            {
+                execute();
+            }
+        }
+        else
+        {
+            String[] props = preparePropFind();
+            if( GeneratePropFind( str, "prop", "one", props, null, false ) )
+            {
+                execute();
+            }
+        }
+    }
+
+    
+    protected String[] preparePropFind()
+    {
+        String[] props = new String[6];
+        props[0] = "displayname";
+        props[1] = "resourcetype";
+        props[2] = "getcontenttype";
+        props[3] = "getcontentlength";
+        props[4] = "getlastmodified";
+        props[5] = "lockdiscovery";
+        return props;
+    }
+    
+    
     /**
      * 
      * @param e
@@ -411,9 +462,11 @@ public class WebDAVRequestGenerator implements Runnable
             Headers[size+1] = new NVPair( "User-Agent", userAgent );
         }
 
-        WebDAVRequestEvent e = new WebDAVRequestEvent( this, Method, HostName, Port,
-                                                       StrippedResource, Headers, Body,
-                                                       Extra, User, Password, Node );
+        WebDAVRequestEvent e = new WebDAVRequestEvent( this, Method, HostName,
+                                                       Port, StrippedResource,
+                                                       Headers, Body, extendedCode,
+                                                       extendedData, User, Password,
+                                                       Node );
         Node = null;
         for (int i=0;i<ls.size();i++)
         {
@@ -448,18 +501,20 @@ public class WebDAVRequestGenerator implements Runnable
     /**
      * Generate a PROPFIND request to do lock discovery
      * @see     "RFC 2518"
-     * @param   extra
+     * @param   code
+     * @param   data
      * 
      * @return  true if successful, false else  
      */
-    public synchronized boolean DiscoverLock(String extra)
+    public synchronized boolean DiscoverLock( int code, String data )
     {
         if( GlobalData.getGlobalData().getDebugRequest() )
         {
             System.err.println( "WebDAVRequestGenerator::DiscoverLock" );
         }
 
-        Extra = extra;
+        extendedCode = code;
+        extendedData = data;
         String[] prop = new String[1];
         String[] schema = new String[1];
 
@@ -478,11 +533,11 @@ public class WebDAVRequestGenerator implements Runnable
             prop[0] = "lockdiscovery";
             schema[0] = WebDAVProp.DAV_SCHEMA;
             retval = GeneratePropFind( null, "prop", "zero", prop, schema, false );
-    }
+        }
         if( retval )
         {
             execute();
-    }
+        }
         return retval;
     }
 
@@ -568,7 +623,8 @@ public class WebDAVRequestGenerator implements Runnable
      */
     public synchronized boolean GeneratePropFind( String FullPath, String command,
                                                   String Depth, String[] props,
-                                                  String[] schemas, boolean flagGetFilesBelow )
+                                                  String[] schemas,
+                                                  boolean flagGetFilesBelow )
     {
         if( GlobalData.getGlobalData().getDebugRequest() )
         {
@@ -591,17 +647,17 @@ public class WebDAVRequestGenerator implements Runnable
             // selected tree node will actually have the
             // properties of the children of the node
             // loaded into our tree.
-            if (Extra.equals("select"))
+            if( extendedCode == WebDAVResponseEvent.SELECT )
             {
             // Skip on a selection
             }
             else if (ResourceName.equals(FullPath))
             {
-                Extra = "index";
+                extendedCode = WebDAVResponseEvent.INDEX;
             }
             else
             {
-                Extra = "expand";
+                extendedCode = WebDAVResponseEvent.EXPAND;
             }
             ResourceName = FullPath;
             StrippedResource = parseResourceName( true );
@@ -925,7 +981,7 @@ public class WebDAVRequestGenerator implements Runnable
      * 
      * @return  true if successful, false else  
      */
-    public synchronized boolean GenerateGet(String localName)
+    public synchronized boolean GenerateGet( int code )
     {
         if( GlobalData.getGlobalData().getDebugRequest() )
         {
@@ -941,7 +997,7 @@ public class WebDAVRequestGenerator implements Runnable
             return false;
         }
 
-        Extra = localName;
+        extendedCode = code;
         Method = "GET";
         Body = null;
         Headers = new NVPair[1];
@@ -1089,7 +1145,7 @@ public class WebDAVRequestGenerator implements Runnable
         {
             long fileSize = file.length();
             Method = "PUT";
-            Extra = fileName;
+            extendedData = fileName;
 
             if (lockToken != null)
             {
@@ -1137,7 +1193,7 @@ public class WebDAVRequestGenerator implements Runnable
 
         Headers = null;
         Body = null;
-        Extra = "copy"; //Yuzo added
+        extendedCode = WebDAVResponseEvent.COPY;
 
         StrippedResource = parseResourceName( true );
         if( StrippedResource == null )
@@ -1249,11 +1305,7 @@ public class WebDAVRequestGenerator implements Runnable
         {
             System.err.println( "WebDAVRequestGenerator::GenerateRename" );
         }
-        // Why have the below when the DIscoverLock puts something else
-        // the Extra field
-        Extra = tableResource;
-
-        return DiscoverLock("rename:" + Dest + ":" + dir );
+        return DiscoverLock( WebDAVResponseEvent.RENAME, Dest + ":" + dir );
     }
 
 
@@ -1265,13 +1317,13 @@ public class WebDAVRequestGenerator implements Runnable
      * @param Overwrite
      * @param KeepAlive
      * @param lockToken
-     * @param extraPrefix
+     * @param code
      * 
      * @return  true if successful, false else  
      */
     public synchronized boolean GenerateMove( String Dest, String dir, boolean Overwrite,
                                               boolean KeepAlive, String lockToken,
-                                              String extraPrefix )
+                                              int code )
     {
         if( GlobalData.getGlobalData().getDebugRequest() )
         {
@@ -1280,7 +1332,8 @@ public class WebDAVRequestGenerator implements Runnable
 
         Headers = null;
         Body = null;
-        Extra = extraPrefix +  Dest;
+        extendedCode = code;
+        extendedData = Dest;
 
         if( secondTime)
         {
@@ -1433,7 +1486,7 @@ public class WebDAVRequestGenerator implements Runnable
 
         Method = "LOCK";
         Body = null;
-        Extra = lockToken;
+        extendedData = lockToken;
 
         if (lockToken == null)
         {
@@ -1571,9 +1624,10 @@ public class WebDAVRequestGenerator implements Runnable
      * 
      * @param info
      */
-    public synchronized void setExtraInfo(String info)
+    public synchronized void setExtendedInfo( int code, String data )
     {
-        Extra = info;
+        extendedCode = code;
+        extendedData = data;
     }
 
 

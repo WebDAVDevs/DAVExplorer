@@ -39,10 +39,20 @@ public class DeltaVXML extends WebDAVXML
 {
     public static final String ELEM_OPTIONS = "options";
     public static final String ELEM_CHECKOUT = "checkout";
+    public static final String ELEM_CHECKIN = "checkin";
     public static final String ELEM_MERGE = "merge";
-    
+    public static final String ELEM_CREATOR_DISPLAYNAME = "creator-displayname";
+    public static final String ELEM_VERSION_TREE = "version-tree";
+    public static final String ELEM_VERSION_NAME = "version-name";
+
+    public static final String ELEM_COMMENT = "comment";
+    public static final String ELEM_GETLASTMODIFIED = "getlastmodified";
+    public static final String ELEM_GETCONTENTLENGTH = "getcontentlength";
+    public static final String ELEM_SUCCESSOR_SET = "successor-set";
+    public static final String ELEM_CHECKED_IN = "checked-in";
+    public static final String ELEM_CHECKED_OUT = "checked-out";
+
     public static final String ELEM_OPTIONS_RESPONSE = "options-response";
-    
     public static final String ELEM_ACTIVITY_COLLECTION_SET = "activity-collection-set";
     public static final String ELEM_ACTIVITY_SET = "activity-set";
     public static final String ELEM_SOURCE = "source";
