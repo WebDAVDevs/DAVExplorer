@@ -1,16 +1,16 @@
 /*
  * @(#)XMLOutputStream.java 1.0 6/10/97
- * 
+ *
  * Copyright (c) 1997 Microsoft, Corp. All Rights Reserved.
- * 
- */ 
+ *
+ */
 package com.ms.xml.util;
 import com.ms.xml.parser.DTD;
 
 import java.io.*;
 
 /**
- * 
+ *
  * A writer specifically designed for dealing with XML, incluing
  * XML encoding as well as liitleendian files, and XML namespaces
  * and white space handling.
@@ -18,11 +18,11 @@ import java.io.*;
  * @version 1.0, 6/10/97
  */
 public class XMLOutputStream extends OutputStream
-{       
+{
     /**
      * The state enumerators
      */
-    static final int OUTPUTSW    = 1;   // The different states that concern the write() 
+    static final int OUTPUTSW    = 1;   // The different states that concern the write()
     static final int UCS2        = 2;   // The UCS2_BOM implies a ByteOrderMark must be written.
     static final int UCS2_BOM    = 3;   // NOTE:  All encodings that can use OutputStreamWriter
     static final int ASCII       = 4;   //        fall into the OUTPUTSW state
@@ -33,32 +33,36 @@ public class XMLOutputStream extends OutputStream
      * A subsequent call to setEncoding will specify the correct
      * character encoding required.  XMLOutputStreams can be built
      * by using the createOutputStream method contained in XMLInputStream.
-     */             
-    public XMLOutputStream( OutputStream out)     
+     */
+    public XMLOutputStream( OutputStream out)
     {
         String version = System.getProperty("java.version");
         jdk11 = version.equals("1.1") ? true : false;
         // Joachim Feise (jfeise@ics.uci.edu), 25 March 1999:
-        // assume that JDK1.2 also supports JDK 1.1 features
+        // assume that JDK1.2 and later also support JDK 1.1 features
+        // Updated 26 February 2001: check for all JDKs > 1.1
         if( jdk11==false )
-            jdk11 = version.equals("1.2") ? true : false;
+        {
+            float v = Float.valueOf( version.substring(0, 3) ).floatValue();
+            jdk11 = (v >= 1.1) ? true : false;
+        }
         outputStyle = DEFAULT;
         littleendian  = false;
         savingDTD = false;
         mixed = false;
-        
+
         this.out      = out;
 
         newline = System.getProperty("line.separator");
         indent = 0;
-        
+
         // We default immediately to UTF-8
         try {
             if (! jdk11)
                throw new IOException("Writers not supported in JDK 1.0");
-            
+
             this.outsw = new OutputStreamWriter( out, "UTF8" );
-            writeState = OUTPUTSW; 
+            writeState = OUTPUTSW;
             encoding   = "UTF-8";
         } catch( IOException e ) {
             // If there is an exception (there should never be) we can
@@ -77,7 +81,7 @@ public class XMLOutputStream extends OutputStream
         if( outsw != null )
             outsw.flush();
         else
-            out.flush();    
+            out.flush();
     }
 
     /**
@@ -92,25 +96,25 @@ public class XMLOutputStream extends OutputStream
     }
 
     /**
-     * Defines the character encoding of the output stream.  
+     * Defines the character encoding of the output stream.
      */
-    public void setEncoding( String encoding, 
-                             boolean littleendian, 
+    public void setEncoding( String encoding,
+                             boolean littleendian,
                              boolean byteOrderMark ) throws IOException
     {
         outsw = null;
         String vmenc = encoding;
 
         if( encoding.equalsIgnoreCase( "UTF-8" ) )
-        {                       
+        {
             vmenc = "UTF8";
         }
         else if( encoding.equalsIgnoreCase( "Shift_JIS" ) )
-        {            
+        {
             vmenc = "SJIS";
         }
         else if( encoding.equalsIgnoreCase( "ISO-8859-1" ) )
-        {         
+        {
             vmenc = "8859_1";
         }
         else if( encoding.equalsIgnoreCase( "ISO-10646-UCS-4" ) ||
@@ -120,15 +124,15 @@ public class XMLOutputStream extends OutputStream
         }
         else if( encoding.equalsIgnoreCase( "UCS-2" ) )
         {
-            // We only set the byteOrderMark if the initialEncoding is UCS-2.  
+            // We only set the byteOrderMark if the initialEncoding is UCS-2.
             // Otherwise the flag is irrelant and we should ignore it.
-            if( byteOrderMark )            
+            if( byteOrderMark )
                 writeState = UCS2_BOM;
             else
                 writeState = UCS2;
 
             this.encoding  = "UCS-2";
-                
+
             if( littleendian )
             {
                 this.littleendian = true;
@@ -138,7 +142,7 @@ public class XMLOutputStream extends OutputStream
         }
         else
         {
-            // If none of the conditionals equate to true, 
+            // If none of the conditionals equate to true,
             // the inital writing is treated like ASCII text.
             writeState    = ASCII;
             this.encoding = "ASCII";
@@ -147,7 +151,7 @@ public class XMLOutputStream extends OutputStream
         if (encoding.equalsIgnoreCase("ASCII"))
         {
             outsw = null;
-        } 
+        }
         else
         {
             try {
@@ -161,7 +165,7 @@ public class XMLOutputStream extends OutputStream
                 // just continue and treat file like ASCII text.
                 throw new IOException( vmenc + " is not supported by your Java Virtual Machine." +
                     "  Try installing the latest VM from http://www.microsoft.com/java/download.htm");
-            }            
+            }
         }
     }
 
@@ -176,7 +180,7 @@ public class XMLOutputStream extends OutputStream
         switch( writeState )
         {
             case OUTPUTSW:
-                outsw.write( c );       
+                outsw.write( c );
                 break;
             case UCS2:
                 {
@@ -185,8 +189,8 @@ public class XMLOutputStream extends OutputStream
                     byte1 = c >> 8;
                     byte2 = c & 0xff;
 
-                    out.write(byte1);  
-                    out.write(byte2);                    
+                    out.write(byte1);
+                    out.write(byte2);
                 }
                 break;
             case UCS2_BOM:   // We need to put a ByteOrderMark to immitate original file.
@@ -197,12 +201,12 @@ public class XMLOutputStream extends OutputStream
 
                     out.write( 0xfe );
                     out.write( 0xff );
-    
+
                     byte1 = c >> 8;
                     byte2 = c & 0xff;
 
-                    out.write(byte1);  
-                    out.write(byte2);                    
+                    out.write(byte1);
+                    out.write(byte2);
                 }
                 break;
             case ASCII:
@@ -228,7 +232,7 @@ public class XMLOutputStream extends OutputStream
 			writeChars(n.getName());
 			return;
 		}
-        if (sns != null) 
+        if (sns != null)
         {
 		    if (dtd != null && ! dtd.isReservedNameSpace(sns))
 		    {
@@ -239,7 +243,7 @@ public class XMLOutputStream extends OutputStream
                     shortName = sns;
 		    }
             writeChars(shortName.toString() + ":" + n.getName());
-        } 
+        }
         else
         {
 			if (ns == null)
@@ -251,7 +255,7 @@ public class XMLOutputStream extends OutputStream
     /**
      * Write the given string.
      */
-    public void writeChars( String str ) throws IOException 
+    public void writeChars( String str ) throws IOException
     {
         int strLen = str.length();
 
@@ -269,20 +273,20 @@ public class XMLOutputStream extends OutputStream
                 this.write( ch );
             }
         }
-    }        
+    }
 
     /**
      * Write out the string with quotes around it.
      * This method uses the quotes that are appropriate for the string.
      * I.E. if the string contains a ' then it uses ", & vice versa.
      */
-    public void writeQuotedString( String str ) throws IOException 
+    public void writeQuotedString( String str ) throws IOException
     {
         char quote = '"';
         if (str.indexOf('"') >= 0 && str.indexOf('\'') < 0) {
             quote = '\'';
         }
-        write(quote); 
+        write(quote);
 
         int strLen = str.length();
         for( int i = 0; i<strLen; i++ )
@@ -299,7 +303,7 @@ public class XMLOutputStream extends OutputStream
         }
 
         write(quote);
-    }        
+    }
 
     /**
      * Write a new line or do nothing if output style is COMPACT.
