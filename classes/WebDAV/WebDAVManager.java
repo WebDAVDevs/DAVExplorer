@@ -41,7 +41,13 @@
 // Date: 3/17/99
 //
 // Change List:
-
+//
+// Version: 0.41
+// Changes by: Yuzo Kanomata and Joe Feise
+// Date: 4/14/99
+//
+// Change List:
+//   Added notification for IO exceptions during connect
 
 package WebDAV;
 
@@ -52,85 +58,115 @@ import java.util.*;
 import java.awt.event.*;
 import com.sun.java.swing.*;
 
-public class WebDAVManager {
+public class WebDAVManager
+{
+    public HTTPResponse Response;
+    private WebDAVConnection Con;
+    private String HostName = null;
+    private int Port;
+    private String MethodName;
+    private String ResourceName;
+    private NVPair[] Headers;
+    private byte[] Body;
+    private String ExtraInfo;
+    private Vector Listeners = new Vector();
+    private JFrame mainFrame;
 
-  public HTTPResponse Response;
-  private WebDAVConnection Con;
-  private String HostName = null;
-  private int Port;
-  private String MethodName;
-  private String ResourceName;
-  private NVPair[] Headers;
-  private byte[] Body;
-  private String ExtraInfo;
-  private Vector Listeners = new Vector();
-  private JFrame mainFrame;
-
-  public WebDAVManager(JFrame mainFrame) {
-    this.mainFrame = mainFrame;
-  }
-
-  public void sendRequest(WebDAVRequestEvent e) {
-
-    String TempHost = e.getHost();
-    int TempPort = e.getPort();
-
-    if ((TempHost != null) && (TempHost.length() > 0) && (!TempHost.equals(HostName))) {
-      HostName = TempHost;
-      if (TempPort != 0) {
-        Port = TempPort;
-        Con = new WebDAVConnection(HostName, Port);
-      }
-      else {
-        Port = 0;
-        Con = new WebDAVConnection(HostName);
-      }
+    public WebDAVManager(JFrame mainFrame)
+    {
+        this.mainFrame = mainFrame;
     }
-    String user = e.getUser();
-    String pass = e.getPass();
+
+    public void sendRequest(WebDAVRequestEvent e)
+    {
+        String TempHost = e.getHost();
+        int TempPort = e.getPort();
+
+        if ((TempHost != null) && (TempHost.length() > 0) && (!TempHost.equals(HostName)))
+        {
+            HostName = TempHost;
+            if (TempPort != 0)
+            {
+                Port = TempPort;
+                Con = new WebDAVConnection(HostName, Port);
+            }
+            else
+            {
+                Port = 0;
+                Con = new WebDAVConnection(HostName);
+            }
+        }
+        String user = e.getUser();
+        String pass = e.getPass();
+
+        if (user.length() > 0)
+        {
+            try
+            {
+                Con.addDigestAuthorization(HostName,user, pass);
+                Con.addBasicAuthorization(HostName,user,pass);
+            }
+            catch (Exception exc)
+            {
+                System.out.println(exc);
+            }
+        }
+
+        MethodName = e.getMethod();
+        ResourceName = e.getResource();
+        Headers = e.getHeaders();
+        Body = e.getBody();
+        ExtraInfo = e.getExtraInfo();
+        try
+        {
+            Response = Con.Generic(MethodName, ResourceName, Body, Headers);
+            WebDAVResponseEvent webdavResponse  = GenerateWebDAVResponse(Response);
+            fireResponse(webdavResponse); 
+        }
+        catch (IOException exception)
+        {
+            errorMsg("Connection error: \n" + exception);
+        }
+        catch (ModuleException exception)
+        {
+            errorMsg("HTTPClient error: \n" + exception);
+        }
+    }
+
+    public synchronized void addResponseListener(WebDAVResponseListener l)
+    {
+        Listeners.addElement(l);
+    }
+
+    public synchronized void removeResponseListener(WebDAVResponseListener l)
+    {
+        Listeners.removeElement(l);
+    }
     
-    if (user.length() > 0) {
-      try {
-        Con.addDigestAuthorization(HostName,user, pass);
-        Con.addBasicAuthorization(HostName,user,pass);
-      } catch (Exception exc) { System.out.println(exc); }
+    public WebDAVResponseEvent GenerateWebDAVResponse(HTTPResponse Response)
+    {
+        WebDAVResponseEvent e = new WebDAVResponseEvent(this,HostName, Port, ResourceName,MethodName,Response,ExtraInfo);
+        return e;
     }
-    
-    MethodName = e.getMethod();
-    ResourceName = e.getResource();
-    Headers = e.getHeaders();
-    Body = e.getBody();
-    ExtraInfo = e.getExtraInfo();
-    try {
-      Response = Con.Generic(MethodName, ResourceName, Body, Headers);
-      WebDAVResponseEvent webdavResponse  = GenerateWebDAVResponse(Response);
-      fireResponse(webdavResponse); 
-    }
-    catch (IOException E) { }
-    catch (ModuleException E) { }
-  }
 
-  public synchronized void addResponseListener(WebDAVResponseListener l) {
-    Listeners.addElement(l);
-  }
-  public synchronized void removeResponseListener(WebDAVResponseListener l) {
-    Listeners.removeElement(l);
-  }
-  public WebDAVResponseEvent GenerateWebDAVResponse(HTTPResponse Response) {
-
-      WebDAVResponseEvent e = new WebDAVResponseEvent(this,HostName, Port, ResourceName,MethodName,Response,ExtraInfo);
-      return e;
-  }
-
-  public void fireResponse(WebDAVResponseEvent e) {
-    
-    Vector ls;
-    synchronized (this) {
-      ls = (Vector) Listeners.clone();
+    public void fireResponse(WebDAVResponseEvent e)
+    {
+        Vector ls;
+        synchronized (this)
+        {
+            ls = (Vector) Listeners.clone();
+        }
+        for (int i=0; i<ls.size();i++)
+        {
+            WebDAVResponseListener l = (WebDAVResponseListener) ls.elementAt(i);
+            l.responseFormed(e);
+        }
     }
-    for (int i=0; i<ls.size();i++) {
-       WebDAVResponseListener l = (WebDAVResponseListener) ls.elementAt(i);
-      l.responseFormed(e);
+
+    public void errorMsg(String str)
+    {
+        JOptionPane pane = new JOptionPane();
+        Object[] options = { "OK" };
+        pane.showOptionDialog(mainFrame,str,"Error Message", JOptionPane.DEFAULT_OPTION, JOptionPane.ERROR_MESSAGE, null, options, options[0]);
     }
-  }
 }
