@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 1998-2001 Regents of the University of California.
+ * Copyright (c) 1998-2002 Regents of the University of California.
  * All rights reserved.
  *
  * This software was developed at the University of California, Irvine.
@@ -23,7 +23,7 @@
  *              instantiates the Main JFrame.
  *              The Main class creates the user interface and adds the appropriate
  *              listeners.
- * Copyright:   Copyright (c) 1998-2001 Regents of the University of California. All rights reserved.
+ * Copyright:   Copyright (c) 1998-2002 Regents of the University of California. All rights reserved.
  * @author      Robert Emmery (dav-exp@ics.uci.edu)
  * @date        2 April 1998
  * @author      Yuzo Kanomata, Joachim Feise (dav-exp@ics.uci.edu)
@@ -771,7 +771,7 @@ public class Main extends JFrame
             {
                 JOptionPane pane = new JOptionPane( this );
                 String message = new String("DAV Explorer Version "+ VERSION + "\n" +
-                "Copyright (c) 1998-2001 Regents of the University of California\n" +
+                "Copyright (c) 1998-2002 Regents of the University of California\n" +
                 "Authors: Yuzo Kanomata, Joachim Feise\n" +
                 "EMail: dav-exp@ics.uci.edu\n\n" +
                 "Based on code from the UCI WebDAV Client Group\n" +
