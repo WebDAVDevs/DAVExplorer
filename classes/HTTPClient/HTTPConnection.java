@@ -35,7 +35,6 @@ package HTTPClient;
 import java.io.OutputStream;
 import java.io.DataOutputStream;
 import java.io.FilterOutputStream;
-// 2001-May-23: Joachim Feise (dav-dev@ics.uci.edu)  added for logging
 import java.io.FileOutputStream;
 // SSL Extensions (using Sun's JSEE)
 import javax.net.ssl.SSLSocket;
@@ -43,6 +42,7 @@ import javax.net.ssl.SSLSocketFactory;
 import javax.security.cert.X509Certificate;
 import java.lang.reflect.Constructor;
 // End SSL Extensions
+import java.io.BufferedOutputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InterruptedIOException;
@@ -2998,7 +2998,6 @@ public class HTTPConnection implements GlobalConstants, HTTPClientModuleConstant
                 {
                     try
                     {
-                        //sock = ((SSLSocketFactory)SSLSocketFactory.getDefault()).createSocket(sock, Host, Port, true);
                         sock = ((SSLSocketFactory)sslFactory).createSocket(sock, Host, Port, true);
                         checkCert(((SSLSocket)sock).getSession().getPeerCertificateChain()[0], Host, allowAnyHostname);
                     }
@@ -3035,10 +3034,14 @@ public class HTTPConnection implements GlobalConstants, HTTPClientModuleConstant
             }
         }
 
-
 		// Send headers
-
-		OutputStream sock_out = sock.getOutputStream();
+        // 2003-March-26: Joachim Feise (dav-exp@ics.uci.edu) changed
+        // for progress reporting
+        OutputStream sock_out = new BufferedOutputStream(
+                                        sock.getOutputStream(),
+                                        sock.getSendBufferSize()
+                                    );
+		//OutputStream sock_out = sock.getOutputStream();
 		if (haveMSLargeWritesBug)
 		    sock_out = new MSLargeWritesBugStream(sock_out);
 
@@ -3075,27 +3078,63 @@ public class HTTPConnection implements GlobalConstants, HTTPClientModuleConstant
 		{
 		    if (req.delay_entity > 0)
 		    {
-                        // wait for something on the network; check available()
-                        // roughly every 100 ms
+                // wait for something on the network; check available()
+                // roughly every 100 ms
 
-			long num_units = req.delay_entity / 100;
-			long one_unit  = req.delay_entity / num_units;
+                long num_units = req.delay_entity / 100;
+                long one_unit  = req.delay_entity / num_units;
 
-                        for (int idx=0; idx<num_units; idx++)
-                        {
-                            if (input_demux.available(null) != 0)
-                                break;
-                            try { Thread.sleep(one_unit); }
-                            catch (InterruptedException ie) { }
-                        }
+                for (int idx=0; idx<num_units; idx++)
+                {
+                    if (input_demux.available(null) != 0)
+                        break;
+                    try { Thread.sleep(one_unit); }
+                    catch (InterruptedException ie) { }
+                }
 
-                        if (input_demux.available(null) == 0)
-			    sock_out.write(req.getData()); // he's still waiting
-			else
-			    keep_alive = false;		// Uh oh!
+                if (input_demux.available(null) == 0)
+                {
+                    // 2003-March-26: Joachim Feise (dav-exp@ics.uci.edu) changed
+                    // for progress reporting
+                    byte[] data = req.getData();
+                    int len = sock.getSendBufferSize();
+                    int writtenBytes = 0;
+                    if( writtenBytes+len > data.length )
+                        len = data.length;
+                    while( writtenBytes < data.length )
+                    {
+                        sock_out.write(data, writtenBytes, len);
+                        writtenBytes += len;
+                        ProgressObserver.getInstance().fireProgressEvent(writtenBytes,data.length,req.getMethod());
+                        if( writtenBytes+len > data.length )
+                            len = data.length - writtenBytes;
+                    }
+                    ProgressObserver.getInstance().fireProgressEvent(writtenBytes,writtenBytes,req.getMethod());
+                    // sock_out.write(req.getData()); // he's still waiting
+                }
+                else
+                    keep_alive = false;		// Uh oh!
 		    }
 		    else
-			sock_out.write(req.getData());
+            {
+                // 2003-March-26: Joachim Feise (dav-exp@ics.uci.edu) changed
+                // for progress reporting
+                byte[] data = req.getData();
+                int len = sock.getSendBufferSize();
+                int writtenBytes = 0;
+                if( writtenBytes+len > data.length )
+                    len = data.length;
+                while( writtenBytes < data.length )
+                {
+                    sock_out.write( data, writtenBytes, len );
+                    writtenBytes += len;
+                    ProgressObserver.getInstance().fireProgressEvent( writtenBytes, data.length, req.getMethod());
+                    if( writtenBytes+len > data.length )
+                        len = data.length - writtenBytes;
+                }
+                ProgressObserver.getInstance().fireProgressEvent( writtenBytes, writtenBytes, req.getMethod());
+                // sock_out.write(req.getData());
+            }
             // 2001-May-23: Joachim Feise (dav-dev@ics.uci.edu)  added logging
             if(logging)
             {
@@ -3112,11 +3151,13 @@ public class HTTPConnection implements GlobalConstants, HTTPClientModuleConstant
                     }
                 }
             }
-
 		}
 
 		if (req.getStream() != null)
+        {
+            req.getStream().setLogging( logging, logFilename );
 		    req.getStream().goAhead(req, sock_out, 0);
+        }
 		else
 		    sock_out.flush();
 

@@ -35,6 +35,7 @@ package HTTPClient;
 import java.io.OutputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
+import java.io.FileOutputStream;
 
 /**
  * This class provides an output stream for requests. The stream must first
@@ -123,6 +124,13 @@ public class HttpOutputStream extends OutputStream
 
     /** just ignore all the data if told to do so */
     private boolean ignore = false;
+
+    /**
+     * Joachim Feise (jfeise@ics.uci.edu)
+     *Logging extension
+     */
+    private static boolean logging = false;
+    private static String  logFilename = null;
 
 
     // Constructors
@@ -340,6 +348,26 @@ public class HttpOutputStream extends OutputStream
 	}
 
 	rcvd += len;
+
+    // 2003-March-26: Joachim Feise (dav-dev@ics.uci.edu)  added progress reporting
+    ProgressObserver.getInstance().fireProgressEvent( rcvd, length, req.getMethod());
+
+    // 2003-March-26: Joachim Feise (dav-dev@ics.uci.edu)  added logging
+    if(logging)
+    {
+        try
+        {
+            FileOutputStream fos = new FileOutputStream( logFilename, true );
+            if (length != -1)
+                fos.write(buf, off, len);
+            else
+                fos.write(Codecs.chunkedEncode(buf, off, len, null, false));
+            fos.close();
+        }
+        catch( IOException e )
+        {
+        }
+    }
     }
 
 
@@ -453,4 +481,13 @@ public class HttpOutputStream extends OutputStream
     {
 	return getClass().getName() + "[length=" + length + "]";
     }
+
+
+    // 2001-May-23: jfeise@ics.uci.edu  added logging
+    public void setLogging( boolean logging, String filename )
+    {
+        HttpOutputStream.logging = logging;
+        HttpOutputStream.logFilename = filename;
+    }
+
 }

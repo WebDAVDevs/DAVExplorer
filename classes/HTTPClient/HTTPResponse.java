@@ -34,7 +34,6 @@ package HTTPClient;
 
 import java.io.IOException;
 import java.io.InterruptedIOException;
-// 2001-May-23: jfeise@ics.uci.edu  added for logging
 import java.io.FileOutputStream;
 import java.io.InputStream;
 import java.io.ByteArrayInputStream;
@@ -926,7 +925,11 @@ public class HTTPResponse implements HTTPClientModuleConstants, GlobalConstants
 		{
 		    off  += rcvd;
 		    rcvd  = inp.read(Data, off, ContentLength-off);
+            // 2003-March-26: Joachim Feise (dav-exp@ics.uci.edu) changed
+            // for progress reporting
+            ProgressObserver.getInstance().fireProgressEvent(off,ContentLength,request.getMethod());
 		} while (rcvd != -1  &&  off+rcvd < ContentLength);
+        ProgressObserver.getInstance().fireProgressEvent(off,off,request.getMethod());
 
                 /* Don't do this!
 		 * If we do, then getData() won't work after a getInputStream()
@@ -950,7 +953,11 @@ public class HTTPResponse implements HTTPClientModuleConstants, GlobalConstants
 		{
 		    off  += rcvd;
 		    Data  = Util.resizeArray(Data, off+inc);
+            // 2003-March-26: Joachim Feise (dav-exp@ics.uci.edu) changed
+            // for progress reporting
+            ProgressObserver.getInstance().fireProgressEvent( off, -1, request.getMethod() );
 		} while ((rcvd = inp.read(Data, off, inc)) != -1);
+        ProgressObserver.getInstance().fireProgressEvent( off, off, request.getMethod() );
 
 		Data = Util.resizeArray(Data, off);
 	    }

@@ -62,6 +62,9 @@
  * @date        17 March 2003
  * Changes:     Integrated Brian Johnson's applet changes.
  *              Added better error reporting.
+ * @author      Joachim Feise (dav-exp@ics.uci.edu)
+ * @date        31 March 2003
+ * Changes:     Integrated Thoralf Rickert's progress bar changes.
  */
 
 
@@ -81,6 +84,7 @@ import javax.swing.event.EventListenerList;
 import java.awt.GridBagLayout;
 import java.awt.GridBagConstraints;
 import java.awt.FileDialog;
+import java.awt.BorderLayout;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.WindowAdapter;
@@ -192,7 +196,12 @@ public class Main extends JFrame
         gridbag.setConstraints(splitPane,c);
         p.add(splitPane);
 
-        getContentPane().add(p);
+        // 2003-March-26: Joachim Feise (dav-exp@ics.uci.edu) changed
+        // for progress reporting
+        getContentPane().setLayout( new BorderLayout() );
+        getContentPane().add( p,BorderLayout.CENTER );
+        getContentPane().add( new ProgressBar(),BorderLayout.SOUTH );
+
         treeView.initTree();
         pack();
 
