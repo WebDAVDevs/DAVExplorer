@@ -746,8 +746,13 @@ public class Parser
             // Joachim Feise (jfeise@ics.uci.edu) 2001 July 25:
             // Allowing digits in tag names to fix an interoperability problem
             // with Microsoft's SharePoint DAV Server
-            //startname = (chartype[lookahead] & (FLETTER | FSTARTNAME)) != 0;
-            startname = (chartype[lookahead] & (FLETTER | FDIGIT | FSTARTNAME)) != 0;
+            // Update 2001 October 7:
+            // use a commandline option to enable the workaround
+            String sharepoint = System.getProperty( "SharePoint", "false" );
+            if( sharepoint.equalsIgnoreCase("true") )
+                startname = (chartype[lookahead] & (FLETTER | FDIGIT | FSTARTNAME)) != 0;
+            else
+                startname = (chartype[lookahead] & (FLETTER | FSTARTNAME)) != 0;
         }
         else
         {
