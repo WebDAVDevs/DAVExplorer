@@ -1069,7 +1069,6 @@ public class WebDAVResponseInterpreter
                         if( text.nextToken().equals( HTTPString ) )
                         {
                             int value = Integer.parseInt( text.nextToken() );
-System.out.println(value);
                             return value;
                         }
                     }
