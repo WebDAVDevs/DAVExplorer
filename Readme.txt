@@ -6,6 +6,8 @@ Changes for version 0.70:
   java -jar -Dssl=true DAVExplorer.jar
 - Compatibility with JDK 1.3 was confirmed. The DAVExplorer.jar file is now
   created with JDK 1.3.0
+- Interoperability problem (another SiblingEnumeration bug in the parser) with IIS 5.0
+  fixed (thanks to Ron Gutfinger for alerting us to this problem).
 
 Changes for version 0.62:
 - Improved recovery after server timeout
