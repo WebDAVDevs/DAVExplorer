@@ -214,12 +214,12 @@ public class WebDAVRequestGenerator implements Runnable
         else if( isColl )
             newRes = newRes + "/";
 
-        StringBufferInputStream sbis = new StringBufferInputStream( newRes );
-        EscapeInputStream eis = new EscapeInputStream( sbis, false );
-        DataInputStream dis = new DataInputStream( eis );
+        StringReader sr = new StringReader( newRes+"\n" );
+        EscapeReader er = new EscapeReader( sr, false );
+        BufferedReader br = new BufferedReader( er );
         try
         {
-            StrippedResource = dis.readLine();
+            StrippedResource = br.readLine();
         }
         catch( IOException e )
         {
@@ -278,7 +278,6 @@ public class WebDAVRequestGenerator implements Runnable
 
     public synchronized void DiscoverLock(String method)
     {
-System.out.println("DiscoverLock, Extra=" + method);
         Extra = new String(method);
         String[] prop = new String[1];
         String[] schema = new String[1];
@@ -303,7 +302,6 @@ System.out.println("DiscoverLock, Extra=" + method);
 
     public synchronized void GeneratePropFind(String FullPath, String command, String Depth, String[] props, String[] schemas, boolean flagGetFilesBelow )
     {
-System.out.println("GeneratePropFind");
         Headers = null;
         Body = null;
 
@@ -861,8 +859,6 @@ System.out.println("GeneratePropFind");
 
     public synchronized void GenerateRename( String Dest, String dir )
     {
-System.out.println("GenerateRename: Dest=" + Dest + ", dir=" + dir);
-
         Extra = new String(tableResource);
 
         DiscoverLock("rename:" + Dest + ":" + dir );
@@ -871,7 +867,6 @@ System.out.println("GenerateRename: Dest=" + Dest + ", dir=" + dir);
 
     public synchronized void GenerateMove(String Dest, String dir, boolean Overwrite, boolean KeepAlive, String lockToken)
     {
-System.out.println("GenerateMove");
         Headers = null;
         Body = null;
         Extra = Dest;
@@ -1165,7 +1160,7 @@ System.out.println("GenerateMove");
     {
         String content = "application/octet-stream";
 
-        int pos = file.indexOf( "." );
+        int pos = file.lastIndexOf( "." );
         if( pos >= 0 )
         {
             String extension = file.substring( pos+1 ).toLowerCase();

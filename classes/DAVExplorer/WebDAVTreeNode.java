@@ -46,6 +46,7 @@ package DAVExplorer;
 import javax.swing.tree.DefaultMutableTreeNode;
 import java.util.*;
 import java.io.*;
+import java.text.DateFormat;
 
 import com.ms.xml.om.*;
 import com.ms.xml.parser.*;
@@ -157,7 +158,6 @@ public class WebDAVTreeNode extends DefaultMutableTreeNode
         }
         catch (Exception inEx)
         {
-System.out.println("EXCEPTION:loadRemote, byte_array empty");
 	    System.out.println(inEx);
             //dataNode = null;
             //hasLoaded = false;
@@ -394,7 +394,7 @@ System.out.println("EXCEPTION:loadRemote, byte_array empty");
                                             "Local File",
                                             "",
                                             aFile.length(),
-                                            newDate.toLocaleString(),null);
+                                            DateFormat.getDateTimeInstance().format( newDate ), null);
 
                     if (isDir)
                     {
@@ -413,8 +413,8 @@ System.out.println("EXCEPTION:loadRemote, byte_array empty");
                 System.out.println(e);
             }
             Date fileDate = new Date(f.lastModified());
-            dataNode = new DataNode(true,false,null, name,"Local File","",
-                                                f.length(),fileDate.toLocaleString(), nodesChildren);
+            dataNode = new DataNode(true, false, null, name, "Local File", "",
+                                    f.length(), DateFormat.getDateTimeInstance().format( fileDate ), nodesChildren);
         }
         else {
             hasLoaded = false;

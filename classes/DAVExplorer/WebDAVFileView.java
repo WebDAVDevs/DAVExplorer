@@ -212,7 +212,6 @@ public class WebDAVFileView implements ViewSelectionListener
 
             public void setValueAt(Object value, int row, int column)
             {
-System.out.println("setValueAt, value =" + value + ", row=" + row + " col=" + column);
                 if (column == 2)
                 {
                     String val = null;
@@ -223,10 +222,6 @@ System.out.println("setValueAt, value =" + value + ", row=" + row + " col=" + co
                     catch (Exception e)
                     {
                     }
-System.out.println("val =" + val + ", row - 1=" + row  + " col=" + 2) ;
-System.out.println(" another value=" + (String) table.getValueAt(row,2));
-System.out.println(" selectedResource=" + selectedResource + ", selected Row=" + selectedRow);
-System.out.println("parentPath=" + parentPath);
 
                     if ( val != null)
                     {
@@ -239,7 +234,6 @@ System.out.println("parentPath=" + parentPath);
                         }
                         }
 			
-System.out.println("parentPath=" + parentPath);
 
                         if (!parentPath.startsWith(WebDAVPrefix))
                             return;
@@ -259,7 +253,6 @@ System.out.println("parentPath=" + parentPath);
                         for (int i=0; i<ls.size();i++)
                         {
                             ActionListener l = (ActionListener) ls.elementAt(i);
-System.out.println("listner =" + l + ", event=" + e);
                             l.actionPerformed(e);
                         }
                         return;
@@ -278,7 +271,7 @@ System.out.println("listner =" + l + ", event=" + e);
 
         sorter = new TableSorter(dataModel);
         table = new JTable(sorter);
-        scrPane = JTable.createScrollPaneForTable(table);
+        scrPane = new JScrollPane( table );
         scrPane.setPreferredSize(new Dimension(750,400));
 
         scrPane.setBorder(new BevelBorder(BevelBorder.LOWERED));
@@ -315,7 +308,6 @@ System.out.println("listner =" + l + ", event=" + e);
     // and files in the Selected Node.
     public void selectionChanged(ViewSelectionEvent e)
     {
-System.out.println("selectionChanged");
         table.clearSelection();
         clearTable();
 
@@ -326,7 +318,6 @@ System.out.println("selectionChanged");
 	//for ( int j= 0; j < userObject.length; j++){
 	//    parentPath = userObject[j] + "/";
 	//}
-//System.out.println("selectionChanged, parentPath=" + parentPath );
 
         if (table.getRowCount() != 0)
         {
@@ -363,7 +354,6 @@ System.out.println("selectionChanged");
 
         if (sub == null)
         {
-//System.out.println(" No  resource");
         }
         else
         {
@@ -695,7 +685,7 @@ System.out.println("selectionChanged");
         resizeCol.setCellRenderer(ren);
 
         resizeCol = table.getColumn(colNames[6]);
-        resizeCol.setMinWidth(150);
+        resizeCol.setMinWidth(210);
         ren = new DefaultTableCellRenderer();
         ren.setHorizontalAlignment(JLabel.CENTER);
         resizeCol.setCellRenderer(ren);

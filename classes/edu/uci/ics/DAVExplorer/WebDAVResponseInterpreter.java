@@ -131,24 +131,18 @@ public class WebDAVResponseInterpreter
         HostName = e.getHost();
         Port = e.getPort();
 
-
-System.out.println(" handleResponse, method =" + Method + ", Extra=" + Extra);
-        ByteArrayInputStream ar = new ByteArrayInputStream(e.getResource().getBytes());
-        EscapeInputStream iStream = new EscapeInputStream( ar, true );
-        DataInputStream dis = new DataInputStream( iStream );
-System.out.println("before try readLine");
+        StringReader sr = new StringReader( e.getResource() + "\n" );
+        EscapeReader er = new EscapeReader( sr, true );
+        BufferedReader br = new BufferedReader( er );
         try{
-            Resource = dis.readLine();
-System.out.println("readLine, Resource =" + Resource);
+            Resource = br.readLine();
         } catch(Exception exc) {
-System.out.println("EXCEPTION readLine");
             System.out.println(exc);
         }
         Node = e.getNode();
 
         try
         {
-System.out.println("Status=" + res.getStatusCode());
             if (res.getStatusCode() >= 300)
             {
                 resetInProgress();
@@ -257,7 +251,6 @@ System.out.println("Status=" + res.getStatusCode());
 
     public void parsePropFind()
     {
-System.out.println("parsePropFind");
         byte[] body = null;
         Document xml_doc = null;
 
@@ -419,7 +412,6 @@ System.out.println("parsePropFind");
             }
             else if (Extra.startsWith("rename:"))
             {
-System.out.println("parsePropFind, extra = rename");
                 int pos = Extra.indexOf(":");
                 String tmp = Extra.substring(pos + 1);
                 pos = tmp.indexOf( ":" );
@@ -433,7 +425,6 @@ System.out.println("parsePropFind, extra = rename");
                 else
                     dest = tmp;
 
-System.out.println("parsePropFind, dest=" + dest + ", dir =" + dir);
         clearStream();
         //Old
         generator.setNode(Node);
