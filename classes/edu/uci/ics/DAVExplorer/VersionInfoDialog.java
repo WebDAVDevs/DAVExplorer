@@ -202,7 +202,7 @@ public class VersionInfoDialog extends JDialog
                 rowObj[1] = ((DeltaVDataNode)nodes.elementAt(i)).getCreatorDisplayName();
                 rowObj[2] = ((DeltaVDataNode)nodes.elementAt(i)).getDate();
                 rowObj[3] = new Long( ((DeltaVDataNode)nodes.elementAt(i)).getSize() );
-                rowObj[4] = new Boolean( ((DeltaVDataNode)nodes.elementAt(i)).getCheckedIn() );
+                rowObj[4] = new Boolean( !((DeltaVDataNode)nodes.elementAt(i)).getCheckedIn().equals("") );
                 rowObj[5] = ((DeltaVDataNode)nodes.elementAt(i)).getComment();
                 rowObj[6] = ((DeltaVDataNode)nodes.elementAt(i)).getHref();     // hidden
                 addRow(rowObj);
