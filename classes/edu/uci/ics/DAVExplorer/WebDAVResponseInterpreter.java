@@ -350,10 +350,10 @@ public class WebDAVResponseInterpreter
                 fireInsertionEvent(HostName + Resource);
             }
         }
-        else if (Extra.equals("lock") || Extra.equals("unlock")
-       || Extra.equals("delete") || Extra.startsWith("rename:")
-       || Extra.equals("display") || Extra.equals("commit")
-       || Extra.startsWith("rename2:") || Extra.startsWith("delete2:") )
+        else if( Extra.equals("lock") || Extra.equals("unlock")
+                 || Extra.equals("delete") || Extra.startsWith("rename:")
+                 || Extra.equals("display") || Extra.equals("commit")
+                 || Extra.startsWith("rename2:") || Extra.startsWith("delete2:") )
         {
             // get lock information out of XML tree
             String lockToken = null;
