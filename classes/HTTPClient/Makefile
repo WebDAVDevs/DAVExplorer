@@ -1,8 +1,8 @@
 
 ### general JDK definitions
 
-JC	 = $(JAVA_HOME)/bin/javac
-JDOC	 = $(JAVA_HOME)/bin/javadoc
+JC	 = javac
+JDOC	 = javadoc
 #JFLAGS   = -O -g -deprecation
 JFLAGS   = -O
 #CLASSP   = -classpath "$(JAVA_HOME)/lib/classes.zip:.."
