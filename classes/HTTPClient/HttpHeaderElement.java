@@ -1,8 +1,8 @@
 /*
- * @(#)HttpHeaderElement.java				0.3 30/01/1998
+ * @(#)HttpHeaderElement.java				0.3-1 10/02/1999
  *
  *  This file is part of the HTTPClient package
- *  Copyright (C) 1996-1998  Ronald Tschalaer
+ *  Copyright (C) 1996-1999  Ronald Tschalär
  *
  *  This library is free software; you can redistribute it and/or
  *  modify it under the terms of the GNU Library General Public
@@ -23,7 +23,6 @@
  *  I may be contacted at:
  *
  *  ronald@innovation.ch
- *  Ronald.Tschalaer@psi.ch
  *
  */
 
@@ -37,8 +36,8 @@ package HTTPClient;
  * @see Util#parseHeader(java.lang.String)
  * @see Util#getElement(java.util.Vector, java.lang.String)
  * @see Util#assembleHeader(java.util.Vector)
- * @version	0.3  30/01/1998
- * @author	Ronald Tschal&auml;r
+ * @version	0.3-1  10/02/1999
+ * @author	Ronald Tschalär
  */
 
 public class HttpHeaderElement
@@ -80,7 +79,10 @@ public class HttpHeaderElement
 	this.name  = name;
 	this.value = value;
 	if (params != null)
-	    parameters = params;
+	{
+	    parameters = new NVPair[params.length];
+	    System.arraycopy(params, 0, parameters, 0, params.length);
+	}
 	else
 	    parameters = new NVPair[0];
     }
@@ -141,27 +143,59 @@ public class HttpHeaderElement
      */
     public String toString()
     {
-	StringBuffer buf = new StringBuffer(name);
+	StringBuffer buf = new StringBuffer();
+	appendTo(buf);
+	return buf.toString();
+    }
+
+
+    /**
+     * Append this header element to the given buffer. This is basically a
+     * more efficient version of <code>toString()</code> for assembling
+     * multiple elements.
+     *
+     * @param buf the StringBuffer to append this header to
+     * @see #toString()
+     */
+    public void appendTo(StringBuffer buf)
+    {
+	buf.append(name);
+
 	if (value != null)
 	{
-	    buf.append("=\"");
-	    buf.append(Util.quoteString(value, "\\\""));
-	    buf.append('"');
+	    if (Util.needsQuoting(value))
+	    {
+		buf.append("=\"");
+		buf.append(Util.quoteString(value, "\\\""));
+		buf.append('"');
+	    }
+	    else
+	    {
+		buf.append('=');
+		buf.append(value);
+	    }
 	}
 
 	for (int idx=0; idx<parameters.length; idx++)
 	{
-	    buf.append("; ");
+	    buf.append(";");
 	    buf.append(parameters[idx].getName());
-	    if (parameters[idx].getValue() != null)
+	    String pval = parameters[idx].getValue();
+	    if (pval != null)
 	    {
-		buf.append("=\"");
-		buf.append(Util.quoteString(parameters[idx].getValue(), "\\\""));
-		buf.append('"');
+		if (Util.needsQuoting(pval))
+		{
+		    buf.append("=\"");
+		    buf.append(Util.quoteString(pval, "\\\""));
+		    buf.append('"');
+		}
+		else
+		{
+		    buf.append('=');
+		    buf.append(pval);
+		}
 	    }
 	}
-
-	return buf.toString();
     }
 }
 

@@ -1,8 +1,8 @@
 /*
- * @(#)SocksClient.java					0.3 30/01/1998
+ * @(#)SocksClient.java					0.3-1 10/02/1999
  *
  *  This file is part of the HTTPClient package
- *  Copyright (C) 1996-1998  Ronald Tschalaer
+ *  Copyright (C) 1996-1999  Ronald Tschalär
  *
  *  This library is free software; you can redistribute it and/or
  *  modify it under the terms of the GNU Library General Public
@@ -23,7 +23,6 @@
  *  I may be contacted at:
  *
  *  ronald@innovation.ch
- *  Ronald.Tschalaer@psi.ch
  *
  */
 
@@ -39,15 +38,18 @@ import java.net.*;
  * <P>Usage is as follows: somewhere in the initialization code (and before
  * the first socket creation call) create a SocksClient instance. Then replace
  * each socket creation call
+ *
  *     <code>sock = new Socket(host, port);</code>
- * by
+ *
+ * with
+ *
  *     <code>sock = socks_client.getSocket(host, port);</code>
  *
  * (where <var>socks_client</var> is the above created SocksClient instance).
  * That's all.
  *
- * @version	0.3  30/01/1998
- * @author	Ronald Tschal&auml;r
+ * @version	0.3-1  10/02/1999
+ * @author	Ronald Tschalär
  */
 
 class SocksClient implements GlobalConstants
@@ -124,7 +126,7 @@ class SocksClient implements GlobalConstants
      *
      * @param host  the host you wish to connect to
      * @param port  the port you wish to connect to
-     * @return a socket with a connection via socks to the desired host/port
+     * @return a Socket with a connection via socks to the desired host/port
      * @exception IOException if any socket operation fails
      */
     Socket getSocket(String host, int port)  throws IOException
@@ -137,23 +139,10 @@ class SocksClient implements GlobalConstants
 		System.err.println("Socks: contacting server on " +
 				    socks_host + ":" + socks_port);
 
+
 	    // create socket and streams
 
-	    InetAddress[] addr_list = InetAddress.getAllByName(socks_host);
-	    for (int idx=0; idx<addr_list.length; idx++)
-	    {
-		try
-		    { sock = new Socket(addr_list[idx], socks_port); }
-		catch (SocketException se)
-		{
-		    if (idx < addr_list.length-1)
-			continue;	// try next IP address
-		    else
-			throw se;	// none of them worked
-		}
-		break;
-	    }
-
+	    sock = connect(socks_host, socks_port);
 	    InputStream  inp = sock.getInputStream();
 	    OutputStream out = sock.getOutputStream();
 
@@ -175,14 +164,14 @@ class SocksClient implements GlobalConstants
 			v4ProtExchg(inp, out, host, port);
 			socks_version = 4;
 		    }
-		    catch (SocksException ioe)
+		    catch (SocksException se)
 		    {
 			if (DebugSocks)
 			    System.err.println("Socks: V4 request failed: " +
-						ioe.getMessage());
+						se.getMessage());
 
 			sock.close();
-			sock = new Socket(socks_host, socks_port);
+			sock = connect(socks_host, socks_port);
 			inp = sock.getInputStream();
 			out = sock.getOutputStream();
 
@@ -214,10 +203,39 @@ class SocksClient implements GlobalConstants
 
 
     /**
-     * Does the protocol exchange for a version 4 SOCKS connection.
+     * Connect to the host/port, trying all addresses assciated with that
+     * host.
+     *
+     * @return the Socket
+     * @exception IOException if the connection could not be established
      */
+    private static final Socket connect(String host, int port)
+	    throws IOException
+    {
+	InetAddress[] addr_list = InetAddress.getAllByName(host);
+	for (int idx=0; idx<addr_list.length; idx++)
+	{
+	    try
+		{ return new Socket(addr_list[idx], port); }
+	    catch (SocketException se)
+	    {
+		if (idx < addr_list.length-1)
+		    continue;	// try next IP address
+		else
+		    throw se;	// none of them worked
+	    }
+	}
+
+	return null;	// never reached - just here to shut up the compiler
+    }
+
+
     private boolean v4A  = false;	// SOCKS version 4A
     private byte[]  user = null;
+
+    /**
+     * Does the protocol exchange for a version 4 SOCKS connection.
+     */
     private void v4ProtExchg(InputStream inp, OutputStream out, String host,
 			     int port)
 	throws SocksException, IOException

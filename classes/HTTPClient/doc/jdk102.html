@@ -11,14 +11,14 @@
 
 <H1>Running under JDK 1.0.2 (or equivalent)</H1>
 
-<P>If you wish to run the client under JDK 1.0.2 then you must unzip
-the <var>JDK_1_0_2_classes.zip</var> file (it is located in the
-<var>HTTPClient</var> directory). This file contains JDK 1.0.2
-compatible replacements for the <var>Util</var>,
-<var>HTTPResponse</var>, and <var>HttpURLConnection</var> classes and
-for the popup boxes (both sources and class files are provided).
-All the other classes will run fine as they are under JDK 1.0.2.
-However, under JDK 1.0.2 the functionality is restricted as follows:
+<P>If you wish to run the client under JDK 1.0.2 then you must copy
+the classes in the <var>alt/jdk_1.0.2/</var> subdirectory to the
+<var>HTTPClient</var> directory. This subdirectory contains JDK 1.0.2
+compatible replacements for the <var>Util</var>, <var>HTTPResponse</var>,
+<var>HttpURLConnection</var>, <var>Cookie</var>, and <var>CookieModule</var>
+classes and for the popup boxes (both sources and class files are provided).
+All the other classes will run fine as they are under JDK 1.0.2. However,
+under JDK 1.0.2 the functionality is restricted as follows:
 
 <UL>
 <P><LI>The <A HREF="api/HTTPClient.HTTPConnection.html#setTimeout">timeout</A>
@@ -33,6 +33,8 @@ However, under JDK 1.0.2 the functionality is restricted as follows:
 <P><LI>The TransferEncodingModule and ContentEncodingModule will be
     disabled. They both use the GZIPInputStream and DeflateInputStream
     which are only avaialble in JDK 1.1 or later.
+<P><LI>Cookies cannot be saved and restored between invocations (JDK 1.0.2
+    did not have serialization).
 </UL>
 
 <P>Note also that this version of the HTTPClient won't compile under
@@ -48,7 +50,7 @@ comment these out.
 <HR>
 
 <ADDRESS>
-Ronald Tschal&auml;r / 30. January 1998 /
+Ronald Tschal&auml;r / 10. February 1999 /
 <A HREF="mailto:ronald@innovation.ch">ronald@innovation.ch</A>.
 </ADDRESS>
 

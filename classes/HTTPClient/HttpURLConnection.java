@@ -1,8 +1,8 @@
 /*
- * @(#)HttpURLConnection.java				0.3 30/01/1998
+ * @(#)HttpURLConnection.java				0.3-1 10/02/1999
  *
  *  This file is part of the HTTPClient package
- *  Copyright (C) 1996-1998  Ronald Tschalaer
+ *  Copyright (C) 1996-1999  Ronald Tschalär
  *
  *  This library is free software; you can redistribute it and/or
  *  modify it under the terms of the GNU Library General Public
@@ -23,17 +23,16 @@
  *  I may be contacted at:
  *
  *  ronald@innovation.ch
- *  Ronald.Tschalaer@psi.ch
  *
  */
 
 package HTTPClient;
 
 import java.net.URL;
-import java.net.InetAddress;
 import java.net.ProtocolException;
 import java.net.UnknownHostException;
 import java.io.IOException;
+import java.io.InterruptedIOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.io.BufferedInputStream;
@@ -52,8 +51,8 @@ import java.util.Enumeration;
  * HTTPClient by defining the property
  * <code>java.protocol.handler.pkgs=HTTPClient</code>.
  *
- * @version	0.3  30/01/1998
- * @author	Ronald Tschal&auml;r
+ * @version	0.3-1  10/02/1999
+ * @author	Ronald Tschalär
  * @since	V0.3
  */
 
@@ -84,33 +83,54 @@ public class HttpURLConnection extends java.net.HttpURLConnection
     /** the response */
     private HTTPResponse      resp;
 
-    /** is the redirection module activated? */
-    private static boolean    doRedir = true;
+    /** is the redirection module activated for this instance? */
+    private boolean           do_redir;
+
+    /** the RedirectionModule class */
+    private static Class      redir_mod;
 
     /** the output stream used for POST and PUT */
     private OutputStream      output_stream;
 
+    /** HotJava hacks */
+    private static boolean    in_hotjava = false;
+
 
     static
     {
-	// This is a hack for HotJava: and it does not use getURL() to
-	// determine the final URL after redirecting - Remove when bug
-	// fixed.
+	// This is a hack for HotJava
 	try
 	{
-	    String browser = System.getProperties().getProperty("browser");
+	    String browser = System.getProperty("browser");
 	    if (browser != null  &&  browser.equals("HotJava"))
 	    {
 		setFollowRedirects(false);
+		in_hotjava = true;
 	    }
 	}
 	catch (SecurityException se)
 	    { }
 
+	// The default allowUserAction in java.net.URLConnection is
+	// false.
+	try
+	{
+	    if (Boolean.getBoolean("HTTPClient.HttpURLConnection.AllowUI"))
+		setDefaultAllowUserInteraction(true);
+	}
+	catch (SecurityException se)
+	    { }
+
+	// get the RedirectionModule class
+	try
+	    { redir_mod = Class.forName("HTTPClient.RedirectionModule"); }
+	catch (ClassNotFoundException cnfe)
+	    { throw new NoClassDefFoundError(cnfe.getMessage()); }
+
 	// Set the User-Agent if the http.agent property is set
 	try
 	{
-	    String agent = System.getProperties().getProperty("http.agent");
+	    String agent = System.getProperty("http.agent");
 	    if (agent != null)
 		setDefaultRequestProperty("User-Agent", agent);
 	}
@@ -121,6 +141,10 @@ public class HttpURLConnection extends java.net.HttpURLConnection
 
     // Constructors
 
+    private static String non_proxy_hosts = "";
+    private static String proxy_host = "";
+    private static int    proxy_port = -1;
+
     /**
      * Construct a connection to the specified url. A cache of
      * HTTPConnections is used to maximize the reuse of these across
@@ -129,19 +153,53 @@ public class HttpURLConnection extends java.net.HttpURLConnection
      * <BR>The default method is "GET".
      *
      * @param url the url of the request
-     * @exception UnknownHostException     if the host name translation failed
      * @exception ProtocolNotSuppException if the protocol is not supported
      */
     public HttpURLConnection(URL url)
-	    throws UnknownHostException, ProtocolNotSuppException
+	    throws ProtocolNotSuppException, IOException
     {
 	super(url);
 
+	// first read proxy properties and set
+        try
+        {
+            String hosts = System.getProperty("http.nonProxyHosts", "");
+	    if (!hosts.equalsIgnoreCase(non_proxy_hosts))
+	    {
+		connections.clear();
+		non_proxy_hosts = hosts;
+		String[] list = Util.splitProperty(hosts);
+		for (int idx=0; idx<list.length; idx++)
+		    HTTPConnection.dontProxyFor(list[idx]);
+	    }
+        }
+        catch (ParseException pe)
+	    { throw new IOException(pe.toString()); }
+        catch (SecurityException se)
+            { }
+
+	try
+	{
+	    String host = System.getProperty("http.proxyHost", "");
+	    int port = Integer.getInteger("http.proxyPort", -1).intValue();
+	    if (!host.equalsIgnoreCase(proxy_host)  ||  port != proxy_port)
+	    {
+		connections.clear();
+		proxy_host = host;
+		proxy_port = port;
+		HTTPConnection.setProxyServer(host, port);
+	    }
+	}
+	catch (SecurityException se)
+	    { }
+
+	// now setup stuff
 	con           = getConnection(url);
 	method        = "GET";
 	method_set    = false;
 	resource      = url.getFile();
 	headers       = default_headers;
+	do_redir      = getFollowRedirects();
 	output_stream = null;
     }
 
@@ -153,11 +211,10 @@ public class HttpURLConnection extends java.net.HttpURLConnection
      *
      * @param url the url
      * @return an HTTPConnection
-     * @exception UnknownHostException     if the host name translation failed
      * @exception ProtocolNotSuppException if the protocol is not supported
      */
     private HTTPConnection getConnection(URL url)
-	    throws UnknownHostException,ProtocolNotSuppException
+	    throws ProtocolNotSuppException
     {
 	// try the cache, using the host name
 
@@ -169,27 +226,10 @@ public class HttpURLConnection extends java.net.HttpURLConnection
 	if (con != null)  return con;
 
 
-	// try the cache, using the ip address(es)
-
-	InetAddress[] addr = InetAddress.getAllByName(url.getHost());
-	String[]      pap  = new String[addr.length];
-	for (int idx=0; idx<addr.length; idx++)
-	{
-	    pap[idx] = url.getProtocol() + ":" + addr[idx].getHostAddress() +
-			":" + ((url.getPort() != -1) ? url.getPort() :
-					Util.defaultPort(url.getProtocol()));
-
-	    con = (HTTPConnection) connections.get(pap[idx]);
-	    if (con != null)  return con;
-	}
-
-
 	// Not in cache, so create new one and cache it
 
 	con = new HTTPConnection(url);
 	connections.put(php, con);
-	for (int idx=0; idx<pap.length; idx++)
-	    connections.put(pap[idx], con);
 
 	return con;
     }
@@ -210,8 +250,8 @@ public class HttpURLConnection extends java.net.HttpURLConnection
 	    throw new ProtocolException("Already connected!");
 
 	if (DebugURLC)
-	    System.err.println("URLC:  (" + url + ") Setting request method: "
-				+ method);
+	    System.err.println("URLC:  (" + url + ") Setting request method: " +
+			       method);
 
 	this.method = method.trim().toUpperCase();
 	method_set  = true;
@@ -239,7 +279,16 @@ public class HttpURLConnection extends java.net.HttpURLConnection
 	if (!connected)  connect();
 
 	try
-	    { return resp.getStatusCode(); }
+	{
+	    if (in_hotjava  &&  resp.getStatusCode() >= 300)
+	    {
+		try
+		    { resp.getData(); }	// force response stream to be read
+		catch (InterruptedIOException iioe)
+		    { disconnect(); }
+	    }
+	    return resp.getStatusCode();
+	}
 	catch (ModuleException me)
 	    { throw new IOException(me.toString()); }
     }
@@ -323,50 +372,83 @@ public class HttpURLConnection extends java.net.HttpURLConnection
     }
 
 
+    private String[] hdr_keys, hdr_values;
+
     /**
      * Gets header name of the n-th header. Calls connect() if not connected.
+     * The name of the 0-th header is <var>null</var>, even though it the
+     * 0-th header has a value.
      *
      * @param n which header to return.
      * @return the header name, or null if not that many headers.
      */
     public String getHeaderFieldKey(int n)
     {
-	Enumeration enum;
+	if (hdr_keys == null)
+	    fill_hdr_arrays();
 
-	try
-	{
-	    if (!connected)  connect();
-	    enum = resp.listHeaders();
-	}
-	catch (Exception e)
-	    { return null; }
-
-	while (n-- > 0  &&  enum.hasMoreElements())
-	    enum.nextElement();
-
-	if (!enum.hasMoreElements())
+	if (n >= 0  &&  n < hdr_keys.length)
+	    return hdr_keys[n];
+	else
 	    return null;
-
-	return (String) enum.nextElement();
     }
 
 
     /**
      * Gets header value of the n-th header. Calls connect() if not connected.
+     * The value of 0-th header is the Status-Line (e.g. "HTTP/1.1 200 Ok").
      *
      * @param n which header to return.
      * @return the header value, or null if not that many headers.
      */
     public String getHeaderField(int n)
     {
-	String name = getHeaderFieldKey(n);
-	if (name == null)
-	    return null;
+	if (hdr_values == null)
+	    fill_hdr_arrays();
 
+	if (n >= 0  &&  n < hdr_values.length)
+	    return hdr_values[n];
+	else
+	    return null;
+    }
+
+
+    /**
+     * Cache the list of headers.
+     */
+    private void fill_hdr_arrays()
+    {
 	try
-	    { return resp.getHeader(name); }
+	{
+	    if (!connected)  connect();
+
+	    // count number of headers
+	    int num = 1;
+	    Enumeration enum = resp.listHeaders();
+	    while (enum.hasMoreElements())
+	    {
+		num++;
+		enum.nextElement();
+	    }
+
+	    // allocate arrays
+	    hdr_keys   = new String[num];
+	    hdr_values = new String[num];
+
+	    // fill arrays
+	    enum = resp.listHeaders();
+	    for (int idx=1; idx<num; idx++)
+	    {
+		hdr_keys[idx]   = (String) enum.nextElement();
+		hdr_values[idx] = resp.getHeader(hdr_keys[idx]);
+	    }
+
+	    // the 0'th field is special
+	    hdr_values[0] = resp.getVersion() + " " + resp.getStatusCode() +
+			    " " + resp.getReasonLine();
+	}
 	catch (Exception e)
-	    { return null; }
+	    { hdr_keys = hdr_values = new String[0]; }
     }
 
 
@@ -405,6 +487,32 @@ public class HttpURLConnection extends java.net.HttpURLConnection
 	    { throw new IOException(e.toString()); }
 
 	return stream;
+    }
+
+
+    /**
+     * Returns the error stream if the connection failed
+     * but the server sent useful data nonetheless.
+     *
+     * <P>This method will not cause a connection to be initiated.
+     *
+     * @return an InputStream, or null if either the connection hasn't
+     *         been established yet or no error occured
+     * @see java.net.HttpURLConnection#getErrorStream()
+     * @since V0.3-1
+     */
+    public InputStream getErrorStream()
+    {
+	try
+	{
+	    if (!doInput  ||  !connected  ||  resp.getStatusCode() < 300  ||
+		resp.getHeaderAsInt("Content-length") <= 0)
+		return null;
+
+	    return resp.getInputStream();
+	}
+	catch (Exception e)
+	    { return null; }
     }
 
 
@@ -475,7 +583,6 @@ public class HttpURLConnection extends java.net.HttpURLConnection
      */
     public URL getURL()
     {
-
 	if (connected)
 	{
 	    try
@@ -512,8 +619,8 @@ public class HttpURLConnection extends java.net.HttpURLConnection
     public void setRequestProperty(String name, String value)
     {
 	if (DebugURLC)
-	    System.err.println("URLC:  (" + url + ") Setting request property: "
-				+ name + " : " + value);
+	    System.err.println("URLC:  (" +url+ ") Setting request property: " +
+			       name + " : " + value);
 
 	int idx;
 	for (idx=0; idx<headers.length; idx++)
@@ -558,7 +665,7 @@ public class HttpURLConnection extends java.net.HttpURLConnection
     {
 	if (DebugURLC)
 	    System.err.println("URLC:  Setting default request property: " +
-				name + " : " + value);
+			       name + " : " + value);
 
 	int idx;
 	for (idx=0; idx<default_headers.length; idx++)
@@ -593,35 +700,27 @@ public class HttpURLConnection extends java.net.HttpURLConnection
 
 
     /**
-     * Enables or disables the automatic handling of redirection responses.
+     * Enables or disables the automatic handling of redirection responses
+     * for this instance only. Cannot be called after <code>connect()</code>.
      *
      * @param set enables automatic redirection handling if true.
      */
-    public static void setFollowRedirects(boolean set)
+    public void setInstanceFollowRedirects(boolean set)
     {
-	doRedir = set;
+	if (connected)
+	    throw new IllegalStateException("Already connected!");
 
-	Class redir;
-	try
-	    { redir = Class.forName("HTTPClient.RedirectionModule"); }
-	catch (ClassNotFoundException cnfe)
-	    { throw new NoClassDefFoundError(cnfe.getMessage()); }
-
-	if (doRedir)
-	    HTTPConnection.addDefaultModule(redir, 2);
-	else
-	    HTTPConnection.removeDefaultModule(redir);
+	do_redir = set;
     }
 
 
     /**
-     * Says whether redirection responses are handled automatically or not.
-     *
-     * @return true if automatic redirection handling is enabled.
+     * @return true if automatic redirection handling for this instance is
+     *              enabled.
      */
-    public static boolean getFollowRedirects()
+    public boolean getInstanceFollowRedirects()
     {
-	return doRedir;
+	return do_redir;
     }
 
 
@@ -638,20 +737,27 @@ public class HttpURLConnection extends java.net.HttpURLConnection
 
 	// useCaches TBD!!!
 
-	con.setAllowUserInteraction(allowUserInteraction);
-
-	try
+	synchronized(con)
 	{
-	    if (output_stream instanceof ByteArrayOutputStream)
-		resp = con.ExtensionMethod(method, resource,
-			((ByteArrayOutputStream) output_stream).toByteArray(),
-					 headers);
+	    con.setAllowUserInteraction(allowUserInteraction);
+	    if (do_redir)
+		con.addModule(redir_mod, 2);
 	    else
-		resp = con.ExtensionMethod(method, resource,
+		con.removeModule(redir_mod);
+
+	    try
+	    {
+		if (output_stream instanceof ByteArrayOutputStream)
+		    resp = con.ExtensionMethod(method, resource,
+			((ByteArrayOutputStream) output_stream).toByteArray(),
+					     headers);
+		else
+		    resp = con.ExtensionMethod(method, resource,
 				    (HttpOutputStream) output_stream, headers);
+	    }
+	    catch (ModuleException e)
+		{ throw new IOException(e.toString()); }
 	}
-	catch (ModuleException e)
-	    { throw new IOException(e.toString()); }
 
 	connected = true;
 
@@ -687,10 +793,12 @@ public class HttpURLConnection extends java.net.HttpURLConnection
     }
 
 
-    protected void finalize()
+    protected void finalize()  throws Throwable
     {
 	if (resp != null)
 	    resp.unsetProgressEntry();
+
+	super.finalize();
     }
 
 
@@ -701,7 +809,7 @@ public class HttpURLConnection extends java.net.HttpURLConnection
      */
     public boolean usingProxy()
     {
-	return (con.getProxyHost() != null ? true : false);
+	return (con.getProxyHost() != null);
     }
 
 

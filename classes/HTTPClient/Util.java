@@ -1,8 +1,8 @@
 /*
- * @(#)Util.java					0.3 30/01/1998
+ * @(#)Util.java					0.3-1 10/02/1999
  *
  *  This file is part of the HTTPClient package
- *  Copyright (C) 1996-1998  Ronald Tschalaer
+ *  Copyright (C) 1996-1999  Ronald Tschalär
  *
  *  This library is free software; you can redistribute it and/or
  *  modify it under the terms of the GNU Library General Public
@@ -23,7 +23,6 @@
  *  I may be contacted at:
  *
  *  ronald@innovation.ch
- *  Ronald.Tschalaer@psi.ch
  *
  */
 
@@ -37,54 +36,76 @@ import java.util.Hashtable;
 import java.util.SimpleTimeZone;
 import java.util.StringTokenizer;
 import java.text.SimpleDateFormat;
+import java.util.Locale;
 
 
 /**
  * This class holds various utility methods.
  *
- * @version	0.3  30/01/1998
- * @author	Ronald Tschal&auml;r
+ * @version	0.3-1  10/02/1999
+ * @author	Ronald Tschalär
  */
 
 public class Util
 {
-    private static BitSet TSpecial;
-    private static BitSet TokenChar;
+    private static final BitSet Separators = new BitSet(128);
+    private static final BitSet TokenChar = new BitSet(128);
+    private static final BitSet UnsafeChar = new BitSet(128);
     private static SimpleDateFormat http_format;
 
     static
     {
 	// rfc-2068 tspecial
-	TSpecial = new BitSet(256);
-	TSpecial.set('(');
-	TSpecial.set(')');
-	TSpecial.set('<');
-	TSpecial.set('>');
-	TSpecial.set('@');
-	TSpecial.set(',');
-	TSpecial.set(';');
-	TSpecial.set(':');
-	TSpecial.set('\\');
-	TSpecial.set('"');
-	TSpecial.set('/');
-	TSpecial.set('[');
-	TSpecial.set(']');
-	TSpecial.set('?');
-	TSpecial.set('=');
-	TSpecial.set('{');
-	TSpecial.set('}');
-	TSpecial.set(' ');
-	TSpecial.set('\t');
+	Separators.set('(');
+	Separators.set(')');
+	Separators.set('<');
+	Separators.set('>');
+	Separators.set('@');
+	Separators.set(',');
+	Separators.set(';');
+	Separators.set(':');
+	Separators.set('\\');
+	Separators.set('"');
+	Separators.set('/');
+	Separators.set('[');
+	Separators.set(']');
+	Separators.set('?');
+	Separators.set('=');
+	Separators.set('{');
+	Separators.set('}');
+	Separators.set(' ');
+	Separators.set('\t');
 
 	// rfc-2068 token
-	TokenChar = new BitSet(256);
-	for (int ch=32; ch <256; ch++)  TokenChar.set(ch);
-	TokenChar.clear(127);
-	TokenChar.xor(TSpecial);
+	for (int ch=32; ch<127; ch++)  TokenChar.set(ch);
+	TokenChar.xor(Separators);
+
+	// rfc-1738 unsafe characters, including CTL and SP, and excluding
+	// "#" and "%"
+	for (int ch=0; ch<32; ch++)  UnsafeChar.set(ch);
+	UnsafeChar.set(' ');
+	UnsafeChar.set('<');
+	UnsafeChar.set('>');
+	UnsafeChar.set('"');
+	UnsafeChar.set('{');
+	UnsafeChar.set('}');
+	UnsafeChar.set('|');
+	UnsafeChar.set('\\');
+	UnsafeChar.set('^');
+	UnsafeChar.set('~');
+	UnsafeChar.set('[');
+	UnsafeChar.set(']');
+	UnsafeChar.set('`');
+	UnsafeChar.set(127);
 
 	// rfc-1123 date format (restricted to GMT, as per rfc-2068)
-	http_format = new SimpleDateFormat("EEE, dd MMM yyyy HH:mm:ss 'GMT'");
+	/* This initialization has been moved to httpDate() because it
+	 * takes an awfully long time and is often not needed
+	 *
+	http_format = new SimpleDateFormat("EEE, dd MMM yyyy HH:mm:ss 'GMT'",
+					   Locale.US);
 	http_format.setTimeZone(new SimpleTimeZone(0, "GMT"));
+	*/
     }
 
 
@@ -135,6 +156,14 @@ public class Util
     final static String[] resizeArray(String[] src, int new_size)
     {
 	String tmp[] = new String[new_size];
+	System.arraycopy(src, 0, tmp, 0,
+			(src.length < new_size ? src.length : new_size));
+	return tmp;
+    }
+
+    final static boolean[] resizeArray(boolean[] src, int new_size)
+    {
+	boolean tmp[] = new boolean[new_size];
 	System.arraycopy(src, 0, tmp, 0,
 			(src.length < new_size ? src.length : new_size));
 	return tmp;
@@ -195,8 +224,15 @@ public class Util
 	Hashtable list = (Hashtable) cntxt_list.get(cntxt);
 	if (list == null)
 	{
-	    list = new Hashtable();
-	    cntxt_list.put(cntxt, list);
+	    synchronized(cntxt_list)	// only synch if necessary
+	    {
+		list = (Hashtable) cntxt_list.get(cntxt);
+		if (list == null)	// verify nobody else beat us to it
+		{
+		    list = new Hashtable();
+		    cntxt_list.put(cntxt, list);
+		}
+	    }
 	}
 
 	return list;
@@ -265,7 +301,8 @@ public class Util
      * @param str     the string in which to look for <var>search</var>.
      * @param beg     the position at which to start the search in
      *                <var>str</var>.
-     * @param end     the position at which to end the search in <var>str</var>.
+     * @param end     the position at which to end the search in <var>str</var>,
+     *                noninclusive.
      * @return the position in <var>str</var> where <var>search</var> was
      *         found, or -1 if not found.
      */
@@ -286,6 +323,7 @@ public class Util
 	{
 	    if (search[c1l] == str[beg+c1l])
 	    {
+		/* This is correct, but Visual J++ can't cope with it...
 		Comp: if (search[c1f] == str[beg+c1f])
 		{
 		    for (int idx=0; idx<search.length; idx++)
@@ -293,6 +331,22 @@ public class Util
 
 		    break Find;		// we found it
 		}
+		*  so here is the replacement: */
+		if (search[c1f] == str[beg+c1f])
+		{
+		    boolean same = true;
+
+		    for (int idx=0; idx<search.length; idx++)
+			if (search[idx] != str[beg+idx])
+			{
+				same = false;
+				break;
+			}
+
+		    if (same)
+			break Find;         // we found it
+		}
+
 		beg += d1;
 	    }
 	    else if (search[c2l] == str[beg+c2l])
@@ -696,7 +750,7 @@ public class Util
 
 	for (int idx=0; idx<len; idx++)
 	{
-	    hdr.append(pheader.elementAt(idx).toString());
+	    ((HttpHeaderElement) pheader.elementAt(idx)).appendTo(hdr);
 	    hdr.append(", ");
 	}
 	hdr.setLength(hdr.length()-2);
@@ -754,6 +808,22 @@ public class Util
 
 
     /**
+     * Does the string need to be quoted when sent in a header? I.e. does
+     * it contain non-token characters?
+     *
+     * @param str the string
+     * @return true if it needs quoting (i.e. it contains non-token chars)
+     */
+    final static boolean needsQuoting(String str)
+    {
+	int len = str.length(), pos = 0;
+
+	while (pos < len  &&  TokenChar.get(str.charAt(pos)))  pos++;
+	return (pos < len);
+    }
+
+
+    /**
      * Compares two http urls for equality. This exists because the method
      * <code>java.net.URL.sameFile()</code> is broken (an explicit port 80
      * doesn't compare equal to an implicit port, and it doesn't take
@@ -782,7 +852,7 @@ public class Util
 	    return false;
 
 	try
-	    { return unescape(url1.getFile()).equals(unescape(url2.getFile()));}
+	    { return URI.unescape(url1.getFile()).equals(URI.unescape(url2.getFile())); }
 	catch (ParseException pe)
 	    { return url1.getFile().equals(url2.getFile());}
     }
@@ -796,64 +866,7 @@ public class Util
      */
     public final static int defaultPort(String protocol)
     {
-	String prot = protocol.trim().toLowerCase();
-
-	if (prot.equals("http")  ||
-	    prot.equals("shttp")  ||
-	    prot.equals("http-ng"))
-	    return 80;
-	else if (prot.equals("https"))
-	    return 443;
-	else if (prot.equals("ftp"))
-	    return 21;
-	else if (prot.equals("telnet"))
-	    return 23;
-	else if (prot.equals("nntp"))
-	    return 119;
-	else if (prot.equals("smtp"))
-	    return 25;
-	else if (prot.equals("gopher"))
-	    return 70;
-	else if (prot.equals("wais"))
-	    return 210;
-	else if (prot.equals("whois"))
-	    return 43;
-	else if (prot.equals("prospero"))
-	    return 1525;
-	else
-	    return 0;
-    }
-
-
-    private static final String unescape(String str)  throws ParseException
-    {
-	if (str.indexOf('%') == -1)  return str;  // an optimization
-
-	char[] buf = str.toCharArray();
-	char[] res = new char[buf.length];
-
-	int didx=0;
-	for (int sidx=0; sidx<buf.length; sidx++, didx++)
-	{
-	    if (buf[sidx] == '%')
-	    {
-                try
-                {
-                    res[didx] = (char)
-                        Integer.parseInt(str.substring(sidx+1,sidx+3), 16);
-                    sidx += 2;
-                }
-                catch (NumberFormatException e)
-                {
-                    throw new ParseException(str.substring(sidx,sidx+3) +
-                                            " is an invalid code");
-                }
-	    }
-	    else
-		res[didx] = buf[sidx];
-	}
-
-	return new String(res, 0, didx);
+	return URI.defaultPort(protocol);
     }
 
 
@@ -874,8 +887,57 @@ public class Util
      */
     public final static String httpDate(Date date)
     {
+	if (http_format == null)
+	{
+	    synchronized(HTTPClient.Util.class)
+	    {
+		if (http_format == null)
+		{
+		    http_format =
+			new SimpleDateFormat("EEE, dd MMM yyyy HH:mm:ss 'GMT'",
+					     Locale.US);
+		    http_format.setTimeZone(new SimpleTimeZone(0, "GMT"));
+		}
+	    }
+	}
+
 	return http_format.format(date);
     }
+
+
+    /**
+     * Escape unsafe characters in a path.
+     *
+     * @param path the original path
+     * @return the path with all unsafe characters escaped
+     */
+    final static String escapeUnsafeChars(String path)
+    {
+	int len = path.length();
+	char[] buf = new char[3*len];
+
+	int dst = 0;
+	for (int src=0; src<len; src++)
+	{
+	    char ch = path.charAt(src);
+	    if (ch >= 128  ||  UnsafeChar.get(ch))
+	    {
+		buf[dst++] = '%';
+		buf[dst++] = hex_map[(ch & 0xf0) >>> 4];
+		buf[dst++] = hex_map[ch & 0x0f];
+	    }
+	    else
+		buf[dst++] = ch;
+	}
+
+	if (dst > len)
+	    return new String(buf, 0, dst);
+	else
+	    return path;
+    }
+
+    static final char[] hex_map =
+	    {'0','1','2','3','4','5','6','7','8','9','A','B','C','D','E','F'};
 
 
     /**
@@ -898,13 +960,14 @@ public class Util
      */
     public final static String getPath(String resource)
     {
-	int end;
-	if ((end = resource.indexOf(';')) != -1  ||	// strip params
-	    (end = resource.indexOf('?')) != -1	 ||	// or query
-	    (end = resource.indexOf('#')) != -1)	// or fragment
-	    return resource.substring(0, end);
-	else
-	    return resource;
+	int p, end = resource.length();
+	if ((p = resource.indexOf('#')) != -1)			// find fragment
+	    end = p;
+	if ((p = resource.indexOf('?')) != -1  &&  p < end)	// find query
+	    end = p;
+	if ((p = resource.indexOf(';')) != -1  &&  p < end)	// find params
+	    end = p;
+	return resource.substring(0, end);
     }
 
 
@@ -917,15 +980,19 @@ public class Util
      */
     public final static String getParams(String resource)
     {
-	int beg, end;
-	if ((beg = resource.indexOf(';')) == -1)	// find params
+	int beg, f, q;
+	if ((beg = resource.indexOf(';')) == -1)		// find params
 	    return null;
-
-	if ((end = resource.indexOf('?')) != -1	 ||	// strip query
-	    (end = resource.indexOf('#')) != -1)	// or fragment
-	    return resource.substring(beg+1, end);
-	else
+	if ((f = resource.indexOf('#')) != -1  &&  f < beg)	// find fragment
+	    return null;
+	if ((q = resource.indexOf('?')) != -1  &&  q < beg)	// find query
+	    return null;
+	if (q == -1  &&  f == -1)
 	    return resource.substring(beg+1);
+	if (f == -1  ||  (q != -1  &&  q < f))
+	    return resource.substring(beg+1, q);
+	else
+	    return resource.substring(beg+1, f);
     }
 
 
@@ -938,14 +1005,15 @@ public class Util
      */
     public final static String getQuery(String resource)
     {
-	int beg, end;
-	if ((beg = resource.indexOf('?')) == -1)	// find query
+	int beg, f;
+	if ((beg = resource.indexOf('?')) == -1)		// find query
 	    return null;
-
-	if ((end = resource.indexOf('#')) != -1)	// strip fragment
-	    return resource.substring(beg+1, end);
+	if ((f = resource.indexOf('#')) != -1  &&  f < beg)	// find fragment
+	    return null;				// '?' is in fragment
+	if (f == -1)
+	    return resource.substring(beg+1);		// no fragment
 	else
-	    return resource.substring(beg+1);
+	    return resource.substring(beg+1, f);	// strip fragment
     }
 
 

@@ -1,8 +1,8 @@
 /*
- * @(#)RetryException.java				0.3 30/01/1998
+ * @(#)RetryException.java				0.3-1 10/02/1999
  *
  *  This file is part of the HTTPClient package
- *  Copyright (C) 1996-1998  Ronald Tschalaer
+ *  Copyright (C) 1996-1999  Ronald Tschalär
  *
  *  This library is free software; you can redistribute it and/or
  *  modify it under the terms of the GNU Library General Public
@@ -23,22 +23,22 @@
  *  I may be contacted at:
  *
  *  ronald@innovation.ch
- *  Ronald.Tschalaer@psi.ch
  *
  */
 
 package HTTPClient;
 
+import java.io.IOException;
 
 /**
  * Signals that an exception was thrown and caught, and the request was
  * retried.
  *
- * @version	0.3  30/01/1998
- * @author	Ronald Tschal&auml;r
+ * @version	0.3-1  10/02/1999
+ * @author	Ronald Tschalär
  */
 
-class RetryException extends java.io.IOException
+class RetryException extends IOException
 {
     /** the request to retry */
     Request     request  = null;
@@ -51,6 +51,9 @@ class RetryException extends java.io.IOException
 
     /** the next exception in the list */
     RetryException next  = null;
+
+    /** the original exception which caused the connection to be closed. */
+    IOException exception = null;
 
     /** was this exception generated because of an abnormal connection reset? */
     boolean conn_reset = true;

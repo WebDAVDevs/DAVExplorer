@@ -1,8 +1,8 @@
 /*
- * @(#)ContentMD5Module.java				0.3 30/01/1998
+ * @(#)ContentMD5Module.java				0.3-1 10/02/1999
  *
  *  This file is part of the HTTPClient package
- *  Copyright (C) 1996-1998  Ronald Tschalaer
+ *  Copyright (C) 1996-1999  Ronald Tschalär
  *
  *  This library is free software; you can redistribute it and/or
  *  modify it under the terms of the GNU Library General Public
@@ -23,7 +23,6 @@
  *  I may be contacted at:
  *
  *  ronald@innovation.ch
- *  Ronald.Tschalaer@psi.ch
  *
  */
 
@@ -41,8 +40,8 @@ import java.net.ProtocolException;
  * against the expected digest from the Content-MD5 header the stream is
  * closed. An IOException is thrown at that point if the digests don't match.
  *
- * @version	0.3  30/01/1998
- * @author	Ronald Tschal&auml;r
+ * @version	0.3-1  10/02/1999
+ * @author	Ronald Tschalär
  */
 
 class ContentMD5Module implements HTTPClientModule, GlobalConstants
@@ -130,7 +129,7 @@ class ContentMD5Module implements HTTPClientModule, GlobalConstants
 }
 
 
-class VerifyMD5 implements HashVerifier
+class VerifyMD5 implements HashVerifier, GlobalConstants
 {
     RoResponse resp;
 
@@ -166,6 +165,9 @@ class VerifyMD5 implements HashVerifier
 				      hex(ContMD5) + " but calculated " +
 				      hex(hash));
 	}
+
+	if (DebugMods)
+	    System.err.println("CMD5M: hash successfully verified");
     }
 
 

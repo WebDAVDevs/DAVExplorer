@@ -1,8 +1,8 @@
 /*
- * @(#)ContentEncodingModule.java			0.3 30/01/1998
+ * @(#)ContentEncodingModule.java			0.3-1 10/02/1999
  *
  *  This file is part of the HTTPClient package
- *  Copyright (C) 1996-1998  Ronald Tschalaer
+ *  Copyright (C) 1996-1999  Ronald Tschalär
  *
  *  This library is free software; you can redistribute it and/or
  *  modify it under the terms of the GNU Library General Public
@@ -23,7 +23,6 @@
  *  I may be contacted at:
  *
  *  ronald@innovation.ch
- *  Ronald.Tschalaer@psi.ch
  *
  */
 
@@ -41,8 +40,8 @@ import java.util.zip.GZIPInputStream;
  *
  * Note: This module requires JDK 1.1 or later.
  *
- * @version	0.3  30/01/1998
- * @author	Ronald Tschal&auml;r
+ * @version	0.3-1  10/02/1999
+ * @author	Ronald Tschalär
  */
 
 class ContentEncodingModule implements HTTPClientModule, GlobalConstants
@@ -52,7 +51,10 @@ class ContentEncodingModule implements HTTPClientModule, GlobalConstants
 	/* This ensures that the loading of this class is only successful
 	 * if we're in JDK 1.1 (or later) and have access to java.util.zip
 	 */
-	new InflaterInputStream(null);
+	try
+	    { new InflaterInputStream(null); }
+	catch (NullPointerException npe)
+	    { /* JDK 1.2 Final started throwing this */ }
     }
 
 
@@ -127,12 +129,16 @@ class ContentEncodingModule implements HTTPClientModule, GlobalConstants
 
 	// Add gzip, deflate and compress tokens to the Accept-Encoding header
 
-	if (pae.indexOf(new HttpHeaderElement("gzip")) == -1)
-	    pae.addElement(new HttpHeaderElement("gzip"));
-	if (pae.indexOf(new HttpHeaderElement("deflate")) == -1)
+	if (!pae.contains(new HttpHeaderElement("deflate")))
 	    pae.addElement(new HttpHeaderElement("deflate"));
-	if (pae.indexOf(new HttpHeaderElement("compress")) == -1)
+	if (!pae.contains(new HttpHeaderElement("gzip")))
+	    pae.addElement(new HttpHeaderElement("gzip"));
+	if (!pae.contains(new HttpHeaderElement("x-gzip")))
+	    pae.addElement(new HttpHeaderElement("x-gzip"));
+	if (!pae.contains(new HttpHeaderElement("compress")))
 	    pae.addElement(new HttpHeaderElement("compress"));
+	if (!pae.contains(new HttpHeaderElement("x-compress")))
+	    pae.addElement(new HttpHeaderElement("x-compress"));
 
 	hdrs[idx] = new NVPair("Accept-Encoding", Util.assembleHeader(pae));
 

@@ -1,0 +1,60 @@
+
+<HTML>
+
+<HEAD>
+<TITLE>Compiling the HTTPClient</TITLE>
+<LINK REV="made"     HREF="mailto:ronald@innovation.ch">
+<LINK REL="Previous" HREF="index.html">
+</HEAD>
+
+<BODY BGCOLOR="#FFFFFF">
+
+<H1>Compiling the HTTPClient</H1>
+
+<P>Here a few common things you may encounter when you attempt to compile
+parts of the HTTPClient.
+
+<DL>
+<DT>JDK 1.1 or later required
+<DD>You need to compile the classes using JDK 1.1 or later; the classes
+    will not compile under JDK 1.0.2.
+
+<DT>deprecation warnings
+<DD>These can be ignored. The client must still be able to run under
+    JDK 1.0.2 and therefore it needs to use some deprecated methods.
+
+<DT>errors about XXX.java actually containing HTTPClient.XXX
+<DD>As with using the HTTPClient, all the sources must be in a directory
+    called HTTPClient and the CLASSPATH must point to the directory which
+    contains the HTTPClient directory (i.e. it must point to one level
+    above the sources).
+
+<DT>errors of the form: <code>.../HTTPClient/XXX.java: Class
+    HTTPClient/XXX already defined in .../HTTPClient/XXX.java</code>
+<DD>This happens in some version of JDK 1.1.x and is a bug in the compiler.
+    Either upgrade to JDK 1.2 or create a separate source directory, move
+    the sources into there, and compile the classes into the actual
+    HTTPClient directory (using the <var>-d &lt;directory&gt;</var> option
+    to javac).
+
+<DT>makefile
+<DD>A makefile is provided. However, it's set up for my Solaris environment,
+    so you'll need to tweak the definitions at the beginning appropriately.
+    If you're using M$ then you'll probably need to change a number of things;
+    however, the dependencies should be ok.
+</DL>
+
+<P>
+<A HREF="index.html">
+<IMG SRC="images/back.gif" ALT="[HTTPClient]"></A>
+<HR>
+
+<ADDRESS>
+Ronald Tschal&auml;r / 10. February 1999 /
+<A HREF="mailto:ronald@innovation.ch">ronald@innovation.ch</A>.
+</ADDRESS>
+
+</BODY>
+
+</HTML>
+

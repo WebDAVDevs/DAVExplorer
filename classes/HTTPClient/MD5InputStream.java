@@ -1,8 +1,8 @@
 /*
- * @(#)MD5InputStream.java				0.3 30/01/1998
+ * @(#)MD5InputStream.java				0.3-1 10/02/1999
  *
  *  This file is part of the HTTPClient package
- *  Copyright (C) 1996-1998  Ronald Tschalaer
+ *  Copyright (C) 1996-1999  Ronald Tschalär
  *
  *  This library is free software; you can redistribute it and/or
  *  modify it under the terms of the GNU Library General Public
@@ -23,7 +23,6 @@
  *  I may be contacted at:
  *
  *  ronald@innovation.ch
- *  Ronald.Tschalaer@psi.ch
  *
  */
 
@@ -40,21 +39,22 @@ import java.net.ProtocolException;
  * stream is closed the calculated digest is passed to a HashVerifier which
  * is expected to verify this digest and to throw an Exception if it fails.
  *
- * @version	0.3  30/01/1998
- * @author	Ronald Tschal&auml;r
+ * @version	0.3-1  10/02/1999
+ * @author	Ronald Tschalär
  */
 class MD5InputStream extends FilterInputStream
 {
-    HashVerifier verifier;
-    MD5 md5;
-    long rcvd = 0;
+    private HashVerifier verifier;
+    private MD5 md5;
+    private long rcvd = 0;
+    private boolean closed = false;
 
 
     /**
      * @param is the input stream over which the md5 hash is to be calculated
      * @param verifier the HashVerifier to invoke when the stream is closed
      */
-    MD5InputStream(InputStream is, HashVerifier verifier)
+    public MD5InputStream(InputStream is, HashVerifier verifier)
     {
 	super(is);
 	this.verifier = verifier;
@@ -126,6 +126,9 @@ class MD5InputStream extends FilterInputStream
      */
     private void real_close()  throws IOException
     {
+	if (closed)  return;
+	closed = true;
+
 	in.close();
 	verifier.verifyHash(md5.Final(), rcvd);
     }

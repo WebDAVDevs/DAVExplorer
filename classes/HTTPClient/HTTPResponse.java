@@ -1,8 +1,8 @@
 /*
- * @(#)HTTPResponse.java				0.3 30/01/1998
+ * @(#)HTTPResponse.java				0.3-1 10/02/1999
  *
  *  This file is part of the HTTPClient package
- *  Copyright (C) 1996-1998  Ronald Tschalaer
+ *  Copyright (C) 1996-1999  Ronald Tschalär
  *
  *  This library is free software; you can redistribute it and/or
  *  modify it under the terms of the GNU Library General Public
@@ -23,7 +23,6 @@
  *  I may be contacted at:
  *
  *  ronald@innovation.ch
- *  Ronald.Tschalaer@psi.ch
  *
  */
 
@@ -34,6 +33,7 @@ import java.io.EOFException;
 import java.io.InterruptedIOException;
 import java.io.InputStream;
 import java.io.ByteArrayInputStream;
+import java.io.FileOutputStream;
 import java.net.URL;
 import java.util.Date;
 import java.util.Enumeration;
@@ -47,8 +47,8 @@ import sun.net.ProgressEntry;
  * the modules handle the response before finally giving the info to
  * the user.
  *
- * @version	0.3  30/01/1998
- * @author	Ronald Tschal&auml;r
+ * @version	0.3-1  10/02/1999
+ * @author	Ronald Tschalär
  * @since	0.3
  */
 
@@ -81,8 +81,11 @@ public class HTTPResponse implements GlobalConstants, HTTPClientModuleConstants
     /** the HTTP version of the response. */
     private String       Version;
 
-    /** the final URL of the document. */
-    private URL          EffectiveURL = null;
+    /** the original URI used. */
+    private URI          OriginalURI = null;
+
+    /** the final URI of the document. */
+    private URI          EffectiveURI = null;
 
     /** any headers which were received and do not fit in the above list. */
     private CIHashtable  Headers = null;
@@ -97,17 +100,22 @@ public class HTTPResponse implements GlobalConstants, HTTPClientModuleConstants
     private byte[]       Data = null;
 
     /** signals if we have got and parsed the headers yet? */
-    private boolean      initialised = false;
+    private boolean      initialized = false;
 
     /** signals if we have got the trailers yet? */
     private boolean      got_trailers = false;
 
-    /** remembers any exception received while reading/parsing headers */
-    private IOException  exception = null;
-
     /** marks this response as aborted (stop() in HTTPConnection) */
     private boolean      aborted = false;
 
+    /** the method used in the request */
+    private String       method = null;
+
+
+    private boolean       logging = false;
+    private String        logFilename = null;
+    private static String inboundHeader = "\r\n========= Inbound Message Header =========\r\n";
+    private static String inboundBody   = "\r\n========= Inbound Message Body =========\r\n";
 
     // Constructors
 
@@ -117,10 +125,20 @@ public class HTTPResponse implements GlobalConstants, HTTPClientModuleConstants
      * @param modules the list of modules handling this response
      * @param timeout the timeout to be used on stream read()'s
      */
-    HTTPResponse(HTTPClientModule[] modules, int timeout)
+    HTTPResponse(HTTPClientModule[] modules, int timeout, Request orig)
     {
 	this.modules = modules;
 	this.timeout = timeout;
+	try
+	{
+	    this.OriginalURI = new URI(orig.getConnection().getProtocol(),
+				       orig.getConnection().getHost(),
+				       orig.getConnection().getPort(),
+				       orig.getRequestURI());
+	}
+	catch (ParseException pe)
+	    { }
+	this.method = orig.getMethod();
     }
 
 
@@ -133,6 +151,7 @@ public class HTTPResponse implements GlobalConstants, HTTPClientModuleConstants
 	this.request   = req;
 	this.response  = resp;
 	resp.http_resp = this;
+	setLogging( resp );
 	resp.timeout   = timeout;
 	this.aborted   = resp.final_resp;
     }
@@ -166,7 +185,7 @@ public class HTTPResponse implements GlobalConstants, HTTPClientModuleConstants
      */
     public final int getStatusCode()  throws IOException, ModuleException
     {
-	if (!initialised)  handleResponse();
+	if (!initialized)  handleResponse();
 	return StatusCode;
     }
 
@@ -178,7 +197,7 @@ public class HTTPResponse implements GlobalConstants, HTTPClientModuleConstants
      */
     public final String getReasonLine()  throws IOException, ModuleException
     {
-	if (!initialised)  handleResponse();
+	if (!initialized)  handleResponse();
 	return ReasonLine;
     }
 
@@ -190,7 +209,7 @@ public class HTTPResponse implements GlobalConstants, HTTPClientModuleConstants
      */
     public final String getVersion()  throws IOException, ModuleException
     {
-	if (!initialised)  handleResponse();
+	if (!initialized)  handleResponse();
 	return Version;
     }
 
@@ -205,31 +224,60 @@ public class HTTPResponse implements GlobalConstants, HTTPClientModuleConstants
      */
     public final String getServer()  throws IOException, ModuleException
     {
-	if (!initialised)  handleResponse();
+	if (!initialized)  handleResponse();
 	return getHeader("Server");
     }
+
+
+    /**
+     * Get the original URI used in the request.
+     *
+     * @return the URI used in primary request
+     */
+    public final URI getOriginalURI()
+    {
+	return OriginalURI;
+    }
+
 
     /**
      * Get the final URL of the document. This is set if the original
      * request was deferred via the "moved" (301, 302, or 303) return
      * status.
      *
+     * @return the effective URL, or null if no redirection occured
      * @exception IOException If any exception occurs on the socket.
      * @exception ModuleException if any module encounters an exception.
+     * @deprecated use getEffectiveURI() instead
+     * @see #getEffectiveURI
      */
     public final URL getEffectiveURL()  throws IOException, ModuleException
     {
-	if (!initialised)  handleResponse();
-	return EffectiveURL;
+	if (!initialized)  handleResponse();
+	if (EffectiveURI != null)
+	    return EffectiveURI.toURL();
+	return null;
     }
 
+
     /**
-     * Set the final URL of the document. This is only for internal use.
+     * Get the final URI of the document. If the request was redirected
+     * via the "moved" (301, 302, 303, or 307) return status this returns
+     * the URI used in the last redirection; otherwise it returns the
+     * original URI.
+     *
+     * @return the effective URI
+     * @exception IOException If any exception occurs on the socket.
+     * @exception ModuleException if any module encounters an exception.
      */
-    void setEffectiveURL(URL final_url)
+    public final URI getEffectiveURI()  throws IOException, ModuleException
     {
-	EffectiveURL = final_url;
+	if (!initialized)  handleResponse();
+	if (EffectiveURI != null)
+	    return EffectiveURI;
+	return OriginalURI;
     }
+
 
     /**
      * Retrieves the value for a given header.
@@ -241,7 +289,7 @@ public class HTTPResponse implements GlobalConstants, HTTPClientModuleConstants
      */
     public String getHeader(String hdr)  throws IOException, ModuleException
     {
-	if (!initialised)  handleResponse();
+	if (!initialized)  handleResponse();
 	return (String) Headers.get(hdr.trim());
     }
 
@@ -313,7 +361,7 @@ public class HTTPResponse implements GlobalConstants, HTTPClientModuleConstants
      */
     public Enumeration listHeaders()  throws IOException, ModuleException
     {
-	if (!initialised)  handleResponse();
+	if (!initialized)  handleResponse();
 	return Headers.keys();
     }
 
@@ -416,6 +464,12 @@ public class HTTPResponse implements GlobalConstants, HTTPClientModuleConstants
      * then this method only returns any unread data remaining on the stream
      * and then closes it.
      *
+     * <P>Note to the unwarry: code like
+     *    <code>System.out.println("The data: " + resp.getData())</code>
+     * will probably not do what you want - use
+     *    <code>System.out.println("The data: " + new String(resp.getData()))</code>
+     * instead.
+     *
      * @see #getInputStream()
      * @return an array containing the data (body) returned. If no data
      *         was returned then it's set to a zero-length array.
@@ -425,7 +479,7 @@ public class HTTPResponse implements GlobalConstants, HTTPClientModuleConstants
      */
     public synchronized byte[] getData()  throws IOException, ModuleException
     {
-	if (!initialised)  handleResponse();
+	if (!initialized)  handleResponse();
 
 	if (Data == null)
 	{
@@ -439,7 +493,9 @@ public class HTTPResponse implements GlobalConstants, HTTPClientModuleConstants
 	    {
 		if (DebugResp)
 		{
-		    System.err.print("Resp:  ");
+		    System.err.println("HResp: (\"" + method + " " +
+				       OriginalURI.getPath() + "\")");
+		    System.err.print("       ");
 		    ioe.printStackTrace();
 		}
 		try { inp_stream.close(); } catch (Exception e) { }
@@ -448,6 +504,23 @@ public class HTTPResponse implements GlobalConstants, HTTPClientModuleConstants
 
 	    inp_stream.close();
 	}
+
+    if(logging)
+    {
+		if (Data != null )
+		{
+		    try
+		    {
+    		    FileOutputStream fos = new FileOutputStream( logFilename, true );
+    		    fos.write( inboundBody.getBytes() );
+    		    fos.write( Data );
+    		    fos.close();
+		    }
+		    catch( IOException e )
+		    {
+		    }
+        }
+    }
 
 	return Data;
     }
@@ -465,12 +538,15 @@ public class HTTPResponse implements GlobalConstants, HTTPClientModuleConstants
     public synchronized InputStream getInputStream()
 	    throws IOException, ModuleException
     {
-	if (!initialised)  handleResponse();
+	if (!initialized)  handleResponse();
 
 	if (Data == null)
 	    return inp_stream;
 	else
+	{
+	    getData();		// ensure complete data is read
 	    return new ByteArrayInputStream(Data);
+	}
     }
 
 
@@ -481,7 +557,7 @@ public class HTTPResponse implements GlobalConstants, HTTPClientModuleConstants
      */
     public String toString()
     {
-	if (!initialised)
+	if (!initialized)
 	{
 	    try
 		{ handleResponse(); }
@@ -489,26 +565,42 @@ public class HTTPResponse implements GlobalConstants, HTTPClientModuleConstants
 	    {
 		if (DebugResp  &&  !(e instanceof InterruptedIOException))
 		{
-		    System.err.print("Resp:  ");
+		    System.err.println("HResp: (\"" + method + " " +
+				       OriginalURI.getPath() + "\")");
+		    System.err.print("       ");
 		    e.printStackTrace();
 		}
 		return "Failed to read headers: " + e;
 	    }
 	}
 
-	String str = Version + " " + StatusCode + " " + ReasonLine + "\n";
+	String nl = System.getProperty("line.separator", "\n");
 
-	if (EffectiveURL != null)
-	    str += "Effective-URL: " + EffectiveURL + "\n";
+	StringBuffer str = new StringBuffer(Version);
+	str.append(' ');
+	str.append(StatusCode);
+	str.append(' ');
+	str.append(ReasonLine);
+	str.append(nl);
+
+	if (EffectiveURI != null)
+	{
+	    str.append("Effective-URI: ");
+	    str.append(EffectiveURI);
+	    str.append(nl);
+	}
 
 	Enumeration hdr_list = Headers.keys();
 	while (hdr_list.hasMoreElements())
 	{
 	    String hdr = (String) hdr_list.nextElement();
-	    str += hdr + ": " + Headers.get(hdr) + "\n";
+	    str.append(hdr);
+	    str.append(": ");
+	    str.append(Headers.get(hdr));
+	    str.append(nl);
 	}
 
-	return str;
+	return str.toString();
     }
 
 
@@ -533,7 +625,7 @@ public class HTTPResponse implements GlobalConstants, HTTPClientModuleConstants
      */
     synchronized boolean handleResponse()  throws IOException, ModuleException
     {
-	if (initialised)  return false;
+	if (initialized)  return false;
 
 
 	/* first get the response if necessary */
@@ -542,6 +634,7 @@ public class HTTPResponse implements GlobalConstants, HTTPClientModuleConstants
 	{
 	    response           = out_stream.getResponse();
 	    response.http_resp = this;
+	    setLogging( response );
 	    out_stream         = null;
 	}
 
@@ -584,7 +677,10 @@ public class HTTPResponse implements GlobalConstants, HTTPClientModuleConstants
 		    response.getInputStream().close();
 		    if (handle_trailers) invokeTrailerHandlers(true);
 		    if (request.internal_subrequest)  return true;
-		    request.getConnection().handleRequest(request, this, true);
+		    request.getConnection().
+				handleRequest(request, this, response, true);
+		    if (initialized)  break doModules;
+
                     idx = -1;
 		    continue doModules;
 
@@ -593,7 +689,8 @@ public class HTTPResponse implements GlobalConstants, HTTPClientModuleConstants
 		    response.getInputStream().close();
 		    if (handle_trailers) invokeTrailerHandlers(true);
 		    if (request.internal_subrequest)  return true;
-		    request.getConnection().handleRequest(request, this, false);
+		    request.getConnection().
+				handleRequest(request, this, response, false);
                     idx = -1;
 		    continue doModules;
 
@@ -611,6 +708,9 @@ public class HTTPResponse implements GlobalConstants, HTTPClientModuleConstants
 
 	break doModules;
 	}
+
+	/* force a read on the response in case none of the modules did */
+	response.getStatusCode();
 
 	/* all done, so copy data */
 	if (!request.internal_subrequest)
@@ -630,15 +730,17 @@ public class HTTPResponse implements GlobalConstants, HTTPClientModuleConstants
      */
     void init(Response resp)
     {
+	if (initialized)  return;
+
 	this.StatusCode    = resp.StatusCode;
 	this.ReasonLine    = resp.ReasonLine;
 	this.Version       = resp.Version;
-	this.EffectiveURL  = resp.EffectiveURL;
+	this.EffectiveURI  = resp.EffectiveURI;
 	this.ContentLength = resp.ContentLength;
 	this.Headers       = resp.Headers;
 	this.inp_stream    = resp.inp_stream;
 	this.Data          = resp.Data;
-	initialised        = true;
+	initialized        = true;
 
 	// for HotJava (or anybody else)
 	try
@@ -678,7 +780,7 @@ public class HTTPResponse implements GlobalConstants, HTTPClientModuleConstants
     {
 	if (trailers_handled)  return;
 
-	if (!force  &&  !initialised)
+	if (!force  &&  !initialized)
 	{
 	    handle_trailers = true;
 	    return;
@@ -741,7 +843,7 @@ public class HTTPResponse implements GlobalConstants, HTTPClientModuleConstants
     private synchronized void getTrailers()  throws IOException, ModuleException
     {
 	if (got_trailers)  return;
-	if (!initialised)  handleResponse();
+	if (!initialized)  handleResponse();
 
 	response.getTrailer("Any");
 	Trailers = response.Trailers;
@@ -771,6 +873,7 @@ public class HTTPResponse implements GlobalConstants, HTTPClientModuleConstants
 
 	try
 	{
+	    // check Content-length header in case CE-Module removed it
 	    if (getHeader("Content-Length") != null)
 	    {
 		int rcvd = 0;
@@ -828,5 +931,18 @@ public class HTTPResponse implements GlobalConstants, HTTPClientModuleConstants
     {
 	return timeout;
     }
+
+    public void setLogging( boolean logging, String filename )
+    {
+        this.logging = logging;
+        this.logFilename = filename;
+    }    
+
+
+    private void setLogging( Response resp )
+    {
+        logging = resp.getLogging();
+        logFilename = resp.getLogFilename();
+    }    
 }
 

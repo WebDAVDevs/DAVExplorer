@@ -1,8 +1,8 @@
 /*
- * @(#)HttpOutputStream.java				0.3 30/01/1998
+ * @(#)HttpOutputStream.java				0.3-1 10/02/1999
  *
  *  This file is part of the HTTPClient package
- *  Copyright (C) 1996-1998  Ronald Tschalaer
+ *  Copyright (C) 1996-1999  Ronald Tschalär
  *
  *  This library is free software; you can redistribute it and/or
  *  modify it under the terms of the GNU Library General Public
@@ -23,7 +23,6 @@
  *  I may be contacted at:
  *
  *  ronald@innovation.ch
- *  Ronald.Tschalaer@psi.ch
  *
  */
 
@@ -37,9 +36,17 @@ import java.io.IOException;
 /**
  * This class provides an output stream for requests. The stream must first
  * be associated with a request before it may be used; this is done by
- * passing it to one of the request methods in HTTPConnection.
+ * passing it to one of the request methods in HTTPConnection. Example:
+ * <PRE>
+ *    OutputStream out = new HttpOutputStream(12345);
+ *    rsp = con.Post("/cgi-bin/my_cgi", out);
+ *    out.write(...);
+ *    out.close();
+ *    if (rsp.getStatusCode() >= 300)
+ *        ...
+ * </PRE>
  *
- * <P>There are two constructors for this class, one taking a length parameter
+ * <P>There are two constructors for this class, one taking a length parameter,
  * and one without any parameters. If the stream is created with a length
  * then the request will be sent with the corresponding Content-length header
  * and anything written to the stream will be written on the socket immediately.
@@ -62,18 +69,21 @@ import java.io.IOException;
  * this.
  *
  * <P>The behaviour of a request sent with an output stream may differ from
- * that of request sent with a data parameter. The reason for this is that
+ * that of a request sent with a data parameter. The reason for this is that
  * the various modules cannot resend a request which used an output stream.
  * Therefore such things as authorization and retrying of requests won't be
  * done by the HTTPClient for such a request.
  *
- * @version	0.3  30/01/1998
- * @author	Ronald Tschal&auml;r
+ * @version	0.3-1  10/02/1999
+ * @author	Ronald Tschalär
  * @since	V0.3
  */
 
 public class HttpOutputStream extends OutputStream implements GlobalConstants
 {
+    /** null trailers */
+    private static final NVPair[] empty = new NVPair[0];
+
     /** the length of the data to be sent */
     private int length;
 
@@ -91,6 +101,9 @@ public class HttpOutputStream extends OutputStream implements GlobalConstants
 
     /** the buffer to be used if needed */
     private ByteArrayOutputStream bos = null;
+
+    /** the trailers to send if using chunked encoding. */
+    private NVPair[] trailers = empty;
 
     /** the timeout to pass to SendRequest() */
     private int con_to = 0;
@@ -148,6 +161,14 @@ public class HttpOutputStream extends OutputStream implements GlobalConstants
 
 	if (os == null)
 	    bos = new ByteArrayOutputStream();
+
+	if (DebugConn)
+	{
+	    System.err.println("OutS:  Stream ready for writing");
+	    if (bos != null)
+		System.err.println("OutS:  Buffering all data before sending " +
+				   "request");
+	}
     }
 
 
@@ -192,6 +213,43 @@ public class HttpOutputStream extends OutputStream implements GlobalConstants
 
 
     /**
+     * Gets the trailers which were set with <code>setTrailers()</code>.
+     *
+     * @return an array of header fields
+     * @see #setTrailers(NVPair[])
+     */
+    public NVPair[] getTrailers()
+    {
+	return trailers;
+    }
+
+
+    /**
+     * Sets the trailers to be sent if the output is sent with the
+     * chunked transfer encoding. These must be set before the output
+     * stream is closed for them to be sent.
+     *
+     * <P>Any trailers set here <strong>should</strong> be mentioned
+     * in a <var>Trailer</var> header in the request (see section 14.40
+     * of draft-ietf-http-v11-spec-rev-06.txt).
+     *
+     * <P>This method (and its related <code>getTrailers()</code>)) are
+     * in this class and not in <var>Request</var> because setting
+     * trailers is something an application may want to do, not only
+     * modules.
+     *
+     * @param trailers an array of header fields
+     */
+    public void setTrailers(NVPair[] trailers)
+    {
+	if (trailers != null)
+	    this.trailers = trailers;
+	else
+	    this.trailers = empty;
+    }
+
+
+    /**
      * Writes a single byte on the stream. It is subject to the same rules
      * as <code>write(byte[], int, int)</code>.
      *
@@ -228,25 +286,28 @@ public class HttpOutputStream extends OutputStream implements GlobalConstants
 
 	if (ignore) return;
 
+	if (length != -1  &&  rcvd+len > length)
+	{
+	    IOException ioe =
+		new IOException("Tried to write too many bytes (" + (rcvd+len) +
+				" > " + length + ")");
+	    req.getConnection().closeDemux(ioe, false);
+	    req.getConnection().outputFinished();
+	    throw ioe;
+	}
+
 	try
 	{
-	    if (length != -1  &&  rcvd+len > length)
-		throw new IOException("Tried to write too many bytes (" +
-				      (rcvd+len) + " > " + length + ")");
-
 	    if (bos != null)
 		bos.write(buf, off, len);
+	    else if (length != -1)
+		os.write(buf, off, len);
 	    else
-	    {
-		if (length != -1)
-		    os.write(buf, off, len);
-		else
-		    os.write(Codecs.chunkedEncode(buf, off, len, null, false));
-	    }
+		os.write(Codecs.chunkedEncode(buf, off, len, null, false));
 	}
 	catch (IOException ioe)
 	{
-	    req.getConnection().closeDemux(ioe);
+	    req.getConnection().closeDemux(ioe, true);
 	    req.getConnection().outputFinished();
 	    throw ioe;
 	}
@@ -276,6 +337,34 @@ public class HttpOutputStream extends OutputStream implements GlobalConstants
 	{
 	    req.setData(bos.toByteArray());
 	    req.setStream(null);
+
+	    if (trailers.length > 0)
+	    {
+		NVPair[] hdrs = req.getHeaders();
+
+		// remove any Trailer header field
+
+		int len = hdrs.length;
+		for (int idx=0; idx<len; idx++)
+		{
+		    if (hdrs[idx].getName().equalsIgnoreCase("Trailer"))
+		    {
+			System.arraycopy(hdrs, idx+1, hdrs, idx, len-idx-1);
+			len--;
+		    }
+		}
+
+
+		// add the trailers to the headers
+
+		hdrs = Util.resizeArray(hdrs, len+trailers.length);
+		System.arraycopy(trailers, 0, hdrs, len, trailers.length);
+
+		req.setHeaders(hdrs);
+	    }
+
+	    if (DebugConn)  System.err.println("OutS:  Sending request");
+
 	    try
 		{ resp = req.getConnection().sendRequest(req, con_to); }
 	    catch (ModuleException me)
@@ -284,20 +373,40 @@ public class HttpOutputStream extends OutputStream implements GlobalConstants
 	}
 	else
 	{
+	    if (rcvd < length)
+	    {
+		IOException ioe =
+		    new IOException("Premature close: only " + rcvd +
+				    " bytes written instead of the " +
+				    "expected " + length);
+		req.getConnection().closeDemux(ioe, false);
+		req.getConnection().outputFinished();
+		throw ioe;
+	    }
+
 	    try
 	    {
 		if (length == -1)
-		    os.write(Codecs.chunkedEncode(null, 0, 0, null, true));
-		else if (rcvd < length)
-		    throw new IOException("Premature close: only " + rcvd +
-					  " bytes written instead of exptected "
-					  + length);
+		{
+		    if (DebugConn  &&  trailers.length > 0)
+		    {
+			System.err.println("OutS:  Sending trailers:");
+			for (int idx=0; idx<trailers.length; idx++)
+			    System.err.println("       " +
+				      trailers[idx].getName() + ": " +
+				      trailers[idx].getValue());
+		    }
+
+		    os.write(Codecs.chunkedEncode(null, 0, 0, trailers, true));
+		}
 
 		os.flush();
+
+		if (DebugConn)  System.err.println("OutS:  All data sent");
 	    }
 	    catch (IOException ioe)
 	    {
-		req.getConnection().closeDemux(ioe);
+		req.getConnection().closeDemux(ioe, true);
 		throw ioe;
 	    }
 	    finally

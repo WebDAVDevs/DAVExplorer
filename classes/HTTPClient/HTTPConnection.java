@@ -1,8 +1,8 @@
 /*
- * @(#)HTTPConnection.java				0.3 30/01/1998
+ * @(#)HTTPConnection.java              0.3-1 10/02/1999
  *
  *  This file is part of the HTTPClient package
- *  Copyright (C) 1996-1998  Ronald Tschalaer
+ *  Copyright (C) 1996-1999  Ronald Tschalär
  *
  *  This library is free software; you can redistribute it and/or
  *  modify it under the terms of the GNU Library General Public
@@ -23,7 +23,6 @@
  *  I may be contacted at:
  *
  *  ronald@innovation.ch
- *  Ronald.Tschalaer@psi.ch
  *
  */
 
@@ -33,6 +32,7 @@ package HTTPClient;
 import java.io.OutputStream;
 import java.io.DataOutputStream;
 import java.io.ByteArrayOutputStream;
+import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InterruptedIOException;
 import java.net.URL;
@@ -40,6 +40,7 @@ import java.net.Socket;
 import java.net.InetAddress;
 import java.net.SocketException;
 import java.net.UnknownHostException;
+import java.net.ConnectException;
 import java.util.Vector;
 import java.util.Hashtable;
 import java.applet.Applet;
@@ -187,15 +188,15 @@ import java.applet.Applet;
  * <li> Trace ( file [, headers ] )
  * </ul>
  *
- * @version	0.3  30/01/1998
- * @author	Ronald Tschal&auml;r
+ * @version 0.3-1  10/02/1999
+ * @author  Ronald Tschalär
  */
 
 public class HTTPConnection
-	implements GlobalConstants, HTTPClientModuleConstants
+    implements GlobalConstants, HTTPClientModuleConstants
 {
     /** The current version of this package. */
-    public final static String   version = "RPT-HTTPClient/0.3";
+    public final static String   version = "RPT-HTTPClient/0.3-1";
 
     /** The default context */
     private final static Object  dflt_context = new Object();
@@ -207,14 +208,17 @@ public class HTTPConnection
     private int                  Protocol;
 
     /** The server's protocol version; M.m stored as (M<<16 | m) */
-            int   		 ServerProtocolVersion;
+            int          ServerProtocolVersion;
 
     /** Have we gotten the server's protocol version yet? */
-            boolean		 ServProtVersKnown;
+            boolean      ServProtVersKnown;
 
     /** The protocol version we send in a request; this is always HTTP/1.1
-	unless we're talking to a broken server in which case it's HTTP/1.0 */
-    private String		 RequestProtocolVersion;
+    unless we're talking to a broken server in which case it's HTTP/1.0 */
+    private String       RequestProtocolVersion;
+
+    /** hack to force HTTP/1.0 requests */
+    private static boolean       force_1_0 = false;
 
     /** The remote host this connection is associated with */
     private String               Host;
@@ -250,7 +254,7 @@ public class HTTPConnection
     private StreamDemultiplexor  input_demux = null;
 
     /** a list of active stream demultiplexors */
-	    LinkedList           DemuxList = new LinkedList();
+        LinkedList           DemuxList = new LinkedList();
 
     /** a list of active requests */
     private LinkedList           RequestList = new LinkedList();
@@ -270,11 +274,14 @@ public class HTTPConnection
     /** hack to be able to disable pipelining */
     private static boolean       NeverPipeline = false;
 
+    /** hack to be able to disable keep-alives */
+    private static boolean       NoKeepAlives = false;
+
     /** the default timeout to use for new connections */
-    private static int	         DefaultTimeout = 0;
+    private static int           DefaultTimeout = 0;
 
     /** the timeout to use for reading responses */
-    private int	                 Timeout;
+    private int                  Timeout;
 
     /** The list of default http headers */
     private NVPair[]             DefaultHeaders = new NVPair[0];
@@ -291,128 +298,166 @@ public class HTTPConnection
     /** controls whether modules are allowed to interact with user */
     private boolean              AllowUI;
 
+    private boolean              logging = false;
+    private String               logFilename = null;
+    private static String        outboundHeader = "\r\n========= Outgoing Message Header =========\r\n";
+    private static String        outboundBody   = "\r\n========= Outgoing Message Body =========\r\n";
 
     static
     {
-	/*
-	 * Let's try and see if we can figure out whether any proxies are
-	 * being used.
-	 */
+    /*
+     * Let's try and see if we can figure out whether any proxies are
+     * being used.
+     */
 
-	try		// JDK 1.1 naming
-	{
-	    String host = System.getProperty("http.proxyHost");
-	    if (host == null)
-		throw new Exception();		// try JDK 1.0.x naming
+    try     // JDK 1.1 naming
+    {
+        String host = System.getProperty("http.proxyHost");
+        if (host == null)
+        throw new Exception();      // try JDK 1.0.x naming
+        int port = Integer.getInteger("http.proxyPort", -1).intValue();
 
-	    int port = Integer.getInteger("http.proxyPort", -1).intValue();
-	    setProxyServer(host, port);
-	}
-	catch (Exception e)
-	{
-	    try		// JDK 1.0.x naming
-	    {
-		if (Boolean.getBoolean("proxySet"))
-		{
-		    String host = System.getProperty("proxyHost");
-		    int    port = Integer.getInteger("proxyPort", -1).intValue();
-		    setProxyServer(host, port);
-		}
-	    }
-	    catch (Exception ee)
-		{ Default_Proxy_Host = null; }
-	}
-
-
-	/*
-	 * now check for the non-proxy list
-	 */
-	try
-	{
-	    String hosts = System.getProperty("HTTPClient.nonProxyHosts");
-	    if (hosts == null)
-		hosts = System.getProperty("http.nonProxyHosts");
-
-	    String[] list = Util.splitProperty(hosts);
-	    for (int idx=0; idx<list.length; idx++)
-		dontProxyFor(list[idx]);
-	}
-	catch (Exception e)
-	    { }
+        if (DebugConn)
+        System.err.println("Conn:  using proxy " + host + ":" + port);
+        setProxyServer(host, port);
+    }
+    catch (Exception e)
+    {
+        try     // JDK 1.0.x naming
+        {
+        if (Boolean.getBoolean("proxySet"))
+        {
+            String host = System.getProperty("proxyHost");
+            int    port = Integer.getInteger("proxyPort", -1).intValue();
+            if (DebugConn)
+            System.err.println("Conn:  using proxy " + host + ":" + port);
+            setProxyServer(host, port);
+        }
+        }
+        catch (Exception ee)
+        { Default_Proxy_Host = null; }
+    }
 
 
-	/*
-	 * we can't turn the JDK SOCKS handling off, so we don't use the
-	 * properties 'socksProxyHost' and 'socksProxyPort'. Instead we
-	 * define 'HTTPClient.socksHost', 'HTTPClient.socksPort' and
-	 * 'HTTPClient.socksVersion'.
-	 */
-	try
-	{
-	    String host = System.getProperty("HTTPClient.socksHost");
-	    if (host != null  &&  host.length() > 0)
-	    {
-		int port    = Integer.getInteger("HTTPClient.socksPort", -1).intValue();
-		int version = Integer.getInteger("HTTPClient.socksVersion", -1).intValue();
-		if (version == -1)
-		    setSocksServer(host, port);
-		else
-		    setSocksServer(host, port, version);
-	    }
-	}
-	catch (Exception e)
-	    { Default_Socks_client = null; }
+    /*
+     * now check for the non-proxy list
+     */
+    try
+    {
+        String hosts = System.getProperty("HTTPClient.nonProxyHosts");
+        if (hosts == null)
+        hosts = System.getProperty("http.nonProxyHosts");
+
+        String[] list = Util.splitProperty(hosts);
+        for (int idx=0; idx<list.length; idx++)
+        dontProxyFor(list[idx]);
+    }
+    catch (Exception e)
+        { }
 
 
-	// Set up module list
-
-	String modules = "HTTPClient.RetryModule|" +
-			 "HTTPClient.CookieModule|" +
-			 "HTTPClient.RedirectionModule|" +
-			 "HTTPClient.AuthorizationModule|" +
-			 "HTTPClient.DefaultModule|" +
-			 "HTTPClient.TransferEncodingModule|" +
-			 "HTTPClient.ContentMD5Module|" +
-			 "HTTPClient.ContentEncodingModule";
-
-	boolean in_applet = false;
-	try
-	    { modules = System.getProperty("HTTPClient.Modules", modules); }
-	catch (SecurityException se)
-	    { in_applet = true; }
-
-	DefaultModuleList = new Vector();
-	String[] list     = Util.splitProperty(modules);
-	for (int idx=0; idx<list.length; idx++)
-	{
-	    try
-	    {
-		DefaultModuleList.addElement(Class.forName(list[idx]));
-	    }
-	    catch (ClassNotFoundException cnfe)
-	    {
-		if (!in_applet)
-		    throw new NoClassDefFoundError(cnfe.getMessage());
-
-		/* Just ignore it. This allows for example applets to just
-		 * load the necessary modules - if you don't need a module
-		 * then don't provide it, and it won't be added to the
-		 * list. The disadvantage is that if you accidently misstype
-		 * a module name this will lead to a "silent" error.
-		 */
-	    }
-	}
+    /*
+     * we can't turn the JDK SOCKS handling off, so we don't use the
+     * properties 'socksProxyHost' and 'socksProxyPort'. Instead we
+     * define 'HTTPClient.socksHost', 'HTTPClient.socksPort' and
+     * 'HTTPClient.socksVersion'.
+     */
+    try
+    {
+        String host = System.getProperty("HTTPClient.socksHost");
+        if (host != null  &&  host.length() > 0)
+        {
+        int port    = Integer.getInteger("HTTPClient.socksPort", -1).intValue();
+        int version = Integer.getInteger("HTTPClient.socksVersion", -1).intValue();
+        if (DebugConn)
+            System.err.println("Conn:  using SOCKS " + host + ":" + port);
+        if (version == -1)
+            setSocksServer(host, port);
+        else
+            setSocksServer(host, port, version);
+        }
+    }
+    catch (Exception e)
+        { Default_Socks_client = null; }
 
 
-	/*
-	 * Hack: disable pipelining
-	 */
-	try
-	{
-	    NeverPipeline = Boolean.getBoolean("HTTPClient.disable_pipelining");
-	}
-	catch (Exception e)
-	    { }
+    // Set up module list
+
+    String modules = "HTTPClient.RetryModule|" +
+             "HTTPClient.CookieModule|" +
+             "HTTPClient.RedirectionModule|" +
+             "HTTPClient.AuthorizationModule|" +
+             "HTTPClient.DefaultModule|" +
+             "HTTPClient.TransferEncodingModule|" +
+             "HTTPClient.ContentMD5Module|" +
+             "HTTPClient.ContentEncodingModule";
+
+    boolean in_applet = false;
+    try
+        { modules = System.getProperty("HTTPClient.Modules", modules); }
+    catch (SecurityException se)
+        { in_applet = true; }
+
+    DefaultModuleList = new Vector();
+    String[] list     = Util.splitProperty(modules);
+    for (int idx=0; idx<list.length; idx++)
+    {
+        try
+        {
+        DefaultModuleList.addElement(Class.forName(list[idx]));
+        if (DebugConn)
+            System.err.println("Conn:  added module " + list[idx]);
+        }
+        catch (ClassNotFoundException cnfe)
+        {
+        if (!in_applet)
+            throw new NoClassDefFoundError(cnfe.getMessage());
+
+        /* Just ignore it. This allows for example applets to just
+         * load the necessary modules - if you don't need a module
+         * then don't provide it, and it won't be added to the
+         * list. The disadvantage is that if you accidently misstype
+         * a module name this will lead to a "silent" error.
+         */
+        }
+    }
+
+
+    /*
+     * Hack: disable pipelining
+     */
+    try
+    {
+        NeverPipeline = Boolean.getBoolean("HTTPClient.disable_pipelining");
+        if (DebugConn)
+        if (NeverPipeline)  System.err.println("Conn:  disabling pipelining");
+    }
+    catch (Exception e)
+        { }
+
+    /*
+     * Hack: disable keep-alives
+     */
+    try
+    {
+        NoKeepAlives = Boolean.getBoolean("HTTPClient.disableKeepAlives");
+        if (DebugConn)
+        if (NoKeepAlives)  System.err.println("Conn:  disabling keep-alives");
+    }
+    catch (Exception e)
+        { }
+
+    /*
+     * Hack: force HTTP/1.0 requests
+     */
+    try
+    {
+        force_1_0 = Boolean.getBoolean("HTTPClient.forceHTTP_1.0");
+        if (DebugConn)
+        if (force_1_0)  System.err.println("Conn:  forcing HTTP/1.0 requests");
+    }
+    catch (Exception e)
+        { }
     }
 
 
@@ -426,9 +471,9 @@ public class HTTPConnection
      */
     public HTTPConnection(Applet applet)  throws ProtocolNotSuppException
     {
-	this(applet.getCodeBase().getProtocol(),
-	     applet.getCodeBase().getHost(),
-	     applet.getCodeBase().getPort());
+    this(applet.getCodeBase().getProtocol(),
+         applet.getCodeBase().getHost(),
+         applet.getCodeBase().getPort());
     }
 
     /**
@@ -438,7 +483,7 @@ public class HTTPConnection
      */
     public HTTPConnection(String host)
     {
-	Setup(HTTP, host, 80);
+    Setup(HTTP, host, 80);
     }
 
     /**
@@ -449,7 +494,7 @@ public class HTTPConnection
      */
     public HTTPConnection(String host, int port)
     {
-	Setup(HTTP, host, port);
+    Setup(HTTP, host, port);
     }
 
     /**
@@ -462,22 +507,22 @@ public class HTTPConnection
      * @exception ProtocolNotSuppException if the protocol is not HTTP
      */
     public HTTPConnection(String prot, String host, int port)  throws
-	ProtocolNotSuppException
+    ProtocolNotSuppException
     {
-	prot = prot.trim().toLowerCase();
+    prot = prot.trim().toLowerCase();
 
-	//if (!prot.equals("http")  &&  !prot.equals("https"))
-	if (!prot.equals("http"))
-	    throw new ProtocolNotSuppException("Unsupported protocol '" + prot + "'");
+    //if (!prot.equals("http")  &&  !prot.equals("https"))
+    if (!prot.equals("http"))
+        throw new ProtocolNotSuppException("Unsupported protocol '" + prot + "'");
 
-	if (prot.equals("http"))
-	    Setup(HTTP, host, port);
-	else if (prot.equals("https"))
-	    Setup(HTTPS, host, port);
-	else if (prot.equals("shttp"))
-	    Setup(SHTTP, host, port);
-	else if (prot.equals("http-ng"))
-	    Setup(HTTP_NG, host, port);
+    if (prot.equals("http"))
+        Setup(HTTP, host, port);
+    else if (prot.equals("https"))
+        Setup(HTTPS, host, port);
+    else if (prot.equals("shttp"))
+        Setup(SHTTP, host, port);
+    else if (prot.equals("http-ng"))
+        Setup(HTTP_NG, host, port);
     }
 
     /**
@@ -488,7 +533,7 @@ public class HTTPConnection
      */
     public HTTPConnection(URL url) throws ProtocolNotSuppException
     {
-	this(url.getProtocol(), url.getHost(), url.getPort());
+    this(url.getProtocol(), url.getHost(), url.getPort());
     }
 
     /**
@@ -500,78 +545,80 @@ public class HTTPConnection
      */
     private void Setup(int prot, String host, int port)
     {
-	Protocol = prot;
-	Host     = host.trim();
-	Port     = port;
+    Protocol = prot;
+    Host     = host.trim().toLowerCase();
+    Port     = port;
 
-	if (Port == -1)
-	    Port = Util.defaultPort(getProtocol());
+    if (Port == -1)
+        Port = URI.defaultPort(getProtocol());
 
-	if (Default_Proxy_Host != null  &&  !matchNonProxy(host))
-	    setCurrentProxy(Default_Proxy_Host, Default_Proxy_Port);
-	else
-	    setCurrentProxy(null, 0);
+    if (Default_Proxy_Host != null  &&  !matchNonProxy(Host))
+        setCurrentProxy(Default_Proxy_Host, Default_Proxy_Port);
+    else
+        setCurrentProxy(null, 0);
 
-	Socks_client = Default_Socks_client;
-	Timeout      = DefaultTimeout;
-	ModuleList   = (Vector) DefaultModuleList.clone();
-	AllowUI      = DefaultAllowUI;
+    Socks_client = Default_Socks_client;
+    Timeout      = DefaultTimeout;
+    ModuleList   = (Vector) DefaultModuleList.clone();
+    AllowUI      = DefaultAllowUI;
+    if (NoKeepAlives)
+        setDefaultHeaders(new NVPair[] { new NVPair("Connection", "close") });
     }
 
 
     /**
      * Determines if the given host matches any entry in the non-proxy list.
      *
-     * @param host the host to match
+     * @param host the host to match - must be trim()'d and lowercase
      * @return true if a match is found, false otherwise
      * @see #dontProxyFor(java.lang.String)
      */
     private boolean matchNonProxy(String host)
     {
-	// Check host name list
+    // Check host name list
 
-	if (non_proxy_host_list.get(host) != null)
-	    return true;
-
-
-	// Check domain name list
-
-	for (int idx=0; idx<non_proxy_dom_list.size(); idx++)
-	    if (host.toLowerCase().endsWith((String) non_proxy_dom_list.elementAt(idx)))
-		return true;
+    if (non_proxy_host_list.get(host) != null)
+        return true;
 
 
-	// Check IP-address and subnet list
+    // Check domain name list
 
-	if (non_proxy_addr_list.size() == 0)
-	    return false;
+    for (int idx=0; idx<non_proxy_dom_list.size(); idx++)
+        if (host.endsWith((String) non_proxy_dom_list.elementAt(idx)))
+        return true;
 
-	InetAddress[] host_addr;
-	try
-	    { host_addr = InetAddress.getAllByName(host); }
-	catch (UnknownHostException uhe)
-	    { return false; }	// maybe the proxy has better luck
 
-	for (int idx=0; idx<non_proxy_addr_list.size(); idx++)
-	{
-	    byte[] addr = (byte[]) non_proxy_addr_list.elementAt(idx);
-	    byte[] mask = (byte[]) non_proxy_mask_list.elementAt(idx);
+    // Check IP-address and subnet list
 
-	    ip_loop: for (int idx2=0; idx2<host_addr.length; idx2++)
-	    {
-		byte[] raw_addr = host_addr[idx2].getAddress();
-		if (raw_addr.length != addr.length)  continue;
+    if (non_proxy_addr_list.size() == 0)
+        return false;
 
-		for (int idx3=0; idx3<raw_addr.length; idx3++)
-		{
-		    if ((raw_addr[idx3] & mask[idx3]) != (addr[idx3] & mask[idx3]))
-			continue ip_loop;
-		}
-		return true;
-	    }
-	}
+    InetAddress[] host_addr;
+    try
+        { host_addr = InetAddress.getAllByName(host); }
+    catch (UnknownHostException uhe)
+        { return false; }   // maybe the proxy has better luck
 
-	return false;
+    for (int idx=0; idx<non_proxy_addr_list.size(); idx++)
+    {
+        byte[] addr = (byte[]) non_proxy_addr_list.elementAt(idx);
+        byte[] mask = (byte[]) non_proxy_mask_list.elementAt(idx);
+
+        ip_loop: for (int idx2=0; idx2<host_addr.length; idx2++)
+        {
+        byte[] raw_addr = host_addr[idx2].getAddress();
+        if (raw_addr.length != addr.length)  continue;
+
+        for (int idx3=0; idx3<raw_addr.length; idx3++)
+        {
+            if ((raw_addr[idx3] & mask[idx3]) != (addr[idx3] & mask[idx3]))
+            continue ip_loop;
+        }
+        return true;
+        }
+    }
+
+    return false;
     }
 
 
@@ -590,7 +637,7 @@ public class HTTPConnection
      */
     public HTTPResponse Head(String file)  throws IOException, ModuleException
     {
-	return Head(file, (String) null, null);
+    return Head(file, (String) null, null);
     }
 
     /**
@@ -606,9 +653,9 @@ public class HTTPConnection
      * @exception ModuleException if an exception is encountered in any module.
      */
     public HTTPResponse Head(String file, NVPair form_data[])
-		throws IOException, ModuleException
+        throws IOException, ModuleException
     {
-	return Head(file, form_data, null);
+    return Head(file, form_data, null);
     }
 
     /**
@@ -625,14 +672,14 @@ public class HTTPConnection
      * @exception ModuleException if an exception is encountered in any module.
      */
     public HTTPResponse Head(String file, NVPair[] form_data, NVPair[] headers)
-		throws IOException, ModuleException
+        throws IOException, ModuleException
     {
-	String File  = stripRef(file),
-	       query = Codecs.nv2query(form_data);
-	if (query != null  &&  query.length() > 0)
-	    File += "?" + query;
+    String File  = stripRef(file),
+           query = Codecs.nv2query(form_data);
+    if (query != null  &&  query.length() > 0)
+        File += "?" + query;
 
-	return setupRequest("HEAD", File, headers, null, null);
+    return setupRequest("HEAD", File, headers, null, null);
     }
 
     /**
@@ -648,9 +695,9 @@ public class HTTPConnection
      * @exception ModuleException if an exception is encountered in any module.
      */
     public HTTPResponse Head(String file, String query)
-		throws IOException, ModuleException
+        throws IOException, ModuleException
     {
-	return Head(file, query, null);
+    return Head(file, query, null);
     }
 
 
@@ -668,13 +715,13 @@ public class HTTPConnection
      * @exception ModuleException if an exception is encountered in any module.
      */
     public HTTPResponse Head(String file, String query, NVPair[] headers)
-		throws IOException, ModuleException
+        throws IOException, ModuleException
     {
-	String File = stripRef(file);
-	if (query != null  &&  query.length() > 0)
-	    File += "?" + Codecs.URLEncode(query);
+    String File = stripRef(file);
+    if (query != null  &&  query.length() > 0)
+        File += "?" + Codecs.URLEncode(query);
 
-	return setupRequest("HEAD", File, headers, null, null);
+    return setupRequest("HEAD", File, headers, null, null);
     }
 
 
@@ -689,7 +736,7 @@ public class HTTPConnection
      */
     public HTTPResponse Get(String file)  throws IOException, ModuleException
     {
-	return Get(file, (String) null, null);
+    return Get(file, (String) null, null);
     }
 
     /**
@@ -705,9 +752,9 @@ public class HTTPConnection
      * @exception ModuleException if an exception is encountered in any module.
      */
     public HTTPResponse Get(String file, NVPair form_data[])
-		throws IOException, ModuleException
+        throws IOException, ModuleException
     {
-	return Get(file, form_data, null);
+    return Get(file, form_data, null);
     }
 
     /**
@@ -724,14 +771,14 @@ public class HTTPConnection
      * @exception ModuleException if an exception is encountered in any module.
      */
     public HTTPResponse Get(String file, NVPair[] form_data, NVPair[] headers)
-		throws IOException, ModuleException
+        throws IOException, ModuleException
     {
-	String File  = stripRef(file),
-	       query = Codecs.nv2query(form_data);
-	if (query != null  &&  query.length() > 0)
-	    File += "?" + query;
+    String File  = stripRef(file),
+           query = Codecs.nv2query(form_data);
+    if (query != null  &&  query.length() > 0)
+        File += "?" + query;
 
-	return setupRequest("GET", File, headers, null, null);
+    return setupRequest("GET", File, headers, null, null);
     }
 
     /**
@@ -746,9 +793,9 @@ public class HTTPConnection
      * @exception ModuleException if an exception is encountered in any module.
      */
     public HTTPResponse Get(String file, String query)
-		throws IOException, ModuleException
+        throws IOException, ModuleException
     {
-	return Get(file, query, null);
+    return Get(file, query, null);
     }
 
     /**
@@ -764,13 +811,13 @@ public class HTTPConnection
      * @exception ModuleException if an exception is encountered in any module.
      */
     public HTTPResponse Get(String file, String query, NVPair[] headers)
-		throws IOException, ModuleException
+        throws IOException, ModuleException
     {
-	String File = stripRef(file);
-	if (query != null  &&  query.length() > 0)
-	    File += "?" + Codecs.URLEncode(query);
+    String File = stripRef(file);
+    if (query != null  &&  query.length() > 0)
+        File += "?" + Codecs.URLEncode(query);
 
-	return setupRequest("GET", File, headers, null, null);
+    return setupRequest("GET", File, headers, null, null);
     }
 
 
@@ -785,7 +832,7 @@ public class HTTPConnection
      */
     public HTTPResponse Post(String file)  throws IOException, ModuleException
     {
-	return Post(file, (byte []) null, null);
+    return Post(file, (byte []) null, null);
     }
 
     /**
@@ -802,12 +849,12 @@ public class HTTPConnection
      * @exception ModuleException if an exception is encountered in any module.
      */
     public HTTPResponse Post(String file, NVPair form_data[])
-		throws IOException, ModuleException
+        throws IOException, ModuleException
     {
-	NVPair[] headers =
-	    { new NVPair("Content-type", "application/x-www-form-urlencoded") };
+    NVPair[] headers =
+        { new NVPair("Content-type", "application/x-www-form-urlencoded") };
 
-	return Post(file, Codecs.nv2query(form_data), headers);
+    return Post(file, Codecs.nv2query(form_data), headers);
     }
 
     /**
@@ -828,17 +875,17 @@ public class HTTPConnection
     public HTTPResponse Post(String file, NVPair form_data[], NVPair headers[])
                 throws IOException, ModuleException
     {
-	int idx;
-	for (idx=0; idx<headers.length; idx++)
-	    if (headers[idx].getName().equalsIgnoreCase("Content-type")) break;
-	if (idx == headers.length)
-	{
-	    headers = Util.resizeArray(headers, idx+1);
-	    headers[idx] =
-		new NVPair("Content-type", "application/x-www-form-urlencoded");
-	}
+    int idx;
+    for (idx=0; idx<headers.length; idx++)
+        if (headers[idx].getName().equalsIgnoreCase("Content-type")) break;
+    if (idx == headers.length)
+    {
+        headers = Util.resizeArray(headers, idx+1);
+        headers[idx] =
+        new NVPair("Content-type", "application/x-www-form-urlencoded");
+    }
 
-	return Post(file, Codecs.nv2query(form_data), headers);
+    return Post(file, Codecs.nv2query(form_data), headers);
     }
 
     /**
@@ -855,9 +902,9 @@ public class HTTPConnection
      * @exception ModuleException if an exception is encountered in any module.
      */
     public HTTPResponse Post(String file, String data)
-		throws IOException, ModuleException
+        throws IOException, ModuleException
     {
-	return Post(file, data, null);
+    return Post(file, data, null);
     }
 
     /**
@@ -872,17 +919,17 @@ public class HTTPConnection
      * @exception ModuleException if an exception is encountered in any module.
      */
     public HTTPResponse Post(String file, String data, NVPair[] headers)
-		throws IOException, ModuleException
+        throws IOException, ModuleException
     {
-	byte tmp[] = null;
+    byte tmp[] = null;
 
-	if (data != null  &&  data.length() > 0)
-	{
-	    tmp = new byte[data.length()];
-	    data.getBytes(0, data.length(), tmp, 0);
-	}
+    if (data != null  &&  data.length() > 0)
+    {
+        tmp = new byte[data.length()];
+        data.getBytes(0, data.length(), tmp, 0);
+    }
 
-	return Post(file, tmp, headers);
+    return Post(file, tmp, headers);
     }
 
     /**
@@ -897,9 +944,9 @@ public class HTTPConnection
      * @exception ModuleException if an exception is encountered in any module.
      */
     public HTTPResponse Post(String file, byte data[])
-		throws IOException, ModuleException
+        throws IOException, ModuleException
     {
-	return Post(file, data, null);
+    return Post(file, data, null);
     }
 
     /**
@@ -914,9 +961,10 @@ public class HTTPConnection
      * @exception ModuleException if an exception is encountered in any module.
      */
     public HTTPResponse Post(String file, byte data[], NVPair[] headers)
-		throws IOException, ModuleException
+        throws IOException, ModuleException
     {
-	return setupRequest("POST", stripRef(file), headers, data, null);
+    if (data == null)  data = new byte[0];  // POST must always have a CL
+    return setupRequest("POST", stripRef(file), headers, data, null);
     }
 
 
@@ -932,9 +980,9 @@ public class HTTPConnection
      * @exception ModuleException if an exception is encountered in any module.
      */
     public HTTPResponse Post(String file, HttpOutputStream stream)
-		throws IOException, ModuleException
+        throws IOException, ModuleException
     {
-	return Post(file, stream, null);
+    return Post(file, stream, null);
     }
 
     /**
@@ -950,10 +998,10 @@ public class HTTPConnection
      * @exception ModuleException if an exception is encountered in any module.
      */
     public HTTPResponse Post(String file, HttpOutputStream stream,
-			     NVPair[] headers)
-		throws IOException, ModuleException
+                 NVPair[] headers)
+        throws IOException, ModuleException
     {
-	return setupRequest("POST", stripRef(file), headers, null, stream);
+    return setupRequest("POST", stripRef(file), headers, null, stream);
     }
 
 
@@ -971,9 +1019,9 @@ public class HTTPConnection
      * @exception ModuleException if an exception is encountered in any module.
      */
     public HTTPResponse Put(String file, String data)
-		throws IOException, ModuleException
+        throws IOException, ModuleException
     {
-	return Put(file, data, null);
+    return Put(file, data, null);
     }
 
     /**
@@ -989,17 +1037,17 @@ public class HTTPConnection
      * @exception ModuleException if an exception is encountered in any module.
      */
     public HTTPResponse Put(String file, String data, NVPair[] headers)
-		throws IOException, ModuleException
+        throws IOException, ModuleException
     {
-	byte tmp[] = null;
+    byte tmp[] = null;
 
-	if (data != null)
-	{
-	    tmp = new byte[data.length()];
-	    data.getBytes(0, data.length(), tmp, 0);
-	}
+    if (data != null)
+    {
+        tmp = new byte[data.length()];
+        data.getBytes(0, data.length(), tmp, 0);
+    }
 
-	return Put(file, tmp, headers);
+    return Put(file, tmp, headers);
     }
 
     /**
@@ -1014,9 +1062,9 @@ public class HTTPConnection
      * @exception ModuleException if an exception is encountered in any module.
      */
     public HTTPResponse Put(String file, byte data[])
-		throws IOException, ModuleException
+        throws IOException, ModuleException
     {
-	return Put(file, data, null);
+    return Put(file, data, null);
     }
 
     /**
@@ -1032,9 +1080,10 @@ public class HTTPConnection
      * @exception ModuleException if an exception is encountered in any module.
      */
     public HTTPResponse Put(String file, byte data[], NVPair[] headers)
-		throws IOException, ModuleException
+        throws IOException, ModuleException
     {
-	return setupRequest("PUT", stripRef(file), headers, data, null);
+    if (data == null)  data = new byte[0];  // PUT must always have a CL
+    return setupRequest("PUT", stripRef(file), headers, data, null);
     }
 
     /**
@@ -1049,9 +1098,9 @@ public class HTTPConnection
      * @exception ModuleException if an exception is encountered in any module.
      */
     public HTTPResponse Put(String file, HttpOutputStream stream)
-		throws IOException, ModuleException
+        throws IOException, ModuleException
     {
-	return Put(file, stream, null);
+    return Put(file, stream, null);
     }
 
     /**
@@ -1067,10 +1116,10 @@ public class HTTPConnection
      * @exception ModuleException if an exception is encountered in any module.
      */
     public HTTPResponse Put(String file, HttpOutputStream stream,
-			    NVPair[] headers)
-		throws IOException, ModuleException
+                NVPair[] headers)
+        throws IOException, ModuleException
     {
-	return setupRequest("PUT", stripRef(file), headers, null, stream);
+    return setupRequest("PUT", stripRef(file), headers, null, stream);
     }
 
 
@@ -1086,9 +1135,9 @@ public class HTTPConnection
      * @exception ModuleException if an exception is encountered in any module.
      */
     public HTTPResponse Options(String file)
-		throws IOException, ModuleException
+        throws IOException, ModuleException
     {
-	return Options(file, null, (byte[]) null);
+    return Options(file, null, (byte[]) null);
     }
 
 
@@ -1105,9 +1154,9 @@ public class HTTPConnection
      * @exception ModuleException if an exception is encountered in any module.
      */
     public HTTPResponse Options(String file, NVPair[] headers)
-		throws IOException, ModuleException
+        throws IOException, ModuleException
     {
-	return Options(file, headers, (byte[]) null);
+    return Options(file, headers, (byte[]) null);
     }
 
 
@@ -1125,9 +1174,9 @@ public class HTTPConnection
      * @exception ModuleException if an exception is encountered in any module.
      */
     public HTTPResponse Options(String file, NVPair[] headers, byte[] data)
-		throws IOException, ModuleException
+        throws IOException, ModuleException
     {
-	return setupRequest("OPTIONS", stripRef(file), headers, data, null);
+    return setupRequest("OPTIONS", stripRef(file), headers, data, null);
     }
 
 
@@ -1145,10 +1194,10 @@ public class HTTPConnection
      * @exception ModuleException if an exception is encountered in any module.
      */
     public HTTPResponse Options(String file, NVPair[] headers,
-				HttpOutputStream stream)
-		throws IOException, ModuleException
+                HttpOutputStream stream)
+        throws IOException, ModuleException
     {
-	return setupRequest("OPTIONS", stripRef(file), headers, null, stream);
+    return setupRequest("OPTIONS", stripRef(file), headers, null, stream);
     }
 
 
@@ -1162,9 +1211,9 @@ public class HTTPConnection
      * @exception ModuleException if an exception is encountered in any module.
      */
     public HTTPResponse Delete(String file)
-		throws IOException, ModuleException
+        throws IOException, ModuleException
     {
-	return Delete(file, null);
+    return Delete(file, null);
     }
 
 
@@ -1179,9 +1228,9 @@ public class HTTPConnection
      * @exception ModuleException if an exception is encountered in any module.
      */
     public HTTPResponse Delete(String file, NVPair[] headers)
-		throws IOException, ModuleException
+        throws IOException, ModuleException
     {
-	return setupRequest("DELETE", stripRef(file), headers, null, null);
+    return setupRequest("DELETE", stripRef(file), headers, null, null);
     }
 
 
@@ -1197,9 +1246,9 @@ public class HTTPConnection
      * @exception ModuleException if an exception is encountered in any module.
      */
     public HTTPResponse Trace(String file, NVPair[] headers)
-		throws IOException, ModuleException
+        throws IOException, ModuleException
     {
-	return setupRequest("TRACE", stripRef(file), headers, null, null);
+    return setupRequest("TRACE", stripRef(file), headers, null, null);
     }
 
 
@@ -1213,9 +1262,9 @@ public class HTTPConnection
      * @exception ModuleException if an exception is encountered in any module.
      */
     public HTTPResponse Trace(String file)
-		throws IOException, ModuleException
+        throws IOException, ModuleException
     {
-	return Trace(file, null);
+    return Trace(file, null);
     }
 
 
@@ -1233,10 +1282,10 @@ public class HTTPConnection
      * @exception ModuleException if an exception is encountered in any module.
      */
     public HTTPResponse ExtensionMethod(String method, String file,
-					byte[] data, NVPair[] headers)
-		throws IOException, ModuleException
+                    byte[] data, NVPair[] headers)
+        throws IOException, ModuleException
     {
-	return setupRequest(method.trim(), stripRef(file), headers, data, null);
+    return setupRequest(method.trim(), stripRef(file), headers, data, null);
     }
 
 
@@ -1254,10 +1303,10 @@ public class HTTPConnection
      * @exception ModuleException if an exception is encountered in any module.
      */
     public HTTPResponse ExtensionMethod(String method, String file,
-					HttpOutputStream os, NVPair[] headers)
-		throws IOException, ModuleException
+                    HttpOutputStream os, NVPair[] headers)
+        throws IOException, ModuleException
     {
-	return setupRequest(method.trim(), stripRef(file), headers, null, os);
+    return setupRequest(method.trim(), stripRef(file), headers, null, os);
     }
 
 
@@ -1274,14 +1323,14 @@ public class HTTPConnection
      */
     public void stop()
     {
-	for (Request req = (Request) RequestList.enumerate(); req != null;
-	     req = (Request) RequestList.next())
-	    req.aborted = true;
+    for (Request req = (Request) RequestList.enumerate(); req != null;
+         req = (Request) RequestList.next())
+        req.aborted = true;
 
-	for (StreamDemultiplexor demux =
-				(StreamDemultiplexor) DemuxList.enumerate();
-	     demux != null; demux = (StreamDemultiplexor) DemuxList.next())
-	    demux.abort();
+    for (StreamDemultiplexor demux =
+                (StreamDemultiplexor) DemuxList.enumerate();
+         demux != null; demux = (StreamDemultiplexor) DemuxList.next())
+        demux.abort();
     }
 
 
@@ -1308,22 +1357,23 @@ public class HTTPConnection
      */
     public void setDefaultHeaders(NVPair[] headers)
     {
-	int length = (headers == null ? 0 : headers.length);
-	DefaultHeaders = new NVPair[length];
+    int length = (headers == null ? 0 : headers.length);
+    DefaultHeaders = new NVPair[length];
 
-	// weed out undesired headers
-	int sidx, didx;
-	for (sidx=0, didx=0; sidx<length; sidx++)
-	{
-	    if (headers[sidx].name.trim().equalsIgnoreCase("Content-length") ||
-		headers[sidx].name.trim().equalsIgnoreCase("Host"))
-		continue;
+    // weed out undesired headers
+    int sidx, didx;
+    for (sidx=0, didx=0; sidx<length; sidx++)
+    {
+        String name = headers[sidx].getName().trim();
+        if (name.equalsIgnoreCase("Content-length") ||
+        name.equalsIgnoreCase("Host"))
+        continue;
 
-	    DefaultHeaders[didx++] = headers[sidx];
-	}
+        DefaultHeaders[didx++] = headers[sidx];
+    }
 
-	if (didx < length)
-	    DefaultHeaders = Util.resizeArray(DefaultHeaders, didx);
+    if (didx < length)
+        DefaultHeaders = Util.resizeArray(DefaultHeaders, didx);
     }
 
 
@@ -1334,42 +1384,42 @@ public class HTTPConnection
      */
     public NVPair[] getDefaultHeaders()
     {
-	//return (NVPair[]) DefaultHeaders.clone();  JDK 1.1 Only
+    //return (NVPair[]) DefaultHeaders.clone();  JDK 1.1 Only
 
-	NVPair[] headers = new NVPair[DefaultHeaders.length];
-	System.arraycopy(DefaultHeaders, 0, headers, 0, headers.length);
-	return headers;
+    NVPair[] headers = new NVPair[DefaultHeaders.length];
+    System.arraycopy(DefaultHeaders, 0, headers, 0, headers.length);
+    return headers;
     }
 
 
     /**
      * Returns the protocol this connection is talking.
      *
-     * @return a string containing the protocol
+     * @return a string containing the (lowercased) protocol
      */
     public String getProtocol()
     {
-	switch (Protocol)
-	{
-	    case HTTP:    return "http";
-	    case HTTPS:   return "https";
-	    case SHTTP:   return "shttp";
-	    case HTTP_NG: return "http-ng";
-	    default:
-		throw new Error("HTTPClient Internal Error: invalid protocol " +
-				Protocol);
-	}
+    switch (Protocol)
+    {
+        case HTTP:    return "http";
+        case HTTPS:   return "https";
+        case SHTTP:   return "shttp";
+        case HTTP_NG: return "http-ng";
+        default:
+        throw new Error("HTTPClient Internal Error: invalid protocol " +
+                Protocol);
+    }
     }
 
 
     /**
      * Returns the host this connection is talking to.
      *
-     * @return a string containing the host name.
+     * @return a string containing the (lowercased) host name.
      */
     public String getHost()
     {
-	return Host;
+    return Host;
     }
 
 
@@ -1380,18 +1430,18 @@ public class HTTPConnection
      */
     public int getPort()
     {
-	return Port;
+    return Port;
     }
 
 
     /**
      * Returns the host of the proxy this connection is using.
      *
-     * @return a string containing the host name.
+     * @return a string containing the (lowercased) host name.
      */
     public String getProxyHost()
     {
-	return Proxy_Host;
+    return Proxy_Host;
     }
 
 
@@ -1402,7 +1452,7 @@ public class HTTPConnection
      */
     public int getProxyPort()
     {
-	return Proxy_Port;
+    return Proxy_Port;
     }
 
 
@@ -1422,26 +1472,26 @@ public class HTTPConnection
      */
     public void setRawMode(boolean raw)
     {
-	// Don't remove the retry module
-	String[] modules = { "HTTPClient.CookieModule",
-			     "HTTPClient.RedirectionModule",
-			     "HTTPClient.AuthorizationModule",
-			     "HTTPClient.DefaultModule",
-			     "HTTPClient.TransferEncodingModule",
-			     "HTTPClient.ContentMD5Module",
-			     "HTTPClient.ContentEncodingModule"};
+    // Don't remove the retry module
+    String[] modules = { "HTTPClient.CookieModule",
+                 "HTTPClient.RedirectionModule",
+                 "HTTPClient.AuthorizationModule",
+                 "HTTPClient.DefaultModule",
+                 "HTTPClient.TransferEncodingModule",
+                 "HTTPClient.ContentMD5Module",
+                 "HTTPClient.ContentEncodingModule"};
 
-	for (int idx=0; idx<modules.length; idx++)
-	{
-	    try
-	    {
-		if (raw)
-		    removeModule(Class.forName(modules[idx]));
-		else
-		    addModule(Class.forName(modules[idx]), -1);
-	    }
-	    catch (ClassNotFoundException cnfe) { }
-	}
+    for (int idx=0; idx<modules.length; idx++)
+    {
+        try
+        {
+        if (raw)
+            removeModule(Class.forName(modules[idx]));
+        else
+            addModule(Class.forName(modules[idx]), -1);
+        }
+        catch (ClassNotFoundException cnfe) { }
+    }
     }
 
 
@@ -1454,7 +1504,7 @@ public class HTTPConnection
      */
     public static void setDefaultTimeout(int time)
     {
-	DefaultTimeout = time;
+    DefaultTimeout = time;
     }
 
 
@@ -1466,7 +1516,7 @@ public class HTTPConnection
      */
     public static int getDefaultTimeout()
     {
-	return DefaultTimeout;
+    return DefaultTimeout;
     }
 
 
@@ -1474,7 +1524,9 @@ public class HTTPConnection
      * Sets the timeout to be used for creating connections and reading
      * responses. When a timeout expires the operation will throw an
      * InterruptedIOException. The operation may be restarted again
-     * afterwards.
+     * afterwards. If the operation is not restarted and it is a read
+     * operation (i.e HTTPResponse.xxxx()) then <code>stop()</code>
+     * <strong>should</strong> be invoked.
      *
      * <P>When creating new sockets the timeout will limit the time spent
      * doing the host name translation and establishing the connection with
@@ -1500,10 +1552,11 @@ public class HTTPConnection
      *
      * @param time the time in milliseconds. A time of 0 means wait
      *             indefinitely.
+     * @see #stop()
      */
     public void setTimeout(int time)
     {
-	Timeout = time;
+    Timeout = time;
     }
 
 
@@ -1515,7 +1568,7 @@ public class HTTPConnection
      */
     public int getTimeout()
     {
-	return Timeout;
+    return Timeout;
     }
 
 
@@ -1527,7 +1580,7 @@ public class HTTPConnection
      */
     public void setAllowUserInteraction(boolean allow)
     {
-	AllowUI = allow;
+    AllowUI = allow;
     }
 
     /**
@@ -1538,7 +1591,7 @@ public class HTTPConnection
      */
     public boolean getAllowUserInteraction()
     {
-	return AllowUI;
+    return AllowUI;
     }
 
 
@@ -1549,7 +1602,7 @@ public class HTTPConnection
      */
     public static void setDefaultAllowUserInteraction(boolean allow)
     {
-	DefaultAllowUI = allow;
+    DefaultAllowUI = allow;
     }
 
     /**
@@ -1559,7 +1612,7 @@ public class HTTPConnection
      */
     public static boolean getDefaultAllowUserInteraction()
     {
-	return DefaultAllowUI;
+    return DefaultAllowUI;
     }
 
 
@@ -1570,9 +1623,12 @@ public class HTTPConnection
      */
     public static Class[] getDefaultModules()
     {
-	Class[] modules = new Class[DefaultModuleList.size()];
-	DefaultModuleList.copyInto(modules);
-	return modules;
+    synchronized(DefaultModuleList)
+    {
+        Class[] modules = new Class[DefaultModuleList.size()];
+        DefaultModuleList.copyInto(modules);
+        return modules;
+    }
     }
 
     /**
@@ -1614,25 +1670,33 @@ public class HTTPConnection
      */
     public static boolean addDefaultModule(Class module, int pos)
     {
-	// check if module implements HTTPClientModule
-	try
-	    { HTTPClientModule tmp = (HTTPClientModule) module.newInstance(); }
-	catch (RuntimeException re)
-	    { throw re; }
-	catch (Exception e)
-	    { throw new RuntimeException(e.toString()); }
+    // check if module implements HTTPClientModule
+    try
+        { HTTPClientModule tmp = (HTTPClientModule) module.newInstance(); }
+    catch (RuntimeException re)
+        { throw re; }
+    catch (Exception e)
+        { throw new RuntimeException(e.toString()); }
 
-	// check if module already in list
-	if (DefaultModuleList.contains(module))
-	    return false;
+    synchronized(DefaultModuleList)
+    {
+        // check if module already in list
+        if (DefaultModuleList.contains(module))
+        return false;
 
-	// add module to list
-	if (pos < 0)
-	    DefaultModuleList.insertElementAt(module,
-					      DefaultModuleList.size()+pos+1);
-	else
-	    DefaultModuleList.insertElementAt(module, pos);
-	return true;
+        // add module to list
+        if (pos < 0)
+        DefaultModuleList.insertElementAt(module,
+                          DefaultModuleList.size()+pos+1);
+        else
+        DefaultModuleList.insertElementAt(module, pos);
+    }
+
+    if (DebugConn)
+        System.err.println("Conn:  Added module " + module.getName() +
+                   " to default list");
+
+    return true;
     }
 
 
@@ -1645,7 +1709,14 @@ public class HTTPConnection
      */
     public static boolean removeDefaultModule(Class module)
     {
-	return DefaultModuleList.removeElement(module);
+    boolean removed = DefaultModuleList.removeElement(module);
+
+    if (DebugConn)
+        if (removed)
+        System.err.println("Conn:  Removed module " + module.getName() +
+                   " from default list");
+
+    return removed;
     }
 
 
@@ -1656,9 +1727,12 @@ public class HTTPConnection
      */
     public Class[] getModules()
     {
-	Class[] modules = new Class[ModuleList.size()];
-	ModuleList.copyInto(modules);
-	return modules;
+    synchronized(ModuleList)
+    {
+        Class[] modules = new Class[ModuleList.size()];
+        ModuleList.copyInto(modules);
+        return modules;
+    }
     }
 
 
@@ -1685,24 +1759,28 @@ public class HTTPConnection
      */
     public boolean addModule(Class module, int pos)
     {
-	// check if module implements HTTPClientModule
-	try
-	    { HTTPClientModule tmp = (HTTPClientModule) module.newInstance(); }
-	catch (RuntimeException re)
-	    { throw re; }
-	catch (Exception e)
-	    { throw new RuntimeException(e.toString()); }
+    // check if module implements HTTPClientModule
+    try
+        { HTTPClientModule tmp = (HTTPClientModule) module.newInstance(); }
+    catch (RuntimeException re)
+        { throw re; }
+    catch (Exception e)
+        { throw new RuntimeException(e.toString()); }
 
-	// check if module already in list
-	if (ModuleList.contains(module))
-	    return false;
+    synchronized(ModuleList)
+    {
+        // check if module already in list
+        if (ModuleList.contains(module))
+        return false;
 
-	// add module to list
-	if (pos < 0)
-	    ModuleList.insertElementAt(module, ModuleList.size()+pos+1);
-	else
-	    ModuleList.insertElementAt(module, pos);
-	return true;
+        // add module to list
+        if (pos < 0)
+        ModuleList.insertElementAt(module, ModuleList.size()+pos+1);
+        else
+        ModuleList.insertElementAt(module, pos);
+    }
+
+    return true;
     }
 
 
@@ -1715,8 +1793,8 @@ public class HTTPConnection
      */
     public boolean removeModule(Class module)
     {
-	if (module == null)  return false;
-	return ModuleList.removeElement(module);
+    if (module == null)  return false;
+    return ModuleList.removeElement(module);
     }
 
 
@@ -1744,12 +1822,12 @@ public class HTTPConnection
      */
     public void setContext(Object context)
     {
-	if (context == null)
-	    throw new IllegalArgumentException("Context must be non-null");
-	if (Context != null)
-	    throw new RuntimeException("Context already set");
+    if (context == null)
+        throw new IllegalArgumentException("Context must be non-null");
+    if (Context != null)
+        throw new RuntimeException("Context already set");
 
-	Context = context;
+    Context = context;
     }
 
 
@@ -1762,10 +1840,10 @@ public class HTTPConnection
      */
     public Object getContext()
     {
-	if (Context != null)
-	    return Context;
-	else
-	    return dflt_context;
+    if (Context != null)
+        return Context;
+    else
+        return dflt_context;
     }
 
 
@@ -1777,7 +1855,7 @@ public class HTTPConnection
      */
     static Object getDefaultContext()
     {
-	return dflt_context;
+    return dflt_context;
     }
 
 
@@ -1796,8 +1874,8 @@ public class HTTPConnection
      */
     public void addDigestAuthorization(String realm, String user, String passwd)
     {
-	AuthorizationInfo.addDigestAuthorization(Host, Port, realm, user,
-						 passwd, getContext());
+    AuthorizationInfo.addDigestAuthorization(Host, Port, realm, user,
+                         passwd, getContext());
     }
 
 
@@ -1816,8 +1894,8 @@ public class HTTPConnection
      */
     public void addBasicAuthorization(String realm, String user, String passwd)
     {
-	AuthorizationInfo.addBasicAuthorization(Host, Port, realm, user,
-						passwd, getContext());
+    AuthorizationInfo.addBasicAuthorization(Host, Port, realm, user,
+                        passwd, getContext());
     }
 
 
@@ -1848,13 +1926,13 @@ public class HTTPConnection
      */
     public static void setProxyServer(String host, int port)
     {
-	if (host == null  ||  host.trim().length() == 0)
-	    Default_Proxy_Host = null;
-	else
-	{
-	    Default_Proxy_Host = host.trim();
-	    Default_Proxy_Port = port;
-	}
+    if (host == null  ||  host.trim().length() == 0)
+        Default_Proxy_Host = null;
+    else
+    {
+        Default_Proxy_Host = host.trim().toLowerCase();
+        Default_Proxy_Port = port;
+    }
     }
 
 
@@ -1869,51 +1947,57 @@ public class HTTPConnection
      */
     public synchronized void setCurrentProxy(String host, int port)
     {
-	if (host == null  ||  host.trim().length() == 0)
-	    Proxy_Host = null;
-	else
-	{
-	    Proxy_Host = host;
-	    if (port <= 0)
-		Proxy_Port = 80;
-	    else
-		Proxy_Port = port;
-	}
+    if (host == null  ||  host.trim().length() == 0)
+        Proxy_Host = null;
+    else
+    {
+        Proxy_Host = host.trim().toLowerCase();
+        if (port <= 0)
+        Proxy_Port = 80;
+        else
+        Proxy_Port = port;
+    }
 
-	// the proxy might be talking a different version, so renegotiate
-	switch(Protocol)
-	{
-	    case HTTP:
-		ServerProtocolVersion  = HTTP_1_1;
-		ServProtVersKnown      = false;
-		RequestProtocolVersion = "HTTP/1.1";
-		break;
-	    case HTTP_NG:
-		ServerProtocolVersion  = -1;		/* Unknown */
-		ServProtVersKnown      = false;
-		RequestProtocolVersion = "";
-		break;
-	    case SHTTP:
-		ServerProtocolVersion  = -1;		/* Unknown */
-		ServProtVersKnown      = false;
-		RequestProtocolVersion = "Secure-HTTP/1.3";
-		break;
-	    case HTTPS:
-		ServerProtocolVersion  = HTTP_1_1;
-		ServProtVersKnown      = false;
-		RequestProtocolVersion = "HTTP/1.1";
-		break;
-	    default:
-		throw new Error("HTTPClient Internal Error: invalid protocol " +
-				Protocol);
-	}
+    // the proxy might be talking a different version, so renegotiate
+    switch(Protocol)
+    {
+        case HTTP:
+        case HTTPS:
+        if (force_1_0)
+        {
+            ServerProtocolVersion  = HTTP_1_0;
+            ServProtVersKnown      = true;
+            RequestProtocolVersion = "HTTP/1.0";
+        }
+        else
+        {
+            ServerProtocolVersion  = HTTP_1_1;
+            ServProtVersKnown      = false;
+            RequestProtocolVersion = "HTTP/1.1";
+        }
+        break;
+        case HTTP_NG:
+        ServerProtocolVersion  = -1;        /* Unknown */
+        ServProtVersKnown      = false;
+        RequestProtocolVersion = "";
+        break;
+        case SHTTP:
+        ServerProtocolVersion  = -1;        /* Unknown */
+        ServProtVersKnown      = false;
+        RequestProtocolVersion = "Secure-HTTP/1.3";
+        break;
+        default:
+        throw new Error("HTTPClient Internal Error: invalid protocol " +
+                Protocol);
+    }
 
-	KeepAliveUnknown = true;
-	DoesKeepAlive    = false;
+    KeepAliveUnknown = true;
+    DoesKeepAlive    = false;
 
-	input_demux = null;
-	early_stall = null;
-	late_stall  = null;
+    input_demux = null;
+    early_stall = null;
+    late_stall  = null;
+    prev_resp   = null;
     }
 
 
@@ -1928,7 +2012,7 @@ public class HTTPConnection
      *     ".disney.com")
      * <LI>an IP-address (e.g. "12.34.56.78")
      * <LI>an IP-subnet, specified as an IP-address and a netmask separated
-     *     by a "/" (e.g. 34.56.78/255.255.255.192"); a 0 bit in the netmask
+     *     by a "/" (e.g. "34.56.78/255.255.255.192"); a 0 bit in the netmask
      *     means that that bit won't be used in the comparison (i.e. the
      *     addresses are AND'ed with the netmask before comparison).
      * </UL>
@@ -1947,71 +2031,73 @@ public class HTTPConnection
      */
     public static void dontProxyFor(String host)  throws ParseException
     {
-	// check for domain name
+    host = host.trim().toLowerCase();
 
-	if (host.charAt(0) == '.')
-	{
-	    if (!non_proxy_dom_list.contains(host.toLowerCase()))
-		non_proxy_dom_list.addElement(host.toLowerCase());
-	    return;
-	}
+    // check for domain name
 
-
-	// check for host name
-
-	for (int idx=0; idx<host.length(); idx++)
-	{
-	    if (!Character.isDigit(host.charAt(idx))  &&
-		host.charAt(idx) != '.'  &&  host.charAt(idx) != '/')
-	    {
-		non_proxy_host_list.put(host, "");
-		return;
-	    }
-	}
+    if (host.charAt(0) == '.')
+    {
+        if (!non_proxy_dom_list.contains(host))
+        non_proxy_dom_list.addElement(host);
+        return;
+    }
 
 
-	// must be an IP-address
+    // check for host name
 
-	byte[] ip_addr;
-	byte[] ip_mask;
-	int slash;
-	if ((slash = host.indexOf('/')) != -1)	// IP subnet
-	{
-	    ip_addr = string2arr(host.substring(0, slash));
-	    ip_mask = string2arr(host.substring(slash+1));
-	    if (ip_addr.length != ip_mask.length)
-		throw new ParseException("length of IP-address (" +
-				ip_addr.length + ") != length of netmask (" +
-				ip_mask.length + ")");
-	}
-	else
-	{
-	    ip_addr = string2arr(host);
-	    ip_mask = new byte[ip_addr.length];
-	    for (int idx=0; idx<ip_mask.length; idx++)
-		ip_mask[idx] = (byte) 255;
-	}
+    for (int idx=0; idx<host.length(); idx++)
+    {
+        if (!Character.isDigit(host.charAt(idx))  &&
+        host.charAt(idx) != '.'  &&  host.charAt(idx) != '/')
+        {
+        non_proxy_host_list.put(host, "");
+        return;
+        }
+    }
 
 
-	// check if addr or subnet already exists
+    // must be an IP-address
 
-	ip_loop: for (int idx=0; idx<non_proxy_addr_list.size(); idx++)
-	{
-	    byte[] addr = (byte[]) non_proxy_addr_list.elementAt(idx);
-	    byte[] mask = (byte[]) non_proxy_mask_list.elementAt(idx);
-	    if (addr.length != ip_addr.length)  continue;
+    byte[] ip_addr;
+    byte[] ip_mask;
+    int slash;
+    if ((slash = host.indexOf('/')) != -1)  // IP subnet
+    {
+        ip_addr = string2arr(host.substring(0, slash));
+        ip_mask = string2arr(host.substring(slash+1));
+        if (ip_addr.length != ip_mask.length)
+        throw new ParseException("length of IP-address (" +
+                ip_addr.length + ") != length of netmask (" +
+                ip_mask.length + ")");
+    }
+    else
+    {
+        ip_addr = string2arr(host);
+        ip_mask = new byte[ip_addr.length];
+        for (int idx=0; idx<ip_mask.length; idx++)
+        ip_mask[idx] = (byte) 255;
+    }
 
-	    for (int idx2=0; idx2<addr.length; idx2++)
-	    {
-		if ((ip_addr[idx2] & mask[idx2]) != (addr[idx2] & mask[idx2]) ||
-		    (mask[idx2] != ip_mask[idx2]))
-		    continue ip_loop;
-	    }
 
-	    return;			// already exists
-	}
-	non_proxy_addr_list.addElement(ip_addr);
-	non_proxy_mask_list.addElement(ip_mask);
+    // check if addr or subnet already exists
+
+    ip_loop: for (int idx=0; idx<non_proxy_addr_list.size(); idx++)
+    {
+        byte[] addr = (byte[]) non_proxy_addr_list.elementAt(idx);
+        byte[] mask = (byte[]) non_proxy_mask_list.elementAt(idx);
+        if (addr.length != ip_addr.length)  continue;
+
+        for (int idx2=0; idx2<addr.length; idx2++)
+        {
+        if ((ip_addr[idx2] & mask[idx2]) != (addr[idx2] & mask[idx2]) ||
+            (mask[idx2] != ip_mask[idx2]))
+            continue ip_loop;
+        }
+
+        return;         // already exists
+    }
+    non_proxy_addr_list.addElement(ip_addr);
+    non_proxy_mask_list.addElement(ip_mask);
     }
 
 
@@ -2028,62 +2114,64 @@ public class HTTPConnection
      */
     public static boolean doProxyFor(String host)  throws ParseException
     {
-	// check for domain name
+    host = host.trim().toLowerCase();
 
-	if (host.charAt(0) == '.')
-	    return non_proxy_dom_list.removeElement(host.toLowerCase());
+    // check for domain name
 
-
-	// check for host name
-
-	for (int idx=0; idx<host.length(); idx++)
-	{
-	    if (!Character.isDigit(host.charAt(idx))  &&
-		host.charAt(idx) != '.'  &&  host.charAt(idx) != '/')
-		return (non_proxy_host_list.remove(host) != null);
-	}
+    if (host.charAt(0) == '.')
+        return non_proxy_dom_list.removeElement(host);
 
 
-	// must be an IP-address
+    // check for host name
 
-	byte[] ip_addr;
-	byte[] ip_mask;
-	int slash;
-	if ((slash = host.indexOf('/')) != -1)	// IP subnet
-	{
-	    ip_addr = string2arr(host.substring(0, slash));
-	    ip_mask = string2arr(host.substring(slash+1));
-	    if (ip_addr.length != ip_mask.length)
-		throw new ParseException("length of IP-address (" +
-				ip_addr.length + ") != length of netmask (" +
-				ip_mask.length + ")");
-	}
-	else
-	{
-	    ip_addr = string2arr(host);
-	    ip_mask = new byte[ip_addr.length];
-	    for (int idx=0; idx<ip_mask.length; idx++)
-		ip_mask[idx] = (byte) 255;
-	}
+    for (int idx=0; idx<host.length(); idx++)
+    {
+        if (!Character.isDigit(host.charAt(idx))  &&
+        host.charAt(idx) != '.'  &&  host.charAt(idx) != '/')
+        return (non_proxy_host_list.remove(host) != null);
+    }
 
-	ip_loop: for (int idx=0; idx<non_proxy_addr_list.size(); idx++)
-	{
-	    byte[] addr = (byte[]) non_proxy_addr_list.elementAt(idx);
-	    byte[] mask = (byte[]) non_proxy_mask_list.elementAt(idx);
-	    if (addr.length != ip_addr.length)  continue;
 
-	    for (int idx2=0; idx2<addr.length; idx2++)
-	    {
-		if ((ip_addr[idx2] & mask[idx2]) != (addr[idx2] & mask[idx2]) ||
-		    (mask[idx2] != ip_mask[idx2]))
-		    continue ip_loop;
-	    }
+    // must be an IP-address
 
-	    non_proxy_addr_list.removeElementAt(idx);
-	    non_proxy_mask_list.removeElementAt(idx);
-	    return true;
-	}
-	return false;
+    byte[] ip_addr;
+    byte[] ip_mask;
+    int slash;
+    if ((slash = host.indexOf('/')) != -1)  // IP subnet
+    {
+        ip_addr = string2arr(host.substring(0, slash));
+        ip_mask = string2arr(host.substring(slash+1));
+        if (ip_addr.length != ip_mask.length)
+        throw new ParseException("length of IP-address (" +
+                ip_addr.length + ") != length of netmask (" +
+                ip_mask.length + ")");
+    }
+    else
+    {
+        ip_addr = string2arr(host);
+        ip_mask = new byte[ip_addr.length];
+        for (int idx=0; idx<ip_mask.length; idx++)
+        ip_mask[idx] = (byte) 255;
+    }
+
+    ip_loop: for (int idx=0; idx<non_proxy_addr_list.size(); idx++)
+    {
+        byte[] addr = (byte[]) non_proxy_addr_list.elementAt(idx);
+        byte[] mask = (byte[]) non_proxy_mask_list.elementAt(idx);
+        if (addr.length != ip_addr.length)  continue;
+
+        for (int idx2=0; idx2<addr.length; idx2++)
+        {
+        if ((ip_addr[idx2] & mask[idx2]) != (addr[idx2] & mask[idx2]) ||
+            (mask[idx2] != ip_mask[idx2]))
+            continue ip_loop;
+        }
+
+        non_proxy_addr_list.removeElementAt(idx);
+        non_proxy_mask_list.removeElementAt(idx);
+        return true;
+    }
+    return false;
     }
 
 
@@ -2096,27 +2184,27 @@ public class HTTPConnection
      */
     private static byte[] string2arr(String ip)
     {
-	byte[] arr;
-	char[] ip_char = new char[ip.length()];
-	ip.getChars(0, ip_char.length, ip_char, 0);
+    byte[] arr;
+    char[] ip_char = new char[ip.length()];
+    ip.getChars(0, ip_char.length, ip_char, 0);
 
-	int cnt = 0;
-	for (int idx=0; idx<ip_char.length; idx++)
-	    if (ip_char[idx] == '.') cnt++;
-	arr = new byte[cnt+1];
+    int cnt = 0;
+    for (int idx=0; idx<ip_char.length; idx++)
+        if (ip_char[idx] == '.') cnt++;
+    arr = new byte[cnt+1];
 
-	cnt = 0;
-	int pos = 0;
-	for (int idx=0; idx<ip_char.length; idx++)
-	    if (ip_char[idx] == '.')
-	    {
-		arr[cnt] = (byte) Integer.parseInt(ip.substring(pos, idx));
-		cnt++;
-		pos = idx+1;
-	    }
-	arr[cnt] = (byte) Integer.parseInt(ip.substring(pos));
+    cnt = 0;
+    int pos = 0;
+    for (int idx=0; idx<ip_char.length; idx++)
+        if (ip_char[idx] == '.')
+        {
+        arr[cnt] = (byte) Integer.parseInt(ip.substring(pos, idx));
+        cnt++;
+        pos = idx+1;
+        }
+    arr[cnt] = (byte) Integer.parseInt(ip.substring(pos));
 
-	return arr;
+    return arr;
     }
 
 
@@ -2135,7 +2223,7 @@ public class HTTPConnection
      */
     public static void setSocksServer(String host)
     {
-	setSocksServer(host, 1080);
+    setSocksServer(host, 1080);
     }
 
 
@@ -2154,13 +2242,13 @@ public class HTTPConnection
      */
     public static void setSocksServer(String host, int port)
     {
-	if (port <= 0)
-	    port = 1080;
+    if (port <= 0)
+        port = 1080;
 
-	if (host == null  ||  host.length() == 0)
-	    Default_Socks_client = null;
-	else
-	    Default_Socks_client = new SocksClient(host, port);
+    if (host == null  ||  host.length() == 0)
+        Default_Socks_client = null;
+    else
+        Default_Socks_client = new SocksClient(host, port);
     }
 
 
@@ -2211,15 +2299,15 @@ public class HTTPConnection
      * @exception SocksException If <var>version</var> is not '4' or '5'.
      */
     public static void setSocksServer(String host, int port, int version)
-	    throws SocksException
+        throws SocksException
     {
-	if (port <= 0)
-	    port = 1080;
+    if (port <= 0)
+        port = 1080;
 
-	if (host == null  ||  host.length() == 0)
-	    Default_Socks_client = null;
-	else
-	    Default_Socks_client = new SocksClient(host, port, version);
+    if (host == null  ||  host.length() == 0)
+        Default_Socks_client = null;
+    else
+        Default_Socks_client = new SocksClient(host, port, version);
     }
 
 
@@ -2232,17 +2320,17 @@ public class HTTPConnection
      */
     private final String stripRef(String file)
     {
-	if (file == null)  return "/";
+    if (file == null)  return "/";
 
-	int hash = file.indexOf('#');
-	if (hash != -1)
-	    file = file.substring(0,hash).trim();
-	else
-	    file = file.trim();
+    int hash = file.indexOf('#');
+    if (hash != -1)
+        file = file.substring(0,hash).trim();
+    else
+        file = file.trim();
 
-	if (file.length() == 0)  file = "/";
+    if (file.length() == 0)  file = "/";
 
-	return file;
+    return file;
     }
 
 
@@ -2262,23 +2350,24 @@ public class HTTPConnection
      * @exception ModuleException if an exception is encountered in any module.
      */
     private HTTPResponse setupRequest(String method, String resource,
-				      NVPair[] headers, byte[] entity,
-				      HttpOutputStream stream)
-		throws IOException, ModuleException
+                      NVPair[] headers, byte[] entity,
+                      HttpOutputStream stream)
+        throws IOException, ModuleException
     {
-	Request req = new Request(this, method, resource,
-				  mergedHeaders(headers), entity, stream,
-				  AllowUI);
-	RequestList.addToEnd(req);
+    Request req = new Request(this, method, resource,
+                  mergedHeaders(headers), entity, stream,
+                  AllowUI);
+    RequestList.addToEnd(req);
 
-	try
-	{
-	    HTTPResponse resp = new HTTPResponse(gen_mod_insts(), Timeout);
-	    handleRequest(req, resp, true);
-	    return resp;
-	}
-	finally
-	    { RequestList.remove(req); }
+    try
+    {
+        HTTPResponse resp = new HTTPResponse(gen_mod_insts(), Timeout, req);
+        resp.setLogging( logging, logFilename );
+        handleRequest(req, resp, null, true);
+        return resp;
+    }
+    finally
+        { RequestList.remove(req); }
     }
 
 
@@ -2295,38 +2384,38 @@ public class HTTPConnection
      */
     private NVPair[] mergedHeaders(NVPair[] spec)
     {
-	int spec_len = (spec != null ? spec.length : 0),
-	    defs_len = (DefaultHeaders != null ? DefaultHeaders.length : 0);
-	NVPair[] merged = new NVPair[spec_len + defs_len];
-	int sidx, didx;
+    int spec_len = (spec != null ? spec.length : 0),
+        defs_len = (DefaultHeaders != null ? DefaultHeaders.length : 0);
+    NVPair[] merged = new NVPair[spec_len + defs_len];
+    int sidx, didx;
 
-	// merge in default headers
-	didx = defs_len;
-	System.arraycopy(DefaultHeaders, 0, merged, 0, didx);
+    // merge in default headers
+    System.arraycopy(DefaultHeaders, 0, merged, 0, defs_len);
 
-	// merge in selected headers
-	for (sidx=0; sidx<spec_len; sidx++)
-	{
-	    if (spec[sidx].name.trim().equalsIgnoreCase("Content-length")  ||
-		spec[sidx].name.trim().equalsIgnoreCase("Host"))
-		continue;
+    // merge in selected headers
+    didx = defs_len;
+    for (sidx=0; sidx<spec_len; sidx++)
+    {
+        String s_name = spec[sidx].getName().trim();
+        if (s_name.equalsIgnoreCase("Content-length")  ||
+        s_name.equalsIgnoreCase("Host"))
+        continue;
 
-	    int search;
-	    for (search=0; search<didx; search++)
-	    {
-		if (merged[search].name.trim().equalsIgnoreCase(
-			spec[sidx].name.trim()))
-		    break;
-	    }
+        int search;
+        for (search=0; search<didx; search++)
+        {
+        if (merged[search].getName().trim().equalsIgnoreCase(s_name))
+            break;
+        }
 
-	    merged[search] = spec[sidx];
-	    if (search == didx) didx++;
-	}
+        merged[search] = spec[sidx];
+        if (search == didx) didx++;
+    }
 
-	if (didx < merged.length)
-	    merged = Util.resizeArray(merged, didx);
+    if (didx < merged.length)
+        merged = Util.resizeArray(merged, didx);
 
-	return merged;
+    return merged;
     }
 
 
@@ -2335,22 +2424,22 @@ public class HTTPConnection
      */
     private HTTPClientModule[] gen_mod_insts()
     {
-	HTTPClientModule[] mod_insts = new HTTPClientModule[ModuleList.size()];
+    HTTPClientModule[] mod_insts = new HTTPClientModule[ModuleList.size()];
 
-	for (int idx=0; idx<ModuleList.size(); idx++)
-	{
-	    Class mod = (Class) ModuleList.elementAt(idx);
-	    try
-		{ mod_insts[idx] = (HTTPClientModule) mod.newInstance(); }
-	    catch (Exception e)
-	    {
-		throw new Error("HTTPClient Internal Error: could not " +
-				"create instance of " + mod.getName() +
-				" -\n" + e);
-	    }
-	}
+    for (int idx=0; idx<ModuleList.size(); idx++)
+    {
+        Class mod = (Class) ModuleList.elementAt(idx);
+        try
+        { mod_insts[idx] = (HTTPClientModule) mod.newInstance(); }
+        catch (Exception e)
+        {
+        throw new Error("HTTPClient Internal Error: could not " +
+                "create instance of " + mod.getName() +
+                " -\n" + e);
+        }
+    }
 
-	return mod_insts;
+    return mod_insts;
     }
 
 
@@ -2360,108 +2449,127 @@ public class HTTPConnection
      * sent.
      *
      * @param  req        the Request
+     * @param  http_resp  the HTTPResponse
      * @param  resp       the Response
      * @param  usemodules if false then skip module loop
      * @exception IOException if any module or sendRequest throws it
      * @exception ModuleException if any module throws it
      */
-    void handleRequest(Request req, HTTPResponse resp, boolean usemodules)
-		throws IOException, ModuleException
+    void handleRequest(Request req, HTTPResponse http_resp, Response resp,
+               boolean usemodules)
+        throws IOException, ModuleException
     {
-	Response[]         rsp_arr = null;
-	HTTPClientModule[] modules = resp.getModules();
+    Response[]         rsp_arr = { resp };
+    HTTPClientModule[] modules = http_resp.getModules();
 
 
-	// invoke requestHandler for each module
+    // invoke requestHandler for each module
 
-	if (usemodules)
-	doModules: for (int idx=0; idx<modules.length; idx++)
-	{
-	    int sts = modules[idx].requestHandler(req, rsp_arr);
-	    switch (sts)
-	    {
-		case REQ_CONTINUE:	// continue processing
-		    break;
+    if (usemodules)
+    doModules: for (int idx=0; idx<modules.length; idx++)
+    {
+        int sts = modules[idx].requestHandler(req, rsp_arr);
+        switch (sts)
+        {
+        case REQ_CONTINUE:  // continue processing
+            break;
 
-		case REQ_RESTART:	// restart processing with first module
-		    idx = -1;
-		    continue doModules;
+        case REQ_RESTART:   // restart processing with first module
+            idx = -1;
+            continue doModules;
 
-		case REQ_SHORTCIRC:	// stop processing and send
-		    break doModules;
+        case REQ_SHORTCIRC: // stop processing and send
+            break doModules;
 
-		case REQ_RESPONSE:	// go to phase 2
-		case REQ_RETURN:		// return response immediately
-		    if (rsp_arr[0] == null)
-			throw new Error("HTTPClient Internal Error: no " +
-					"response returned by module " +
-					modules[idx].getClass().getName());
-		    resp.set(req, rsp_arr[0]);
-		    if (req.getStream() != null)
-			req.getStream().ignoreData(req);
-		    if (req.internal_subrequest)  return;
-		    if (sts == REQ_RESPONSE)
-			resp.handleResponse();
-		    else
-			resp.init(rsp_arr[0]);
-		    return;
+        case REQ_RESPONSE:  // go to phase 2
+        case REQ_RETURN:        // return response immediately
+            if (rsp_arr[0] == null)
+            throw new Error("HTTPClient Internal Error: no " +
+                    "response returned by module " +
+                    modules[idx].getClass().getName());
+            http_resp.set(req, rsp_arr[0]);
+            if (req.getStream() != null)
+            req.getStream().ignoreData(req);
+            if (req.internal_subrequest)  return;
+            if (sts == REQ_RESPONSE)
+            http_resp.handleResponse();
+            else
+            http_resp.init(rsp_arr[0]);
+            return;
 
-		case REQ_NEWCON_RST:	// new connection
-		    if (req.internal_subrequest)  return;
-		    req.getConnection().handleRequest(req, resp, true);
-		    return;
+        case REQ_NEWCON_RST:    // new connection
+            if (req.internal_subrequest)  return;
+            req.getConnection().
+                handleRequest(req, http_resp, rsp_arr[0], true);
+            return;
 
-		case REQ_NEWCON_SND:	// new connection, send immediately
-		    if (req.internal_subrequest)  return;
-		    req.getConnection().handleRequest(req, resp, false);
-		    return;
+        case REQ_NEWCON_SND:    // new connection, send immediately
+            if (req.internal_subrequest)  return;
+            req.getConnection().
+                handleRequest(req, http_resp, rsp_arr[0], false);
+            return;
 
-		default:		// not valid
-		    throw new Error("HTTPClient Internal Error: invalid status"+
-				    " " + sts + " returned by module " +
-				    modules[idx].getClass().getName());
-	    }
-	}
+        default:        // not valid
+            throw new Error("HTTPClient Internal Error: invalid status"+
+                    " " + sts + " returned by module " +
+                    modules[idx].getClass().getName());
+        }
+    }
 
-	if (req.internal_subrequest)  return;
+    if (req.internal_subrequest)  return;
 
 
-	// Send the request across the wire
+    // Send the request across the wire
 
-	if (req.getStream() != null  &&  req.getStream().getLength() == -1)
-	{
-	    if (!ServProtVersKnown  ||  ServerProtocolVersion < HTTP_1_1)
-	    {
-		req.getStream().goAhead(req, null, resp.getTimeout());
-		resp.set(req, req.getStream());
-	    }
-	    else
-	    {
-		// add Transfer-Encoding header if necessary
-		int idx;
-		NVPair[] hdrs = req.getHeaders();
-		for (idx=0; idx<hdrs.length; idx++)
-		    if (hdrs[idx].getName().equalsIgnoreCase("Transfer-Encoding"))
-			break;
+    if (req.getStream() != null  &&  req.getStream().getLength() == -1)
+    {
+        if (!ServProtVersKnown  ||  ServerProtocolVersion < HTTP_1_1)
+        {
+        req.getStream().goAhead(req, null, http_resp.getTimeout());
+        http_resp.set(req, req.getStream());
+        }
+        else
+        {
+        // add Transfer-Encoding header if necessary
+        int idx;
+        NVPair[] hdrs = req.getHeaders();
+        for (idx=0; idx<hdrs.length; idx++)
+            if (hdrs[idx].getName().equalsIgnoreCase("Transfer-Encoding"))
+            break;
 
-		if (idx == hdrs.length)
-		{
-		    hdrs = Util.resizeArray(hdrs, idx+1);
-		    req.setHeaders(hdrs);
-		}
-		hdrs[idx] = new NVPair("Transfer-Encoding", "chunked");
+        if (idx == hdrs.length)
+        {
+            hdrs = Util.resizeArray(hdrs, idx+1);
+            hdrs[idx] = new NVPair("Transfer-Encoding", "chunked");
+            req.setHeaders(hdrs);
+        }
+        else
+        {
+            String v = hdrs[idx].getValue();
+            try
+            {
+            if (!Util.hasToken(v, "chunked"))
+                hdrs[idx] = new NVPair("Transfer-Encoding",
+                           v + ", chunked");
+            }
+            catch (ParseException pe)
+            { throw new IOException(pe.toString()); }
+        }
 
-		resp.set(req, sendRequest(req, resp.getTimeout()));
-	    }
-	}
-	else
-	    resp.set(req, sendRequest(req, resp.getTimeout()));
+        http_resp.set(req, sendRequest(req, http_resp.getTimeout()));
+        }
+    }
+    else
+        http_resp.set(req, sendRequest(req, http_resp.getTimeout()));
+
+    if (req.aborted)  throw new IOException("Request aborted by user");
     }
 
 
     /** These mark the response to stall the next request on, if any */
     private Response early_stall = null;
     private Response late_stall  = null;
+    private Response prev_resp   = null;
     /** This marks the socket output stream as still being used */
     private boolean  output_finished = true;
 
@@ -2480,317 +2588,453 @@ public class HTTPConnection
      *                            tunneling handshake
      */
     Response sendRequest(Request req, int con_timeout)
-		throws IOException, ModuleException
+        throws IOException, ModuleException
     {
-	ByteArrayOutputStream hdr_buf = new ByteArrayOutputStream(500);
-	Response              resp = null;
-	boolean		      keep_alive;
+    ByteArrayOutputStream hdr_buf = new ByteArrayOutputStream(600);
+    Response              resp = null;
+    boolean           keep_alive;
 
 
-	// Sometimes we must stall the pipeline until the previous request
-	// has been answered
+    // The very first request is special in that we need its response
+    // before any further requests may be made. This is to set things
+    // like the server version.
 
-	if (early_stall != null)
-	{
-	    try
-	    {
-		if (DebugConn)
-		    System.err.println("Conn:  Early-stalling Request: " +
-				       req.getMethod() + " " +
-				       req.getRequestURI());
+    if (early_stall != null)
+    {
+        try
+        {
+        if (DebugConn)
+            System.err.println("Conn:  Early-stalling Request: " +
+                       req.getMethod() + " " +
+                       req.getRequestURI());
 
-		synchronized(early_stall)
-		{
-		    // wait till the response is received
-		    try
-			{ early_stall.getVersion(); }
-		    catch (IOException ioe)
-			{ }
-		    early_stall = null;
-		}
-	    }
-	    catch (NullPointerException npe)
-		{ }
-	}
-
-
-	String[] con_hdrs = assembleHeaders(req, hdr_buf);
+        synchronized(early_stall)
+        {
+            // wait till the response is received
+            try
+            { early_stall.getVersion(); }
+            catch (IOException ioe)
+            { }
+            early_stall = null;
+        }
+        }
+        catch (NullPointerException npe)
+        { }
+    }
 
 
-	// determine if the connection should be kept alive after this
-	// request
-
-	try
-	{
-	    if (ServerProtocolVersion >= HTTP_1_1  &&
-		 !Util.hasToken(con_hdrs[0], "close")
-		||
-		ServerProtocolVersion == HTTP_1_0  &&
-		 Util.hasToken(con_hdrs[0], "keep-alive")
-		)
-		keep_alive = true;
-	    else
-		keep_alive = false;
-	}
-	catch (ParseException pe)
-	    { throw new IOException(pe.toString()); }
+    String[] con_hdrs = assembleHeaders(req, hdr_buf);
 
 
-	synchronized(this)
-	{
-	// Sometimes we must stall the pipeline until the previous request
-	// has been answered
+    // determine if the connection should be kept alive after this
+    // request
 
-	if (late_stall != null)
-	{
-	    if (DebugConn)
-		System.err.println("Conn:  Stalling Request: " +
-				   req.getMethod() + " " + req.getRequestURI());
-
-	    try				// wait till the response is received
-	    {
-		late_stall.getVersion();
-		if (KeepAliveUnknown)
-		    determineKeepAlive(late_stall);
-	    }
-	    catch (IOException ioe)
-		{ }
-
-	    late_stall = null;
-	}
+    try
+    {
+        if (ServerProtocolVersion >= HTTP_1_1  &&
+         !Util.hasToken(con_hdrs[0], "close")
+        ||
+        ServerProtocolVersion == HTTP_1_0  &&
+         Util.hasToken(con_hdrs[0], "keep-alive")
+        )
+        keep_alive = true;
+        else
+        keep_alive = false;
+    }
+    catch (ParseException pe)
+        { throw new IOException(pe.toString()); }
 
 
-	// If the previous request used an output stream, then wait till
-	// all the data has been written
+    synchronized(this)
+    {
+    // Sometimes we must stall the pipeline until the previous request
+    // has been answered. However, if we are going to open up a new
+    // connection anyway we don't really need to stall.
 
-	if (!output_finished)
-	{
-	    try
-		{ wait(); }
-	    catch (InterruptedException ie)
-		{ throw new IOException(ie.toString()); }
-	}
+    if (late_stall != null)
+    {
+        if (input_demux != null  ||  KeepAliveUnknown)
+        {
+        if (DebugConn)
+            System.err.println("Conn:  Stalling Request: " +
+                   req.getMethod() + " " + req.getRequestURI());
 
+        try         // wait till the response is received
+        {
+            late_stall.getVersion();
+            if (KeepAliveUnknown)
+            determineKeepAlive(late_stall);
+        }
+        catch (IOException ioe)
+            { }
+        }
 
-	if (req.aborted)  throw new IOException("Request aborted by user");
-
-	int try_count = 3;
-	/* what a hack! This is to handle the case where the server closes
-	 * the connection but we don't realize it until we try to send
-	 * something. The problem is that we only get IOException, but
-	 * we need a finer specification (i.e. whether it's an EPIPE or
-	 * something else); I don't trust relying on the message part
-	 * of IOException (which on SunOS/Solaris gives 'Broken pipe',
-	 * but what on Windoze/Mac?).
-	 */
-
-	while (try_count-- > 0)
-	{
-	    try
-	    {
-		// get a client socket
-
-		Socket sock;
-		if (input_demux == null  ||
-		    (sock = input_demux.getSocket()) == null)
-		{
-		    sock = getSocket(con_timeout);
-
-		    if (Protocol == HTTPS)
-		    {
-			if (Proxy_Host != null)
-			{
-			    Socket[] sarr = { sock };
-			    resp = enableSSLTunneling(sarr, req, con_timeout);
-			    if (resp != null)
-			    {
-				resp.final_resp = true;
-				return resp;
-			    }
-			    sock = sarr[0];
-			}
-
-			//sock = new SSLSocket(sock);
-		    }
-
-		    input_demux = new StreamDemultiplexor(Protocol, sock, this);
-		    DemuxList.addToEnd(input_demux);
-		    KeepAliveReqLeft = KeepAliveReqMax;
-		}
-
-		if (req.aborted)
-		    throw new IOException("Request aborted by user");
-
-		if (DebugConn)
-		{
-		    System.err.println("Conn:  Sending Request: ");
-		    System.err.println();
-		    hdr_buf.writeTo(System.err);
-		}
+        late_stall = null;
+    }
 
 
-		// Send headers
+    /* POSTs must not be pipelined because of problems if the connection
+     * is aborted. Since it is generally impossible to know what urls
+     * POST will influence it is impossible to determine if a sequence
+     * of requests containing a POST is idempotent.
+     * Also, for retried requests we don't want to pipeline either.
+     */
+    if ((req.getMethod().equals("POST")  ||  req.dont_pipeline)  &&
+        prev_resp != null  &&  input_demux != null)
+    {
+        if (DebugConn)
+        System.err.println("Conn:  Stalling Request: " +
+                   req.getMethod() + " " + req.getRequestURI());
 
-		OutputStream sock_out = sock.getOutputStream();
-		hdr_buf.writeTo(sock_out);
-
-
-		// Wait for "100 Continue" status if necessary
-
-		try
-		{
-		    if (ServProtVersKnown  &&
-			ServerProtocolVersion >= HTTP_1_1  &&
-			Util.hasToken(con_hdrs[1], "100-continue"))
-		    {
-			resp = new Response(req, (Proxy_Host != null && Protocol != HTTPS), input_demux);
-			resp.timeout = 60;
-			if (resp.getContinue() != 100)
-			    break;
-		    }
-		}
-		catch (ParseException pe)
-		    { throw new IOException(pe.toString()); }
-		catch (InterruptedIOException iioe)
-		    { }
-		finally
-		    { if (resp != null)  resp.timeout = 0; }
+        try             // wait till the response is received
+        { prev_resp.getVersion(); }
+        catch (IOException ioe)
+        { }
+    }
 
 
-		// POST/PUT data
+    // If the previous request used an output stream, then wait till
+    // all the data has been written
 
-		if (req.getData() != null  &&  req.getData().length > 0)
-		{
-		    if (req.delay_entity > 0)
-		    {
-                        // wait for something on the network; check available()
-                        // roughly every 100 ms
+    if (!output_finished)
+    {
+        try
+        { wait(); }
+        catch (InterruptedException ie)
+        { throw new IOException(ie.toString()); }
+    }
 
-			long num_units = req.delay_entity / 100;
-			long one_unit  = req.delay_entity / num_units;
 
-                        for (int idx=0; idx<num_units; idx++)
+    if (req.aborted)  throw new IOException("Request aborted by user");
+
+    int try_count = 3;
+    /* what a hack! This is to handle the case where the server closes
+     * the connection but we don't realize it until we try to send
+     * something. The problem is that we only get IOException, but
+     * we need a finer specification (i.e. whether it's an EPIPE or
+     * something else); I don't trust relying on the message part
+     * of IOException (which on SunOS/Solaris gives 'Broken pipe',
+     * but what on Windoze/Mac?).
+     */
+
+    while (try_count-- > 0)
+    {
+        try
+        {
+        // get a client socket
+
+        Socket sock;
+        if (input_demux == null  ||
+            (sock = input_demux.getSocket()) == null)
+        {
+            sock = getSocket(con_timeout);
+
+            if (Protocol == HTTPS)
+            {
+            if (Proxy_Host != null)
+            {
+                Socket[] sarr = { sock };
+                resp = enableSSLTunneling(sarr, req, con_timeout);
+                if (resp != null)
+                {
+                resp.final_resp = true;
+                return resp;
+                }
+                sock = sarr[0];
+            }
+
+            //sock = new SSLSocket(sock);
+            }
+
+            input_demux = new StreamDemultiplexor(Protocol, sock, this);
+            DemuxList.addToEnd(input_demux);
+            KeepAliveReqLeft = KeepAliveReqMax;
+        }
+
+        if (req.aborted)
+            throw new IOException("Request aborted by user");
+
+        if (DebugConn)
+        {
+            System.err.println("Conn:  Sending Request: ");
+            System.err.println();
+            hdr_buf.writeTo(System.err);
+        }
+        if(logging)
+        {
+            try
+            {
+                FileOutputStream fos = new FileOutputStream( logFilename, true );
+                fos.write( outboundHeader.getBytes() );
+                hdr_buf.writeTo( fos );
+                fos.close();
+            }
+            catch( IOException e )
+            {
+            }
+        }
+
+
+        // Send headers
+
+        // Joachim Feise (jfeise@ics.uci.edu):
+        // Hack to be able to use authentication with
+        // Microsoft Windows 2000 Beta / IIS
+        // Apparently, the data is sent through the socket as
+        // soon as it is written to the stream
+        // This causes the data to arrive in two chunks, the
+        // header and the actual content
+        // IIS responds with 500 - Server Error
+        // Sending header and data in one chunk circumvents
+        // this bug
+        if( !req.getMethod().equals( "PUT" ) )
+        {
+            ByteArrayOutputStream tmp = null;
+            if (req.getData() != null  &&  req.getData().length > 0)
+                tmp = new ByteArrayOutputStream(600+req.getData().length);
+            else
+                tmp = new ByteArrayOutputStream(600);
+            hdr_buf.writeTo(tmp);
+            if (req.getData() != null  &&  req.getData().length > 0)
+                tmp.write(req.getData());
+            OutputStream sock_out = sock.getOutputStream();
+            tmp.writeTo(sock_out);
+            if(DebugConn)
+            {
+                if (req.getData() != null  &&  req.getData().length > 0)
+                    System.err.write(req.getData());
+            }
+            if(logging)
+            {
+                if (req.getData() != null  &&  req.getData().length > 0)
+                {
+                    try
+                    {
+                        FileOutputStream fos = new FileOutputStream( logFilename, true );
+                        fos.write( outboundBody.getBytes() );
+                        fos.write( req.getData() );
+                        fos.close();
+                    }
+                    catch( IOException e )
+                    {
+                    }
+                }
+            }
+        }
+        else
+        {
+            OutputStream sock_out = sock.getOutputStream();
+            hdr_buf.writeTo(sock_out);
+
+            // Wait for "100 Continue" status if necessary
+            try
+            {
+                if (ServProtVersKnown  &&
+                ServerProtocolVersion >= HTTP_1_1  &&
+                Util.hasToken(con_hdrs[1], "100-continue"))
+                {
+                resp = new Response(req, (Proxy_Host != null && Protocol != HTTPS), input_demux);
+                resp.setLogging( logging, logFilename );
+                resp.timeout = 60;
+                if (resp.getContinue() != 100)
+                    break;
+                }
+            }
+            catch (ParseException pe)
+                { throw new IOException(pe.toString()); }
+            catch (InterruptedIOException iioe)
+                { }
+            finally
+                { if (resp != null)  resp.timeout = 0; }
+
+            // POST/PUT data
+
+            if (req.getData() != null  &&  req.getData().length > 0)
+            {
+                if (req.delay_entity > 0)
+                {
+
+                    // wait for something on the network; check available()
+                    // roughly every 100 ms
+
+                    long num_units = req.delay_entity / 100;
+                    long one_unit  = req.delay_entity / num_units;
+
+                    for (int idx=0; idx<num_units; idx++)
+                    {
+                        if (input_demux.available(null) != 0)
+                            break;
+                        try { Thread.sleep(one_unit); }
+                        catch (InterruptedException ie) { }
+                    }
+
+                    if (input_demux.available(null) == 0)
+                    {
+                        // Joachim Feise (jfeise@ics.uci.edu):
+                        // Hack to avoid IOException: socket write error
+                        // which happens in JDK 1.1.x (tested with JDK 1.1.7A
+                        // on Windows NT4 WS/SP3) if the file PUT is fairly
+                        // large (tested with a file ca. 200KB).
+                        // Note that this exception does not show up
+                        // when the program is run with JDK 1.2
+                        int off = 0;
+                        int len = 60000;
+                        while( off < req.getData().length )
                         {
-                            if (input_demux.available(null) != 0)
-                                break;
-                            try { Thread.sleep(one_unit); }
-                            catch (InterruptedException ie) { }
+                            if( (off+len) > req.getData().length )
+                                len = req.getData().length - off;
+                            sock_out.write(req.getData(), off, len );
+                            off = off + len;
                         }
+                        //sock_out.write(req.getData()); // he's still waiting
+                    }
+                    else
+                        keep_alive = false;     // Uh oh!
+                }
+                else
+                {
+                    // Joachim Feise (jfeise@ics.uci.edu):
+                    // Hack to avoid IOException: socket write error
+                    // which happens in JDK 1.1.x (tested with JDK 1.1.7A
+                    // on Windows NT4 WS/SP3) if the file PUT is fairly
+                    // large (tested with a file ca. 200KB).
+                    // Note that this exception does not show up
+                    // when the program is run with JDK 1.2
+                    int off = 0;
+                    int len = 60000;
+                    while( off < req.getData().length )
+                    {
+                        if( (off+len) > req.getData().length )
+                            len = req.getData().length - off;
+                        sock_out.write(req.getData(), off, len );
+                        off = off + len;
+                    }
+                    //sock_out.write(req.getData());
+                    if(logging)
+                    {
+                        if (req.getData() != null  &&  req.getData().length > 0)
+                        {
+                            try
+                            {
+                                FileOutputStream fos = new FileOutputStream( logFilename, true );
+                                fos.write( outboundBody.getBytes() );
+                                fos.write( req.getData() );
+                                fos.close();
+                            }
+                            catch( IOException e )
+                            {
+                            }
+                        }
+                    }
+                }
+            }
 
-                        if (input_demux.available(null) == 0)
-			    sock_out.write(req.getData()); // he's still waiting
-			else
-			    closeDemux(null);		// Uh oh!
-		    }
-		    else
-			sock_out.write(req.getData());
-		}
+            if (req.getStream() != null)
+                req.getStream().goAhead(req, sock_out, 0);
+            else
+            {
+                sock_out.flush();
+            }
+        }
+        // END OF HACK AROUND IIS BUG
 
-		if (req.getStream() != null)
-		    req.getStream().goAhead(req, sock_out, 0);
-		else
-		    sock_out.flush();
-	    }
-	    catch (IOException ioe)
-	    {
-		if (DebugConn)
-		{
-		    System.err.print("Conn:  ");
-		    ioe.printStackTrace();
-		}
+        // get a new response.
+        // Note: this does not do a read on the socket.
 
-		closeDemux(ioe);
+        if (resp == null)
+            resp = new Response(req, (Proxy_Host != null &&
+                         Protocol != HTTPS),
+                    input_demux);
+            resp.setLogging( logging, logFilename );
+        }
+        catch (IOException ioe)
+        {
+        if (DebugConn)
+        {
+            System.err.print("Conn:  ");
+            ioe.printStackTrace();
+        }
 
-		if (try_count == 0  ||  ioe instanceof UnknownHostException  ||
-		    ioe instanceof InterruptedIOException  ||  req.aborted)
-		    throw ioe;
+        closeDemux(ioe, true);
 
-		if (DebugConn)
-		    System.err.println("Conn:  Retrying request");
-		continue;
-	    }
+        if (try_count == 0  ||  ioe instanceof UnknownHostException  ||
+            ioe instanceof ConnectException ||
+            ioe instanceof InterruptedIOException  ||  req.aborted)
+            throw ioe;
 
-	    break;
-	}
+        if (DebugConn)
+            System.err.println("Conn:  Retrying request");
+        continue;
+        }
 
+        break;
+    }
 
-	// get a new response. Note: this does not do a read on the socket.
-
-	if (resp == null)
-	    resp = new Response(req, (Proxy_Host != null && Protocol != HTTPS),
-				input_demux);
-
-
-	// close the stream after this response if necessary
-
-	if ((!KeepAliveUnknown && !DoesKeepAlive)  ||  !keep_alive  ||
-	    (KeepAliveReqMax != -1  &&  KeepAliveReqLeft-- == 0))
-	{
-	    input_demux.markForClose(resp);
-	    input_demux = null;
-	}
-
-	if (input_demux != null)
-	    input_demux.restartTimer();
-
-	if (DebugConn)
-	{
-	    if (KeepAliveReqMax != -1)
-		System.err.println("Conn:  Number of requests left: "+
-				    KeepAliveReqLeft);
-	}
-
-
-	/* We don't pipeline the first request, as we need some info
-	 * about the server (such as which http version it complies with)
-	 */
-	if (!ServProtVersKnown)
-	    { early_stall = resp; resp.markAsFirstResponse(req); }
-
-	/* Also don't pipeline until we know if the server supports
-	 * keep-alive's or not.
-	 * Note: strictly speaking, HTTP/1.0 keep-alives don't mean we can
-	 *       pipeline requests. I seem to remember some (beta?) version
-	 *       of Netscape's Enterprise server which barfed if you tried
-	 *       push requests down it's throat w/o waiting for the previous
-	 *       response first. However, I've not been able to find such a
-	 *       server lately, and so I'm taking the risk and assuming we
-	 *       can in fact pipeline requests to HTTP/1.0 servers.
-	 */
-	if (KeepAliveUnknown)
-	    { late_stall = resp; }
-
-	// We don't pipeline POST's ...
-	else if (!IdempotentSequence.methodIsIdempotent(req.getMethod()))
-	    { late_stall = resp; }
+    prev_resp = resp;
 
 
-	/* I've just seen problems with Apache 1.2.5 and pipelining. This
-	 * is a hack to be able to prevent all pipelining:
-	 */
-	if (NeverPipeline)
-	    { late_stall = resp; }
+    // close the stream after this response if necessary
+
+    if ((!KeepAliveUnknown && !DoesKeepAlive)  ||  !keep_alive  ||
+        (KeepAliveReqMax != -1  &&  KeepAliveReqLeft-- == 0))
+    {
+        input_demux.markForClose(resp);
+        input_demux = null;
+    }
+    else
+        input_demux.restartTimer();
+
+    if (DebugConn)
+    {
+        if (KeepAliveReqMax != -1)
+        System.err.println("Conn:  Number of requests left: "+
+                    KeepAliveReqLeft);
+    }
 
 
-	/* If there is an output stream then just tell the other threads to
-	 * wait; the stream will notify() when it's done. If there isn't any
-	 * stream then wake up a waiting thread (if any).
-	 */
-	if (req.getStream() != null)
-	    output_finished = false;
-	else
-	{
-	    output_finished = true;
-	    notify();
-	}
+    /* We don't pipeline the first request, as we need some info
+     * about the server (such as which http version it complies with)
+     */
+    if (!ServProtVersKnown)
+        { early_stall = resp; resp.markAsFirstResponse(req); }
+
+    /* Also don't pipeline until we know if the server supports
+     * keep-alive's or not.
+     * Note: strictly speaking, HTTP/1.0 keep-alives don't mean we can
+     *       pipeline requests. I seem to remember some (beta?) version
+     *       of Netscape's Enterprise server which barfed if you tried
+     *       push requests down it's throat w/o waiting for the previous
+     *       response first. However, I've not been able to find such a
+     *       server lately, and so I'm taking the risk and assuming we
+     *       can in fact pipeline requests to HTTP/1.0 servers.
+     */
+    if (KeepAliveUnknown  ||
+        // We don't pipeline POST's ...
+        !IdempotentSequence.methodIsIdempotent(req.getMethod())  ||
+        req.dont_pipeline  ||   // Retries disable pipelining too
+        NeverPipeline)  // Emergency measure: prevent all pipelining
+        { late_stall = resp; }
 
 
-	// Looks like were finally done
+    /* If there is an output stream then just tell the other threads to
+     * wait; the stream will notify() when it's done. If there isn't any
+     * stream then wake up a waiting thread (if any).
+     */
+    if (req.getStream() != null)
+        output_finished = false;
+    else
+    {
+        output_finished = true;
+        notify();
+    }
 
-	if (DebugConn) System.err.println("Conn:  Request sent");
-	}
 
-	return resp;
+    // Looks like were finally done
+
+    if (DebugConn) System.err.println("Conn:  Request sent");
+    }
+
+    return resp;
     }
 
 
@@ -2804,70 +3048,70 @@ public class HTTPConnection
      */
     private Socket getSocket(int con_timeout)  throws IOException
     {
-	Socket sock = null;
+    Socket sock = null;
 
-	String actual_host;
-	int    actual_port;
+    String actual_host;
+    int    actual_port;
 
-	if (Proxy_Host != null)
-	{
-	    actual_host = Proxy_Host;
-	    actual_port = Proxy_Port;
-	}
-	else
-	{
-	    actual_host = Host;
-	    actual_port = Port;
-	}
+    if (Proxy_Host != null)
+    {
+        actual_host = Proxy_Host;
+        actual_port = Proxy_Port;
+    }
+    else
+    {
+        actual_host = Host;
+        actual_port = Port;
+    }
 
-	if (DebugConn)
-	    System.err.println("Conn:  Creating Socket: " + actual_host + ":" +
-				actual_port);
+    if (DebugConn)
+        System.err.println("Conn:  Creating Socket: " + actual_host + ":" +
+                actual_port);
 
-	if (con_timeout == 0)		// normal connection establishment
-	{
-	    if (Socks_client != null)
-		sock = Socks_client.getSocket(actual_host, actual_port);
-	    else
-	    {
-		// try all A records
-		InetAddress[] addr_list = InetAddress.getAllByName(actual_host);
-		for (int idx=0; idx<addr_list.length; idx++)
-		{
-		    try
-		    {
-			sock = new Socket(addr_list[idx], actual_port);
-			break;		// success
-		    }
-		    catch (SocketException se)  // should be NoRouteToHostException
-		    {
-			if (idx == addr_list.length-1)
-			    throw se;	// we tried them all
-		    }
-		}
-	    }
-	}
-	else
-	{
-	    EstablishConnection con =
-		new EstablishConnection(actual_host, actual_port, Socks_client);
-	    con.start();
-	    try
-		{ con.join((long) con_timeout); }
-	    catch (InterruptedException ie)
-		{ }
+    if (con_timeout == 0)       // normal connection establishment
+    {
+        if (Socks_client != null)
+        sock = Socks_client.getSocket(actual_host, actual_port);
+        else
+        {
+        // try all A records
+        InetAddress[] addr_list = InetAddress.getAllByName(actual_host);
+        for (int idx=0; idx<addr_list.length; idx++)
+        {
+            try
+            {
+            sock = new Socket(addr_list[idx], actual_port);
+            break;      // success
+            }
+            catch (SocketException se)  // should be NoRouteToHostException
+            {
+            if (idx == addr_list.length-1)
+                throw se;   // we tried them all
+            }
+        }
+        }
+    }
+    else
+    {
+        EstablishConnection con =
+        new EstablishConnection(actual_host, actual_port, Socks_client);
+        con.start();
+        try
+        { con.join((long) con_timeout); }
+        catch (InterruptedException ie)
+        { }
 
-	    if (con.getException() != null)
-		throw con.getException();
-	    if ((sock = con.getSocket()) == null)
-	    {
-		con.forget();
-		if ((sock = con.getSocket()) == null)
-		    throw new InterruptedIOException("Connection establishment timed out");
-	    }
-	}
+        if (con.getException() != null)
+        throw con.getException();
+        if ((sock = con.getSocket()) == null)
+        {
+        con.forget();
+        if ((sock = con.getSocket()) == null)
+            throw new InterruptedIOException("Connection establishment timed out");
+        }
+    }
 
-	return sock;
+    return sock;
     }
 
 
@@ -2884,78 +3128,85 @@ public class HTTPConnection
      * @exception ModuleException
      */
     private Response enableSSLTunneling(Socket[] sock, Request req, int timeout)
-		throws IOException, ModuleException
+        throws IOException, ModuleException
     {
-	// copy User-Agent and Proxy-Auth headers from request
+    // copy User-Agent and Proxy-Auth headers from request
 
-	Vector hdrs = new Vector();
-	for (int idx=0; idx<req.getHeaders().length; idx++)
-	{
-	    String name = req.getHeaders()[idx].getName().toLowerCase();
-	    if (name.equals("user-agent")  ||
-		name.equals("proxy-authorization"))
-		    hdrs.addElement(req.getHeaders()[idx]);
-	}
-
-
-	// create initial CONNECT subrequest
-
-	NVPair[] h = new NVPair[hdrs.size()];
-	hdrs.copyInto(h);
-	Request connect = new Request(this, "CONNECT", Host+":"+Port, h,
-				      null, null, req.allowUI());
-	connect.internal_subrequest = true;
-
-	ByteArrayOutputStream hdr_buf = new ByteArrayOutputStream(500);
-	HTTPResponse r = new HTTPResponse(gen_mod_insts(), timeout);
+    Vector hdrs = new Vector();
+    for (int idx=0; idx<req.getHeaders().length; idx++)
+    {
+        String name = req.getHeaders()[idx].getName();
+        if (name.equalsIgnoreCase("User-Agent")  ||
+        name.equalsIgnoreCase("Proxy-Authorization"))
+            hdrs.addElement(req.getHeaders()[idx]);
+    }
 
 
-	// send and handle CONNECT request until successful or tired
+    // create initial CONNECT subrequest
 
-	while (true)
-	{
-	    handleRequest(connect, r, true);
+    NVPair[] h = new NVPair[hdrs.size()];
+    hdrs.copyInto(h);
+    Request connect = new Request(this, "CONNECT", Host+":"+Port, h,
+                      null, null, req.allowUI());
+    connect.internal_subrequest = true;
 
-	    hdr_buf.reset();
-	    assembleHeaders(connect, hdr_buf);
-
-	    if (DebugConn)
-	    {
-		System.err.println("Conn:  Sending SSL-Tunneling Subrequest: ");
-		System.err.println();
-		hdr_buf.writeTo(System.err);
-	    }
+    ByteArrayOutputStream hdr_buf = new ByteArrayOutputStream(600);
+    HTTPResponse r = new HTTPResponse(gen_mod_insts(), timeout, connect);
+    r.setLogging( logging, logFilename );
 
 
-	    // send CONNECT
+    // send and handle CONNECT request until successful or tired
 
-	    hdr_buf.writeTo(sock[0].getOutputStream());
+    Response resp = null;
 
+    while (true)
+    {
+        handleRequest(connect, r, resp, true);
 
-	    // return if successful
+        hdr_buf.reset();
+        assembleHeaders(connect, hdr_buf);
 
-	    Response resp = new Response(connect, sock[0].getInputStream());
-	    if (resp.getStatusCode() == 200)  return null;
-
-
-	    // failed!
-
-	    // make life easy: read data and close socket
-
-	    resp.getData();
-	    try
-		{ sock[0].close(); }
-	    catch (IOException ioe)
-		{ }
+        if (DebugConn)
+        {
+        System.err.println("Conn:  Sending SSL-Tunneling Subrequest: ");
+        System.err.println();
+        hdr_buf.writeTo(System.err);
+        }
 
 
-	    // handle response
+        // send CONNECT
 
-	    r.set(connect, resp);
-	    if (!r.handleResponse())  return resp;
+        hdr_buf.writeTo(sock[0].getOutputStream());
 
-	    sock[0] = getSocket(timeout);
-	}
+
+        // return if successful
+
+        resp = new Response(connect, sock[0].getInputStream());
+        resp.setLogging( logging, logFilename );
+        if (resp.getStatusCode() == 200)  return null;
+
+
+        // failed!
+
+        // make life easy: read data and close socket
+
+        try
+        { resp.getData(); }
+        catch (IOException ioe)
+        { }
+        try
+        { sock[0].close(); }
+        catch (IOException ioe)
+        { }
+
+
+        // handle response
+
+        r.set(connect, resp);
+        if (!r.handleResponse())  return resp;
+
+        sock[0] = getSocket(timeout);
+    }
     }
 
 
@@ -2988,9 +3239,11 @@ public class HTTPConnection
      *                     "100-continue" token then this token is removed.
      *                     before writing the header.
      * <DT>TE          <DI>If this header does not exist, it is created; else
-     *                     if the "chunked" token is not specified this token
+     *                     if the "trailers" token is not specified this token
      *                     is added; else the header is not touched.
      * </DL>
+     *
+     * Furthermore, it escapes various characters in request-URI.
      *
      * @param req     the Request
      * @param hdr_buf the buffer onto which to write the headers
@@ -3002,229 +3255,233 @@ public class HTTPConnection
      *                        parsing of a header
      */
     private String[] assembleHeaders(Request req,
-				     ByteArrayOutputStream hdr_buf)
-		throws IOException
+                     ByteArrayOutputStream hdr_buf)
+        throws IOException
     {
-	DataOutputStream dataout  = new DataOutputStream(hdr_buf);
-	String[]         con_hdrs = { "", "" };
-	NVPair[]         hdrs     = req.getHeaders();
+    DataOutputStream dataout  = new DataOutputStream(hdr_buf);
+    String[]         con_hdrs = { "", "" };
+    NVPair[]         hdrs     = req.getHeaders();
 
 
 
-	// Generate request line and Host header
+    // Generate request line and Host header
 
-	String file = req.getRequestURI();
-	if (Proxy_Host != null  &&  Protocol != HTTPS)
-	{
-	    if (file.equals("*"))
-		file = "";	// the proxy will regenerate the '*'
-	    dataout.writeBytes(req.getMethod() + " http://" + Host + ":" + Port+
-			       file + " " + RequestProtocolVersion + "\r\n");
-	}
-	else
-	    dataout.writeBytes(req.getMethod() + " " + file + " " +
-			       RequestProtocolVersion + "\r\n");
-	if (Port != 80)
-	    dataout.writeBytes("Host: " + Host + ":" + Port + "\r\n");
-	else    // Netscape-Enterprise has some bugs...
-	    dataout.writeBytes("Host: " + Host + "\r\n");
+    String file = Util.escapeUnsafeChars(req.getRequestURI());
+    if (Proxy_Host != null  &&  Protocol != HTTPS  &&  !file.equals("*"))
+        dataout.writeBytes(req.getMethod() + " http://" + Host + ":" + Port+
+                   file + " " + RequestProtocolVersion + "\r\n");
+    else
+        dataout.writeBytes(req.getMethod() + " " + file + " " +
+                   RequestProtocolVersion + "\r\n");
+
+    if (Port != 80)
+        dataout.writeBytes("Host: " + Host + ":" + Port + "\r\n");
+    else    // Netscape-Enterprise has some bugs...
+        dataout.writeBytes("Host: " + Host + "\r\n");
 
 
-	// remember various headers
+    // remember various headers
 
-	int ct_idx = -1,
-	    ua_idx = -1,
-	    co_idx = -1,
-	    pc_idx = -1,
-	    ka_idx = -1,
-	    ex_idx = -1,
-	    te_idx = -1;
-	for (int idx=0; idx<hdrs.length; idx++)
-	{
-	    String name = hdrs[idx].name.trim();
-	    if (name.equalsIgnoreCase("Content-type"))     ct_idx = idx;
-	    if (name.equalsIgnoreCase("User-Agent"))       ua_idx = idx;
-	    if (name.equalsIgnoreCase("Connection"))       co_idx = idx;
-	    if (name.equalsIgnoreCase("Proxy-Connection")) pc_idx = idx;
-	    if (name.equalsIgnoreCase("Keep-Alive"))       ka_idx = idx;
-	    if (name.equalsIgnoreCase("Expect"))           ex_idx = idx;
-	    if (name.equalsIgnoreCase("TE"))               te_idx = idx;
-	}
-
-
-	/*
-	 * What follows is the setup for persistent connections. We default
-	 * to doing persistent connections for both HTTP/1.0 and HTTP/1.1,
-	 * unless we're using a proxy server and HTTP/1.0 in which case we
-	 * must make sure we don't do persistence (because of the problem of
-	 * 1.0 proxies blindly passing the Connection header on).
-	 *
-	 * Note: there is a "Proxy-Connection" header for use with proxies.
-	 * This however is only understood by Netscape and Netapp caches.
-	 * Furthermore, it suffers from the same problem as the Connection
-	 * header in HTTP/1.0 except that at least two proxies must be
-	 * involved. But I've taken the risk now and decided to send the
-	 * Proxy-Connection header. If I get complaints I'll remove it again.
-	 *
-	 * In any case, with this header we can now modify the above to send
-	 * the Proxy-Connection header whenever we wouldn't send the normal
-	 * Connection header.
-	 */
-
-	String co_hdr = null;
-	if (!(ServProtVersKnown  &&  ServerProtocolVersion >= HTTP_1_1  &&
-	      co_idx == -1))
-	{
-	    if (co_idx == -1)
-	    {			// no connection header given by user
-		co_hdr = "Keep-Alive";
-		con_hdrs[0] = "Keep-Alive";
-	    }
-	    else
-	    {
-		con_hdrs[0] = hdrs[co_idx].value.trim();
-		co_hdr = con_hdrs[0];
-	    }
-
-	    try
-	    {
-		if (ka_idx != -1  &&
-		    Util.hasToken(con_hdrs[0], "keep-alive"))
-		    dataout.writeBytes("Keep-Alive: " +
-					hdrs[ka_idx].value.trim() + "\r\n");
-	    }
-	    catch (ParseException pe)
-	    {
-		throw new IOException(pe.toString());
-	    }
-	}
-
-	if ((Proxy_Host != null  &&  Protocol != HTTPS)  &&
-	    !(ServProtVersKnown  &&  ServerProtocolVersion >= HTTP_1_1))
-	{
-	    if (co_hdr != null)
-	    {
-		dataout.writeBytes("Proxy-Connection: ");
-		dataout.writeBytes(co_hdr);
-		dataout.writeBytes("\r\n");
-		co_hdr = null;
-	    }
-	}
-
-	if (co_hdr != null)
-	{
-	    try
-	    {
-		if (!Util.hasToken(co_hdr, "TE"))
-		    co_hdr += ", TE";
-	    }
-	    catch (ParseException pe)
-		{ throw new IOException(pe.toString()); }
-	}
-	else
-	    co_hdr = "TE";
-
-	if (co_hdr != null)
-	{
-	    dataout.writeBytes("Connection: ");
-	    dataout.writeBytes(co_hdr);
-	    dataout.writeBytes("\r\n");
-	}
+    int ct_idx = -1,
+        ua_idx = -1,
+        co_idx = -1,
+        pc_idx = -1,
+        ka_idx = -1,
+        ex_idx = -1,
+        te_idx = -1,
+        tc_idx = -1,
+        ug_idx = -1;
+    for (int idx=0; idx<hdrs.length; idx++)
+    {
+        String name = hdrs[idx].getName().trim();
+        if (name.equalsIgnoreCase("Content-Type"))           ct_idx = idx;
+        else if (name.equalsIgnoreCase("User-Agent"))        ua_idx = idx;
+        else if (name.equalsIgnoreCase("Connection"))        co_idx = idx;
+        else if (name.equalsIgnoreCase("Proxy-Connection"))  pc_idx = idx;
+        else if (name.equalsIgnoreCase("Keep-Alive"))        ka_idx = idx;
+        else if (name.equalsIgnoreCase("Expect"))            ex_idx = idx;
+        else if (name.equalsIgnoreCase("TE"))                te_idx = idx;
+        else if (name.equalsIgnoreCase("Transfer-Encoding")) tc_idx = idx;
+        else if (name.equalsIgnoreCase("Upgrade"))           ug_idx = idx;
+    }
 
 
+    /*
+     * What follows is the setup for persistent connections. We default
+     * to doing persistent connections for both HTTP/1.0 and HTTP/1.1,
+     * unless we're using a proxy server and HTTP/1.0 in which case we
+     * must make sure we don't do persistence (because of the problem of
+     * 1.0 proxies blindly passing the Connection header on).
+     *
+     * Note: there is a "Proxy-Connection" header for use with proxies.
+     * This however is only understood by Netscape and Netapp caches.
+     * Furthermore, it suffers from the same problem as the Connection
+     * header in HTTP/1.0 except that at least two proxies must be
+     * involved. But I've taken the risk now and decided to send the
+     * Proxy-Connection header. If I get complaints I'll remove it again.
+     *
+     * In any case, with this header we can now modify the above to send
+     * the Proxy-Connection header whenever we wouldn't send the normal
+     * Connection header.
+     */
 
-	// handle TE header
+    String co_hdr = null;
+    if (!(ServProtVersKnown  &&  ServerProtocolVersion >= HTTP_1_1  &&
+          co_idx == -1))
+    {
+        if (co_idx == -1)
+        {           // no connection header given by user
+        co_hdr = "Keep-Alive";
+        con_hdrs[0] = "Keep-Alive";
+        }
+        else
+        {
+        con_hdrs[0] = hdrs[co_idx].getValue().trim();
+        co_hdr = con_hdrs[0];
+        }
 
-	if (te_idx != -1)
-	{
-	    dataout.writeBytes("TE: ");
-	    Vector pte;
-	    try
-		{ pte = Util.parseHeader(hdrs[te_idx].value); }
-	    catch (ParseException pe)
-		{ throw new IOException(pe.toString()); }
+        try
+        {
+        if (ka_idx != -1  &&
+            Util.hasToken(con_hdrs[0], "keep-alive"))
+            dataout.writeBytes("Keep-Alive: " +
+                    hdrs[ka_idx].getValue().trim() + "\r\n");
+        }
+        catch (ParseException pe)
+        {
+        throw new IOException(pe.toString());
+        }
+    }
 
-	    if (!pte.contains(new HttpHeaderElement("chunked")))
-		dataout.writeBytes("chunked, ");
+    if ((Proxy_Host != null  &&  Protocol != HTTPS)  &&
+        !(ServProtVersKnown  &&  ServerProtocolVersion >= HTTP_1_1))
+    {
+        if (co_hdr != null)
+        {
+        dataout.writeBytes("Proxy-Connection: ");
+        dataout.writeBytes(co_hdr);
+        dataout.writeBytes("\r\n");
+        co_hdr = null;
+        }
+    }
 
-	    dataout.writeBytes(hdrs[te_idx].value.trim() + "\r\n");
-	}
-	else
-	    dataout.writeBytes("TE: chunked\r\n");
+    if (co_hdr != null)
+    {
+        try
+        {
+        if (!Util.hasToken(co_hdr, "TE"))
+            co_hdr += ", TE";
+        }
+        catch (ParseException pe)
+        { throw new IOException(pe.toString()); }
+    }
+    else
+        co_hdr = "TE";
 
+    if (ug_idx != -1)
+        co_hdr += ", Upgrade";
 
-	// User-Agent
-
-	if (ua_idx != -1)
-	    dataout.writeBytes("User-Agent: " + hdrs[ua_idx].value.trim() + " "
-			       + version + "\r\n");
-	else
-	    dataout.writeBytes("User-Agent: " + version + "\r\n");
-
-
-	// Write out any headers left
-
-	for (int idx=0; idx<hdrs.length; idx++)
-	{
-	    if (idx != ct_idx  &&  idx != ua_idx  &&  idx != co_idx  &&
-		idx != pc_idx  &&  idx != ka_idx  &&  idx != ex_idx  &&
-		idx != te_idx)
-		dataout.writeBytes(hdrs[idx].name.trim() + ": " +
-				   hdrs[idx].value.trim() + "\r\n");
-	}
-
-
-	// Handle Content-type, Content-length and Expect headers
-
-	if (req.getData() != null  ||  req.getStream() != null)
-	{
-	    dataout.writeBytes("Content-type: ");
-	    if (ct_idx != -1)
-		dataout.writeBytes(hdrs[ct_idx].value.trim());
-	    else
-		dataout.writeBytes("application/octet-stream");
-	    dataout.writeBytes("\r\n");
-
-	    if (req.getData() != null)
-		dataout.writeBytes("Content-length: " +req.getData().length +
-				   "\r\n");
-	    else if (req.getStream().getLength() != -1)
-		dataout.writeBytes("Content-length: " +
-				   req.getStream().getLength() + "\r\n");
-
-	    if (ex_idx != -1)
-	    {
-		con_hdrs[1] = hdrs[ex_idx].value.trim();
-		dataout.writeBytes("Expect: " + con_hdrs[1] + "\r\n");
-	    }
-	}
-	else if (ex_idx != -1)
-	{
-	    Vector expect_tokens;
-	    try
-		{ expect_tokens = Util.parseHeader(hdrs[ex_idx].value); }
-	    catch (ParseException pe)
-		{ throw new IOException(pe.toString()); }
+    if (co_hdr != null)
+    {
+        dataout.writeBytes("Connection: ");
+        dataout.writeBytes(co_hdr);
+        dataout.writeBytes("\r\n");
+    }
 
 
-	    // remove any 100-continue tokens
 
-	    HttpHeaderElement cont = new HttpHeaderElement("100-continue");
-	    while (expect_tokens.removeElement(cont)) ;
+    // handle TE header
+
+    if (te_idx != -1)
+    {
+        dataout.writeBytes("TE: ");
+        Vector pte;
+        try
+        { pte = Util.parseHeader(hdrs[te_idx].getValue()); }
+        catch (ParseException pe)
+        { throw new IOException(pe.toString()); }
+
+        if (!pte.contains(new HttpHeaderElement("trailers")))
+        dataout.writeBytes("trailers, ");
+
+        dataout.writeBytes(hdrs[te_idx].getValue().trim() + "\r\n");
+    }
+    else
+        dataout.writeBytes("TE: trailers\r\n");
 
 
-	    // write out header if any tokens left
+    // User-Agent
 
-	    if (!expect_tokens.isEmpty())
-	    {
-		con_hdrs[1] = Util.assembleHeader(expect_tokens);
-		dataout.writeBytes("Expect: " + con_hdrs[1] + "\r\n");
-	    }
-	}
+    if (ua_idx != -1)
+        dataout.writeBytes("User-Agent: " + hdrs[ua_idx].getValue().trim() + " "
+                   + version + "\r\n");
+    else
+        dataout.writeBytes("User-Agent: " + version + "\r\n");
 
-	dataout.writeBytes("\r\n");		// end of header
 
-	return con_hdrs;
+    // Write out any headers left
+
+    for (int idx=0; idx<hdrs.length; idx++)
+    {
+        if (idx != ct_idx  &&  idx != ua_idx  &&  idx != co_idx  &&
+        idx != pc_idx  &&  idx != ka_idx  &&  idx != ex_idx  &&
+        idx != te_idx)
+        dataout.writeBytes(hdrs[idx].getName().trim() + ": " +
+                   hdrs[idx].getValue().trim() + "\r\n");
+    }
+
+
+    // Handle Content-type, Content-length and Expect headers
+
+    if (req.getData() != null  ||  req.getStream() != null)
+    {
+        dataout.writeBytes("Content-type: ");
+        if (ct_idx != -1)
+        dataout.writeBytes(hdrs[ct_idx].getValue().trim());
+        else
+        dataout.writeBytes("application/octet-stream");
+        dataout.writeBytes("\r\n");
+
+        if (req.getData() != null)
+        dataout.writeBytes("Content-length: " +req.getData().length +
+                   "\r\n");
+        else if (req.getStream().getLength() != -1  &&  tc_idx == -1)
+        dataout.writeBytes("Content-length: " +
+                   req.getStream().getLength() + "\r\n");
+
+        if (ex_idx != -1)
+        {
+        con_hdrs[1] = hdrs[ex_idx].getValue().trim();
+        dataout.writeBytes("Expect: " + con_hdrs[1] + "\r\n");
+        }
+    }
+    else if (ex_idx != -1)
+    {
+        Vector expect_tokens;
+        try
+        { expect_tokens = Util.parseHeader(hdrs[ex_idx].getValue()); }
+        catch (ParseException pe)
+        { throw new IOException(pe.toString()); }
+
+
+        // remove any 100-continue tokens
+
+        HttpHeaderElement cont = new HttpHeaderElement("100-continue");
+        while (expect_tokens.removeElement(cont)) ;
+
+
+        // write out header if any tokens left
+
+        if (!expect_tokens.isEmpty())
+        {
+        con_hdrs[1] = Util.assembleHeader(expect_tokens);
+        dataout.writeBytes("Expect: " + con_hdrs[1] + "\r\n");
+        }
+    }
+
+    dataout.writeBytes("\r\n");     // end of header
+
+    return con_hdrs;
     }
 
 
@@ -3237,131 +3494,132 @@ public class HTTPConnection
      */
     boolean handleFirstRequest(Request req, Response resp)  throws IOException
     {
-	// read response headers to get protocol version used by
-	// the server.
+    // read response headers to get protocol version used by
+    // the server.
 
-	ServerProtocolVersion = String2ProtVers(resp.getVersion());
-	ServProtVersKnown = true;
+    ServerProtocolVersion = String2ProtVers(resp.getVersion());
+    ServProtVersKnown = true;
 
-	/* We need to treat connections through proxies specially, because
-	 * many HTTP/1.0 proxies do not downgrade an HTTP/1.1 response
-	 * version to HTTP/1.0 (i.e. when we are talking to an HTTP/1.1
-	 * server through an HTTP/1.0 proxy we are mislead to thinking we're
-	 * talking to an HTTP/1.1 proxy). We use the absence of the Via
-	 * header to detect whether we're talking to an HTTP/1.0 proxy.
-	 * However, this only works when the chain contains only HTTP/1.0
-	 * proxies; if you have <client - 1.0 proxy - 1.1 proxy - server>
-	 * then this will fail too. Unfortunately there seems to be no way
-	 * to reliably detect broken HTTP/1.0 proxies...
-	 */
-	if ((Proxy_Host != null  &&  Protocol != HTTPS)  &&
-	    resp.getHeader("Via") == null)
-	    ServerProtocolVersion = HTTP_1_0;
+    /* We need to treat connections through proxies specially, because
+     * many HTTP/1.0 proxies do not downgrade an HTTP/1.1 response
+     * version to HTTP/1.0 (i.e. when we are talking to an HTTP/1.1
+     * server through an HTTP/1.0 proxy we are mislead to thinking we're
+     * talking to an HTTP/1.1 proxy). We use the absence of the Via
+     * header to detect whether we're talking to an HTTP/1.0 proxy.
+     * However, this only works when the chain contains only HTTP/1.0
+     * proxies; if you have <client - 1.0 proxy - 1.1 proxy - server>
+     * then this will fail too. Unfortunately there seems to be no way
+     * to reliably detect broken HTTP/1.0 proxies...
+     */
+    if ((Proxy_Host != null  &&  Protocol != HTTPS)  &&
+        resp.getHeader("Via") == null)
+        ServerProtocolVersion = HTTP_1_0;
 
-	if (DebugConn)
-	    System.err.println("Conn:  Protocol Version established: " +
-			       ProtVers2String(ServerProtocolVersion));
+    if (DebugConn)
+        System.err.println("Conn:  Protocol Version established: " +
+                   ProtVers2String(ServerProtocolVersion));
 
 
-	// some (buggy) servers return an error status if they get a
-	// version they don't comprehend
+    // some (buggy) servers return an error status if they get a
+    // version they don't comprehend
 
-	if (ServerProtocolVersion == HTTP_1_0  &&
-	    (resp.getStatusCode() == 400  ||  resp.getStatusCode() == 500))
-	{
-	    input_demux.markForClose(resp);
-	    input_demux = null;
-	    RequestProtocolVersion = "HTTP/1.0";
-	    return false;
-	}
+    if (ServerProtocolVersion == HTTP_1_0  &&
+        (resp.getStatusCode() == 400  ||  resp.getStatusCode() == 500))
+    {
+        input_demux.markForClose(resp);
+        input_demux = null;
+        RequestProtocolVersion = "HTTP/1.0";
+        return false;
+    }
 
-	return true;
+    return true;
     }
 
 
     private void determineKeepAlive(Response resp)  throws IOException
     {
-	// try and determine if this server does keep-alives
+    // try and determine if this server does keep-alives
 
-	String con;
+    String con;
 
-	try
-	{
-	    if (ServerProtocolVersion >= HTTP_1_1  ||
-		(
-		 (
-		  ((Proxy_Host == null  ||  Protocol == HTTPS)  &&
-		   (con = resp.getHeader("Connection")) != null)
-		  ||
-		  ((Proxy_Host != null  &&  Protocol != HTTPS)  &&
-		   (con = resp.getHeader("Proxy-Connection")) != null)
-		 )  &&
-		 Util.hasToken(con, "keep-alive")
-		)
-	       )
-	    {
-		DoesKeepAlive = true;
+    try
+    {
+        if (ServerProtocolVersion >= HTTP_1_1  ||
+        (
+         (
+          ((Proxy_Host == null  ||  Protocol == HTTPS)  &&
+           (con = resp.getHeader("Connection")) != null)
+          ||
+          ((Proxy_Host != null  &&  Protocol != HTTPS)  &&
+           (con = resp.getHeader("Proxy-Connection")) != null)
+         )  &&
+         Util.hasToken(con, "keep-alive")
+        )
+           )
+        {
+        DoesKeepAlive = true;
 
-		if (DebugConn)
-		    System.err.println("Conn:  Keep-Alive enabled");
+        if (DebugConn)
+            System.err.println("Conn:  Keep-Alive enabled");
 
-		KeepAliveUnknown = false;
-	    }
-	    else if (resp.getStatusCode() < 400)
-		KeepAliveUnknown = false;
+        KeepAliveUnknown = false;
+        }
+        else if (resp.getStatusCode() < 400)
+        KeepAliveUnknown = false;
 
 
-	    // get maximum number of requests
+        // get maximum number of requests
 
-	    if (DoesKeepAlive  &&  ServerProtocolVersion == HTTP_1_0  &&
-		(con = resp.getHeader("Keep-Alive")) != null)
-	    {
-		HttpHeaderElement max =
-				Util.getElement(Util.parseHeader(con), "max");
-		if (max != null  &&  max.getValue() != null)
-		{
-		    KeepAliveReqMax  = Integer.parseInt(max.getValue());
-		    KeepAliveReqLeft = KeepAliveReqMax;
+        if (DoesKeepAlive  &&  ServerProtocolVersion == HTTP_1_0  &&
+        (con = resp.getHeader("Keep-Alive")) != null)
+        {
+        HttpHeaderElement max =
+                Util.getElement(Util.parseHeader(con), "max");
+        if (max != null  &&  max.getValue() != null)
+        {
+            KeepAliveReqMax  = Integer.parseInt(max.getValue());
+            KeepAliveReqLeft = KeepAliveReqMax;
 
-		    if (DebugConn)
-			System.err.println("Conn:  Max Keep-Alive requests: "+
-					   KeepAliveReqMax);
-		}
-	    }
-	}
-	catch (ParseException pe) { }
-	catch (NumberFormatException nfe) { }
-	catch (ClassCastException cce) { }
+            if (DebugConn)
+            System.err.println("Conn:  Max Keep-Alive requests: "+
+                       KeepAliveReqMax);
+        }
+        }
+    }
+    catch (ParseException pe) { }
+    catch (NumberFormatException nfe) { }
+    catch (ClassCastException cce) { }
     }
 
 
     synchronized void outputFinished()
     {
-	output_finished = true;
-	notify();
+    output_finished = true;
+    notify();
     }
 
 
-    synchronized void closeDemux(IOException ioe)
+    synchronized void closeDemux(IOException ioe, boolean was_reset)
     {
-	if (input_demux != null)  input_demux.close(ioe, true);
+    if (input_demux != null)  input_demux.close(ioe, was_reset);
 
-	early_stall = null;
-	late_stall  = null;
+    early_stall = null;
+    late_stall  = null;
+    prev_resp   = null;
     }
 
 
     final static String ProtVers2String(int prot_vers)
     {
-	return "HTTP/" + (prot_vers >>> 16) + "." + (prot_vers & 0xFFFF);
+    return "HTTP/" + (prot_vers >>> 16) + "." + (prot_vers & 0xFFFF);
     }
 
     final static int String2ProtVers(String prot_vers)
     {
-	String vers = prot_vers.substring(5);
-	int    dot  = vers.indexOf('.');
-	return  Integer.parseInt(vers.substring(0, dot)) << 16 |
-		Integer.parseInt(vers.substring(dot+1));
+    String vers = prot_vers.substring(5);
+    int    dot  = vers.indexOf('.');
+    return  Integer.parseInt(vers.substring(0, dot)) << 16 |
+        Integer.parseInt(vers.substring(dot+1));
     }
 
 
@@ -3372,8 +3630,15 @@ public class HTTPConnection
      */
     public String toString()
     {
-	return getProtocol() + "://" + getHost() +
-	    (getPort() != Util.defaultPort(getProtocol()) ? ":" + getPort() : "");
+    return getProtocol() + "://" + getHost() +
+        (getPort() != URI.defaultPort(getProtocol()) ? ":" + getPort() : "");
+    }
+
+
+    public void setLogging( boolean logging, String filename )
+    {
+        this.logging = logging;
+        this.logFilename = filename;
     }
 }
 
@@ -3390,76 +3655,76 @@ class EstablishConnection extends Thread
 
     EstablishConnection(String host, int port, SocksClient socks)
     {
-	super("EstablishConnection (" + host + ":" + port + ")");
-	try { setDaemon(true); }
-	catch (SecurityException se) { }        // Oh well...
+    super("EstablishConnection (" + host + ":" + port + ")");
+    try { setDaemon(true); }
+    catch (SecurityException se) { }        // Oh well...
 
-	actual_host  = host;
-	actual_port  = port;
-	Socks_client = socks;
+    actual_host  = host;
+    actual_port  = port;
+    Socks_client = socks;
 
-	exception = null;
-	sock      = null;
-	close     = false;
+    exception = null;
+    sock      = null;
+    close     = false;
     }
 
 
     public void run()
     {
-	try
-	{
-	    if (Socks_client != null)
-		sock = Socks_client.getSocket(actual_host, actual_port);
-	    else
-	    {
-		// try all A records
-		InetAddress[] addr_list = InetAddress.getAllByName(actual_host);
-		for (int idx=0; idx<addr_list.length; idx++)
-		{
-		    try
-		    {
-			sock = new Socket(addr_list[idx], actual_port);
-			break;		// success
-		    }
-		    catch (SocketException se)  // should be NoRouteToHostException
-		    {
-			if (idx == addr_list.length-1  ||  close)
-			    throw se;	// we tried them all
-		    }
-		}
-	    }
-	}
-	catch (IOException ioe)
-	{
-	    exception = ioe;
-	}
+    try
+    {
+        if (Socks_client != null)
+        sock = Socks_client.getSocket(actual_host, actual_port);
+        else
+        {
+        // try all A records
+        InetAddress[] addr_list = InetAddress.getAllByName(actual_host);
+        for (int idx=0; idx<addr_list.length; idx++)
+        {
+            try
+            {
+            sock = new Socket(addr_list[idx], actual_port);
+            break;      // success
+            }
+            catch (SocketException se)  // should be NoRouteToHostException
+            {
+            if (idx == addr_list.length-1  ||  close)
+                throw se;   // we tried them all
+            }
+        }
+        }
+    }
+    catch (IOException ioe)
+    {
+        exception = ioe;
+    }
 
-	if (close)
-	{
-	    try
-		{ sock.close(); }
-	    catch (IOException ioe)
-		{ }
-	    sock = null;
-	}
+    if (close  &&  sock != null)
+    {
+        try
+        { sock.close(); }
+        catch (IOException ioe)
+        { }
+        sock = null;
+    }
     }
 
 
     IOException getException()
     {
-	return exception;
+    return exception;
     }
 
 
     Socket getSocket()
     {
-	return sock;
+    return sock;
     }
 
 
     void forget()
     {
-	close = true;
+    close = true;
     }
 }
 

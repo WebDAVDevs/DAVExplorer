@@ -1,8 +1,8 @@
 /*
- * @(#)DefaultModule.java				0.3 30/01/1998
+ * @(#)DefaultModule.java				0.3-1 10/02/1999
  *
  *  This file is part of the HTTPClient package
- *  Copyright (C) 1996-1998  Ronald Tschalaer
+ *  Copyright (C) 1996-1999  Ronald Tschalär
  *
  *  This library is free software; you can redistribute it and/or
  *  modify it under the terms of the GNU Library General Public
@@ -23,7 +23,6 @@
  *  I may be contacted at:
  *
  *  ronald@innovation.ch
- *  Ronald.Tschalaer@psi.ch
  *
  */
 
@@ -37,13 +36,13 @@ import java.net.ProtocolException;
  * This is the default module which gets called after all other modules
  * have done their stuff.
  *
- * @version	0.3  30/01/1998
- * @author	Ronald Tschal&auml;r
+ * @version	0.3-1  10/02/1999
+ * @author	Ronald Tschalär
  */
 
 class DefaultModule implements HTTPClientModule, GlobalConstants
 {
-    /** class variables */
+    /** number of times the request will be retried */
     private int req_timeout_retries;
 
 

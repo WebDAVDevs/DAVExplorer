@@ -1,8 +1,8 @@
 /*
- * @(#)Handler.java					0.3 30/01/1998
+ * @(#)Handler.java					0.3-1 09/02/1999
  *
  *  This file is part of the HTTPClient.shttp package 
- *  Copyright (C) 1996-1998  Ronald Tschalaer
+ *  Copyright (C) 1996-1999  Ronald Tschalär
  *
  *  This library is free software; you can redistribute it and/or
  *  modify it under the terms of the GNU Library General Public
@@ -23,16 +23,15 @@
  *  I may be contacted at:
  *
  *  ronald@innovation.ch
- *  Ronald.Tschalaer@psi.ch
  *
  */
 
 package HTTPClient.shttp;
 
+import java.io.IOException;
 import java.net.URL;
 import java.net.URLConnection;
 import java.net.URLStreamHandler;
-import java.net.UnknownHostException;
 import HTTPClient.ProtocolNotSuppException;
 
 
@@ -41,8 +40,8 @@ import HTTPClient.ProtocolNotSuppException;
  * can use the HTTPClient package as a replacement for the JDKs client.
  * To do so define the property java.protocol.handler.pkgs=HTTPClient .
  *
- * @version	0.3  30/01/1998
- * @author	Ronald Tschal&auml;r
+ * @version	0.3-1  09/02/1999
+ * @author	Ronald Tschalär
  */
 
 public class Handler extends URLStreamHandler
@@ -53,7 +52,7 @@ public class Handler extends URLStreamHandler
     }
 
     public URLConnection openConnection(URL url)
-	    throws UnknownHostException, ProtocolNotSuppException
+	    throws IOException, ProtocolNotSuppException
     {
         return new HTTPClient.HttpURLConnection(url);
     }

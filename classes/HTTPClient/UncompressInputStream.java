@@ -1,8 +1,8 @@
 /*
- * @(#)UncompressInputStream.java			0.3 30/01/1998
+ * @(#)UncompressInputStream.java			0.3-1 10/02/1999
  *
  *  This file is part of the HTTPClient package
- *  Copyright (C) 1996-1998  Ronald Tschalaer
+ *  Copyright (C) 1996-1999  Ronald Tschalär
  *
  *  This library is free software; you can redistribute it and/or
  *  modify it under the terms of the GNU Library General Public
@@ -23,7 +23,6 @@
  *  I may be contacted at:
  *
  *  ronald@innovation.ch
- *  Ronald.Tschalaer@psi.ch
  *
  */
 
@@ -42,8 +41,8 @@ import java.io.FilterInputStream;
  * heavily on the <var>unlzw.c</var> code in <var>gzip-1.2.4</var> (written
  * by Peter Jannesen) and the original compress code.
  *
- * @version	0.3  30/01/1998
- * @author	Ronald Tschal&auml;r
+ * @version	0.3-1  10/02/1999
+ * @author	Ronald Tschalär
  */
 class UncompressInputStream extends FilterInputStream
 {
@@ -181,7 +180,7 @@ class UncompressInputStream extends FilterInputStream
 		l_bit_pos += l_n_bits;
 
 
-		// handle first interation
+		// handle first iteration
 
 		if (l_oldcode == -1)
 		{

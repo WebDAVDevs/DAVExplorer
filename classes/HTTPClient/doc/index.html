@@ -2,28 +2,28 @@
 <HTML>
 
 <HEAD>
-<TITLE>HTTPClient V0.3</TITLE>
+<TITLE>HTTPClient V0.3-1</TITLE>
 <LINK REV="made" HREF="mailto:ronald@innovation.ch">
 </HEAD>
 
 <BODY BGCOLOR="#FFFFFF">
 
-<H1>HTTPClient Version 0.3</H1>
+<H1>HTTPClient Version 0.3-1</H1>
 
 <P>This package provides a complete http client library. It currently
 implementes most of the relevant parts of the HTTP/1.0 and HTTP/1.1
 protocols, including the request methods HEAD, GET, POST and
-PUT, and automatic handling of authorization and redirection requests.
-Furthermore the included <var>Codecs</var> class contains coders and
-decoders for the base64, quoted-printable, URL-encoding, chunked and
-the multipart/form-data encodings. The whole thing is <em>free</em>
-(GNU LGPL).
+PUT, and automatic handling of authorization, redirection requests,
+and cookies. Furthermore the included <var>Codecs</var> class contains
+coders and decoders for the base64, quoted-printable, URL-encoding,
+chunked and the multipart/form-data encodings. The whole thing is
+<em>free</em> (GNU LGPL).
 
 <P>This version will run under all versions of the JDK, including
 JDK 1.0.2. However, I'd like to forget about JDK 1.0.2. If anybody
 needs JDK 1.0.2 compatibility then please let me know.
 
-<P>Following is the documentation for the HTTPClient Version 0.3. If
+<P>Following is the documentation for the HTTPClient Version 0.3-1. If
 you have any problems, bugs, suggestions, comments, etc. please
 <A HREF="mailto:ronald@innovation.ch">let me know</A> (but first check
 the <A HREF="FAQ.html">FAQ</A>).
@@ -37,7 +37,7 @@ the <A HREF="FAQ.html">FAQ</A>).
 <DD> <IMG ALT="*" SRC="images/redball.gif">
      <A HREF="api/Package-HTTPClient.html">API Documentation</A>
 <DD> <IMG ALT="*" SRC="images/redball.gif">
-     <A HREF="upgrading.html">Changes and Upgrading from Version 0.2-3</A>
+     <A HREF="0.3-1_bugs_fixed.html">Bug fixes, Changes, and Upgrading from Version 0.3</A>
 <DD> <IMG ALT="*" SRC="images/redball.gif">
      <A HREF="jdk102.html">Running under JDK 1.0.2 (or equivalent)</A>
 <DD> <IMG ALT="*" SRC="images/redball.gif">
@@ -45,12 +45,16 @@ the <A HREF="FAQ.html">FAQ</A>).
 <DD> <IMG ALT="*" SRC="images/redball.gif">
      <A HREF="errors.html">Common Exceptions and their Causes</A>
 <DD> <IMG ALT="*" SRC="images/redball.gif">
+     <A HREF="compiling.html">Notes on compiling HTTPClient classes</A>
+<DD> <IMG ALT="*" SRC="images/redball.gif">
      <A HREF="FAQ.html">Frequently Asked Questions</A>
 </DL>
 
 Previous releases:
 
 <DL>
+<DD> <IMG ALT="*" SRC="images/redball.gif">
+     <A HREF="upgrading.html">Bugs fixed, Changes, and Upgrading to V0.3 (from V0.2-3)</A>
 <DD> <IMG ALT="*" SRC="images/redball.gif">
      <A HREF="0.2-3_bugs_fixed.html">Bugs fixed in V0.2-3 (from V0.2-2)</A>
 <DD> <IMG ALT="*" SRC="images/redball.gif">
@@ -67,7 +71,7 @@ Previous releases:
 <P><HR>
 
 <ADDRESS>
-Ronald Tschal&auml;r / 30. January 1998 /
+Ronald Tschal&auml;r / 10. February 1999 /
 <A HREF="mailto:ronald@innovation.ch">ronald@innovation.ch</A>.
 </ADDRESS>
 

@@ -2,7 +2,7 @@
 <HTML>
 
 <HEAD>
-<TITLE>Changes from Version 0.2</TITLE>
+<TITLE>Changes from Version 0.2-3</TITLE>
 <LINK REV="made"     HREF="mailto:ronald@innovation.ch">
 <LINK REL="Previous" HREF="index.html">
 </HEAD>
@@ -165,7 +165,7 @@ since Version 0.2-3. For more information see the rest of the documentation.
     also disables the handling of the Digest authorization scheme.
 
 <P><LI>
-    Socket connections are now closed a little more aggresively. The exact
+    Socket connections are now closed a little more aggressively. The exact
     conditions under which they are closed is now documented (see the
     <A HREF="advanced_info.html#socket-close">Advanced Info</A>).
 
@@ -327,7 +327,7 @@ and upgrading to V0.3 should be fairly straightforward and easy.
     {
     } </PRE>
 <P><LI>If you used <code>AuthorizationInfo.setAuthHandler(null)</code> to
-    prevent the auth popup from appearing, then use
+    prevent the authorization popup from appearing, then use
     <code>HTTPConnection.setDefaultAllowUserInteraction(false)</code>
     instead.
 <P><LI>Change any <code>Codecs.getParameter(...)</code> to

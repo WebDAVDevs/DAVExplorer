@@ -1,8 +1,8 @@
 /*
- * @(#)TransferEncodingModule.java			0.3 30/01/1998
+ * @(#)TransferEncodingModule.java			0.3-1 10/02/1999
  *
  *  This file is part of the HTTPClient package
- *  Copyright (C) 1996-1998  Ronald Tschalaer
+ *  Copyright (C) 1996-1999  Ronald Tschalär
  *
  *  This library is free software; you can redistribute it and/or
  *  modify it under the terms of the GNU Library General Public
@@ -23,7 +23,6 @@
  *  I may be contacted at:
  *
  *  ronald@innovation.ch
- *  Ronald.Tschalaer@psi.ch
  *
  */
 
@@ -42,8 +41,8 @@ import java.util.zip.GZIPInputStream;
  *
  * Note: This module requires JDK 1.1 or later.
  *
- * @version	0.3  30/01/1998
- * @author	Ronald Tschal&auml;r
+ * @version	0.3-1  10/02/1999
+ * @author	Ronald Tschalär
  */
 
 class TransferEncodingModule implements HTTPClientModule, GlobalConstants
@@ -53,7 +52,10 @@ class TransferEncodingModule implements HTTPClientModule, GlobalConstants
 	/* This ensures that the loading of this class is only successful
 	 * if we're in JDK 1.1 (or later) and have access to java.util.zip
 	 */
-	new InflaterInputStream(null);
+	try
+	    { new InflaterInputStream(null); }
+	catch (NullPointerException npe)
+	    { /* JDK 1.2 Final started throwing this */ }
     }
 
 
@@ -126,16 +128,14 @@ class TransferEncodingModule implements HTTPClientModule, GlobalConstants
 	}
  
 
-	// Add gzip, deflate, compress and chunked tokens to the TE header
+	// Add gzip, deflate, and compress tokens to the TE header
 
-	if (pte.indexOf(new HttpHeaderElement("gzip")) == -1)
-	    pte.addElement(new HttpHeaderElement("gzip"));
-	if (pte.indexOf(new HttpHeaderElement("deflate")) == -1)
+	if (!pte.contains(new HttpHeaderElement("deflate")))
 	    pte.addElement(new HttpHeaderElement("deflate"));
-	if (pte.indexOf(new HttpHeaderElement("compress")) == -1)
+	if (!pte.contains(new HttpHeaderElement("gzip")))
+	    pte.addElement(new HttpHeaderElement("gzip"));
+	if (!pte.contains(new HttpHeaderElement("compress")))
 	    pte.addElement(new HttpHeaderElement("compress"));
-	if (pte.indexOf(new HttpHeaderElement("chunked")) == -1)
-	    pte.addElement(new HttpHeaderElement("chunked"));
 
 	hdrs[idx] = new NVPair("TE", Util.assembleHeader(pte));
 

@@ -1,8 +1,8 @@
 /*
- * @(#)Cookie2.java					0.3 30/01/1998
+ * @(#)Cookie2.java					0.3-1 10/02/1999
  *
  *  This file is part of the HTTPClient package
- *  Copyright (C) 1996-1998  Ronald Tschalaer
+ *  Copyright (C) 1996-1999  Ronald Tschalär
  *
  *  This library is free software; you can redistribute it and/or
  *  modify it under the terms of the GNU Library General Public
@@ -23,16 +23,13 @@
  *  I may be contacted at:
  *
  *  ronald@innovation.ch
- *  Ronald.Tschalaer@psi.ch
  *
  */
 
 package HTTPClient;
 
 import java.io.File;
-import java.net.URL;
 import java.net.ProtocolException;
-import java.net.MalformedURLException;
 import java.util.Date;
 import java.util.Vector;
 import java.util.Hashtable;
@@ -42,11 +39,11 @@ import java.util.StringTokenizer;
 
 /**
  * This class represents an http cookie as specified in the
- * <A HREF="ftp://ds.internic.net/internet-drafts/draft-ietf-http-state-man-mec-05.txt">
+ * <A HREF="ftp://ds.internic.net/internet-drafts/draft-ietf-http-state-man-mec-10.txt">
  * HTTP State Management Mechanism spec</A> (also known as a version 1 cookie).
  *
- * @version	0.3  30/01/1998
- * @author	Ronald Tschal&auml;r
+ * @version	0.3-1  10/02/1999
+ * @author	Ronald Tschalär
  * @since	V0.3
  */
 
@@ -55,7 +52,7 @@ public class Cookie2 extends Cookie
     protected int     version;
     protected boolean discard;
     protected String  comment;
-    protected URL     comment_url;
+    protected URI     comment_url;
     protected int[]   port_list;
     protected String  port_list_str;
 
@@ -65,13 +62,70 @@ public class Cookie2 extends Cookie
 
 
     /**
-     * This is private. Use <code>parse()</code> to create cookies.
+     * Create a cookie.
+     *
+     * @param name      the cookie name
+     * @param value     the cookie value
+     * @param domain    the host this cookie will be sent to
+     * @param port_list an array of allowed server ports for this cookie,
+     *                  or null if the the cookie may be sent to any port
+     * @param path      the path prefix for which this cookie will be sent
+     * @param epxires   the Date this cookie expires, or null if never
+     * @param discard   if true then the cookie will be discarded at the
+     *                  end of the session regardless of expiry
+     * @param secure    if true this cookie will only be over secure connections
+     * @param comment   the comment associated with this cookie, or null if none
+     * @param comment_url the comment URL associated with this cookie, or null
+     *                    if none
+     * @exception NullPointerException if <var>name</var>, <var>value</var>,
+     *                                 <var>domain</var>, or <var>path</var>
+     *                                 is null
+     */
+    public Cookie2(String name, String value, String domain, int[] port_list,
+		   String path, Date expires, boolean discard, boolean secure,
+		   String comment, URI comment_url)
+    {
+	super(name, value, domain, path, expires, secure);
+
+	this.discard     = discard;
+	this.port_list   = port_list;
+	this.comment     = comment;
+	this.comment_url = comment_url;
+
+	path_set   = true;
+	domain_set = true;
+
+	if (port_list != null  &&  port_list.length > 0)
+	{
+	    StringBuffer tmp = new StringBuffer();
+	    tmp.append(port_list[0]);
+	    for (int idx=1; idx<port_list.length; idx++)
+	    {
+		tmp.append(',');
+		tmp.append(port_list[idx]);
+	    }
+
+	    port_list_str = tmp.toString();
+	    port_set      = true;
+	}
+
+	version = 1;
+    }
+
+
+    /**
+     * Use <code>parse()</code> to create cookies.
      *
      * @see #parse(java.lang.String, HTTPClient.RoRequest)
      */
     protected Cookie2(RoRequest req)
     {
 	super(req);
+
+	int slash = path.lastIndexOf('/');
+	if (slash != -1)  path = path.substring(0, slash+1);
+	if (domain.indexOf('.') == -1)  domain += ".local";
+
 	version       = -1;
 	discard       = false;
 	comment       = null;
@@ -169,10 +223,14 @@ public class Cookie2 extends Cookie
 		else if (name.equals("domain"))		// Domain
 		{
 		    if (curr.domain_set)  continue;
-		    if (params[idx2].getValue().charAt(0) != '.')
-			curr.domain = "." + params[idx2].getValue();
+		    String d = params[idx2].getValue().toLowerCase();
+
+		    // add leading dot if not present and if domain is
+		    // not the full host name
+		    if (d.charAt(0) != '.'  &&  !d.equals(curr.domain))
+			curr.domain = "." + d;
 		    else
-			curr.domain = params[idx2].getValue();
+			curr.domain = d;
 		    curr.domain_set = true;
 		}
 		else if (name.equals("max-age"))	// Max-Age
@@ -207,7 +265,7 @@ public class Cookie2 extends Cookie
 		    StringTokenizer tok =
 			    new StringTokenizer(params[idx2].getValue(), ",");
 		    curr.port_list = new int[tok.countTokens()];
-		    for (int idx3=0; idx3<curr.port_list.length; idx++)
+		    for (int idx3=0; idx3<curr.port_list.length; idx3++)
 		    {
 			String port = tok.nextToken().trim();
 			try
@@ -242,8 +300,8 @@ public class Cookie2 extends Cookie
 		{
 		    if (curr.comment_url != null)  continue;
 		    try
-			{ curr.comment_url = new URL(params[idx2].getValue()); }
-		    catch (MalformedURLException mue)
+			{ curr.comment_url = new URI(params[idx2].getValue()); }
+		    catch (ParseException pe)
 		    {
 			throw new ProtocolException("Bad Set-Cookie2 header: " +
 						set_cookie + "\nCommentURL '" +
@@ -264,34 +322,44 @@ public class Cookie2 extends Cookie
 	    if (curr.version != 1)  continue;	// ignore unknown version
 
 
+	    // setup defaults
+
+	    if (curr.expires == null)  curr.discard = true;
+
+
 	    // check validity
 
+	    // path attribute must be a prefix of the request-URI
 	    if (!Util.getPath(req.getRequestURI()).startsWith(curr.path))
 		continue;
 
-	    if (!curr.domain.equalsIgnoreCase("localhost")  &&
-		curr.domain.substring(1, curr.domain.length()-1).
-		indexOf('.') == -1)  continue;
+	    // if host name is simple (i.e w/o a domain) then append .local
+	    String eff_host = req.getConnection().getHost();
+	    if (eff_host.indexOf('.') == -1)  eff_host += ".local";
 
-	    String host = req.getConnection().getHost();
-	    if (!host.endsWith(curr.domain))  continue;
+	    // domain must be either .local or must contain at least two dots
+	    if (!curr.domain.equals(".local")  &&
+		curr.domain.indexOf('.', 1) == -1)  continue;
 
-	    if (host.substring(0, host.length()-curr.domain.length()).
+	    // domain must domain match host
+	    if (!eff_host.endsWith(curr.domain))  continue;
+
+	    // host minus domain may not contain any dots
+	    if (eff_host.substring(0, eff_host.length()-curr.domain.length()).
 		indexOf('.') != -1)  continue;
 
+	    // if a port list is given it must include the current port
 	    if (curr.port_set)
 	    {
 		int idx2=0;
-		for (idx2=0; idx2<curr.port_list.length; idx++)
+		for (idx2=0; idx2<curr.port_list.length; idx2++)
 		    if (curr.port_list[idx2] == req.getConnection().getPort())
 			break;
 		if (idx2 == curr.port_list.length)  continue;
 	    }
 
 
-	    // setup defaults
-
-	    if (curr.expires == null)  curr.discard = true;
+	    // looks ok
 
 	    cookie_arr[cidx++] = curr;
 	}
@@ -309,6 +377,33 @@ public class Cookie2 extends Cookie
     public int getVersion()
     {
 	return version;
+    }
+
+ 
+    /**
+     * @return the comment string, or null if none was set
+     */
+    public String getComment()
+    {
+	return comment;
+    }
+
+ 
+    /**
+     * @return the comment url
+     */
+    public URI getCommentURL()
+    {
+	return comment_url;
+    }
+
+ 
+    /**
+     * @return the array of ports
+     */
+    public int[] getPorts()
+    {
+	return port_list;
     }
 
  
@@ -339,7 +434,12 @@ public class Cookie2 extends Cookie
 		    break;
 		}
 
-	return (con.getHost().endsWith(domain)  &&  port_match  &&
+	String eff_host = con.getHost();
+	if (eff_host.indexOf('.') == -1)  eff_host += ".local";
+
+	return ((domain.charAt(0) == '.'  &&  eff_host.endsWith(domain)  ||
+		 domain.charAt(0) != '.'  &&  eff_host.equals(domain))  &&
+		port_match  &&
 		Util.getPath(req.getRequestURI()).startsWith(path)  &&
 		(!secure || con.getProtocol().equals("https") ||
 		 con.getProtocol().equals("shttp")));
@@ -355,8 +455,8 @@ public class Cookie2 extends Cookie
 	    /*
 	    cookie.append("$Version=");
 	    cookie.append(version);
-	    */
 	    cookie.append("; ");
+	    */
 
 	    cookie.append(name);
 	    cookie.append("=");
@@ -426,31 +526,6 @@ public class Cookie2 extends Cookie
 	    throw new Error("Internal Error: unknown version " + version);
 
 	return string;
-    }
-
-
-    /**
-     * Read cookies from a file into a hashtable. Each entry in the
-     * hashtable will have the same key and value (i.e. we do a
-     * put(cookie, cookie)).
-     *
-     * @param file the cookie file
-     * @param list the hashtable to fill
-     */
-    static void readFromFile(File file, Hashtable list)
-    {
-	// in windows, skip the mm2048.dat and mm256.dat files
-    }
-
-
-    /**
-     * Saves the cookies in the hashtable to a file.
-     *
-     * @param file the cookie file
-     * @param list the hashtable of cookies
-     */
-    static void saveToFile(File file, Hashtable list)
-    {
     }
 }
 

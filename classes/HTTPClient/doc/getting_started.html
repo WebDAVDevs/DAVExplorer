@@ -51,7 +51,7 @@ etc), various response info (<A
 HREF="api/HTTPClient.HTTPResponse.html#getStatusCode()">getStatusCode()</A>,
 <A
 HREF="api/HTTPClient.HTTPResponse.html#getReasonLine()">getReasonLine()</A>,
-etc), the reponse data (<A
+etc), the response data (<A
 HREF="api/HTTPClient.HTTPResponse.html#getData()">getData()</A> and
 <A
 HREF="api/HTTPClient.HTTPResponse.html#getInputStream()">getInputStream()</A>)
@@ -61,14 +61,14 @@ HREF="api/HTTPClient.HTTPResponse.html#getTrailer(java.lang.String)">getTrailer(
 HREF="api/HTTPClient.HTTPResponse.html#getTrailerAsInt(java.lang.String)">getTrailerAsInt()</A>,
 etc). Following are some examples to get started.
 
-<P>If this is in an applet you can retrieve files from your server
-as follows:
+<P>To retrieve files from the URL "http://www.myaddr.net/my/file" you can
+use something like the following:
 
 <pre>
     try
     {
-	HTTPConnection con = new HTTPConnection(this);
-	HTTPResponse   rsp = con.Get("/my_file");
+	HTTPConnection con = new HTTPConnection("www.myaddr.net");
+	HTTPResponse   rsp = con.Get("/my/file");
 	if (rsp.getStatusCode() &gt;= 300)
 	{
 	    System.err.println("Received Error: "+rsp.getReasonLine());
@@ -96,7 +96,7 @@ as follows:
     }
 </pre>
 
-<P>This will get the files "/my_file" and "/another_file" and put their
+<P>This will get the files "/my/file" and "/another_file" and put their
 contents into byte[]'s accessible via <A
 HREF="api/HTTPClient.HTTPResponse.html#getData()">getData()</A>.
 Note that you need to only create a new <A
@@ -110,9 +110,10 @@ request (to optimize subsequent requests) and persistent connections
 are used whenever possible (see also <A
 HREF="advanced_info.html">Advanced Info</A>).
 
-<P>To POST form data you would use something like this (assuming you
-have two fields called <var>name</var> and <var>e-mail</var>, whose
-contents are stored in the variables <var>name</var> and <var>email</var>):
+<P>To POST form data from an applet back to your server you could use
+something like this (assuming you have two fields called <var>name</var>
+and <var>e-mail</var>, whose contents are stored in the variables
+<var>name</var> and <var>email</var>):
 
 <pre>
     try
@@ -121,6 +122,7 @@ contents are stored in the variables <var>name</var> and <var>email</var>):
 	form_data[0] = new NVPair("name", name);
 	form_data[1] = new NVPair("e-mail", email);
 
+	// note the convenience constructor for applets
 	HTTPConnection con = new HTTPConnection(this);
 	HTTPResponse   rsp = con.Post("/cgi-bin/my_script", form_data);
 	if (rsp.getStatusCode() &gt= 300)
@@ -141,7 +143,7 @@ contents are stored in the variables <var>name</var> and <var>email</var>):
     }
 </pre>
 
-<P>Here the response data is read at leasure via an <A
+<P>Here the response data is read at leisure via an <A
 HREF="api/HTTPClient.HTTPResponse.html#getInputStream()">InputStream</A>
 instead of all at once into a <var>byte[]</var>.
 
@@ -152,6 +154,7 @@ server supports http PUT) you could do something like the following:
     try
     {
 	URL url = new URL("http://www.mydomain.us/test/my_file");
+
 	HTTPConnection con = new HTTPConnection(url);
 	HTTPResponse   rsp = con.Put(url.getFile(), "Hello World");
 	if (rsp.getStatusCode() &gt= 300)
@@ -214,7 +217,7 @@ to enter information (s)he's already entered before.
 be handled in the same way as server authentication. However, you will
 need to use the methods from <A
 HREF="api/HTTPClient.AuthorizationInfo.html">AuthorizationInfo</A> for
-setting any auth info. Example:
+setting any authorization info. Example:
 
 <pre>
     AuthorizationInfo.addBasicAuthorization("my.proxy.dom", 8000, "protected-space", "goofy", "woof");
@@ -236,7 +239,7 @@ it includes the name of the realm this URL belongs to. The client can
 then look and see whether it has stored a username and password for
 this realm, and if so it will send that info without prompting the user
 (again).  If the info were associated with specific URLs then you would
-have to enter the username and passsword each time you accessed a
+have to enter the username and password each time you accessed a
 different URL.
 
 <P>To find out what realm a given URL belongs to you can either access
@@ -247,7 +250,8 @@ the .... is the realm), or you can access the URL using the HTTPClient
 realm it prints in the popup box (it'll say "Enter username and
 password for realm .... on host www.some.host"). Additionally, I've
 provided a small application <var>GetAuthInfo</var> (in HTTPClient/doc/)
-which will print out the necessary info. You can run this as:
+which will print out the necessary info. If you have a direct connection
+to the net you can run this as:
 <PRE>
 	java GetAuthInfo http://some.host.dom/the/file.html
 </PRE>
@@ -255,7 +259,10 @@ If you're using an http proxy, use
 <PRE>
 	java -Dhttp.proxyHost=your.proxy.dom -Dhttp.proxyPort=XX GetAuthInfo http://some.host.dom/the/file.html
 </PRE>
-or
+If your proxy requires authentication then the above will instead print
+out the info necessary to authenticate with the proxy. To get the info
+for a server when your proxy requires authentication use the following
+command line:
 <PRE>
 	java -Dhttp.proxyHost=your.proxy.dom -Dhttp.proxyPort=XX GetAuthInfo -proxy_auth proxy-username proxy-password http://some.host.dom/the/file.html
 </PRE>
@@ -274,9 +281,9 @@ was. This is used primarily for scripts which are accessed via POST
 and want to redirect the client to a predetermined response.
 
 <P>If the request was redirected (it may even have been redirected
-multiple times) the final URL that delivered the response can be
+multiple times) the final URI that delivered the response can be
 retrieved using the response's <A
-HREF="api/HTTPClient.HTTPResponse.html#getEffectiveURL()">getEffectiveURL()</A>
+HREF="api/HTTPClient.HTTPResponse.html#getEffectiveURI()">getEffectiveURI()</A>
 method.
 
 
@@ -290,6 +297,12 @@ allows her simple control over which cookies are set. For more info on
 disabling cookies or using your own policy handler see the
 <A HREF="advanced_info.html#cookie_module">Advanced Info</A>.
 
+<P>Cookies may also be saved at the end of the session and loaded again at
+startup. To enable this set the system property
+<var>HTTPClient.cookies.save</var> to <var>true</var>. Again, see
+<A HREF="advanced_info.html#cookie_module">Advanced Info</A> for more
+details.
+
 
 <H2><A NAME="parsing">Parsing Headers</A></H2>
 
@@ -299,7 +312,7 @@ around the general header parser <A
 HREF="api/HTTPClient.Util.html#parseHeader(java.lang.String)">parseHeader()</A>
 which will parse a syntax that fits most http headers. It's also a very
 loose parser that will accept just about anything as long as it's
-unambigously parseable.
+unambiguously parseable.
 
 
 <H2><A NAME="urlcon">Replacing the JDK's HttpClient</A></H2>
@@ -326,7 +339,7 @@ an HTTP/1.1 capable browser.
 <HR>
 
 <ADDRESS>
-Ronald Tschal&auml;r / 30. January 1998 /
+Ronald Tschal&auml;r / 10. February 1999 /
 <A HREF="mailto:ronald@innovation.ch">ronald@innovation.ch</A>.
 </ADDRESS>
 

@@ -45,7 +45,7 @@
 	handler (i.e. the code in the handler should execute quickly
 	and return so that other events can be handled).
     <LI>If the site requires authorization then make the necessary
-	authorization info availble to the HTTPClient beforehand; see
+	authorization info available to the HTTPClient beforehand; see
 	<A HREF="getting_started.html#auth">Authorization Handling</A>
 	for more info.
     <LI>Use <A
@@ -90,6 +90,14 @@
 </BLOCKQUOTE>
 
 
+<H4>I would like to upload files using POST and the
+    multipart/form-data encoding just like certain browsers do - how do I
+    do this with the HTTPClient?</H4>
+<BLOCKQUOTE>
+    <P>See <A HREF="api/HTTPClient.Codecs.html#mpFormDataEncode(HTTPClient.NVPair[], HTTPClient.NVPair[], HTTPClient.NVPair[])">Codecs.mpFormDataEncode()</A>.
+</BLOCKQUOTE>
+
+
 <H4>Does HTTPClient support <var>HTTPS</var> (i.e. HTTP on top of SSL)?</H4>
 
 <BLOCKQUOTE>
@@ -113,6 +121,31 @@
     HTTPClient needs to create the raw connection itself, possibly
     going through SOCKS or http proxies, and only then can the SSL
     handshake be invoked).
+
+    <P>I have a couple modified HTTPConnection classes which work with
+    <A HREF="http://www.rsa.com/rsa/products/sslj/index.html">SSL-J</A>
+    (from RSA) and
+    <A HREF="http://www.phaos.com/products/sslava.htm">SSLava</A>
+    (from Phaos), but both these SSL implementations are commercial
+    packages. If you are willing to buy one of these you can
+    <A HREF="mailto:ronald@innovation.ch">contact me</A> for the
+    necessary HTTPConnection class (which is free, of course).
+    If you are choosing between one of these two I recomment SSL-J
+    because it has the necessary constructor so that the HTTPClient
+    will work through proxies; SSLava does not provide the necessary
+    constructor or hooks and therefore the HTTPClient/SSLava/https
+    combination will not work through proxies. Note that I have no
+    connection whatsoever with these companies - I just happened to
+    have received info and patches for these two packages from folks
+    who had used them to add https support to the HTTPClient.
+</BLOCKQUOTE>
+
+
+<H4>When will V0.4 be available?</H4>
+
+<BLOCKQUOTE>
+    <P>I don't know. I'm fairly busy with a job and helping to renovate
+    a house, so it'll definitely be a few months more.
 </BLOCKQUOTE>
 
 
@@ -122,7 +155,7 @@
 
 <H4>I keep getting the message "#Security Exception: properties"
     (Netscape 3.x) or "#Security Exception: checkpropsaccess.key"
-    (Netscape 4.x) in the Java Console everytime my Applet starts.</H4>
+    (Netscape 4.x) in the Java Console every time my Applet starts.</H4>
 
 <BLOCKQUOTE>
     <P>This can be ignored. What is happening is that the static
@@ -178,7 +211,7 @@
 <BLOCKQUOTE>
     <P>What is probably happening is that there are some (non daemon) threads
     still around that haven't exited. An application won't exit until all
-    (non deamon) threads are dead. Here is one reason why a thread might
+    (non daemon) threads are dead. Here is one reason why a thread might
     still be around (apart from any you might have started and not stopped
     yourself):
     <OL>
@@ -198,7 +231,7 @@
 <HR>
 
 <ADDRESS>
-Ronald Tschal&auml;r / 30. January 1998 /
+Ronald Tschal&auml;r / 10. February 1999 /
 <A HREF="mailto:ronald@innovation.ch">ronald@innovation.ch</A>.
 </ADDRESS>
 

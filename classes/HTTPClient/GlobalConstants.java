@@ -1,8 +1,8 @@
 /*
- * @(#)GlobalConstants.java				0.3 30/01/1998
+ * @(#)GlobalConstants.java             0.3-1 10/02/1999
  *
  *  This file is part of the HTTPClient package
- *  Copyright (C) 1996-1998  Ronald Tschalaer
+ *  Copyright (C) 1996-1999  Ronald Tschalär
  *
  *  This library is free software; you can redistribute it and/or
  *  modify it under the terms of the GNU Library General Public
@@ -23,7 +23,6 @@
  *  I may be contacted at:
  *
  *  ronald@innovation.ch
- *  Ronald.Tschalaer@psi.ch
  *
  */
 
@@ -33,9 +32,9 @@ package HTTPClient;
 /**
  * This interface defines various global constants.
  *
- * @version	0.3  30/01/1998
- * @author	Ronald Tschal&auml;r
- * @since	V0.3
+ * @version 0.3-1  10/02/1999
+ * @author  Ronald Tschalär
+ * @since   V0.3
  */
 
 interface GlobalConstants
@@ -51,21 +50,22 @@ interface GlobalConstants
     boolean DebugURLC  = DebugAll | false;
 
     /** possible http protocols we (might) handle */
-    int     HTTP       = 0; 	// plain http
-    int     HTTPS      = 1; 	// http on top of SSL
-    int     SHTTP      = 2; 	// secure http
-    int     HTTP_NG    = 3; 	// http next-generation
+    int     HTTP       = 0;     // plain http
+    int     HTTPS      = 1;     // http on top of SSL
+    int     SHTTP      = 2;     // secure http
+    int     HTTP_NG    = 3;     // http next-generation
 
     /** some known http versions */
     int     HTTP_1_0   = (1 << 16) + 0;
     int     HTTP_1_1   = (1 << 16) + 1;
 
     /** Content delimiters */
-    int     CL_HDRS    = 0; 	// still reading/parsing headers
-    int     CL_0       = 1; 	// no body
-    int     CL_CLOSE   = 2; 	// by closing connection
-    int     CL_CONTLEN = 3; 	// via the Content-Length header
-    int     CL_CHUNKED = 4; 	// via chunked transfer encoding
-    int     CL_MP_BR   = 5; 	// via multipart/byteranges
+    int     CD_NONE    = 0;     // raw read from the stream
+    int     CD_HDRS    = 1;     // reading headers/trailers
+    int     CD_0       = 2;     // no body
+    int     CD_CLOSE   = 3;     // by closing connection
+    int     CD_CONTLEN = 4;     // via the Content-Length header
+    int     CD_CHUNKED = 5;     // via chunked transfer encoding
+    int     CD_MP_BR   = 6;     // via multipart/byteranges
 }
 

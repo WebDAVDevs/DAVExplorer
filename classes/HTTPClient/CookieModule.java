@@ -1,8 +1,8 @@
 /*
- * @(#)CookieModule.java				0.3 30/01/1998
+ * @(#)CookieModule.java				0.3-1 10/02/1999
  *
  *  This file is part of the HTTPClient package
- *  Copyright (C) 1996-1998  Ronald Tschalaer
+ *  Copyright (C) 1996-1999  Ronald Tschalär
  *
  *  This library is free software; you can redistribute it and/or
  *  modify it under the terms of the GNU Library General Public
@@ -23,7 +23,6 @@
  *  I may be contacted at:
  *
  *  ronald@innovation.ch
- *  Ronald.Tschalaer@psi.ch
  *
  */
 
@@ -31,6 +30,10 @@ package HTTPClient;
 
 import java.io.File;
 import java.io.IOException;
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
 import java.net.ProtocolException;
 import java.util.Date;
 import java.util.Vector;
@@ -45,6 +48,7 @@ import java.awt.Color;
 import java.awt.Button;
 import java.awt.Graphics;
 import java.awt.Dimension;
+import java.awt.TextArea;
 import java.awt.TextField;
 import java.awt.GridLayout;
 import java.awt.GridBagLayout;
@@ -63,17 +67,21 @@ import java.awt.event.WindowAdapter;
  *
  * <P>The accepting and sending of cookies is controlled by a
  * <var>CookiePolicyHandler</var>. This allows you to fine tune your privacy
- * preferences. A cookie is only added to the cookie jar if the handler
- * allows it, and a cookie from the cookie jar is only sent if the handler
+ * preferences. A cookie is only added to the cookie list if the handler
+ * allows it, and a cookie from the cookie list is only sent if the handler
  * allows it.
  *
- * <P>The cookie jar is not yet persistent, i.e. all cookies are discarded
- * at exit. Persistence will be added in the future.
+ * <P>A cookie jar can be used to store cookies between sessions. This file
+ * is read when this class is loaded and is written when the application
+ * exits; only cookies from the default context are saved. The name of the
+ * file is controlled by the property <var>HTTPClient.cookies.jar</var> and
+ * defaults to a system dependent name. The reading and saving of cookies
+ * is enabled by setting the property <var>HTTPClient.cookies.save</var>.
  *
  * @see <a href="http://home.netscape.com/newsref/std/cookie_spec.html">Netscape's cookie spec</a>
- * @see <a href="ftp://ds.internic.net/internet-drafts/draft-ietf-http-state-man-mec-06.txt">HTTP State Management Mechanism spec</a>
- * @version	0.3  30/01/1998
- * @author	Ronald Tschal&auml;r
+ * @see <a href="ftp://ds.internic.net/internet-drafts/draft-ietf-http-state-man-mec-10.txt">HTTP State Management Mechanism spec</a>
+ * @version	0.3-1  10/02/1999
+ * @author	Ronald Tschalär
  * @since	V0.3
  */
 
@@ -84,6 +92,9 @@ public class CookieModule implements HTTPClientModule, GlobalConstants
 
     /** the file to use for persistent cookie storage */
     private static File cookie_jar = null;
+
+    /** an object, whose finalizer will save the cookies to the jar */
+    private static Object cookieSaver = null;
 
     /** the cookie policy handler */
     private static CookiePolicyHandler cookie_handler =
@@ -97,22 +108,20 @@ public class CookieModule implements HTTPClientModule, GlobalConstants
     {
 	boolean persist;
 	try
-	{
-	    // don't use Boolean.getBoolean, as netscape won't throw a
-	    // security exception for that...
-	    String dont = System.getProperty("HTTPClient.cookies.dont_persist");
-	    persist = !Boolean.valueOf(dont).booleanValue();
-	}
+	    { persist = Boolean.getBoolean("HTTPClient.cookies.save"); }
 	catch (Exception e)
 	    { persist = false; }
 
 	if (persist)
 	{
-	    cookie_jar = new File(getCookieJarName());
-	    Hashtable cookie_list = Util.getList(cookie_cntxt_list,
-					 HTTPConnection.getDefaultContext());
-	    Cookie.readFromFile(cookie_jar, cookie_list);
+	    loadCookies();
 
+	    // the nearest thing to atexit() I know of...
+
+	    cookieSaver = new Object()
+		{
+		    public void finalize() { saveCookies(); }
+		};
 	    try
 		{ System.runFinalizersOnExit(true); }
 	    catch (Throwable t)
@@ -121,13 +130,59 @@ public class CookieModule implements HTTPClientModule, GlobalConstants
     }
 
 
-    static void classFinalize()
+    private static void loadCookies()
     {
-	if (cookie_jar != null)
+	cookie_jar = new File(getCookieJarName());
+	if (cookie_jar.isFile()  &&  cookie_jar.canRead())
 	{
-	    Hashtable cookie_list = Util.getList(cookie_cntxt_list,
-					 HTTPConnection.getDefaultContext());
-	    Cookie.saveToFile(cookie_jar, cookie_list);
+	    try
+	    {
+		ObjectInputStream ois =
+		    new ObjectInputStream(new FileInputStream(cookie_jar));
+		cookie_cntxt_list.put(HTTPConnection.getDefaultContext(),
+				      (Hashtable) ois.readObject());
+		ois.close();
+	    }
+	    catch (Throwable t)
+		{ }
+	}
+    }
+
+
+    private static void saveCookies()
+    {
+	if (cookie_jar != null  &&  cookie_jar.isFile()  &&
+	    cookie_jar.canWrite())
+	{
+	    Hashtable cookie_list = new Hashtable();
+	    Enumeration enum = Util.getList(cookie_cntxt_list,
+					    HTTPConnection.getDefaultContext())
+				   .elements();
+
+	    // discard cookies which are not to be kept across sessions
+
+	    while (enum.hasMoreElements())
+	    {
+		Cookie cookie = (Cookie) enum.nextElement();
+		if (!cookie.discard())
+		    cookie_list.put(cookie, cookie);
+	    }
+
+
+	    // save any remaining cookies in jar
+
+	    if (cookie_list.size() > 0)
+	    {
+		try
+		{
+		    ObjectOutputStream oos =
+			new ObjectOutputStream(new FileOutputStream(cookie_jar));
+		    oos.writeObject(cookie_list);
+		    oos.close();
+		}
+		catch (Throwable t)
+		    { }
+	    }
 	}
     }
 
@@ -137,67 +192,44 @@ public class CookieModule implements HTTPClientModule, GlobalConstants
 	String file = null;
 
 	try
-	    { file = System.getProperty("HTTPClient.cookies.file"); }
+	    { file = System.getProperty("HTTPClient.cookies.jar"); }
 	catch (Exception e)
 	    { }
 
 	if (file == null)
 	{
-	    String os = System.getProperty("os.name");
-	    String hj_cf, nn_cf, ie_cf;
+	    // default to something reasonable
 
-	    if (os.equalsIgnoreCase("Windows 95"))
+	    String os = System.getProperty("os.name");
+	    if (os.equalsIgnoreCase("Windows 95")  ||
+		os.equalsIgnoreCase("16-bit Windows")  ||
+		os.equalsIgnoreCase("Windows"))
 	    {
-		hj_cf = System.getProperty("java.home") +
-		        File.separator + ".hotjava" +
-		        File.separator + "cookies.txt";
-		nn_cf = "C:" + File.separator + "program files" +
-			File.separator + "netscape" +
-			File.separator + "cookies.txt";
-		ie_cf = "C:" + File.separator + "windows" +
-			File.separator + "cookies" + File.separator;
+		file = System.getProperty("java.home") +
+		       File.separator + ".httpclient_cookies";
 	    }
 	    else if (os.equalsIgnoreCase("Windows NT"))
 	    {
-		hj_cf = System.getProperty("user.home") +
-		        File.separator + ".hotjava" +
-		        File.separator + "cookies.txt";
-		nn_cf = "C:" + File.separator + "program files" +
-			File.separator + "netscape" +
-			File.separator + "cookies.txt";
-		ie_cf = "C:" + File.separator + "winnt" +
-			File.separator + "cookies" + File.separator;
+		file = System.getProperty("user.home") +
+		       File.separator + ".httpclient_cookies";
 	    }
-	    else if (os.equalsIgnoreCase("Mac OS"))
+	    else if (os.equalsIgnoreCase("OS/2"))
 	    {
-		hj_cf = null;
-		nn_cf = "System Folder" + File.separator +
-			"Preferences" + File.separator +
-			"Netscape" + File.separator +
-			"MagicCookie";
-		ie_cf = null;
+		file = System.getProperty("user.home") +
+		       File.separator + ".httpclient_cookies";
 	    }
-	    else		// it's probably U*IX
+	    else if (os.equalsIgnoreCase("Mac OS")  ||
+		     os.equalsIgnoreCase("MacOS"))
 	    {
-		hj_cf = System.getProperty("user.home") +
-			File.separator + ".hotjava" +
-			File.separator + "cookies";
-		nn_cf = System.getProperty("user.home") +
-			File.separator + ".netscape" +
-			File.separator + "cookies";
-		ie_cf = null;
+		file = "System Folder" + File.separator +
+		       "Preferences" + File.separator +
+		       "HTTPClientCookies";
 	    }
-
-	    File tmp = new File(nn_cf);
-	    if (tmp.isFile()  &&  tmp.canRead())
-		file = nn_cf;
-
-	    tmp = new File(hj_cf);
-	    if (tmp.isFile()  &&  tmp.canRead())
-		file = hj_cf;
-
-	    if (file == null)
-		file = hj_cf;
+	    else		// it's probably U*IX or VMS
+	    {
+		file = System.getProperty("user.home") +
+		       File.separator + ".httpclient_cookies";
+	    }
 	}
 
 	return file;
@@ -245,46 +277,64 @@ public class CookieModule implements HTTPClientModule, GlobalConstants
 
 	// Now set any new cookie headers
 
-	Vector names = new Vector();
-	Vector lens  = new Vector();
-
 	Hashtable cookie_list =
 	    Util.getList(cookie_cntxt_list, req.getConnection().getContext());
-	Enumeration list = cookie_list.elements();
-	boolean cookie2 = false;
-	while (list.hasMoreElements())
-	{
-	    Cookie cookie = (Cookie) list.nextElement();
+	if (cookie_list.size() == 0)
+	    return REQ_CONTINUE;	// no need to create a lot of objects
 
-	    if (cookie.hasExpired())
+	Vector  names   = new Vector();
+	Vector  lens    = new Vector();
+	boolean cookie2 = false;
+
+	synchronized(cookie_list)
+	{
+	    Enumeration list = cookie_list.elements();
+	    Vector remove_list = null;
+
+	    while (list.hasMoreElements())
 	    {
-		cookie_list.remove(cookie);
-		continue;
+		Cookie cookie = (Cookie) list.nextElement();
+
+		if (cookie.hasExpired())
+		{
+		    if (remove_list == null)  remove_list = new Vector();
+		    remove_list.addElement(cookie);
+		    continue;
+		}
+
+		if (cookie.sendWith(req)  &&  (cookie_handler == null  ||
+		    cookie_handler.sendCookie(cookie, req)))
+		{
+		    int len = cookie.getPath().length();
+		    int idx;
+
+		    // insert in correct position
+		    for (idx=0; idx<lens.size(); idx++)
+			if (((Integer) lens.elementAt(idx)).intValue() < len)
+			    break;
+
+		    names.insertElementAt(cookie.toExternalForm(), idx);
+		    lens.insertElementAt(new Integer(len), idx);
+
+		    if (cookie instanceof Cookie2)  cookie2 = true;
+		}
 	    }
 
-	    if (cookie.sendWith(req)  &&  (cookie_handler == null  ||
-		cookie_handler.sendCookie(cookie, req)))
+	    // remove any marked cookies
+	    // Note: we can't do this during the enumeration!
+	    if (remove_list != null)
 	    {
-		int len = cookie.getPath().length();
-		int idx;
-
-		// insert in correct position
-		for (idx=0; idx<lens.size(); idx++)
-		    if (((Integer) lens.elementAt(idx)).intValue() < len) break;
-
-		names.insertElementAt(cookie.toExternalForm(), idx);
-		lens.insertElementAt(new Integer(len), idx);
-
-		if (cookie instanceof Cookie2)  cookie2 = true;
+		for (int idx=0; idx<remove_list.size(); idx++)
+		    cookie_list.remove(remove_list.elementAt(idx));
 	    }
 	}
 
-	if (names.size() > 0)
+	if (!names.isEmpty())
 	{
 	    StringBuffer value = new StringBuffer();
 
 	    if (cookie2)
-		value.append("$Version=\"1\"");
+		value.append("$Version=\"1\"; ");
 
 	    value.append((String) names.elementAt(0));
 	    for (int idx=1; idx<names.size(); idx++)
@@ -398,16 +448,19 @@ public class CookieModule implements HTTPClientModule, GlobalConstants
 
 	Hashtable cookie_list =
 	    Util.getList(cookie_cntxt_list, req.getConnection().getContext());
-	for (int idx=0; idx<cookies.length; idx++)
+	synchronized(cookie_list)
 	{
-	    Cookie cookie = (Cookie) cookie_list.get(cookies[idx]);
-	    if (cookie != null  &&  cookies[idx].hasExpired())
-		cookie_list.remove(cookie);		// expired, so remove
-	    else  					// new or replaced
+	    for (int idx=0; idx<cookies.length; idx++)
 	    {
-		if (cookie_handler == null  ||
-		    cookie_handler.acceptCookie(cookies[idx], req, resp))
-		    cookie_list.put(cookies[idx], cookies[idx]);
+		Cookie cookie = (Cookie) cookie_list.get(cookies[idx]);
+		if (cookie != null  &&  cookies[idx].hasExpired())
+		    cookie_list.remove(cookie);		// expired, so remove
+		else  					// new or replaced
+		{
+		    if (cookie_handler == null  ||
+			cookie_handler.acceptCookie(cookies[idx], req, resp))
+			cookie_list.put(cookies[idx], cookies[idx]);
+		}
 	    }
 	}
     }
@@ -419,7 +472,7 @@ public class CookieModule implements HTTPClientModule, GlobalConstants
      */
     public static void discardAllCookies()
     {
-	cookie_cntxt_list = new Hashtable();
+	cookie_cntxt_list.clear();
     }
 
 
@@ -431,7 +484,129 @@ public class CookieModule implements HTTPClientModule, GlobalConstants
      */
     public static void discardAllCookies(Object context)
     {
-	cookie_cntxt_list.put(context, new Hashtable());
+	Hashtable cookie_list = Util.getList(cookie_cntxt_list, context);
+	cookie_list.clear();
+    }
+
+
+    /**
+     * List all stored cookies for all contexts.
+     *
+     * @return an array of all Cookies
+     * @since V0.3-1
+     */
+    public static Cookie[] listAllCookies()
+    {
+	synchronized(cookie_cntxt_list)
+	{
+	    Cookie[] cookies = new Cookie[0];
+	    int idx = 0;
+
+	    Enumeration cntxt_list = cookie_cntxt_list.elements();
+	    while (cntxt_list.hasMoreElements())
+	    {
+		Hashtable cntxt = (Hashtable) cntxt_list.nextElement();
+		synchronized(cntxt)
+		{
+		    cookies = Util.resizeArray(cookies, idx+cntxt.size());
+		    Enumeration cookie_list = cntxt.elements();
+		    while (cookie_list.hasMoreElements())
+			cookies[idx++] = (Cookie) cookie_list.nextElement();
+		}
+	    }
+
+	    return cookies;
+	}
+    }
+
+
+    /**
+     * List all stored cookies for a given context.
+     *
+     * @param  context the context Object.
+     * @return an array of Cookies
+     * @since V0.3-1
+     */
+    public static Cookie[] listAllCookies(Object context)
+    {
+	Hashtable cookie_list = Util.getList(cookie_cntxt_list, context);
+
+	synchronized(cookie_list)
+	{
+	    Cookie[] cookies = new Cookie[cookie_list.size()];
+	    int idx = 0;
+
+	    Enumeration enum = cookie_list.elements();
+	    while (enum.hasMoreElements())
+		cookies[idx++] = (Cookie) enum.nextElement();
+
+	    return cookies;
+	}
+    }
+
+
+    /**
+     * Add the specified cookie to the list of cookies in the default context.
+     * If a compatible cookie (as defined by <var>Cookie.equals()</var>)
+     * already exists in the list then it is replaced with the new cookie.
+     *
+     * @param cookie the Cookie to add
+     * @since V0.3-1
+     */
+    public static void addCookie(Cookie cookie)
+    {
+	Hashtable cookie_list =
+	    Util.getList(cookie_cntxt_list, HTTPConnection.getDefaultContext());
+	cookie_list.put(cookie, cookie);
+    }
+
+
+    /**
+     * Add the specified cookie to the list of cookies for the specified
+     * context. If a compatible cookie (as defined by
+     * <var>Cookie.equals()</var>) already exists in the list then it is
+     * replaced with the new cookie.
+     *
+     * @param cookie  the cookie to add
+     * @param context the context Object.
+     * @since V0.3-1
+     */
+    public static void addCookie(Cookie cookie, Object context)
+    {
+	Hashtable cookie_list = Util.getList(cookie_cntxt_list, context);
+	cookie_list.put(cookie, cookie);
+    }
+
+
+    /**
+     * Remove the specified cookie from the list of cookies in the default
+     * context. If the cookie is not found in the list then this method does
+     * nothing.
+     *
+     * @param cookie the Cookie to remove
+     * @since V0.3-1
+     */
+    public static void removeCookie(Cookie cookie)
+    {
+	Hashtable cookie_list =
+	    Util.getList(cookie_cntxt_list, HTTPConnection.getDefaultContext());
+	cookie_list.remove(cookie);
+    }
+
+
+    /**
+     * Remove the specified cookie from the list of cookies for the specified
+     * context. If the cookie is not found in the list then this method does
+     * nothing.
+     *
+     * @param cookie  the cookie to remove
+     * @param context the context Object
+     * @since V0.3-1
+     */
+    public static void removeCookie(Cookie cookie, Object context)
+    {
+	Hashtable cookie_list = Util.getList(cookie_cntxt_list, context);
+	cookie_list.remove(cookie);
     }
 
 
@@ -439,17 +614,20 @@ public class CookieModule implements HTTPClientModule, GlobalConstants
      * Sets a new cookie policy handler. This handler will be called for each
      * cookie that a server wishes to set and for each cookie that this
      * module wishes to send with a request. In either case the handler may
-     * allow or reject the operation.
+     * allow or reject the operation. If you wish to blindly accept and send
+     * all cookies then just disable the handler with
+     * <code>CookieModule.setCookiePolicyHandler(null);</code>.
      *
      * <P>At initialization time a default handler is installed. This
      * handler allows all cookies to be sent. For any cookie that a server
      * wishes to be set two lists are consulted. If the server matches any
      * host or domain in the reject list then the cookie is rejected; if
      * the server matches any host or domain in the accept list then the
-     * cookie is accepted. If no host or domain match is found in either of
-     * these two lists and user interaction is allowed then a dialog box is
-     * poped up to ask the user whether to accept or reject the cookie; if
-     * user interaction is not allowed the cookie is accepted.
+     * cookie is accepted (in that order). If no host or domain match is
+     * found in either of these two lists and user interaction is allowed
+     * then a dialog box is poped up to ask the user whether to accept or
+     * reject the cookie; if user interaction is not allowed the cookie is
+     * accepted.
      *
      * <P>The accept and reject lists in the default handler are initialized
      * at startup from the two properties
@@ -461,10 +639,20 @@ public class CookieModule implements HTTPClientModule, GlobalConstants
      * further expanded if the user chooses one of the "Accept All from Domain"
      * or "Reject All from Domain" buttons in the dialog box.
      *
+     * <P>Note: the default handler does not implement the rules concerning
+     * unverifiable transactions (section 4.3.5,
+     * <A HREF="http://www.cis.ohio-state.edu/htbin/rfc/rfc2109">RFC-2109</A>).
+     * The reason for this is simple: the default handler knows nothing
+     * about the application using this client, and it therefore does not
+     * have enough information to determine when a request is verifiable
+     * and when not. You are therefore encouraged to provide your own handler
+     * which implements section 4.3.5 (use the
+     * <var>CookiePolicyHandler.sendCookie</var> method for this).
+     *
      * @param the new policy handler
      * @return the previous policy handler
      */
-    public static CookiePolicyHandler
+    public static synchronized CookiePolicyHandler
 			    setCookiePolicyHandler(CookiePolicyHandler handler)
     {
 	CookiePolicyHandler old = cookie_handler;
@@ -481,10 +669,10 @@ public class CookieModule implements HTTPClientModule, GlobalConstants
 class DefaultCookiePolicyHandler implements CookiePolicyHandler
 {
     /** a list of all hosts and domains from which to silently accept cookies */
-    private String[] accept_domains;
+    private String[] accept_domains = new String[0];
 
     /** a list of all hosts and domains from which to silently reject cookies */
-    private String[] reject_domains;
+    private String[] reject_domains = new String[0];
 
     /** the query popup */
     private BasicCookieBox popup = null;
@@ -499,17 +687,17 @@ class DefaultCookiePolicyHandler implements CookiePolicyHandler
 	    { list = System.getProperty("HTTPClient.cookies.hosts.accept"); }
 	catch (Exception e)
 	    { list = null; }
-	accept_domains = Util.splitProperty(list);
-	for (int idx=0; idx<accept_domains.length; idx++)
-	    accept_domains[idx] = accept_domains[idx].toLowerCase();
+	String[] domains = Util.splitProperty(list);
+	for (int idx=0; idx<domains.length; idx++)
+	    addAcceptDomain(domains[idx].toLowerCase());
 
 	try
 	    { list = System.getProperty("HTTPClient.cookies.hosts.reject"); }
 	catch (Exception e)
 	    { list = null; }
-	reject_domains = Util.splitProperty(list);
-	for (int idx=0; idx<reject_domains.length; idx++)
-	    reject_domains[idx] = reject_domains[idx].toLowerCase();
+	domains = Util.splitProperty(list);
+	for (int idx=0; idx<domains.length; idx++)
+	    addRejectDomain(domains[idx].toLowerCase());
     }
 
 
@@ -525,7 +713,8 @@ class DefaultCookiePolicyHandler implements CookiePolicyHandler
      */
     public boolean acceptCookie(Cookie cookie, RoRequest req, RoResponse resp)
     {
-	String server = req.getConnection().getHost().toLowerCase();
+	String server = req.getConnection().getHost();
+	if (server.indexOf('.') == -1)  server += ".local";
 
 
 	// Check lists. Reject takes priority over accept
@@ -562,8 +751,22 @@ class DefaultCookiePolicyHandler implements CookiePolicyHandler
     }
 
 
+    /**
+     * This handler just allows all cookies to be sent which were accepted
+     * (i.e. no further restrictions are placed on the sending of cookies).
+     *
+     * @return true
+     */
+    public boolean sendCookie(Cookie cookie, RoRequest req)
+    {
+	return true;
+    }
+
+
     void addAcceptDomain(String domain)
     {
+	if (domain.indexOf('.') == -1)  domain += ".local";
+
 	for (int idx=0; idx<accept_domains.length; idx++)
 	{
 	    if (domain.endsWith(accept_domains[idx]))
@@ -581,6 +784,8 @@ class DefaultCookiePolicyHandler implements CookiePolicyHandler
 
     void addRejectDomain(String domain)
     {
+	if (domain.indexOf('.') == -1)  domain += ".local";
+
 	for (int idx=0; idx<reject_domains.length; idx++)
 	{
 	    if (domain.endsWith(reject_domains[idx]))
@@ -596,18 +801,6 @@ class DefaultCookiePolicyHandler implements CookiePolicyHandler
 		    Util.resizeArray(reject_domains, reject_domains.length+1);
 	reject_domains[reject_domains.length-1] = domain;
     }
-
-
-    /**
-     * This handler just allows all cookies to be sent which were accepted
-     * (i.e. no further restrictions are placed on the sending of cookies).
-     *
-     * @return true
-     */
-    public boolean sendCookie(Cookie cookie, RoRequest req)
-    {
-	return true;
-    }
 }
 
 
@@ -615,18 +808,27 @@ class DefaultCookiePolicyHandler implements CookiePolicyHandler
  * A simple popup that asks whether the cookie should be accepted or rejected,
  * or if cookies from whole domains should be silently accepted or rejected.
  *
- * @version	0.3  30/01/1998
- * @author	Ronald Tschal&auml;r
+ * @version	0.3-1  10/02/1999
+ * @author	Ronald Tschalär
  */
 class BasicCookieBox extends Frame
 {
     private final static String title = "Set Cookie Request";
     private Dimension           screen;
+    private GridBagConstraints  constr;
     private Label		name_value_label;
-    private Label		domain_label;
-    private Label		path_label;
-    private Label		expires_label;
-    private Label		secure_label;
+    private Label		domain_value;
+    private Label		ports_label;
+    private Label		ports_value;
+    private Label		path_value;
+    private Label		expires_value;
+    private Label		discard_note;
+    private Label		secure_note;
+    private Label		c_url_note;
+    private Panel		left_panel;
+    private Panel		right_panel;
+    private Label   		comment_label;
+    private TextArea		comment_value;
     private TextField		domain;
     private Button		default_focus;
     private boolean             accept;
@@ -647,90 +849,83 @@ class BasicCookieBox extends Frame
 
 	GridBagLayout layout;
 	setLayout(layout = new GridBagLayout());
-	GridBagConstraints constr = new GridBagConstraints();
+	constr = new GridBagConstraints();
 
-	Label header_label =
-		new Label("The server would like to set the following cookie:");
-	add(header_label);
 	constr.gridwidth = GridBagConstraints.REMAINDER;
 	constr.anchor = GridBagConstraints.WEST;
-	layout.setConstraints(header_label, constr);
+	add(new Label("The server would like to set the following cookie:"), constr);
 
 	Panel p = new Panel();
-	Panel pp = new Panel();
-	pp.setLayout(new GridLayout(4,1));
-	pp.add(new Label("Name=Value:"));
-	pp.add(new Label("Domain:"));
-	pp.add(new Label("Path:"));
-	pp.add(new Label("Expires:"));
-	p.add(pp);
+	left_panel = new Panel();
+	left_panel.setLayout(new GridLayout(4,1));
+	left_panel.add(new Label("Name=Value:"));
+	left_panel.add(new Label("Domain:"));
+	left_panel.add(new Label("Path:"));
+	left_panel.add(new Label("Expires:"));
+	ports_label = new Label("Ports:");
+	p.add(left_panel);
 
-	pp = new Panel();
-	pp.setLayout(new GridLayout(4,1));
-	pp.add(name_value_label = new Label());
-	pp.add(domain_label = new Label());
-	pp.add(path_label = new Label());
-	pp.add(expires_label = new Label());
-	p.add(pp);
-	add(p);
-	layout.setConstraints(p, constr);
-	add(secure_label = new Label(""));
-	layout.setConstraints(secure_label, constr);
+	right_panel = new Panel();
+	right_panel.setLayout(new GridLayout(4,1));
+	right_panel.add(name_value_label = new Label());
+	right_panel.add(domain_value = new Label());
+	right_panel.add(path_value = new Label());
+	right_panel.add(expires_value = new Label());
+	ports_value = new Label();
+	p.add(right_panel);
+	add(p, constr);
+	secure_note = new Label("This cookie will only be sent over secure connections");
+	discard_note = new Label("This cookie will be discarded at the end of the session");
+	c_url_note = new Label("");
+	comment_label = new Label("Comment:");
+	comment_value =
+		new TextArea("", 3, 45, TextArea.SCROLLBARS_VERTICAL_ONLY);
+	comment_value.setEditable(false);
 
-	add(default_focus = new Button("Accept"));
-	default_focus.addActionListener(new Accept());
+	add(new Panel(), constr);
+
 	constr.gridwidth = 1;
 	constr.anchor = GridBagConstraints.CENTER;
 	constr.weightx = 1.0;
-	layout.setConstraints(default_focus, constr);
+	add(default_focus = new Button("Accept"), constr);
+	default_focus.addActionListener(new Accept());
 
 	Button b;
-	add(b= new Button("Reject"));
-	b.addActionListener(new Reject());
 	constr.gridwidth = GridBagConstraints.REMAINDER;
-	layout.setConstraints(b, constr);
+	add(b= new Button("Reject"), constr);
+	b.addActionListener(new Reject());
 
 	constr.weightx = 0.0;
 	p = new Separator();
-	add(p);
 	constr.fill = GridBagConstraints.HORIZONTAL;
-	layout.setConstraints(p, constr);
+	add(p, constr);
 
-	header_label =
-	    new Label("Accept/Reject all cookies from a host or domain:");
-	add(header_label);
 	constr.fill   = GridBagConstraints.NONE;
 	constr.anchor = GridBagConstraints.WEST;
-	layout.setConstraints(header_label, constr);
+	add(new Label("Accept/Reject all cookies from a host or domain:"), constr);
 
 	p = new Panel();
 	p.add(new Label("Host/Domain:"));
 	p.add(domain = new TextField(30));
-	add(p);
-	layout.setConstraints(p, constr);
+	add(p, constr);
 
-        header_label =
-	    new Label("domains are characterized by a leading dot (`.')");
-	add(header_label);
-	layout.setConstraints(header_label, constr);
-	header_label =	new Label("(an empty string matches all hosts)");
-	add(header_label);
-	layout.setConstraints(header_label, constr);
+	add(new Label("domains are characterized by a leading dot (`.');"), constr);
+	add(new Label("an empty string matches all hosts"), constr);
 
-	add(b = new Button("Accept All"));
-	b.addActionListener(new AcceptDomain());
 	constr.anchor    = GridBagConstraints.CENTER;
 	constr.gridwidth = 1;
 	constr.weightx   = 1.0;
-	layout.setConstraints(b, constr);
+	add(b = new Button("Accept All"), constr);
+	b.addActionListener(new AcceptDomain());
 
-	add(b = new Button("Reject All"));
-	b.addActionListener(new RejectDomain());
 	constr.gridwidth = GridBagConstraints.REMAINDER;
-	layout.setConstraints(b, constr);
+	add(b = new Button("Reject All"), constr);
+	b.addActionListener(new RejectDomain());
 
 	pack();
-	setResizable(false);
+
+	constr.anchor    = GridBagConstraints.WEST;
+	constr.gridwidth = GridBagConstraints.REMAINDER;
     }
 
 
@@ -743,7 +938,7 @@ class BasicCookieBox extends Frame
     /**
      * our event handlers
      */
-    class Accept implements ActionListener
+    private class Accept implements ActionListener
     {
         public void actionPerformed(ActionEvent ae)
         {
@@ -754,7 +949,7 @@ class BasicCookieBox extends Frame
         }
     }
 
-    class Reject implements ActionListener
+    private class Reject implements ActionListener
     {
         public void actionPerformed(ActionEvent ae)
 	{
@@ -765,7 +960,7 @@ class BasicCookieBox extends Frame
 	}
     }
 
-    class AcceptDomain implements ActionListener
+    private class AcceptDomain implements ActionListener
     {
         public void actionPerformed(ActionEvent ae)
         {
@@ -776,7 +971,7 @@ class BasicCookieBox extends Frame
 	}
     }
 
-    class RejectDomain implements ActionListener
+    private class RejectDomain implements ActionListener
     {
         public void actionPerformed(ActionEvent ae)
 	{
@@ -788,7 +983,7 @@ class BasicCookieBox extends Frame
     }
 
 
-    class Close extends WindowAdapter
+    private class Close extends WindowAdapter
     {
 	public void windowClosing(WindowEvent we)
 	{
@@ -800,33 +995,80 @@ class BasicCookieBox extends Frame
     /**
      * the method called by the DefaultCookiePolicyHandler.
      *
-     * @return the username/password pair
+     * @return true if the cookie should be accepted
      */
-    synchronized boolean accept(Cookie cookie, DefaultCookiePolicyHandler h,
-				String server)
+    public synchronized boolean accept(Cookie cookie,
+				       DefaultCookiePolicyHandler h,
+				       String server)
     {
 	// set the new values
 
 	name_value_label.setText(cookie.getName() + "=" + cookie.getValue());
-	domain_label.setText(cookie.getDomain());
-	path_label.setText(cookie.getPath());
+	domain_value.setText(cookie.getDomain());
+	path_value.setText(cookie.getPath());
 	if (cookie.expires() == null)
-	    expires_label.setText("at end of session");
+	    expires_value.setText("never");
 	else
-	    expires_label.setText(cookie.expires().toString());
+	    expires_value.setText(cookie.expires().toString());
+	int pos = 2;
 	if (cookie.isSecure())
-	    secure_label.setText("This cookie will only be sent over secure connections");
-	else
-	    secure_label.setText("");
+	    add(secure_note, constr, pos++);
+	if (cookie.discard())
+	    add(discard_note, constr, pos++);
+
+	if (cookie instanceof Cookie2)
+	{
+	    Cookie2 cookie2 = (Cookie2) cookie;
+
+	    // set ports list
+	    if (cookie2.getPorts() != null)
+	    {
+		((GridLayout) left_panel.getLayout()).setRows(5);
+		left_panel.add(ports_label, 2);
+		((GridLayout) right_panel.getLayout()).setRows(5);
+		int[] ports = cookie2.getPorts();
+		StringBuffer plist = new StringBuffer();
+		plist.append(ports[0]);
+		for (int idx=1; idx<ports.length; idx++)
+		{
+		    plist.append(", ");
+		    plist.append(ports[idx]);
+		}
+		ports_value.setText(plist.toString());
+		right_panel.add(ports_value, 2);
+	    }
+
+	    // set comment url
+	    if (cookie2.getCommentURL() != null)
+	    {
+		c_url_note.setText("For more info on this cookie see: " +
+				    cookie2.getCommentURL());
+		add(c_url_note, constr, pos++);
+	    }
+
+	    // set comment
+	    if (cookie2.getComment() != null)
+	    {
+		comment_value.setText(cookie2.getComment());
+		add(comment_label, constr, pos++);
+		add(comment_value, constr, pos++);
+	    }
+	}
 
 
 	// invalidate all labels, so that new values are displayed correctly
 
 	name_value_label.invalidate();
-	domain_label.invalidate();
-	path_label.invalidate();
-	expires_label.invalidate();
-	secure_label.invalidate();
+	domain_value.invalidate();
+	ports_value.invalidate();
+	path_value.invalidate();
+	expires_value.invalidate();
+	left_panel.invalidate();
+	right_panel.invalidate();
+	secure_note.invalidate();
+	discard_note.invalidate();
+	c_url_note.invalidate();
+	comment_value.invalidate();
 	invalidate();
 
 
@@ -837,11 +1079,13 @@ class BasicCookieBox extends Frame
 
 	// display
 
+	setResizable(true);
 	pack();
+	setResizable(false);
 	setLocation((screen.width-getPreferredSize().width)/2,
 		    (int) ((screen.height-getPreferredSize().height)/2*.7));
-	default_focus.requestFocus();
 	setVisible(true);
+	default_focus.requestFocus();
 
 
 	// wait for user input
@@ -849,6 +1093,19 @@ class BasicCookieBox extends Frame
 	try { wait(); } catch (InterruptedException e) { }
 
 	setVisible(false);
+
+
+	// reset popup
+
+	remove(secure_note);
+	remove(discard_note);
+	left_panel.remove(ports_label);
+	((GridLayout) left_panel.getLayout()).setRows(4);
+	right_panel.remove(ports_value);
+	((GridLayout) right_panel.getLayout()).setRows(4);
+	remove(c_url_note);
+	remove(comment_label);
+	remove(comment_value);
 
 
 	// handle accept/reject domain buttons
@@ -861,11 +1118,6 @@ class BasicCookieBox extends Frame
 		h.addAcceptDomain(dom);
 	    else
 		h.addRejectDomain(dom);
-
-	    accept =
-		accept != (dom.length() == 0  ||
-			   dom.charAt(0) == '.'  &&  server.endsWith(dom)  ||
-			   dom.charAt(0) != '.'  &&  server.equals(dom));
 	}
 
 	return accept;

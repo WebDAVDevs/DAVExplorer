@@ -1,8 +1,8 @@
 /*
- * @(#)NVPair.java					0.3 30/01/1998
+ * @(#)NVPair.java					0.3-1 10/02/1999
  *
  *  This file is part of the HTTPClient package
- *  Copyright (C) 1996-1998  Ronald Tschalaer
+ *  Copyright (C) 1996-1999  Ronald Tschalär
  *
  *  This library is free software; you can redistribute it and/or
  *  modify it under the terms of the GNU Library General Public
@@ -23,7 +23,6 @@
  *  I may be contacted at:
  *
  *  ronald@innovation.ch
- *  Ronald.Tschalaer@psi.ch
  *
  */
 
@@ -32,19 +31,19 @@ package HTTPClient;
 
 /**
  * This class holds a Name/Value pair of strings. It's used for headers,
- * form-data, attribute-lists, etc.
+ * form-data, attribute-lists, etc. This class is immutable.
  *
- * @version	0.3  30/01/1998
- * @author	Ronald Tschal&auml;r
+ * @version	0.3-1  10/02/1999
+ * @author	Ronald Tschalär
  */
 
-public class NVPair
+public final class NVPair
 {
     /** the name */
-    String name;
+    private String name;
 
     /** the value */
-    String value;
+    private String value;
 
 
     // Constructors

@@ -1,8 +1,8 @@
 /*
- * @(#)Request.java					0.3 30/01/1998
+ * @(#)Request.java					0.3-1 10/02/1999
  *
  *  This file is part of the HTTPClient package
- *  Copyright (C) 1996-1998  Ronald Tschalaer
+ *  Copyright (C) 1996-1999  Ronald Tschalär
  *
  *  This library is free software; you can redistribute it and/or
  *  modify it under the terms of the GNU Library General Public
@@ -23,7 +23,6 @@
  *  I may be contacted at:
  *
  *  ronald@innovation.ch
- *  Ronald.Tschalaer@psi.ch
  *
  */
 
@@ -34,12 +33,15 @@ package HTTPClient;
  * This class represents an http request. It's used by classes which
  * implement the HTTPClientModule interface.
  *
- * @version	0.3  30/01/1998
- * @author	Ronald Tschal&auml;r
+ * @version	0.3-1  10/02/1999
+ * @author	Ronald Tschalär
  */
 
 public final class Request implements RoRequest
 {
+    /** null headers */
+    private static final NVPair[] empty = new NVPair[0];
+
     /** the current HTTPConnection */
     private HTTPConnection connection;
 
@@ -68,6 +70,10 @@ public final class Request implements RoRequest
     /** number of retries so far */
             int            num_retries = 0;
 
+    /** disable pipelining of following request */
+//            boolean        dont_pipeline = false;
+            boolean        dont_pipeline = true;
+
     /** was this request aborted by the user? */
             boolean        aborted = false;
 
@@ -95,7 +101,10 @@ public final class Request implements RoRequest
 	this.connection = con;
 	this.method     = method;
 	this.req_uri    = req_uri;
-	this.headers    = headers;
+	if (headers != null)
+	    this.headers = headers;
+	else
+	    this.headers = empty;
 	this.data       = data;
 	this.stream     = stream;
 	this.allow_ui   = allow_ui;
@@ -168,7 +177,10 @@ public final class Request implements RoRequest
      */
     public void setHeaders(NVPair[] headers)
     {
-	this.headers = headers;
+	if (headers != null)
+	    this.headers = headers;
+	else
+	    this.headers = empty;
     }
 
 

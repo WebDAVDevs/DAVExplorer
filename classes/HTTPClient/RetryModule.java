@@ -1,8 +1,8 @@
 /*
- * @(#)RetryModule.java					0.3 30/01/1998
+ * @(#)RetryModule.java					0.3-1 10/02/1999
  *
  *  This file is part of the HTTPClient package
- *  Copyright (C) 1996-1998  Ronald Tschalaer
+ *  Copyright (C) 1996-1999  Ronald Tschalär
  *
  *  This library is free software; you can redistribute it and/or
  *  modify it under the terms of the GNU Library General Public
@@ -23,7 +23,6 @@
  *  I may be contacted at:
  *
  *  ronald@innovation.ch
- *  Ronald.Tschalaer@psi.ch
  *
  */
 
@@ -43,8 +42,8 @@ import java.io.IOException;
  * also resend all other requests in the chain. Also, it rethrows the
  * RetryException in Phase1 to restart the processing of the modules.
  *
- * @version	0.3  30/01/1998
- * @author	Ronald Tschal&auml;r
+ * @version	0.3-1  10/02/1999
+ * @author	Ronald Tschalär
  * @since	V0.3
  */
 
@@ -92,10 +91,35 @@ class RetryModule implements HTTPClientModule, GlobalConstants
 	    {
 		got_lock = true;
 
+		// initialize idempotent sequence checking
+		IdempotentSequence seq = new IdempotentSequence();
+		for (RetryException e=re.first; e!=null; e=e.next)
+		    seq.add(e.request);
+
 		for (RetryException e=re.first; e!=null; e=e.next)
 		{
 		    Request req = e.request;
 		    HTTPConnection con = req.getConnection();
+
+		    /* Don't retry if either the sequence is not idempotent
+		     * (Sec 8.1.4 and 9.1.2), or we've already retried enough
+		     * times, or the headers have been read and parsed
+		     * already
+		     */
+		    if (!seq.isIdempotent(req)  ||
+			(con.ServProtVersKnown  &&
+			 con.ServerProtocolVersion >= HTTP_1_1  &&
+			 req.num_retries > 0)  ||
+			((!con.ServProtVersKnown  ||
+			  con.ServerProtocolVersion <= HTTP_1_0)  &&
+			 req.num_retries > 4)  ||
+			e.response.got_headers  ||
+			req.getStream() != null)
+		    {
+			e.first = null;
+			continue;
+		    }
+
 
 		    /* If we have an entity then setup either the entity-delay
 		     * or the Expect header
@@ -122,6 +146,29 @@ class RetryModule implements HTTPClientModule, GlobalConstants
 		    {
 			addToken(req, "Connection", "close");
 		    }
+
+
+		    /* If this an HTTP/1.1 server then don't pipeline retries.
+		     * The problem is that if the server for some reason
+		     * decides not to use persistent connections and it does
+		     * not do a correct shutdown of the connection, then the
+		     * response will be ReSeT. If we did pipeline then we
+		     * would keep falling into this trap indefinitely.
+		     *
+		     * Note that for HTTP/1.0 servers, if they don't support
+		     * keep-alives then the normal code will already handle
+		     * this accordingly and won't pipe over the same
+		     * connection.
+		     */
+		    if (con.ServProtVersKnown  &&
+			con.ServerProtocolVersion >= HTTP_1_1  &&
+			e.conn_reset)
+		    {
+			req.dont_pipeline = true;
+		    }
+		    // The above is too risky - for moment let's be safe
+		    // and never pipeline retried request at all.
+		    req.dont_pipeline = true;
 
 
 		    // now resend the request
@@ -155,6 +202,11 @@ class RetryModule implements HTTPClientModule, GlobalConstants
      */
     public int responsePhase2Handler(Response resp, Request req)
     {
+	// reset any stuff we might have set previously
+	req.delay_entity  = 0;
+	req.dont_pipeline = false;
+	req.num_retries   = 0;
+
 	return RSP_CONTINUE;
     }
 

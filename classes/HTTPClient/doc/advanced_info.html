@@ -22,8 +22,9 @@
 <LI><A HREF="#pipelining">Pipelining</A>
 <LI><A HREF="#prot_vers">Protocol Version</A>
 <LI><A HREF="#modules">Modules</A>
-<LI><A HREF="#properties">Properties recognized by HTTPClient</A>
+<LI><A HREF="#properties">System Properties recognized by HTTPClient</A>
 <LI><A HREF="#headers">HTTP Headers</A>
+<LI><A HREF="#specs">HTTP (and related) Specifications</A>
 </UL>
 
 
@@ -159,7 +160,7 @@ server.
 <LI> when a response stream which is marked for close is closed.
 <LI> if all response streams up until and including the marked for close
      stream have been closed.
-<LI> if the stream demultiplexor is finalized.
+<LI> if the stream demultiplexer is finalized.
 </UL>
 
 <P>Responses are marked for close whenever the client determines that the
@@ -294,18 +295,18 @@ made to handle other schemes as well, so long as they are not "too exotic"
 http specs); this is done by setting your own <A
 HREF="api/HTTPClient.AuthorizationHandler.html">AuthorizationHandler</A>.
 Of course, if you need to something more sophisticated you can always plug
-in your own auth module.
+in your own authorization module.
 
-<P>When confronted with an authorization request the auth module will
-query all known authorization info for a possible candidate (the match
-must be for the host, port, scheme and realm). If no suitable info is
-found, or if the server rejects any info found, an authorization handler
-is called to try and get the necessary info from the user; if the user
-does not give any information, or if the information she gives is also
-rejected, then the retrying is terminated and the last failure status
-returned to the caller. The default handler currently only understands
-requests for the 'Basic' and 'Digest' authorization schemes; you may
-however set your own handler via the <A
+<P>When confronted with an authorization request the authorization module
+will query all known authorization info for a possible candidate (the
+match must be for the host, port, scheme and realm). If no suitable info
+is found, or if the server rejects any info found, an authorization
+handler is called to try and get the necessary info from the user; if the
+user does not give any information, or if the information she gives is
+also rejected, then the retrying is terminated and the last failure
+status returned to the caller. The default handler currently only
+understands requests for the 'Basic' and 'Digest' authorization schemes;
+you may however set your own handler via the <A
 HREF="api/HTTPClient.AuthorizationInfo.html#setAuthHandler(HTTPClient.AuthorizationHandler)">AuthorizationInfo.setAuthHandler()</A>
 method.  The handler given must implement the <A
 HREF="api/HTTPClient.AuthorizationHandler.html">AuthorizationHandler</A>
@@ -358,6 +359,25 @@ remove the CookieModule from the list of modules or set your own handler
 which always returns <var>false</var>. The handler must implement the <A
 HREF="api/HTTPClient.CookiePolicyHandler.html">CookiePolicyHandler</A>
 interface.
+
+<P>The CookieModule will save and restore cookies if the system property
+<var>HTTPClient.cookies.save</var> is set to <var>true</var>. All cookies
+which are meant to persist across invocations are then saved to a file
+when the application exists and read from that file when the CookieModule
+is loaded. The format of the file is a serialized Hashtable of Cookies.
+The name of file can controlled through the system property
+<var>HTTPClient.cookies.jar</var>. If this is not set, as system
+dependent name is used:
+<UL>
+<LI>Unix: <var>$HOME/.httpclient_cookies</var>
+<LI>Mac: <var>System Folder:Preferences:HTTPClientCookies</var>
+<LI>OS/2: <var>$HOME/.httpclient_cookies</var>
+<LI>Win95: <var>$JAVA_HOME/.httpclient_cookies</var>
+<LI>WinNT: <var>$HOME/.httpclient_cookies</var>
+</UL>
+
+(where $HOME is the value of the system property "user.home", and
+$JAVA_HOME is the value of the system property "java.home").
 
 
 <H3>ContentEncodingModule</H3>
@@ -454,9 +474,9 @@ observed:
 </UL>
 
 
-<H2><A NAME="properties">Properties recognized by HTTPClient</A></H2>
+<H2><A NAME="properties">System Properties recognized by HTTPClient</A></H2>
 
-<P>There are a number of properties which are used by the HTTPClient.
+<P>There are a number of system properties which are used by the HTTPClient.
 Most are documented somewhere in the api docs. Some of the properties
 may contain a list of elements, in which case the elements are separated
 by vertical bars ("|"). White space is ignored, except that a <tt>"| |"</tt>
@@ -560,6 +580,14 @@ Here is summary of all properties recognized:
 	the HTTPClient to stall each request until the headers from the
 	response to the previous request have been received and parsed.
 
+<DT>HTTPClient.forceHTTP_1.0
+    <DD>Read by <A
+	HREF="api/HTTPClient.HTTPConnection.html">HTTPConnection</A>.
+	Used to force the client to pretend it's only capable of HTTP/1.0.
+	Setting this to <var>true</var> causes all requests to be sent as
+	if the server could only handle HTTP/1.0, and causes the HTTP-version
+	in the request-line to be sent as HTTP/1.0.
+
 <DT>HTTPClient.cookies.hosts.accept
     <DD>Read by <A
 	HREF="api/HTTPClient.CookieModule.html">CookieModule</A>.
@@ -575,6 +603,19 @@ Here is summary of all properties recognized:
 	always reject cookies. See <A
 	HREF="api/HTTPClient.CookieModule.html#setCookiePolicyHandler(HTTPClient.CookiePolicyHandler)">setCookiePolicyHandler()</A>
 	for more info.
+
+<DT>HTTPClient.cookies.save
+    <DD>Read by <A
+	HREF="api/HTTPClient.CookieModule.html">CookieModule</A>.
+	If set to true then the CookieModule will read stored cookie at
+	startup time, and save cookies that should persist at application
+	exit time.
+
+<DT>HTTPClient.cookies.jar
+    <DD>Read by <A
+	HREF="api/HTTPClient.CookieModule.html">CookieModule</A>.
+	This specifies the cookie jar to use for reading and saving
+	cookies. If not set, a system dependent name is used.
 
 <DT>http.agent
     <DD>Read by <A
@@ -670,8 +711,8 @@ read just the part that interests you and ignore the rest).
 <li><var>Accept-Ranges</var>
 <li><var>Allow</var> - with a 405 status
 <li><var>Content-Base</var>
-<li><var>Content-Encoding</var> - <var>gzip</var> and <var>deflate</var> are
-     handled by the ContentEncoding module.
+<li><var>Content-Encoding</var> - <var>gzip</var>, <var>deflate</var>,
+    and <var>compress</var> are handled by the ContentEncoding module.
 <li><var>Content-Language</var>
 <li><var>Content-Length</var>
 <li><var>Content-Location</var>
@@ -688,12 +729,21 @@ read just the part that interests you and ignore the rest).
 
 <DL>
 <DD> <IMG ALT="*" SRC="images/greenball.gif">
-     <A HREF="http://www.w3.org/pub/WWW/Protocols/">General HTTP Info at W3C</A>
+     <A HREF="http://www.w3.org/Protocols/">General HTTP Info at W3C</A>
 <DD> <IMG ALT="*" SRC="images/greenball.gif">
      <A HREF="http://ds.internic.net/rfc/rfc1945.txt">HTTP/1.0 Spec (RFC 1945)
      </A>
 <DD> <IMG ALT="*" SRC="images/greenball.gif">
      <A HREF="http://ds.internic.net/rfc/rfc2068.txt">HTTP/1.1 Spec (RFC 2068)
+     </A>
+<DD> <IMG ALT="*" SRC="images/greenball.gif">
+     <A HREF="http://ds.internic.net/rfc/rfc2069.txt">Digest Authentication Spec (RFC 2069)
+     </A>
+<DD> <IMG ALT="*" SRC="images/greenball.gif">
+     <A HREF="http://www.w3.org/Protocols/HTTP/1.1/draft-ietf-http-v11-spec-rev-06.txt">Rev-06 of the new HTTP/1.1 draft
+     </A>
+<DD> <IMG ALT="*" SRC="images/greenball.gif">
+     <A HREF="ftp://ftp.ietf.org/internet-drafts/draft-ietf-http-authentication-03.txt">Rev-03 of the new http authentication draft
      </A>
 </DL>
 
@@ -704,7 +754,7 @@ read just the part that interests you and ignore the rest).
 <HR>
 
 <ADDRESS>
-Ronald Tschal&auml;r / 30. January 1998 /
+Ronald Tschal&auml;r / 10. February 1999 /
 <A HREF="mailto:ronald@innovation.ch">ronald@innovation.ch</A>.
 </ADDRESS>
 

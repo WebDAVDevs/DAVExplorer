@@ -6,7 +6,7 @@ import HTTPClient.Response;
 import HTTPClient.RoResponse;
 import HTTPClient.AuthorizationInfo;
 import HTTPClient.AuthorizationHandler;
-import HTTPClient.AuthTypeNotImplException;
+import HTTPClient.AuthSchemeNotImplException;
 import java.net.URL;
 import java.io.IOException;
 
@@ -169,7 +169,7 @@ class MyAuthHandler implements AuthorizationHandler
 					   RoRequest req,
 					   AuthorizationInfo challenge,
 					   RoResponse resp)
-	    throws AuthTypeNotImplException
+	    throws AuthSchemeNotImplException
     {
 	return def_handler.fixupAuthInfo(info, req, challenge, resp);
     }

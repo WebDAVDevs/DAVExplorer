@@ -1,8 +1,8 @@
 /*
- * @(#)Response.java					0.3 30/01/1998
+ * @(#)Response.java					0.3-1 10/02/1999
  *
  *  This file is part of the HTTPClient package
- *  Copyright (C) 1996-1998  Ronald Tschalaer
+ *  Copyright (C) 1996-1999  Ronald Tschalär
  *
  *  This library is free software; you can redistribute it and/or
  *  modify it under the terms of the GNU Library General Public
@@ -23,7 +23,6 @@
  *  I may be contacted at:
  *
  *  ronald@innovation.ch
- *  Ronald.Tschalaer@psi.ch
  *
  */
 
@@ -32,6 +31,7 @@ package HTTPClient;
 import java.io.InputStream;
 import java.io.SequenceInputStream;
 import java.io.ByteArrayInputStream;
+import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InterruptedIOException;
 import java.io.EOFException;
@@ -48,8 +48,8 @@ import java.util.NoSuchElementException;
  * modules. When all modules have handled the response then the HTTPResponse
  * fills in its fields with the data from this class.
  *
- * @version	0.3  30/01/1998
- * @author	Ronald Tschal&auml;r
+ * @version	0.3-1  10/02/1999
+ * @author	Ronald Tschalär
  */
 
 public final class Response implements RoResponse, GlobalConstants
@@ -94,8 +94,8 @@ public final class Response implements RoResponse, GlobalConstants
     /** the HTTP version of the response. */
             String       Version;
 
-    /** the final URL of the document. */
-            URL          EffectiveURL = null;
+    /** the final URI of the document. */
+            URI          EffectiveURI = null;
 
     /** any headers which were received and do not fit in the above list. */
             CIHashtable  Headers = new CIHashtable();
@@ -107,7 +107,7 @@ public final class Response implements RoResponse, GlobalConstants
             int          ContentLength = -1;
 
     /** this indicates how the length of the entity body is determined */
-            int          cl_type = CL_HDRS;
+            int          cd_type = CD_HDRS;
 
     /** the data (body) returned. */
             byte[]       Data = null;
@@ -127,6 +127,10 @@ public final class Response implements RoResponse, GlobalConstants
     /** should this response be handled further? */
             boolean      final_resp = false;
 
+    private boolean       logging = false;
+    private String        logFilename = null;
+    private static String inboundHeader = "\r\n========= Inbound Message Header =========\r\n";
+    private static String inboundBody   = "\r\n========= Inbound Message Body =========\r\n";
 
     // Constructors
 
@@ -168,6 +172,47 @@ public final class Response implements RoResponse, GlobalConstants
 	stream_handler  = null;
 	sent_entity     = (request.getData() != null) ? true : false;
 	inp_stream      = is;
+    }
+
+
+    /**
+     * Create a new response with the given info. This is used when
+     * creating a response in a requestHandler().
+     *
+     * <P>If <var>data</var> is not null then that is used; else if the
+     * <var>is</var> is not null that is used; else the entity is empty.
+     * If the input stream is used then <var>cont_len</var> specifies
+     * the length of the data that can be read from it, or -1 if unknown.
+     *
+     * @param version  the response version (such as "HTTP/1.1")
+     * @param status   the status code
+     * @param reason   the reason line
+     * @param headers  the response headers
+     * @param data     the response entity
+     * @param is       the response entity as an InputStream
+     * @param cont_len the length of the data in the InputStream
+     */
+    public Response(String version, int status, String reason, NVPair[] headers,
+		    byte[] data, InputStream is, int cont_len)
+    {
+	this.Version    = version;
+	this.StatusCode = status;
+	this.ReasonLine = reason;
+	if (headers != null)
+	    for (int idx=0; idx<headers.length; idx++)
+		setHeader(headers[idx].getName(), headers[idx].getValue());
+	if (data != null)
+	    this.Data   = data;
+	else if (is == null)
+	    this.Data   = new byte[0];
+	else
+	{
+	    this.inp_stream = is;
+	    ContentLength   = cont_len;
+	}
+
+	got_headers  = true;
+	got_trailers = true;
     }
 
 
@@ -225,24 +270,53 @@ public final class Response implements RoResponse, GlobalConstants
     }
 
     /**
+     * get the final URI of the document. This is set if the original
+     * request was deferred via the "moved" (301, 302, or 303) return
+     * status.
+     *
+     * @return the new URI, or null if not redirected
+     * @exception IOException If any exception occurs on the socket.
+     */
+    public final URI getEffectiveURI()  throws IOException
+    {
+	if (!got_headers)  getHeaders(true);
+	return EffectiveURI;
+    }
+
+    /**
+     * set the final URI of the document. This is only for internal use.
+     */
+    public void setEffectiveURI(URI final_uri)
+    {
+	EffectiveURI = final_uri;
+    }
+
+    /**
      * get the final URL of the document. This is set if the original
      * request was deferred via the "moved" (301, 302, or 303) return
      * status.
      *
      * @exception IOException If any exception occurs on the socket.
+     * @deprecated use getEffectiveURI() instead
+     * @see #getEffectiveURI
      */
     public final URL getEffectiveURL()  throws IOException
     {
-	if (!got_headers)  getHeaders(true);
-	return EffectiveURL;
+	return getEffectiveURI().toURL();
     }
 
     /**
      * set the final URL of the document. This is only for internal use.
+     *
+     * @deprecated use setEffectiveURI() instead
+     * @see #setEffectiveURI
      */
     public void setEffectiveURL(URL final_url)
     {
-	EffectiveURL = final_url;
+	try
+	    { setEffectiveURI(new URI(final_url)); }
+	catch (ParseException pe)
+	    { throw new Error(pe.toString()); }		// shouldn't happen
     }
 
     /**
@@ -486,6 +560,7 @@ public final class Response implements RoResponse, GlobalConstants
 				     ") (" + Thread.currentThread() + ")");
 		    ioe.printStackTrace();
 		}
+
 		try { inp_stream.close(); } catch (Exception e) { }
 		throw ioe;
 	    }
@@ -515,6 +590,23 @@ public final class Response implements RoResponse, GlobalConstants
 	    return new ByteArrayInputStream(Data);
     }
 
+    /**
+     * Some responses such as those from a HEAD or with certain status
+     * codes don't have an entity. This is detected by the client and
+     * can be queried here. Note that this won't try to do a read() on
+     * the input stream (it will however cause the headers to be read
+     * and parsed if not already done).
+     *
+     * @return true if the response has an entity, false otherwise
+     * @since V0.3-1
+     */
+    public synchronized boolean hasEntity()  throws IOException
+    {
+	if (!got_headers)  getHeaders(true);
+
+	return (cd_type != CD_0);
+    }
+
 
     // Helper Methods
 
@@ -526,8 +618,6 @@ public final class Response implements RoResponse, GlobalConstants
      */
     private synchronized void getHeaders(boolean skip_cont)  throws IOException
     {
-	String hdr, headers;
-
 	if (got_headers)  return;
 	if (exception != null)
 	    throw (IOException) exception.fillInStackTrace();
@@ -538,7 +628,7 @@ public final class Response implements RoResponse, GlobalConstants
 	    do
 	    {
 		Headers.clear();	// clear any headers from 100 Continue
-		headers = readResponseHeaders(inp_stream);
+		String headers = readResponseHeaders(inp_stream);
 		parseResponseHeaders(headers);
 	    } while ((StatusCode == 100  &&  skip_cont)  ||	// Continue
 		     (StatusCode > 101  &&  StatusCode < 200));	// Unknown
@@ -549,7 +639,7 @@ public final class Response implements RoResponse, GlobalConstants
 		exception = ioe;
 	    if (ioe instanceof ProtocolException)	// thrown internally
 	    {
-		cl_type = CL_CLOSE;
+		cd_type = CD_CLOSE;
 		if (stream_handler != null)
 		    stream_handler.markForClose(this);
 	    }
@@ -561,58 +651,71 @@ public final class Response implements RoResponse, GlobalConstants
 
 	got_headers = true;
 
-	boolean te_chunked = false, ct_mpbr = false;
+
+	// parse the Transfer-Encoding header
+
+	boolean te_chunked = false, te_is_identity = true, ct_mpbr = false;
+	Vector  te_hdr = null;
 	try
-	{
-	    te_chunked = (hdr = getHeader("Transfer-Encoding")) != null  &&
-			 ((HttpHeaderElement) Util.parseHeader(hdr).lastElement()).getName().equalsIgnoreCase("chunked");
-	}
+	    { te_hdr = Util.parseHeader(getHeader("Transfer-Encoding")); }
 	catch (ParseException pe)
 	    { }
+	if (te_hdr != null)
+	{
+	    te_chunked = ((HttpHeaderElement) te_hdr.lastElement()).getName().
+			 equalsIgnoreCase("chunked");
+	    for (int idx=0; idx<te_hdr.size(); idx++)
+		if (((HttpHeaderElement) te_hdr.elementAt(idx)).getName().
+		    equalsIgnoreCase("identity"))
+		    te_hdr.removeElementAt(idx--);
+		else
+		    te_is_identity = false;
+	}
+
+
+	// parse Content-Type header
+
 	try
 	{
+	    String hdr;
 	    if ((hdr = getHeader("Content-Type")) != null)
 	    {
 		Vector phdr = Util.parseHeader(hdr);
 		ct_mpbr = phdr.contains(new HttpHeaderElement("multipart/byteranges"))  ||
-			  phdr.contains(new HttpHeaderElement("multipart/byteranges"));
+			  phdr.contains(new HttpHeaderElement("multipart/x-byteranges"));
 	    }
 	}
 	catch (ParseException pe)
 	    { }
 
 
-	if (method.equalsIgnoreCase("HEAD")  ||  ContentLength == 0  ||
-	    StatusCode <= 199  ||
+	// now determine content-delimiter
+
+	if (method.equals("HEAD")  ||  ContentLength == 0  ||
+	    StatusCode < 200  ||
 	    StatusCode == 204  ||  StatusCode == 205  || StatusCode == 304)
 	{
 	    Data = new byte[0];		// we will not receive any more data
-	    cl_type = CL_0;
+	    cd_type = CD_0;
 	    inp_stream.close();
 	}
 	else if (te_chunked)
 	{
-	    cl_type = CL_CHUNKED;
+	    cd_type = CD_CHUNKED;
 
-	    Vector phdr;
-	    try
-		{ phdr = Util.parseHeader(getHeader("Transfer-Encoding")); }
-	    catch (ParseException pe)
-		{ phdr = null; }
-
-	    phdr.removeElementAt(phdr.size()-1);
-	    if (phdr.size() > 0)
-		setHeader("Transfer-Encoding", Util.assembleHeader(phdr));
+	    te_hdr.removeElementAt(te_hdr.size()-1);
+	    if (te_hdr.size() > 0)
+		setHeader("Transfer-Encoding", Util.assembleHeader(te_hdr));
 	    else
 		deleteHeader("Transfer-Encoding");
 	}
-	else if (ContentLength != -1)
-	    cl_type = CL_CONTLEN;
-	else if (ct_mpbr)
-	    cl_type = CL_MP_BR;
+	else if (ContentLength != -1  &&  te_is_identity)
+	    cd_type = CD_CONTLEN;
+	else if (ct_mpbr  &&  te_is_identity)
+	    cd_type = CD_MP_BR;
 	else
 	{
-	    cl_type = CL_CLOSE;
+	    cd_type = CD_CLOSE;
 	    if (stream_handler != null)
 		stream_handler.markForClose(this);
 
@@ -625,14 +728,21 @@ public final class Response implements RoResponse, GlobalConstants
 	    }
 	}
 
+	if (cd_type != CD_CONTLEN)
+	{
+	    deleteHeader("Content-Length");
+	    if (cd_type != CD_0)
+		ContentLength = -1;
+	}
+
 	if (DebugResp)
 	{
 	    System.err.println("Resp:  Response entity delimiter: " +
-		(cl_type == CL_0       ? "No Entity"      :
-		 cl_type == CL_CLOSE   ? "Close"          :
-		 cl_type == CL_CONTLEN ? "Content-Length" :
-		 cl_type == CL_CHUNKED ? "Chunked"        :
-		 cl_type == CL_MP_BR   ? "Multipart"      :
+		(cd_type == CD_0       ? "No Entity"      :
+		 cd_type == CD_CLOSE   ? "Close"          :
+		 cd_type == CD_CONTLEN ? "Content-Length" :
+		 cd_type == CD_CHUNKED ? "Chunked"        :
+		 cd_type == CD_MP_BR   ? "Multipart"      :
 		 "???" ) + " (" + inp_stream.hashCode() + ") (" +
 		 Thread.currentThread() + ")");
 	}
@@ -653,7 +763,7 @@ public final class Response implements RoResponse, GlobalConstants
 		this.StatusCode    = resp.StatusCode;
 		this.ReasonLine    = resp.ReasonLine;
 		this.Version       = resp.Version;
-		this.EffectiveURL  = resp.EffectiveURL;
+		this.EffectiveURI  = resp.EffectiveURI;
 		this.ContentLength = resp.ContentLength;
 		this.Headers       = resp.Headers;
 		this.inp_stream    = resp.inp_stream;
@@ -666,8 +776,15 @@ public final class Response implements RoResponse, GlobalConstants
 
 	// remove erroneous connection tokens
 
-	if (connection.ServerProtocolVersion < HTTP_1_1)
+	if (connection.ServerProtocolVersion >= HTTP_1_1)
+	    deleteHeader("Proxy-Connection");
+	else					// HTTP/1.0
 	{
+	    if (connection.getProxyHost() != null)
+		deleteHeader("Connection");
+	    else
+		deleteHeader("Proxy-Connection");
+
 	    Vector pco;
 	    try
 		{ pco = Util.parseHeader(getHeader("Connection")); }
@@ -680,8 +797,7 @@ public final class Response implements RoResponse, GlobalConstants
 		{
 		    String name =
 			    ((HttpHeaderElement) pco.elementAt(idx)).getName();
-		    if (!name.equalsIgnoreCase("keep-alive")  ||
-			connection.getProxyHost() != null)
+		    if (!name.equalsIgnoreCase("keep-alive"))
 		    {
 			pco.removeElementAt(idx);
 			deleteHeader(name);
@@ -693,6 +809,31 @@ public final class Response implements RoResponse, GlobalConstants
 		    setHeader("Connection", Util.assembleHeader(pco));
 		else
 		    deleteHeader("Connection");
+	    }
+
+	    try
+		{ pco = Util.parseHeader(getHeader("Proxy-Connection")); }
+	    catch (ParseException pe)
+		{ pco = null; }
+
+	    if (pco != null)
+	    {
+		for (int idx=0; idx<pco.size(); idx++)
+		{
+		    String name =
+			    ((HttpHeaderElement) pco.elementAt(idx)).getName();
+		    if (!name.equalsIgnoreCase("keep-alive"))
+		    {
+			pco.removeElementAt(idx);
+			deleteHeader(name);
+			idx--;
+		    }
+		}
+
+		if (pco.size() > 0)
+		    setHeader("Proxy-Connection", Util.assembleHeader(pco));
+		else
+		    deleteHeader("Proxy-Connection");
 	    }
 	}
     }
@@ -778,15 +919,9 @@ public final class Response implements RoResponse, GlobalConstants
 	    reading_lines = true;
 	}
 
-	if (hdrs.toString().startsWith("HTTP/1.")  ||		// It's 1.x
+	if (hdrs.toString().startsWith("HTTP/")  ||		// It's x.x
 	    hdrs.toString().startsWith("HTTP "))		// NCSA bug
 	    readLines(inp);
-	else if (hdrs.toString().startsWith("HTTP/"))		// It's 2.x
-	{
-	    char c;
-	    while ((c = (char) (inp.read() & 0xFF)) != ' ')
-		hdrs.append(c);
-	}
 
 	// reset variables for next round
 	buf_pos = 0;
@@ -901,6 +1036,19 @@ public final class Response implements RoResponse, GlobalConstants
 				"\"" + method + " " + resource + "\":  (" +
 				inp_stream.hashCode() + ") (" +
 				Thread.currentThread() + ")\n\n"+headers);
+    if(logging)
+    {
+	    try
+	    {
+		    FileOutputStream fos = new FileOutputStream( logFilename, true );
+		    fos.write( inboundHeader.getBytes() );
+		    fos.write( headers.getBytes() );
+		    fos.close();
+	    }
+	    catch( IOException e )
+	    {
+	    }
+    }
 
 
 	// Detect and handle HTTP/0.9 responses
@@ -917,14 +1065,6 @@ public final class Response implements RoResponse, GlobalConstants
 
 	    return;
 	}
-
-
-	// Detect and handle non HTTP/1.* responses
-
-	if (!headers.regionMatches(true, 0, "HTTP/1.", 0, 7)  &&
-	    !headers.regionMatches(true, 0, "HTTP ", 0, 5))	// NCSA bug
-	    throw new ProtocolException("Received non HTTP/1.* response: " +
-					headers);
 
 
 	// get the status line
@@ -1067,6 +1207,13 @@ public final class Response implements RoResponse, GlobalConstants
 	{
 	    String hdr = lines.nextToken();
 	    int    sep = hdr.indexOf(':');
+
+	    /* Once again we have to deal with broken servers and try
+	     * to wing it here. If no ':' is found, try using the first
+	     * space:
+	     */
+	    if (sep == -1)
+		sep = hdr.indexOf(' ');
 	    if (sep == -1)
 	    {
 		throw new ProtocolException("Invalid HTTP header received: " +
@@ -1074,7 +1221,11 @@ public final class Response implements RoResponse, GlobalConstants
 	    }
 
 	    String hdr_name   = hdr.substring(0, sep).trim();
-	    String hdr_value  = hdr.substring(sep+1).trim();
+
+	    int len = hdr.length();
+	    sep++;
+	    while (sep < len  &&  Character.isSpace(hdr.charAt(sep)))  sep++;
+	    String hdr_value = hdr.substring(sep);
 
 	    if (hdr_name.equalsIgnoreCase("Content-length"))
 	    {
@@ -1123,7 +1274,8 @@ public final class Response implements RoResponse, GlobalConstants
 
 	try
 	{
-	    if (ContentLength != -1)
+	    // check Content-length header in case CE-Module removed it
+	    if (getHeader("Content-Length") != null)
 	    {
 		int rcvd = 0;
 		Data = new byte[ContentLength];
@@ -1192,6 +1344,25 @@ public final class Response implements RoResponse, GlobalConstants
     {
 	this.req = req;
 	isFirstResponse = true;
+    }
+
+
+    public void setLogging( boolean logging, String filename )
+    {
+        this.logging = logging;
+        this.logFilename = filename;
+        if( http_resp != null )
+            http_resp.setLogging( logging, filename );
+    }
+    
+    public boolean getLogging()
+    {
+        return logging;
+    }
+    
+    public String getLogFilename()
+    {
+        return logFilename;
     }
 }
 

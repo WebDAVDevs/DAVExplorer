@@ -1,5 +1,5 @@
 /*
- * $Header: /home/jfeise/cvs/dav_explorer/classes/HTTPClient/MD5.java,v 1.1 1999/01/20 22:56:23 webdav Exp $
+ * $Header: /home/jfeise/cvs/dav_explorer/classes/HTTPClient/MD5.java,v 1.2 1999/05/01 04:02:01 webdav Exp $
  *
  * MD5 in Java JDK Beta-2
  * written Santeri Paavolainen, Helsinki Finland 1996
@@ -34,8 +34,18 @@
  *
  *
  * $Log: MD5.java,v $
- * Revision 1.1  1999/01/20 22:56:23  webdav
- * Initial revision
+ * Revision 1.2  1999/05/01 04:02:01  webdav
+ * merged JDK 1.2 branch
+ *
+ * Revision 1.1.1.1.2.1  1999/03/26 01:35:07  webdav
+ * Update to JDK 1.2
+ *
+ * Revision 1.6  1998/09/22 18:34:00  ronald
+ * Made MD5State a private inner class
+ *
+ * Revision 1.5  1998/03/23 02:30:00  ronald
+ * Optimized: removed uadd()'s (were unnecessary)
+ *            made FF(), GG(), HH(), and II() static and final (allows inlining)
  *
  * Revision 1.4  1997/01/12 00:05:54  ronald
  * Made part of HTTPClient package.
@@ -55,60 +65,9 @@ package HTTPClient;
 
 
 /**
- * Contains internal state of the MD5 class
- */
-
-class MD5State {
-  /**
-   * 128-byte state
-   */
-  int	state[];
-
-  /**
-   * 64-bit character count (could be true Java long?)
-   */
-  int	count[];
-
-  /**
-   * 64-byte buffer (512 bits) for storing to-be-hashed characters
-   */
-  byte	buffer[];
-
-  public MD5State() {
-    buffer = new byte[64];
-    count = new int[2];
-    state = new int[4];
-
-    state[0] = 0x67452301;
-    state[1] = 0xefcdab89;
-    state[2] = 0x98badcfe;
-    state[3] = 0x10325476;
-
-    count[0] = count[1] = 0;
-  }
-
-  /** Create this State as a copy of another state */
-  public MD5State (MD5State from) {
-    this();
-
-    int i;
-
-    for (i = 0; i < buffer.length; i++)
-      this.buffer[i] = from.buffer[i];
-
-    for (i = 0; i < state.length; i++)
-      this.state[i] = from.state[i];
-
-    for (i = 0; i < count.length; i++)
-      this.count[i] = from.count[i];
-  }
-}
-
-
-/**
  * Implementation of RSA's MD5 hash generator
  *
- * @version	$Revision: 1.1 $
+ * @version	0.3-1  10/02/1999
  * @author	Santeri Paavolainen <sjpaavol@cc.helsinki.fi>
  */
 
@@ -160,52 +119,31 @@ class MD5 {
     Update(ob.toString());
   }
 
-  private int rotate_left (int x, int n) {
+  private static final int rotate_left (int x, int n) {
     return (x << n) | (x >>> (32 - n));
   }
 
-  /* I wonder how many loops and hoops you'll have to go through to
-     get unsigned add for longs in java */
-
-  private int uadd (int a, int b) {
-    long aa, bb;
-    aa = ((long) a) & 0xffffffffL;
-    bb = ((long) b) & 0xffffffffL;
-
-    aa += bb;
-
-    return (int) (aa & 0xffffffffL);
+  private static final int FF (int a, int b, int c, int d, int x, int s, int ac) {
+    a += ((b & c) | (~b & d)) + x + ac;
+    return rotate_left(a, s) + b;
   }
 
-  private int uadd (int a, int b, int c) {
-    return uadd(uadd(a, b), c);
+  private static final int GG (int a, int b, int c, int d, int x, int s, int ac) {
+    a += ((b & d) | (c & ~d)) + x + ac;
+    return rotate_left(a, s) + b;
   }
 
-  private int uadd (int a, int b, int c, int d) {
-    return uadd(uadd(a, b, c), d);
+  private static final int HH (int a, int b, int c, int d, int x, int s, int ac) {
+    a += (b ^ c ^ d) + x + ac;
+    return rotate_left(a, s) + b;
   }
 
-  private int FF (int a, int b, int c, int d, int x, int s, int ac) {
-    a = uadd(a, ((b & c) | (~b & d)), x, ac);
-    return uadd(rotate_left(a, s), b);
+  private static final int II (int a, int b, int c, int d, int x, int s, int ac) {
+    a += (c ^ (b | ~d)) + x + ac;
+    return rotate_left(a, s) + b;
   }
 
-  private int GG (int a, int b, int c, int d, int x, int s, int ac) {
-    a = uadd(a, ((b & d) | (c & ~d)), x, ac);
-    return uadd(rotate_left(a, s), b);
-  }
-
-  private int HH (int a, int b, int c, int d, int x, int s, int ac) {
-    a = uadd(a, (b ^ c ^ d), x, ac);
-    return uadd(rotate_left(a, s) , b);
-  }
-
-  private int II (int a, int b, int c, int d, int x, int s, int ac) {
-    a = uadd(a, (c ^ (b | ~d)), x, ac);
-    return uadd(rotate_left(a, s), b);
-  }
-
-  private int[] Decode (byte buffer[], int len, int shift) {
+  private static final int[] Decode (byte buffer[], int len, int shift) {
     int		out[];
     int 	i, j;
 
@@ -513,6 +451,57 @@ class MD5 {
    */
   public String asHex () {
     return asHex(this.Final());
+  }
+
+
+  /**
+   * Contains internal state of the MD5 class
+   */
+
+  private class MD5State {
+    /**
+     * 128-byte state
+     */
+    int	state[];
+
+    /**
+     * 64-bit character count (could be true Java long?)
+     */
+    int	count[];
+
+    /**
+     * 64-byte buffer (512 bits) for storing to-be-hashed characters
+     */
+    byte	buffer[];
+
+    public MD5State() {
+      buffer = new byte[64];
+      count = new int[2];
+      state = new int[4];
+
+      state[0] = 0x67452301;
+      state[1] = 0xefcdab89;
+      state[2] = 0x98badcfe;
+      state[3] = 0x10325476;
+
+      count[0] = count[1] = 0;
+    }
+
+    /** Create this State as a copy of another state */
+    public MD5State (MD5State from) {
+      this();
+
+      int i;
+
+      for (i = 0; i < buffer.length; i++)
+	this.buffer[i] = from.buffer[i];
+
+      for (i = 0; i < state.length; i++)
+	this.state[i] = from.state[i];
+
+      for (i = 0; i < count.length; i++)
+	this.count[i] = from.count[i];
+    }
   }
 }
 

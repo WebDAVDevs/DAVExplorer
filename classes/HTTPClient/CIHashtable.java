@@ -1,8 +1,8 @@
 /*
- * @(#)CIHashtable.java					0.3 30/01/1998
+ * @(#)CIHashtable.java					0.3-1 10/02/1999
  *
  *  This file is part of the HTTPClient package
- *  Copyright (C) 1996-1998  Ronald Tschalaer
+ *  Copyright (C) 1996-1999  Ronald Tschalär
  *
  *  This library is free software; you can redistribute it and/or
  *  modify it under the terms of the GNU Library General Public
@@ -23,7 +23,6 @@
  *  I may be contacted at:
  *
  *  ronald@innovation.ch
- *  Ronald.Tschalaer@psi.ch
  *
  */
 
@@ -36,8 +35,8 @@ import java.util.Enumeration;
 /**
  * This class implements a Hashtable with case-insensitive Strings as keys.
  *
- * @version	0.3  30/01/1998
- * @author	Ronald Tschal&auml;r
+ * @version	0.3-1  10/02/1999
+ * @author	Ronald Tschalär
  */
 
 class CIHashtable extends Hashtable
@@ -154,12 +153,11 @@ class CIHashtable extends Hashtable
 
 
 /**
- * A simple enumerator which delegates everything to the real enumerator. If
- * a CIString element is returned, then the string is represents is returned
- * instead.
+ * A simple enumerator which delegates everything to the real enumerator.
+ * If a CIString element is returned, then the string it represents is
+ * returned instead.
  */
-
-class CIHashtableEnumeration implements Enumeration
+final class CIHashtableEnumeration implements Enumeration
 {
     Enumeration HTEnum;
 
@@ -192,16 +190,20 @@ class CIHashtableEnumeration implements Enumeration
  * class String is final we create a new class that holds the string
  * and overrides the methods hashCode() and equals().
  */
-
 final class CIString
 {
     /** the string */
     private String string;
 
+    /** the hash code */
+    private int hash;
+
+
     /** the constructor */
     public CIString(String string)
     {
 	this.string = string;
+	this.hash   = calcHashCode(string);
     }
 
     /** return the original string */
@@ -210,30 +212,43 @@ final class CIString
 	return string;
     }
 
-    /**
-     * We smash case before calculation so that the hash code is
-     * "case insensitive".
-     */
+    /** the hash code was precomputed */
     public int hashCode()
     {
-	return string.toLowerCase().hashCode();
+	return hash;
     }
+
+
+    /**
+     * We smash case before calculation so that the hash code is
+     * "case insensitive". This is based on code snarfed from
+     * java.lang.String.hashCode().
+     */
+    private static final int calcHashCode(String str)
+    {
+	int  hash  = 0;
+	char llc[] = lc;
+	int  len   = str.length();
+
+	for (int idx= 0; idx<len; idx++)
+	    hash = 31*hash + llc[str.charAt(idx)];
+
+	return hash;
+    }
+
 
     /**
      * Uses the case insensitive comparison.
      */
     public boolean equals(Object obj)
     {
-	if ((obj != null) && (obj instanceof CIString))
+	if (obj != null)
 	{
-	    CIString str = (CIString) obj;
-	    return string.equalsIgnoreCase(str.string);
-	}
+	    if (obj instanceof CIString)
+		return string.equalsIgnoreCase(((CIString) obj).string);
 
-	if ((obj != null) && (obj instanceof String))
-	{
-	    String str = (String) obj;
-	    return string.equalsIgnoreCase(str);
+	    if (obj instanceof String)
+		return string.equalsIgnoreCase((String) obj);
 	}
 
 	return false;
@@ -245,6 +260,16 @@ final class CIString
     public String toString()
     {
 	return string;
+    }
+
+
+    private static final char[] lc = new char[256];
+
+    static
+    {
+	// just ISO-8859-1
+	for (char idx=0; idx<256; idx++)
+	    lc[idx] = Character.toLowerCase(idx);
     }
 }
 

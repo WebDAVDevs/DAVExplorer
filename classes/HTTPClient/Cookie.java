@@ -1,8 +1,8 @@
 /*
- * @(#)Cookie.java					0.3 30/01/1998
+ * @(#)Cookie.java					0.3-1 10/02/1999
  *
  *  This file is part of the HTTPClient package
- *  Copyright (C) 1996-1998  Ronald Tschalaer
+ *  Copyright (C) 1996-1999  Ronald Tschalär
  *
  *  This library is free software; you can redistribute it and/or
  *  modify it under the terms of the GNU Library General Public
@@ -23,7 +23,6 @@
  *  I may be contacted at:
  *
  *  ronald@innovation.ch
- *  Ronald.Tschalaer@psi.ch
  *
  */
 
@@ -40,12 +39,12 @@ import java.util.Hashtable;
  * <a href="http://home.netscape.com/newsref/std/cookie_spec.html">Netscape's
  * cookie spec</a>
  *
- * @version	0.3  30/01/1998
- * @author	Ronald Tschal&auml;r
+ * @version	0.3-1  10/02/1999
+ * @author	Ronald Tschalär
  * @since	V0.3
  */
 
-public class Cookie
+public class Cookie implements java.io.Serializable
 {
     protected String  name;
     protected String  value;
@@ -53,6 +52,40 @@ public class Cookie
     protected String  domain;
     protected String  path;
     protected boolean secure;
+
+
+    /**
+     * Create a cookie.
+     *
+     * @param name    the cookie name
+     * @param value   the cookie value
+     * @param domain  the host this cookie will be sent to
+     * @param path    the path prefix for which this cookie will be sent
+     * @param epxires the Date this cookie expires, null if at end of
+     *                session
+     * @param secure  if true this cookie will only be over secure connections
+     * @exception NullPointerException if <var>name</var>, <var>value</var>,
+     *                                 <var>domain</var>, or <var>path</var>
+     *                                 is null
+     * @since V0.3-1
+     */
+    public Cookie(String name, String value, String domain, String path,
+		  Date expires, boolean secure)
+    {
+	if (name == null)   throw new NullPointerException("missing name");
+	if (value == null)  throw new NullPointerException("missing value");
+	if (domain == null) throw new NullPointerException("missing domain");
+	if (path == null)   throw new NullPointerException("missing path");
+
+	this.name    = name;
+	this.value   = value;
+	this.domain  = domain.toLowerCase();
+	this.path    = path;
+	this.expires = expires;
+	this.secure  = secure;
+
+	if (this.domain.indexOf('.') == -1)  this.domain += ".local";
+    }
 
 
     /**
@@ -65,7 +98,8 @@ public class Cookie
 	name    = null;
 	value   = null;
 	expires = null;
-	domain  = req.getConnection().getHost().toLowerCase();
+	domain  = req.getConnection().getHost();
+	if (domain.indexOf('.') == -1)  domain += ".local";
 	path    = Util.getPath(req.getRequestURI());
 
 	String prot = req.getConnection().getProtocol();
@@ -123,7 +157,8 @@ public class Cookie
 		}
 
 		// first check for secure, as this is the only one w/o a '='
-		if (set_cookie.regionMatches(true, beg, "secure", 0, 6))
+		if ((beg+6 <= len)  &&
+		    set_cookie.regionMatches(true, beg, "secure", 0, 6))
 		{
 		    curr.secure = true;
 		    beg += 6;
@@ -152,7 +187,11 @@ public class Cookie
 		beg = Util.skipSpace(buf, end+1);
 
 		if (name.equalsIgnoreCase("expires"))
-		    beg += 4;		// cut off the "Wdy," in the expires
+		{
+		    int c = set_cookie.indexOf(',', beg);
+		    if (c != -1)
+			beg = c+1;	// cut off the "Wdy," in the expires
+		}
 
 		int comma = set_cookie.indexOf(',', beg);
 		int semic = set_cookie.indexOf(';', beg);
@@ -168,10 +207,14 @@ public class Cookie
 		    try
 			{ curr.expires = new Date(value); }
 		    catch (IllegalArgumentException iae)
-			{ throw new ProtocolException("Bad Set-Cookie header: "+
+		    {
+			/* More broken servers to deal with... Ignore expires
+			 * if it's invalid
+			throw new ProtocolException("Bad Set-Cookie header: "+
 					set_cookie + "\nInvalid date found at "+
 					"position " + beg);
-			}
+			*/
+		    }
 		}
 		else if (name.equalsIgnoreCase("domain"))
 		{
@@ -179,28 +222,50 @@ public class Cookie
 		    value = value.toLowerCase();
 
 		    // add leading dot, if missing
-		    if (value.charAt(0) != '.')  value = '.' + value;
+		    if (value.charAt(0) != '.'  &&  !value.equals(curr.domain))
+			value = '.' + value;
 
 		    // must be the same domain as in the url
-		    if (!curr.domain.endsWith(value))  legal = false;
+		    if (!curr.domain.endsWith(value))
+			legal = false;
 
-		    // must have 2 or 3 dots in domain name
-		    int dots;
+
+		    /* Netscape's original 2-/3-dot rule really doesn't work
+		     * because many countries use a shallow hierarchy (similar
+		     * to the special TLDs defined in the spec). While the
+		     * rules in draft-ietf-http-state-man-mec-08 aren't
+		     * perfect either, they are better. OTOH, some sites
+		     * use a domain so that the host name minus the domain
+		     * name contains a dot (e.g. host x.x.yahoo.com and
+		     * domain .yahoo.com). So, for the seven special TLDs we
+		     * use the 2-dot rule, and for all others we use the
+		     * rules in the state-man draft instead.
+		     */
+
+		    // domain must be either .local or must contain at least
+		    // two dots
+		    if (!value.equals(".local")  && value.indexOf('.', 1) == -1)
+			legal = false;
+
+		    // If TLD not special then host minus domain may not
+		    // contain any dots
 		    String top = null;
 		    if (value.length() > 3 )
-			top = value.substring(value.length()-4).toLowerCase();
-		    if (top != null  &&  (
-			top.equals(".com")  ||  top.equals(".edu")  ||
-			top.equals(".net")  ||  top.equals(".org")  ||
-			top.equals(".gov")  ||  top.equals(".mil")  ||
-			top.equals(".int")))
-			dots = 2;
-		    else
-			dots = 3;
-
-		    int pos = -1;
-		    while ((pos = value.indexOf('.', pos+1)) != -1) dots--;
-		    if (dots > 0)  legal = false;
+			top = value.substring(value.length()-4);
+		    if (top == null  ||  !(
+			top.equalsIgnoreCase(".com")  ||
+			top.equalsIgnoreCase(".edu")  ||
+			top.equalsIgnoreCase(".net")  ||
+			top.equalsIgnoreCase(".org")  ||
+			top.equalsIgnoreCase(".gov")  ||
+			top.equalsIgnoreCase(".mil")  ||
+			top.equalsIgnoreCase(".int")))
+		    {
+			int dl = curr.domain.length(), vl = value.length();
+			if (dl > vl  &&
+			    curr.domain.substring(0, dl-vl).indexOf('.') != -1)
+				legal = false;
+		    }
 
 		    curr.domain = value;
 		}
@@ -314,8 +379,11 @@ public class Cookie
     protected boolean sendWith(RoRequest req)
     {
 	HTTPConnection con = req.getConnection();
+	String eff_host = con.getHost();
+	if (eff_host.indexOf('.') == -1)  eff_host += ".local";
 
-	return (con.getHost().endsWith(domain)  &&
+	return ((domain.charAt(0) == '.'  &&  eff_host.endsWith(domain)  ||
+		 domain.charAt(0) != '.'  &&  eff_host.equals(domain))  &&
 		Util.getPath(req.getRequestURI()).startsWith(path)  &&
 		(!secure || con.getProtocol().equals("https") ||
 		 con.getProtocol().equals("shttp")));
