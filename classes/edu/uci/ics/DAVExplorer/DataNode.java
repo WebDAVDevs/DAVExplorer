@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 1998-2003 Regents of the University of California.
+ * Copyright (c) 1998-2004 Regents of the University of California.
  * All rights reserved.
  *
  * This software was developed at the University of California, Irvine.
@@ -38,6 +38,9 @@
  * @date        29 October 2003
  * Changes:     Integrated Jason's patch to handle cases where
  *              lastModified is null or a funky string.
+ * @author      Joachim Feise (dav-exp@ics.uci.edu)
+ * @date        04 February 2004
+ * Changes:     Added workaround for Documentum Modified-Date bug
  */
 
 package edu.uci.ics.DAVExplorer;
@@ -223,6 +226,56 @@ public class DataNode
     {
         if( lastModified == null || lastModified.length() == 0 )
             return null;
+
+		// documentum workaround hack: they apparently use localized
+		// weekday abbreviations, which violates RFC 3518 and RFC 2616
+		// This hack checks for valid weekdays and removes anything that
+		// does not follow the RFCs
+		// Allowed formats:
+		// wkday "," ...
+		// wkday SP ...
+		// weekday "," ...
+		// with (see RFC 2616):
+		// wkday    = "Mon" | "Tue" | "Wed"
+		//		    | "Thu" | "Fri" | "Sat" | "Sun"
+		// weekday  = "Monday" | "Tuesday" | "Wednesday"
+		//			| "Thursday" | "Friday" | "Saturday" | "Sunday"
+		String[] wkday = {"Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"};
+		String[] weekday = {"Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday" };
+
+		boolean found = false;
+		for( int i=0; i<weekday.length; i++ )
+		{
+			if( lastModified.startsWith(weekday[i]) )
+			{
+				found = true;
+				break;
+			}
+		}
+		for( int i=0; !found && i<wkday.length; i++ )
+		{
+			if( lastModified.startsWith(wkday[i]) )
+			{
+				found = true;
+				break;
+			}
+		}
+        // ignore known good weekdays and local files
+		if( !found && !display.equals("Local File") )
+		{
+			// remove the unknown data
+			int pos = lastModified.indexOf(",");
+			if( pos == -1 )
+				pos = lastModified.indexOf(" ");
+			if( pos > -1 )
+			{
+				String newModified = lastModified.substring( pos+1 );
+                newModified = newModified.trim();
+                lastModified = newModified;                
+				if( lastModified == null || lastModified.length() == 0 )
+					return null;
+			}
+		}
 
         DateFormat df = DateFormat.getDateTimeInstance( DateFormat.SHORT, DateFormat.SHORT );
         df.setLenient( true );
