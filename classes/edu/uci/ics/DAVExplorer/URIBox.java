@@ -191,7 +191,9 @@ public class URIBox extends JPanel implements ActionListener
     {
         public void actionPerformed(ActionEvent e)
         {
-            notifyListener();
+            // ignore events resulting from changing the selection
+            if( e.getActionCommand().compareToIgnoreCase("comboBoxChanged")!=0 )
+                notifyListener();
         }
     }
 }
