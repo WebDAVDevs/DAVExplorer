@@ -1,8 +1,8 @@
-Changes for version 0.70-dev:
-- Now using the standard https port (443) for requests with SSL.
+Changes for version 0.71:
 - Fixed bug in HTTPClient that prevented proper handling of authentication in
   case the server allows multiple possible authentication headers.
 - Fixed broken handling of & in filenames in the MS parser.
+- Now using the standard https port (443) for requests with SSL.
 - Closing the properties dialog with the close button does not exit the application
   anymore.
 
