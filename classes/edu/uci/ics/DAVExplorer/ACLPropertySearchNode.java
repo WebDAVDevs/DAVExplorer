@@ -54,18 +54,6 @@ public class ACLPropertySearchNode
     }
 
 
-    public void addProperty( String property )
-    {
-        properties.add( property );
-    }
-
-
-    public void removeProperty( String property )
-    {
-        properties.remove( property );
-    }
-
-
     public void setMatch( String match )
     {
         this.match = match;

@@ -1348,9 +1348,12 @@ public class Main extends JFrame
                     ACLReportSearchPropertyDialog dlg = new ACLReportSearchPropertyDialog( s );
                     if( !dlg.isCanceled() )
                     {
+                        Vector criteria = dlg.getSearchCriteria(); 
+                        Vector props = dlg.getSelected(); 
                         WebDAVTreeNode n = fileView.getParentNode();
                         requestGenerator.setResource( s, n );
-                        ///requestGenerator.GetPrincipalPropertySearchReport();
+                        if( requestGenerator.GetPrincipalPropertySearchReport( criteria, props ) )
+                            requestGenerator.execute();
                     }
                     break;
                 }

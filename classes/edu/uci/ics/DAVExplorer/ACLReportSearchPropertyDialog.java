@@ -153,7 +153,7 @@ public class ACLReportSearchPropertyDialog extends ACLReportPropertiesDialog
     public void setChanged( boolean enable )
     {
         changed = enable;
-        okButton.setEnabled( (searchProps!=null) && (searchProps.size()>0)&& changed );
+        okButton.setEnabled( (((ACLPropertySearchModel)propTable.getModel()).getRealRowCount()>0) && changed );
     }
 
 
@@ -169,6 +169,7 @@ public class ACLReportSearchPropertyDialog extends ACLReportPropertiesDialog
             if( !dlg.isCanceled() )
             {
                 ((ACLPropertySearchModel)propTable.getModel()).addRow( dlg.getSelected(), dlg.getMatch() );
+                setChanged( true );
             }
         }
         else if( e.getActionCommand().equals("Delete") )
@@ -176,6 +177,7 @@ public class ACLReportSearchPropertyDialog extends ACLReportPropertiesDialog
             int pos = propTable.getSelectedRow();
             ((ACLPropertySearchModel)propTable.getModel()).removeRow( pos );
             deleteButton.setEnabled( false );
+            setChanged( true );
         }
         else
             super.actionPerformed( e );
@@ -198,8 +200,17 @@ public class ACLReportSearchPropertyDialog extends ACLReportPropertiesDialog
     }
 
 
+    public Vector getSearchCriteria()
+    {
+        Vector criteria = new Vector();
+        ACLPropertySearchModel model = (ACLPropertySearchModel)propTable.getModel();
+        for( int i=0; i<model.getRealRowCount(); i++ )
+            criteria.add( model.getRow(i) );
+        return criteria;
+    }
+
+
     protected JTable propTable;
     protected JButton addButton;
     protected JButton deleteButton;
-    protected Vector searchProps; 
 }
