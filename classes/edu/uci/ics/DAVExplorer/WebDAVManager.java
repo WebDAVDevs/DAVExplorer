@@ -49,6 +49,9 @@
  * @date        3 November 2003
  * Changes:     Added support for proxy server in applet settings (it always worked through
  *              the "Edit Proxy Info" menu entry.)
+ * @author      Joachim Feise (dav-exp@ics.uci.edu)
+ * @date        10 November 2003
+ * Changes:     Clearing the proxy setting when proxy info is removed
  */
 
 package edu.uci.ics.DAVExplorer;
