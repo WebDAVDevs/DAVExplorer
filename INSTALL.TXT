@@ -38,6 +38,7 @@ If use of SSL is not required, step 4 can also be skipped.
    Under MS Windows, you can also run the DAVjar.bat file from the dav_explorer
    directory to create the DAVExplorer.jar file.
    Under Unix, the DAVjar.sh shell script serves the same purpose.
+   We also provide an Eclipse workspace file in the source distribution.
 
 6. Run the DAV Explorer.
    Under MS Windows, run the DAVExplorer.bat file from the dav_explorer directory.
