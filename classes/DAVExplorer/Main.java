@@ -318,11 +318,14 @@ public class Main extends JFrame
                 requestGenerator.setResource(s, n);
 
                 boolean retval = false;
-		if( fileView.isSelectedLocked() ){
-		    retval = requestGenerator.GenerateMove(str, fileView.getParentPath(), false, true, fileView.getSelectedLockToken() );
-		} else {
-		    retval = requestGenerator.GenerateMove(str, fileView.getParentPath(), false, true, null );
-		}
+                if( fileView.isSelectedLocked() )
+                {
+                    retval = requestGenerator.GenerateMove(str, fileView.getParentPath(), false, true, fileView.getSelectedLockToken() );
+                }
+                else
+                {
+                    retval = requestGenerator.GenerateMove(str, fileView.getParentPath(), false, true, null );
+                }
                 if( retval )
                     requestGenerator.execute();
             }
@@ -354,9 +357,9 @@ public class Main extends JFrame
             responseInterpreter.handleResponse(e);
 
 
-	    // Post processing
-	    // These are actions designed to take place after the 
-	    // response has been loaded
+        // Post processing
+        // These are actions designed to take place after the
+        // response has been loaded
 
             String extra = e.getExtraInfo();
 
@@ -390,7 +393,7 @@ public class Main extends JFrame
                 if (tn != null)
                 {
                     tn.finishLoadChildren();
-		   
+
 
                     treeView.setSelectedNode(tn);
                 }
@@ -428,20 +431,20 @@ public class Main extends JFrame
             {
                 FileDialog fd = new FileDialog(WebDAVFrame, "Write File" , FileDialog.LOAD);
 
-		if (writeToDir != null)
-		{
-		    fd.setDirectory(writeToDir);	
-		}
+                if (writeToDir != null)
+                {
+                    fd.setDirectory(writeToDir);
+                }
 
                 fd.setVisible(true);
 
-		String dirName =fd.getDirectory();
+                String dirName =fd.getDirectory();
 
-		String fName = fd.getFile();
+                String fName = fd.getFile();
 
                 if( (dirName!=null) && !dirName.equals("") && (fName != null ) && !fName.equals("") )
                 {
-		    writeToDir = dirName;
+                    writeToDir = dirName;
                     String fullPath = dirName + fName;
                     String token = treeView.getLockToken( fName );
 
@@ -538,15 +541,15 @@ public class Main extends JFrame
                 else
                 {
                     //deleteDocument( treeView.isCollection( s ) );
-		    WebDAVTreeNode n = fileView.getSelectedCollection();
-		    if ( n == null) 
-		    {
-                    	deleteDocument( false );
-		    }
-		    else
-		    {
-                    	deleteDocument(  true );
-		    }
+                    WebDAVTreeNode n = fileView.getSelectedCollection();
+                    if ( n == null)
+                    {
+                        deleteDocument( false );
+                    }
+                    else
+                    {
+                        deleteDocument(  true );
+                    }
                 }
             }
             else if (command.equals("Create Collection"))
@@ -558,23 +561,22 @@ public class Main extends JFrame
 
                 if( dirname != null )
                 {
-		    WebDAVTreeNode selected = fileView.getSelectedCollection();
+                    WebDAVTreeNode selected = fileView.getSelectedCollection();
                     if( treeView.isRemote( fileView.getParentPath() ) )
                     {
                         boolean retval = false;
-			if (selected == null){
+                        if (selected == null)
+                        {
                             requestGenerator.setNode(n);
-
                             requestGenerator.setExtraInfo("mkcol");
-
                             retval = requestGenerator.GenerateMkCol( fileView.getParentPath(), dirname );
-			}
-			else
-			{
-			    requestGenerator.setNode( selected );
-			    requestGenerator.setExtraInfo("mkcolbelow");
+                        }
+                        else
+                        {
+                            requestGenerator.setNode( selected );
+                            requestGenerator.setExtraInfo("mkcolbelow");
                             retval = requestGenerator.GenerateMkCol( fileView.getSelected(), dirname );
-			}
+                        }
                         if( retval )
                             requestGenerator.execute();
                     }
@@ -586,14 +588,14 @@ public class Main extends JFrame
                             dirname = fileView.getSelected() + dirname;
                         File f = new File( dirname );
                         boolean result = f.mkdir();
-			if ( selected == null )
-			{
-                            treeView.refreshLocal( n );
-			}
-			else
-			{
-			    treeView.refreshLocalNoSelection(selected);
-			}
+                        if ( selected == null )
+                        {
+                                treeView.refreshLocal( n );
+                        }
+                        else
+                        {
+                            treeView.refreshLocalNoSelection(selected);
+                        }
                     }
                 }
             }
@@ -746,17 +748,18 @@ public class Main extends JFrame
                     WebDAVTreeNode n = fileView.getParentNode();
                     requestGenerator.setResource(s, n);
                     //requestGenerator.DiscoverLock("delete");
-		    requestGenerator.setExtraInfo("delete");
+                    requestGenerator.setExtraInfo("delete");
                     boolean retval = false;
-		    if( fileView.isSelectedLocked() ){
-			retval = requestGenerator.GenerateDelete(fileView.getSelectedLockToken());
-		    } else {
+                    if( fileView.isSelectedLocked() )
+                    {
+                        retval = requestGenerator.GenerateDelete(fileView.getSelectedLockToken());
+                    }
+                    else
+                    {
                         retval = requestGenerator.GenerateDelete(null);
-
-		    }
+                    }
                     if( retval )
                         requestGenerator.execute();
-			
                 }
                 else
                 {
