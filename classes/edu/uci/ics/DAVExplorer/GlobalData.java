@@ -725,6 +725,7 @@ class GlobalData
     public void setSSL( boolean SSL )
     {
         ssl = SSL;
+        WriteConfigEntry( "UseSSL", Boolean.toString(SSL) );
     }
 
 
@@ -989,15 +990,19 @@ class GlobalData
                 else if( doLog.equalsIgnoreCase( "fileview" ) )
                     setDebugFileView( true );
             }
-            String doSSL = System.getProperty( "ssl", "no" );
+            // check for SSL
+            // Enabling SSL on the command line always overwrites the config value
+            String doSSL = ReadConfigEntry( "UseSSL", "no" );
+            doSSL = System.getProperty( "ssl", doSSL );
             if( doSSL.equalsIgnoreCase( "yes" ) || doSSL.equalsIgnoreCase( "true" ) )
-                ssl = true;
+                setSSL( true );
             else
             {
                 doSSL = System.getProperty( "SSL", "no" );
                 if( doSSL.equalsIgnoreCase( "yes" ) || doSSL.equalsIgnoreCase( "true" ) )
-                    ssl = true;
+                    setSSL( true );
             }
+            
             String noCompression = System.getProperty( "compress", "yes" );
             if( noCompression.equalsIgnoreCase( "no" ) || noCompression.equalsIgnoreCase( "false" ) )
                 compression = false;

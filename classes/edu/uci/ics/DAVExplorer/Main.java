@@ -246,7 +246,7 @@ public class Main extends JFrame
       WebDAVToolBar toolbar = new WebDAVToolBar();
       toolbar.addActionListener( menuListener );
 
-      URIBox uribox = new URIBox();
+      uribox = new URIBox();
       GlobalData.getGlobalData().setURIBox(uribox);
       uribox.addActionListener(new URIBoxListener_Gen());
 
@@ -1436,7 +1436,14 @@ public class Main extends JFrame
                     webdavManager.setLogging( logging, logFilename );
                     break;
                 }
-                
+
+                case WebDAVMenu.USE_SSL:
+                    boolean use_ssl = CommandMenu.getSSL();
+                    GlobalData.getGlobalData().setSSL( use_ssl );
+                    // TODO: update screen
+                    uribox.invalidate();
+                    break;
+
                 case WebDAVMenu.VIEW_MODIFY_PROPS:
                     viewProperties();
                     break;
@@ -1980,4 +1987,5 @@ public class Main extends JFrame
     protected Hashtable authTable;
     protected String writeToDir;
     protected EventListenerList listenerList = new EventListenerList();
+    protected URIBox uribox;
 }

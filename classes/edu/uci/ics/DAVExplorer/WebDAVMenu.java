@@ -93,6 +93,7 @@ public class WebDAVMenu extends JMenuBar implements ActionListener
     public static final int VIEW_MODIFY_PROPS = 15;
     public static final int REFRESH = 16;
     public static final int ABOUT = 17;
+    public static final int USE_SSL = 18;
     // versioning menu entries
     public static final int INIT_VERSION_CONTROL = 100;
     public static final int VERSION_REPORT = 101;
@@ -276,8 +277,10 @@ public class WebDAVMenu extends JMenuBar implements ActionListener
 
 
     /**
-     * 
+     * Changes the state of the logging menu entry.
+     *  
      * @param newState
+     * 		the new state
      */
     public void setLogging( boolean newState )
     {
@@ -286,12 +289,38 @@ public class WebDAVMenu extends JMenuBar implements ActionListener
 
 
     /**
+     * Returns the state of the logging menu entry.
      * 
      * @return
+     * 		true if logging is selected, false else
      */
     public boolean getLogging()
     {
         return logging.getState();
+    }
+
+    
+    /**
+     * Changes the state of the ssl menu entry.
+     *  
+     * @param newState
+     * 		the new state
+     */
+    public void setSSL( boolean newState )
+    {
+        ssl.setState( newState );
+    }
+
+
+    /**
+     * Returns the state of the ssl menu entry
+     * 
+     * @return
+     * 		true if use of ssl is selected, false else
+     */
+    public boolean getSSL()
+    {
+        return ssl.getState();
     }
 
     /*--------------------------------------------------------
@@ -348,6 +377,10 @@ public class WebDAVMenu extends JMenuBar implements ActionListener
         mnu_EditMenu.add( new WebDAVMenuItem( "Edit Proxy Info", EDIT_PROXY_INFO, this ) );
         mnu_EditMenu.addSeparator();
         mnu_EditMenu.add( new WebDAVMenuItem( "Clear Auth Buffer", CLEAR_AUTH_BUFFER, this ) );
+        mnu_EditMenu.addSeparator();
+        ssl = new WebDAVCheckBoxMenuItem( "Use SSL", USE_SSL, this );
+        setSSL( GlobalData.getGlobalData().getSSL() );
+        mnu_EditMenu.add( ssl );
         mnu_EditMenu.addSeparator();
         logging = new WebDAVCheckBoxMenuItem( "HTTP Logging", HTTP_LOGGING, this );
         mnu_EditMenu.add( logging );
@@ -442,4 +475,5 @@ public class WebDAVMenu extends JMenuBar implements ActionListener
 
 
     private WebDAVCheckBoxMenuItem logging;
+    private WebDAVCheckBoxMenuItem ssl;
 }

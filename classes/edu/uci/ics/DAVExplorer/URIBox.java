@@ -120,6 +120,19 @@ public class URIBox extends JPanel implements ActionListener
 
     /**
      * 
+     */
+    public void invalidate()
+    {
+        if( GlobalData.getGlobalData().getSSL() )
+            prefix.setText( GlobalData.WebDAVPrefixSSL );
+        else
+            prefix.setText( GlobalData.WebDAVPrefix );
+        super.invalidate();
+    }
+
+
+    /**
+     * 
      * @param filename
      * @param description
      * @return
