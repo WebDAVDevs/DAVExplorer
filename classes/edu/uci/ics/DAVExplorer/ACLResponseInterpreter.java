@@ -18,8 +18,15 @@
  */
 package edu.uci.ics.DAVExplorer;
 
+import java.io.ByteArrayInputStream;
 import java.util.Hashtable;
 import java.util.Enumeration;
+import java.io.IOException;
+
+import com.ms.xml.om.Document;
+import com.ms.xml.om.Element;
+import com.ms.xml.om.TreeEnumeration;
+import com.ms.xml.util.Name;
 
 /**
  * Title:       
@@ -81,12 +88,14 @@ public class ACLResponseInterpreter extends DeltaVResponseInterpreter
         {
             if (res.getStatusCode() < 300)
             {
-                if (Method.equals("PROPFIND"))
+                if( Method.equals("PROPFIND"))
                     parsePropFind();
-                else if (Method.equals("ACL"))
+                else if( Method.equals("ACL"))
                     parseACL();
-                else if (Method.equals("REPORT"))
+                else if( Method.equals("REPORT"))
                     parseReport();
+                else if( Method.equals("PROPPATCH"))
+                    parsePropPatch();
                 else
                 {
                     super.handleResponse(e);
@@ -156,6 +165,123 @@ public class ACLResponseInterpreter extends DeltaVResponseInterpreter
         }
     }
 
+
+    protected void parsePropFind()
+    {
+        if( GlobalData.getGlobalData().getDebugResponse() )
+        {
+            System.err.println( "ACLResponseInterpreter::parsePropFind" );
+        }
+
+        byte[] body = null;
+        Document xml_doc = null;
+
+        try
+        {
+            body = res.getData();
+            stream = body;
+            if (body == null)
+            {
+                GlobalData.getGlobalData().errorMsg("DAV Interpreter:\n\nMissing XML body in\nPROPFIND response.");
+                return;
+            }
+            ByteArrayInputStream byte_in = new ByteArrayInputStream(body);
+            xml_doc = new Document();
+            xml_doc.load( byte_in );
+        }
+        catch (Exception e)
+        {
+            GlobalData.getGlobalData().errorMsg("DAV Interpreter:\n\nError encountered \nwhile parsing PROPFIND Response.\n" + e);
+            stream = null;
+            return;
+        }
+
+        switch( extendedCode )
+        {
+            case WebDAVResponseEvent.ACL_OWNER:
+                handleOwner( xml_doc, true );
+                break;
+            case WebDAVResponseEvent.ACL_GROUP:
+                handleOwner( xml_doc, false );
+                break;
+
+            case WebDAVResponseEvent.ACL_SUPPORTED_PRIVILEGES:
+                handlePrivileges( xml_doc, true );
+                break;
+            case WebDAVResponseEvent.ACL_USER_PRIVILEGES:
+                handlePrivileges( xml_doc, false );
+                break;
+            case WebDAVResponseEvent.ACL:
+                break;
+            case WebDAVResponseEvent.SUPPORTED_ACL:
+                break;
+            case WebDAVResponseEvent.INHERITED_ACL:
+                break;
+            case WebDAVResponseEvent.ACL_PRINCIPALS:
+                break;
+            default:
+                super.parsePropFind();
+        }
+        printXML( body );
+    }
+
+
+    protected void parsePropPatch()
+        throws Exception
+    {
+        if( GlobalData.getGlobalData().getDebugResponse() )
+        {
+            System.err.println( "ACLResponseInterpreter::parsePropPatch" );
+        }
+
+        byte[] body = null;
+        Document xml_doc = null;
+
+        try
+        {
+            body = res.getData();
+            stream = body;
+            if (body == null)
+            {
+                GlobalData.getGlobalData().errorMsg("DAV Interpreter:\n\nMissing XML body in\nPROPFIND response.");
+                return;
+            }
+            ByteArrayInputStream byte_in = new ByteArrayInputStream(body);
+            xml_doc = new Document();
+            xml_doc.load( byte_in );
+        }
+        catch (Exception e)
+        {
+            GlobalData.getGlobalData().errorMsg("DAV Interpreter:\n\nError encountered \nwhile parsing PROPFIND Response.\n" + e);
+            stream = null;
+            return;
+        }
+
+        switch( extendedCode )
+        {
+            case WebDAVResponseEvent.ACL_OWNER:
+            case WebDAVResponseEvent.ACL_GROUP:
+                if( res.getStatusCode() == 207 )
+                    handleMultiStatus( xml_doc );
+                break;
+
+            case WebDAVResponseEvent.ACL_SUPPORTED_PRIVILEGES:
+                break;
+            case WebDAVResponseEvent.ACL_USER_PRIVILEGES:
+                break;
+            case WebDAVResponseEvent.ACL:
+                break;
+            case WebDAVResponseEvent.SUPPORTED_ACL:
+                break;
+            case WebDAVResponseEvent.INHERITED_ACL:
+                break;
+            case WebDAVResponseEvent.ACL_PRINCIPALS:
+                break;
+            default:
+                super.parsePropPatch();
+        }
+    }
+    
     
     protected void parseACL()
     {
@@ -163,6 +289,129 @@ public class ACLResponseInterpreter extends DeltaVResponseInterpreter
     }
     
 
+    protected void handleOwner( Document xml_doc, boolean owner )
+    {
+        String[] token = new String[1];
+        token[0] = new String( WebDAVXML.ELEM_RESPONSE );
+        Element rootElem = skipElements( xml_doc, token );
+        if( rootElem != null )
+        {
+            TreeEnumeration enumTree =  new TreeEnumeration( rootElem );
+            while( enumTree.hasMoreElements() )
+            {
+                Element current = (Element)enumTree.nextElement();
+                Name currentTag = current.getTagName();
+                if( currentTag != null )
+                {
+                    if( currentTag.getName().equals( WebDAVXML.ELEM_PROPSTAT ) )
+                    {
+                        token = new String[2];
+                        token[0] = new String( WebDAVXML.ELEM_PROPSTAT );
+                        token[1] = new String( WebDAVXML.ELEM_PROP );
+                        rootElem = skipElements( current, token );
+                        if( rootElem != null )
+                        {
+                            String host = HostName;
+                            if (Port != 0)
+                                host = HostName + ":" + Port;
+                            ACLOwnerDialog pd = new ACLOwnerDialog( rootElem, Resource, host, owner, true );
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+
+    protected void handlePrivileges( Document xml_doc, boolean supported )
+    {
+        String[] token = new String[1];
+        token[0] = new String( WebDAVXML.ELEM_RESPONSE );
+        Element rootElem = skipElements( xml_doc, token );
+        if( rootElem != null )
+        {
+            TreeEnumeration enumTree =  new TreeEnumeration( rootElem );
+            while( enumTree.hasMoreElements() )
+            {
+                Element current = (Element)enumTree.nextElement();
+                Name currentTag = current.getTagName();
+                if( currentTag != null )
+                {
+                    if( currentTag.getName().equals( WebDAVXML.ELEM_PROPSTAT ) )
+                    {
+                        token = new String[2];
+                        token[0] = new String( WebDAVXML.ELEM_PROPSTAT );
+                        token[1] = new String( WebDAVXML.ELEM_PROP );
+                        rootElem = skipElements( current, token );
+                        if( rootElem != null )
+                        {
+                            String host = HostName;
+                            if (Port != 0)
+                                host = HostName + ":" + Port;
+                            ACLPrivilegesDialog pd = new ACLPrivilegesDialog( rootElem, Resource, host, supported );
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+
+    protected void handleMultiStatus( Document xml_doc )
+    {
+        int status = 0;
+        String description = "";
+        
+        String[] token = new String[1];
+        token[0] = new String( WebDAVXML.ELEM_RESPONSE );
+        Element rootElem = skipElements( xml_doc, token );
+        if( rootElem != null )
+        {
+            TreeEnumeration enumTree =  new TreeEnumeration( rootElem );
+            while( enumTree.hasMoreElements() )
+            {
+                Element current = (Element)enumTree.nextElement();
+                Name currentTag = current.getTagName();
+                if( currentTag != null )
+                {
+                    if( currentTag.getName().equals( ACLXML.ELEM_STATUS ) )
+                    {
+                        status = getStatus( current );
+                    }
+                    else if( currentTag.getName().equals( ACLXML.ELEM_RESPONSEDESCRIPTION ) )
+                    {
+                        description = getDescription( current );
+                    }
+                }
+            }
+        }
+        if( status >= 400 )
+        {
+            GlobalData.getGlobalData().errorMsg( description );
+        }
+    }
+    
+
+    protected String getDescription( Element description )
+    {
+        if( GlobalData.getGlobalData().getDebugTreeNode() )
+        {
+            System.err.println( "ACLResponseInterpreter::getDescription" );
+        }
+
+        TreeEnumeration treeEnum = new TreeEnumeration( description );
+        while(treeEnum.hasMoreElements() )
+        {
+            Element token = (Element)treeEnum.nextElement();
+            if( (token != null) && (token.getType() == Element.PCDATA || token.getType() == Element.CDATA) )
+            {
+                return GlobalData.getGlobalData().unescape( token.getText(), Charset, null );
+            }
+        }
+        return "";
+    }
+
+    
     public boolean isACL( String resource )
     {
         Enumeration enum = acl.keys();

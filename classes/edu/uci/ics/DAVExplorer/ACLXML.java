@@ -42,4 +42,5 @@ public class ACLXML extends DeltaVXML
     public static final String ELEM_GRANT = "grant";
     public static final String ELEM_DENY = "deny";
     public static final String ELEM_PRIVILEGE = "privilege";
+    public static final String ELEM_RESPONSEDESCRIPTION = "responsedescription";
 }

@@ -1209,7 +1209,7 @@ public class Main extends JFrame
                     break;
                 }
                 
-                case WebDAVMenu.GET_OWNER:
+                case WebDAVMenu.VIEW_OWNER:
                 {
                     String s = fileView.getSelected();
                     if( (s == null) || (s.length() == 0) )
@@ -1223,7 +1223,7 @@ public class Main extends JFrame
                     break;
                 }
                 
-                case WebDAVMenu.GET_GROUP:
+                case WebDAVMenu.VIEW_GROUP:
                 {
                     String s = fileView.getSelected();
                     if( (s == null) || (s.length() == 0) )

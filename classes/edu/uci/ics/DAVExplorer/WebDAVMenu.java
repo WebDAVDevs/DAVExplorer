@@ -103,10 +103,8 @@ public class WebDAVMenu extends JMenuBar implements ActionListener
     public static final int MAKE_ACTIVITY = 105;
     public static final int MERGE = 106;
     // ACL menu entries
-    public static final int GET_OWNER = 200;
-    public static final int SET_OWNER = 201;
-    public static final int GET_GROUP = 202;
-    public static final int SET_GROUP = 203;
+    public static final int VIEW_OWNER = 200;
+    public static final int VIEW_GROUP = 202;
     public static final int GET_SUPPORTED_PRIVILEGES = 204;
     public static final int GET_USER_PRIVILEGES = 205;
     public static final int GET_ACL = 206;
@@ -389,11 +387,8 @@ public class WebDAVMenu extends JMenuBar implements ActionListener
     {
         JMenu mnu_ACLMenu = new JMenu( "Access Control", true );
 
-        mnu_ACLMenu.add( new WebDAVMenuItem( "Get Owner", GET_OWNER, this ) );
-        mnu_ACLMenu.add( new WebDAVMenuItem( "Set Owner", SET_OWNER, this ) );
-        mnu_ACLMenu.addSeparator();
-        mnu_ACLMenu.add( new WebDAVMenuItem( "Get Group", GET_GROUP, this ) );
-        mnu_ACLMenu.add( new WebDAVMenuItem( "Set Group", SET_GROUP, this ) );
+        mnu_ACLMenu.add( new WebDAVMenuItem( "View/Modify Owner", VIEW_OWNER, this ) );
+        mnu_ACLMenu.add( new WebDAVMenuItem( "View/Modify Group", VIEW_GROUP, this ) );
         mnu_ACLMenu.addSeparator();
         mnu_ACLMenu.add( new WebDAVMenuItem( "Get Supported Privileges", GET_SUPPORTED_PRIVILEGES, this ) );
         mnu_ACLMenu.add( new WebDAVMenuItem( "Get User's Privileges", GET_USER_PRIVILEGES, this ) );

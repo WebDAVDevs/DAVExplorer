@@ -211,6 +211,11 @@ public class WebDAVResponseInterpreter
                 parseMove();
                 return;
             }
+            else if (Method.equals("PROPPATCH"))
+            {
+                parsePropPatch();
+                return;
+            }
         }
         catch (Exception ex)
         {
@@ -229,8 +234,6 @@ public class WebDAVResponseInterpreter
             parseOptions();
         else if (Method.equals("PROPFIND"))
             parsePropFind();
-        else if (Method.equals("PROPPATCH"))
-            parsePropPatch();
         else if (Method.equals("MKCOL"))
             parseMkCol();
         else if (Method.equals("GET"))
@@ -474,6 +477,7 @@ public class WebDAVResponseInterpreter
      * Parse the result of a PROPPATCH request
      */
     protected void parsePropPatch()
+        throws Exception
     {
         if( GlobalData.getGlobalData().getDebugResponse() )
         {

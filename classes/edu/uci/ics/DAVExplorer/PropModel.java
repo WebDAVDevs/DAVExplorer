@@ -73,7 +73,7 @@ public class PropModel extends AbstractTableModel implements TreeTableModel
         parseProperties( properties, root );
     }
 
-
+    
     /**
      * 
      * @param tree
@@ -204,7 +204,7 @@ public class PropModel extends AbstractTableModel implements TreeTableModel
      */
     public int getColumnCount()
     {
-        return names.length;
+        return getNames().length;
     }
 
 
@@ -216,7 +216,7 @@ public class PropModel extends AbstractTableModel implements TreeTableModel
      */
     public String getColumnName( int column )
     {
-        return names[column];
+        return getNames()[column];
     }
 
 
@@ -228,7 +228,7 @@ public class PropModel extends AbstractTableModel implements TreeTableModel
      */
     public Class getColumnClass( int column )
     {
-        return types[column];
+        return getTypes()[column];
     }
 
 
@@ -907,16 +907,28 @@ public class PropModel extends AbstractTableModel implements TreeTableModel
         }
     }
 
+    
+    protected String[] getNames()
+    {
+        return names;
+    }
 
+
+    protected Class[] getTypes()
+    {
+        return types;
+    }
+
+    
     // column names
-    static protected String[]  names = { "Tag", "Namespace", "Value" };
+    protected String[] names = { "Tag", "Namespace", "Value" };
 
     // column types
-    static protected Class[]  types = { TreeTableModel.class, String.class, String.class };
+    protected Class[] types = { TreeTableModel.class, String.class, String.class };
 
     protected EventListenerList listenerList = new EventListenerList();
 
-    private PropNode root;
-    private JTree tree;
-    private JButton saveButton;
+    protected PropNode root;
+    protected JTree tree;
+    protected JButton saveButton;
 }

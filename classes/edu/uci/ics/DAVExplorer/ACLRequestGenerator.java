@@ -53,13 +53,24 @@ public class ACLRequestGenerator extends DeltaVRequestGenerator
             System.err.println( "ACLRequestGenerator::GetOwner" );
         }
 
-        String[] props = new String[2];
-        props[0] = "displayname";
-        props[1] = "owner";
+        extendedCode = WebDAVResponseEvent.ACL_OWNER;
+        String[] props = new String[1];
+        props[0] = "owner";
         if( GeneratePropFind( null, "prop", "one", props, null, false ) )
         {
             execute();
         }
+    }
+
+
+    public synchronized void SetOwner( Element owner, String resource )
+    {
+        if( GlobalData.getGlobalData().getDebugRequest() )
+        {
+            System.err.println( "ACLRequestGenerator::SetOwner" );
+        }
+
+        GeneratePropPatch( resource, owner, null, null );
     }
 
 
@@ -70,13 +81,24 @@ public class ACLRequestGenerator extends DeltaVRequestGenerator
             System.err.println( "ACLRequestGenerator::GetGroup" );
         }
 
-        String[] props = new String[2];
-        props[0] = "displayname";
-        props[1] = "group";
+        extendedCode = WebDAVResponseEvent.ACL_GROUP;
+        String[] props = new String[1];
+        props[0] = "group";
         if( GeneratePropFind( null, "prop", "one", props, null, false ) )
         {
             execute();
         }
+    }
+
+
+    public synchronized void SetGroup( Element group, String resource )
+    {
+        if( GlobalData.getGlobalData().getDebugRequest() )
+        {
+            System.err.println( "ACLRequestGenerator::SetGroup" );
+        }
+
+        GeneratePropPatch( resource, group, null, null );
     }
 
 
@@ -87,9 +109,9 @@ public class ACLRequestGenerator extends DeltaVRequestGenerator
             System.err.println( "ACLRequestGenerator::GetSupportedPrivileges" );
         }
 
-        String[] props = new String[2];
-        props[0] = "displayname";
-        props[1] = "supported-privilege-set";
+        extendedCode = WebDAVResponseEvent.ACL_SUPPORTED_PRIVILEGES;
+        String[] props = new String[1];
+        props[0] = "supported-privilege-set";
         if( GeneratePropFind( null, "prop", "one", props, null, false ) )
         {
             execute();
@@ -104,9 +126,9 @@ public class ACLRequestGenerator extends DeltaVRequestGenerator
             System.err.println( "ACLRequestGenerator::GetUserPrivileges" );
         }
 
-        String[] props = new String[2];
-        props[0] = "displayname";
-        props[1] = "current-user-privilege-set";
+        extendedCode = WebDAVResponseEvent.ACL_USER_PRIVILEGES;
+        String[] props = new String[1];
+        props[0] = "current-user-privilege-set";
         if( GeneratePropFind( null, "prop", "one", props, null, false ) )
         {
             execute();
@@ -121,9 +143,9 @@ public class ACLRequestGenerator extends DeltaVRequestGenerator
             System.err.println( "ACLRequestGenerator::GetACL" );
         }
 
-        String[] props = new String[2];
-        props[0] = "displayname";
-        props[1] = "acl";
+        extendedCode = WebDAVResponseEvent.ACL;
+        String[] props = new String[1];
+        props[0] = "acl";
         if( GeneratePropFind( null, "prop", "one", props, null, false ) )
         {
             execute();
@@ -138,9 +160,9 @@ public class ACLRequestGenerator extends DeltaVRequestGenerator
             System.err.println( "ACLRequestGenerator::GetACLRestrictions" );
         }
 
-        String[] props = new String[2];
-        props[0] = "displayname";
-        props[1] = "acl-restrictions";
+        extendedCode = WebDAVResponseEvent.SUPPORTED_ACL;
+        String[] props = new String[1];
+        props[0] = "acl-restrictions";
         if( GeneratePropFind( null, "prop", "one", props, null, false ) )
         {
             execute();
@@ -155,9 +177,9 @@ public class ACLRequestGenerator extends DeltaVRequestGenerator
             System.err.println( "ACLRequestGenerator::GetInheritedACLs" );
         }
 
-        String[] props = new String[2];
-        props[0] = "displayname";
-        props[1] = "inherited-acl-set";
+        extendedCode = WebDAVResponseEvent.INHERITED_ACL;
+        String[] props = new String[1];
+        props[0] = "inherited-acl-set";
         if( GeneratePropFind( null, "prop", "one", props, null, false ) )
         {
             execute();
@@ -172,9 +194,9 @@ public class ACLRequestGenerator extends DeltaVRequestGenerator
             System.err.println( "ACLRequestGenerator::GetPrincipalCollections" );
         }
 
-        String[] props = new String[2];
-        props[0] = "displayname";
-        props[1] = "principal-collection-set";
+        extendedCode = WebDAVResponseEvent.ACL_PRINCIPALS;
+        String[] props = new String[1];
+        props[0] = "principal-collection-set";
         if( GeneratePropFind( null, "prop", "one", props, null, false ) )
         {
             execute();
@@ -199,6 +221,7 @@ public class ACLRequestGenerator extends DeltaVRequestGenerator
                 return false;
         }
 
+        extendedCode = WebDAVResponseEvent.ACL;
         Method = "ACL";
         Document miniDoc = new Document();
         miniDoc.setVersion("1.0");
