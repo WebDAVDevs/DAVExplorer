@@ -718,7 +718,9 @@ public class Main extends JFrame
                 "EMail: dav-exp@ics.uci.edu\n\n" +
                 "Based on code from the UCI WebDAV Client Group\n" +
                 "of the ICS126B class Winter 1998:\n" +
-                "Gerair Balian, Mirza Baig, Robert Emmery, Thai Le, Tu Le\n");
+                "Gerair Balian, Mirza Baig, Robert Emmery, Thai Le, Tu Le.\n" +
+                "Uses the HTTPClient library (http://www.innovation.ch/java/HTTPClient/).\n" +
+                "Uses Microsoft's published XML parser code from June 1997.\n");
                 Object [] options = { "OK" };
                 pane.showOptionDialog(GlobalData.getGlobalData().getMainFrame(), message, "About DAV Explorer", JOptionPane.DEFAULT_OPTION, JOptionPane.INFORMATION_MESSAGE, null, options, options[0]);
             }
