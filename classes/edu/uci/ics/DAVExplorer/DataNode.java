@@ -50,6 +50,9 @@ package edu.uci.ics.DAVExplorer;
 
 import java.util.Vector;
 import java.util.Date;
+import java.util.TimeZone;
+import java.util.Calendar;
+import java.util.StringTokenizer;
 import java.text.DateFormat;
 import java.text.ParseException;
 
@@ -372,6 +375,12 @@ public class DataNode
 				break;
 			}
 		}
+
+        // ignore if string starts with digit, may be year
+        char c = lastModified.charAt(0);
+        if( Character.isDigit(c) )
+            found = true;
+
         // ignore known good weekdays and local files
 		if( !found && !display.equals("Local File") )
 		{
@@ -400,7 +409,7 @@ public class DataNode
                 df = DateFormat.getDateTimeInstance( dateStyle, timeStyle );
                 return df.parse(lastModified);
             }
-            catch( ParseException e)
+            catch( ParseException e )
             {
                 switch( timeStyle )
                 {
@@ -431,7 +440,19 @@ public class DataNode
                                 // old Date(String) ctor
                                 // Reason: the old Date ctor recognizes
                                 // even strange date strings.
-                                return new Date(lastModified);
+                                try
+                                {
+                                    // some date strings are so screwed up
+                                    // that even the old Date ctor doesn't
+                                    // know what to do with it.
+                                    // Example: Microsoft Exchange Server
+                                    // returns 2004-02-08T13:12:00.593Z
+                                    return new Date(lastModified);
+                                }
+                                catch( Exception e2 )
+                                {
+                                    return MSExchangeDateDecoding(lastModified);
+                                }
                         }
                         break;
                 }
@@ -457,5 +478,88 @@ public class DataNode
     public boolean isCollection()
     {
         return collection;
+    }
+
+    /**
+     * Microsoft Exchange Server gives us a pretty weird date format:<br>
+     * yyyy-mm-ddThh:mm:ss.sssZ<br>
+     * i.e., 4-digit year, '-', 2-digit month, '-', 2-digit day, 'T',
+     * 2-digit hour, ':', 2-digit minutes, ':', 2-digit seconds, '.',
+     * 3-digit thousands of a second, timezone<br> 
+     * Example: 2004-02-08T13:12:00.593Z<br>
+     * We try to decode it here.
+     * @param strDate       The date as a string
+     * 
+     * @return              The Date object derived from the input string,
+     *                      or null if the string could not be decoded.
+     */
+    private Date MSExchangeDateDecoding( String strDate )
+    {
+        Date d = new Date();
+        int pos = 0;
+        int year = 0;
+        int month = 0;
+        int day = 0;
+        int hour = 0;
+        int minute = 0;
+        int second = 0;
+        String tzone = "";
+
+        try
+        {
+            StringTokenizer t = new StringTokenizer( strDate, "-T:." );
+            while( t.hasMoreTokens() )
+            {
+                String token = t.nextToken();
+                switch( pos++ )
+                {
+                    case 0:
+                        year = Integer.parseInt(token);
+                        break;
+
+                    case 1:
+                        month = Integer.parseInt(token) - 1;
+                        break;
+
+                    case 2:
+                        day = Integer.parseInt(token);
+                        break;
+
+                    case 3:
+                        hour = Integer.parseInt(token);
+                        break;
+
+                    case 4:
+                        minute = Integer.parseInt(token);
+                        break;
+
+                    case 5:
+                        second = Integer.parseInt(token);
+                        break;
+
+                    case 6:
+                        // ignore subseconds, get timezone
+                        for( int i=0; i<token.length(); i++ )
+                        {
+                            char c = token.charAt(i);
+                            if( !Character.isDigit(c) )
+                            {
+                                tzone = token.substring(i);
+                                if( tzone.equals("Z") )
+                                    tzone = "GMT";
+                                break;
+                            }
+                        }
+                        break;
+                }
+            }
+            Calendar c = Calendar.getInstance( TimeZone.getTimeZone(tzone) );
+            c.set( year, month, day, hour, minute, second );
+            return c.getTime();
+        }
+        catch( Exception e )
+        {
+            return null;
+        }
     }
 }
