@@ -557,8 +557,7 @@ public class WebDAVFileView implements ViewSelectionListener
     for( int i = 0; i < sub.size() && !found; i++){
         node = (DataNode)sub.elementAt(i);
         String s = node.getName();
-System.out.println("Search: Target: "+target+", node name: "+s);
-        if(target.equals( s )){
+        if(selectedResource.equals( s )){
         found = true;
         token = node.getLockToken();
         }
@@ -569,7 +568,6 @@ System.out.println("Search: Target: "+target+", node name: "+s);
     if (token == null)
     {
         System.out.println("Error: getSelectedCollection, dataNode not found for selected item");
-System.out.println("Target: "+target);
         return null;
     }
     else
