@@ -12,6 +12,7 @@ Changes for version 0.73-dev:
   for Digest authentication.
 - Copy and Move now allow entering the target, making them more flexible.
 - For initial contact with a server, we now send an OPTIONS request.
+- Rewrite of the View Property dialog
 
 Changes for version 0.72:
 - Support for operation through proxy servers
@@ -33,6 +34,11 @@ Changes for version 0.70:
   available at http://java.sun.com/products/jsse/
   SSL is activated with the following command line:
   java -jar -Dssl=true DAVExplorer.jar
+  If a self-certified certificate is used, the certificate has to be added to the
+  JSSE keystore with the keytool program from the Java JDK.
+  JSSE ignores the default keystore, instead, the certificate has to be stored in
+  a particular JSSE keystore located in the JRE directory tree, usually at
+  JAVA_HOME/jre/lib/security/jssecacerts
 - Compatibility with JDK 1.3 was confirmed. The DAVExplorer.jar file is now
   created with JDK 1.3.0
 - Interoperability problem (another SiblingEnumeration bug in the parser) with IIS 5.0
