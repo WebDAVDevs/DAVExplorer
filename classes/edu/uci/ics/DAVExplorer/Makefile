@@ -85,5 +85,5 @@ clean::
 
 dist::
 	- rm -f *.class
-	- cd icons; rm-rf CVS
+	- cd icons; rm -rf CVS
 	- rm -rf CVS
