@@ -15,14 +15,10 @@ JFLAGS   =
 
 ### all source files
 
-classes = HTTPConnection.class \
-	  HTTPResponse.class \
-	  HttpOutputStream.class \
-	  NVPair.class \
+classes = NVPair.class \
 	  AuthorizationHandler.class \
 	  AuthorizationInfo.class \
 	  DefaultAuthHandler.class \
-	  MD5.class \
 	  StreamDemultiplexor.class \
 	  ExtBufferedInputStream.class \
 	  IdempotentSequence.class \
@@ -30,10 +26,12 @@ classes = HTTPConnection.class \
 	  RoRequest.class \
 	  RoResponse.class \
 	  Request.class \
+	  HTTPResponse.class \
 	  Response.class \
 	  ResponseHandler.class \
 	  RespInputStream.class \
 	  CIHashtable.class \
+	  HttpOutputStream.class \
 	  HTTPClientModule.class \
 	  HTTPClientModuleConstants.class \
 	  RedirectionModule.class \
@@ -45,6 +43,7 @@ classes = HTTPConnection.class \
 	  Cookie2.class \
 	  CookiePolicyHandler.class \
 	  ContentMD5Module.class \
+	  MD5.class \
 	  MD5InputStream.class \
 	  HashVerifier.class \
 	  DefaultModule.class \
@@ -67,7 +66,8 @@ classes = HTTPConnection.class \
 	  ProtocolNotSuppException.class \
 	  AuthSchemeNotImplException.class \
 	  ParseException.class \
-	  SocksException.class
+	  SocksException.class \
+	  HTTPConnection.class
 
 
 ### targets 
