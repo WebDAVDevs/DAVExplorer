@@ -528,7 +528,7 @@ public class Main extends JFrame
                     unlockDocument();
                 }
             }
-            else if (command.equals("Duplicate"))
+            else if (command.equals("Copy"))
             {
                 // Yuzo: I have the semantics set so that
                 // we get a string if something is selected in the
@@ -548,12 +548,56 @@ public class Main extends JFrame
                     // message to the Tree Model.
                     // This will then call for a rebuild of the Model at the
                     // Parent node n.
-
                     requestGenerator.setResource(s, n);
 
-                    if( requestGenerator.GenerateCopy( null, true, true ) ){
-                        requestGenerator.execute();
+                    String prompt = "Enter the name of the copy:";
+                    String title = "Copy Resource";
+                    String defaultName = requestGenerator.getDefaultName( "_copy" );
+                    //String overwrite = "Overwrite existing resource?";
+                    String fname = selectName( title, prompt, defaultName );
+                    if( fname != null )
+                    {
+                        if( requestGenerator.GenerateCopy( fname, true, true ) )
+                        {
+                            requestGenerator.execute();
+                        }
+                    }
+                }
             }
+            else if (command.equals("Move"))
+            {
+                String s = fileView.getSelected();
+                if( s == null )
+                {
+                    GlobalData.getGlobalData().errorMsg( "No file selected." );
+                }
+                else
+                {
+                    WebDAVTreeNode n = fileView.getParentNode();
+
+                    // This sets the resource name to s and the node to n
+                    // This is neccessary so that n is passed to
+                    // response interpretor, whc then routes a
+                    // message to the Tree Model.
+                    // This will then call for a rebuild of the Model at the
+                    // Parent node n.
+                    requestGenerator.setResource(s, n);
+
+                    String prompt = "Enter the new name of the resource:";
+                    String title = "Move Resource";
+                    //String overwrite = "Overwrite existing resource?";
+                    String fname = selectName( title, prompt );
+                    if( fname != null )
+                    {
+                        boolean retval = false;
+                        if( fileView.isSelectedLocked() )
+                            retval = requestGenerator.GenerateMove( fname, null, false, true, fileView.getSelectedLockToken(), "rename:" );
+                        else
+                            retval = requestGenerator.GenerateMove( fname, null, false, true, null , "rename:" );
+
+                        if( retval )
+                            requestGenerator.execute();
+                    }
                 }
             }
             else if (command.equals("Delete"))
@@ -836,8 +880,16 @@ public class Main extends JFrame
 
     private String selectName( String title, String prompt )
     {
+//        JOptionPane pane = new JOptionPane();
+//        String ret = pane.showInputDialog( GlobalData.getGlobalData().getMainFrame(), prompt, title ,JOptionPane.QUESTION_MESSAGE );
+//        return ret;
+        return selectName( title, prompt, null );
+    }
+
+    private String selectName( String title, String prompt, String defaultValue )
+    {
         JOptionPane pane = new JOptionPane();
-        String ret = pane.showInputDialog( GlobalData.getGlobalData().getMainFrame(), prompt, title ,JOptionPane.QUESTION_MESSAGE );
+        String ret = (String)pane.showInputDialog( GlobalData.getGlobalData().getMainFrame(), prompt, title, JOptionPane.QUESTION_MESSAGE, null, null, defaultValue );
         return ret;
     }
 

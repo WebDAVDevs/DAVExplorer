@@ -167,27 +167,28 @@ public class WebDAVRequestGenerator implements Runnable
         ResourceName = Path + "/";
     }
 
-    public boolean parseResourceName()
+    public String parseResourceName( boolean escape )
     {
         if (ResourceName.equals(""))
         {
             GlobalData.getGlobalData().errorMsg("No resource selected!");
-            return false;
+            return null;
         }
         if( !ResourceName.startsWith(WebDAVPrefix) && !ResourceName.startsWith(WebDAVPrefixSSL) )
         {
             GlobalData.getGlobalData().errorMsg("This operation cannot be executed\non a local resource.");
-            return false;
+            return null;
         }
         String stripped;
         if( ResourceName.startsWith(WebDAVPrefix) )
             stripped = ResourceName.substring(WebDAVPrefix.length());
         else
             stripped = ResourceName.substring(WebDAVPrefixSSL.length());
-        return parseStripped( stripped );
+        return parseStripped( stripped, escape );
     }
 
-    public boolean parseStripped( String stripped )
+
+    public String parseStripped( String stripped, boolean escape )
     {
         StringTokenizer str = new StringTokenizer(stripped, "/");
         boolean isColl = false;
@@ -195,7 +196,7 @@ public class WebDAVRequestGenerator implements Runnable
         if (!str.hasMoreTokens())
         {
             GlobalData.getGlobalData().errorMsg("Invalid host name.");
-            return false;
+            return null;
         }
         if (stripped.endsWith("/"))
             isColl = true;
@@ -220,7 +221,7 @@ public class WebDAVRequestGenerator implements Runnable
             {
                 GlobalData.getGlobalData().errorMsg("Invalid port number.");
                 Port = 0;
-                return false;
+                return null;
             }
         }
         String newRes = "";
@@ -231,19 +232,39 @@ public class WebDAVRequestGenerator implements Runnable
         else if( isColl )
             newRes = newRes + "/";
 
-        StringReader sr = new StringReader( newRes+"\n" );
-        EscapeReader er = new EscapeReader( sr, false );
-        BufferedReader br = new BufferedReader( er );
-        try
+        if( escape )
         {
-            StrippedResource = br.readLine();
+            StringReader sr = new StringReader( newRes+"\n" );
+            EscapeReader er = new EscapeReader( sr, false );
+            BufferedReader br = new BufferedReader( er );
+            try
+            {
+                return br.readLine();
+            }
+            catch( IOException e )
+            {
+                GlobalData.getGlobalData().errorMsg("URI generation error: \n" + e);
+                return null;
+            }
         }
-        catch( IOException e )
-        {
-            GlobalData.getGlobalData().errorMsg("URI generation error: \n" + e);
-        }
-        return true;
+        else
+            return newRes;
     }
+
+
+    public String getDefaultName( String appendix )
+    {
+        String defaultName = parseResourceName( false );
+        if( defaultName == null )
+            return null;
+
+        if( defaultName.endsWith( "/" ) )
+            defaultName = defaultName.substring( 0, defaultName.length()-1 );
+        defaultName += appendix;
+
+        return defaultName;
+    }
+
 
     public void execute()
     {
@@ -379,16 +400,17 @@ public class WebDAVRequestGenerator implements Runnable
                 Extra = "expand";
             }
             ResourceName = FullPath;
-            ok = parseResourceName();
+            StrippedResource = parseResourceName( true );
         }
         else if (FullPath != null)
         {
-            ok = parseStripped( FullPath );
+            StrippedResource = parseStripped( FullPath, true );
         }
         else
         {
-            ok = parseResourceName();
+            StrippedResource = parseResourceName( true );
         }
+        ok = (StrippedResource != null);
 
         if (!ok)
         {
@@ -677,7 +699,8 @@ public class WebDAVRequestGenerator implements Runnable
 
 
         ResourceName = parentDir;
-        if (!parseResourceName())
+        StrippedResource = parseResourceName( true );
+        if( StrippedResource == null )
         {
             GlobalData.getGlobalData().errorMsg( "Error Generating MKCOL Method" );
             return false;
@@ -707,7 +730,8 @@ public class WebDAVRequestGenerator implements Runnable
         Headers = null;
         Body = null;
 
-        if (!parseResourceName())
+        StrippedResource = parseResourceName( true );
+        if( StrippedResource == null )
         {
             GlobalData.getGlobalData().errorMsg( "Error Generating GET Method" );
             return false;
@@ -746,7 +770,8 @@ public class WebDAVRequestGenerator implements Runnable
     }
 
 
-        if (!parseResourceName())
+        StrippedResource = parseResourceName( true );
+        if( StrippedResource == null )
         {
             GlobalData.getGlobalData().errorMsg( "Error Generating DELETE Method" );
             return false;
@@ -796,7 +821,8 @@ public class WebDAVRequestGenerator implements Runnable
         parentNode = selectedCollection;
 
         ResourceName = destDir;
-        if (!parseResourceName())
+        StrippedResource = parseResourceName( true );
+        if( StrippedResource == null )
         {
             GlobalData.getGlobalData().errorMsg( "File is not local" );
             return false;
@@ -880,7 +906,8 @@ public class WebDAVRequestGenerator implements Runnable
         Body = null;
         Extra = "copy"; //Yuzo added
 
-        if (!parseResourceName())
+        StrippedResource = parseResourceName( true );
+        if( StrippedResource == null )
         {
             GlobalData.getGlobalData().errorMsg( "Error Generating COPY Method" );
             return false;
@@ -1014,7 +1041,9 @@ public class WebDAVRequestGenerator implements Runnable
         Node2 = Node;
         ResourceName2 = new String(ResourceName);
         Dest2 = new String(Dest);
-        dir2 = new String(dir);
+        if( dir != null )
+            dir2 = new String(dir);
+        else dir2 = null;
         Overwrite2 = Overwrite;
         KeepAlive2 = KeepAlive;
     }
@@ -1024,14 +1053,16 @@ public class WebDAVRequestGenerator implements Runnable
         ResourceName = dir;
 
     /*
-        if (!parseResourceName())
+        StrippedResource = parseResourceName( true );
+        if( StrippedResource == null )
             dir = "/";
         else
             dir = StrippedResource;
     */
 
         ResourceName = srcFile;
-        if (!parseResourceName())
+        StrippedResource = parseResourceName( true );
+        if( StrippedResource == null )
         {
             GlobalData.getGlobalData().errorMsg( "Error Generating MOVE Method" );
             return false;
@@ -1054,6 +1085,20 @@ public class WebDAVRequestGenerator implements Runnable
             Dest = WebDAVPrefix + Dest;
     */
 
+        // may be null if invoked from menu
+        if( dir == null )
+        {
+            if( GlobalData.getGlobalData().doSSL() )
+                dir = WebDAVPrefixSSL;
+            else
+                dir = WebDAVPrefix;
+
+            if( Port==0 || Port==DEFAULT_PORT )
+                dir += HostName;
+            else
+                dir += HostName + ":" + Port;
+
+        }
         Dest = dir + Dest;
 
         Method = "MOVE";
@@ -1137,7 +1182,8 @@ public class WebDAVRequestGenerator implements Runnable
         Body = null;
         // Only exclusive write lock is supported at the time
 
-        if (!parseResourceName())
+        StrippedResource = parseResourceName( true );
+        if( StrippedResource == null )
         {
             GlobalData.getGlobalData().errorMsg( "Error Generating LOCK Method for " + StrippedResource );
             return false;
@@ -1241,7 +1287,8 @@ public class WebDAVRequestGenerator implements Runnable
         Headers = null;
         Body = null;
 
-        if (!parseResourceName())
+        StrippedResource = parseResourceName( true );
+        if( StrippedResource == null )
         {
             GlobalData.getGlobalData().errorMsg( "Error Generating UNLOCK Method" );
             return false;

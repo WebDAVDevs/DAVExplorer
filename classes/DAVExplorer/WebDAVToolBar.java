@@ -88,7 +88,7 @@ public class WebDAVToolBar extends JPanel implements ActionListener
     {
         addTool( toolbar, "open", "Get File" );
         addTool( toolbar, "save", "Write File" );
-        addTool( toolbar, "copy", "Duplicate" );
+        addTool( toolbar, "copy", "Copy" );
         addTool( toolbar, "delete", "Delete" );
         toolbar.addSeparator();
         addTool( toolbar, "lock", "Lock" );
