@@ -31,6 +31,8 @@ classes = HTTPConnection.class \
 	  RoResponse.class \
 	  Request.class \
 	  Response.class \
+	  ResponseHandler.class \
+	  RespInputStream.class \
 	  CIHashtable.class \
 	  HTTPClientModule.class \
 	  HTTPClientModuleConstants.class \
