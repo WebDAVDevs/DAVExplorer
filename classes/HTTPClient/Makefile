@@ -7,8 +7,6 @@ JDOC	 = javadoc
 JFLAGS   = -O
 #CLASSP   = -classpath "$(JAVA_HOME)/lib/classes.zip:.."
 #JDCLASSP = -classpath "$(JAVA_HOME)/lib/classes.zip:.."
-CLASSP   = -classpath ".."
-JDCLASSP = -classpath ".."
 
 JTAGS    = /usr/bin/ctags
 JTFLAGS  = --java-types=+C -f -
