@@ -446,7 +446,8 @@ public class WebDAVResponseInterpreter
             {
                 lockToken.trim();
                 int pos = lockToken.indexOf("opaque");
-                lockToken = lockToken.substring(pos);
+                if( pos >= 0 )
+                    lockToken = lockToken.substring(pos);
             }
             if (Extra.equals("lock"))
             {
@@ -945,11 +946,12 @@ public class WebDAVResponseInterpreter
                     {
                         lockToken = getLockToken( current );
                         if( lockToken != null )
-						{
+                        {
                             lockToken.trim();
                             int pos = lockToken.indexOf("opaque");
-                            lockToken = lockToken.substring(pos);
-						}
+                            if( pos >= 0 )
+                                lockToken = lockToken.substring(pos);
+                        }
                         break;
                     }
                 }

@@ -51,6 +51,7 @@ classes = AsGen.class \
 	  WebDAVURIBoxListener.class \
 	  WebDAVXML.class \
           GlobalData.class \
+          AuthHandler.class \
 	  Main.class
 
 

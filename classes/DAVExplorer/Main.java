@@ -43,8 +43,19 @@
 //    This is the same function, but with a better name.
 // 2. Added Create Folder functionality
 // 3. Added filename selection for export file
+//
+// Version: 0.5
+// Changes by: Joe Feise
+// Date: 12/3/99
+//
+// Change List:
+// Removed the authentication dialog and listener, since authentication is now handled
+// as AuthenticationHandler in HTTPClient
 
 package DAVExplorer;
+
+import HTTPClient.AuthorizationInfo;
+import HTTPClient.CookieModule;
 
 import javax.swing.*;
 import javax.swing.event.*;
@@ -55,17 +66,16 @@ import java.io.*;
 
 public class Main extends JFrame
 {
-    JFrame WebDAVFrame;
+    static JFrame WebDAVFrame=null;
     WebDAVFileView fileView;
     WebDAVTreeView treeView;
     WebDAVRequestGenerator requestGenerator;
     WebDAVResponseInterpreter responseInterpreter;
     WebDAVManager webdavManager;
     WebDAVMenu CommandMenu;
-    WebDAVLoginDialog ld;
     Hashtable authTable;
     String authHost;
-    public final static String VERSION = "0.58";
+    public final static String VERSION = "0.59";
     public final static String UserAgent = "UCI DAV Explorer/" + VERSION;
     String writeToDir;
 
@@ -97,6 +107,11 @@ public class Main extends JFrame
         MenuListener_Gen menuListener = new MenuListener_Gen();
 
         CommandMenu.addWebDAVMenuListener( menuListener );
+
+        // Set the HTTPClient authentication handler
+        AuthorizationInfo.setAuthHandler( new AuthHandler() );
+        // allow all cookies
+        CookieModule.setCookiePolicyHandler( null );
 
         WebDAVToolBar toolbar = new WebDAVToolBar();
         toolbar.addActionListener( menuListener );
@@ -192,53 +207,18 @@ public class Main extends JFrame
         } );
     }
 
-    public void checkAuth(String in)
-    {
-        int pos = in.indexOf("/");
-        String host = null;
-        String authInfo = null;
-
-        host = in;
-        authHost = host;
-        if (!authTable.containsKey(host))
-        {
-            new WebDAVLoginDialog(WebDAVFrame, new LoginDialogListener(), "Auth Info For " + host + ":",true);
-        }
-        else
-        {
-            authInfo = (String) authTable.get(host);
-            pos = authInfo.indexOf(":");
-            requestGenerator.setUser(authInfo.substring(0,pos));
-            requestGenerator.setPass(authInfo.substring(pos+1));
-        }
-    }
 
     public final static void main(String[] argv)
     {
         Main mFrame = new Main("DAV Explorer");
     }
 
-    class LoginDialogListener implements ActionListener
-    {
-        public void actionPerformed(ActionEvent e)
-        {
-            String user, pass;
-            String str = e.getActionCommand();
-            int pos = str.indexOf(":");
-            user = str.substring(0,pos);
-            pass = str.substring(pos+1);
-            authTable.put(authHost, user + ":" + pass);
-            requestGenerator.setUser(user);
-            requestGenerator.setPass(pass);
-        }
-    }
 
     class URIBoxListener_Gen implements WebDAVURIBoxListener
     {
         public void actionPerformed(ActionEvent e)
         {
             String str = e.getActionCommand();
-            checkAuth(str);
             if (!str.endsWith("/"))
                 str += "/";
             requestGenerator.setExtraInfo("uribox");
@@ -885,5 +865,10 @@ public class Main extends JFrame
         {
         }
         return false;
+    }
+
+    static JFrame getMainFrame()
+    {
+        return WebDAVFrame;
     }
 }

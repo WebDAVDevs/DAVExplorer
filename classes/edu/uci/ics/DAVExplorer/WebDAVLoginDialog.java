@@ -51,6 +51,14 @@
 // Change List:
 // Note: No authenication check is executed in the Action Listener
 // when "okay" is clicked.
+//
+// Version: 0.5
+// Changes by: Joe Feise
+// Date: 12/3/99
+//
+// Change List:
+// Now invoked from Authentication handler in HTTPClient
+// when "okay" is clicked.
 
 package DAVExplorer;
 
@@ -76,77 +84,81 @@ Public methods and attributes section
     Vector listeners = new Vector();
 
     //Construction
-    public WebDAVLoginDialog(JFrame parent, ActionListener l, String strCaption, boolean isModal)
+    public WebDAVLoginDialog( String strCaption, boolean isModal )
     {
-        super( parent, strCaption, isModal );
+        super( Main.getMainFrame(), strCaption, isModal );
 
         Rectangle recthDimensions = getParent().getBounds();
         setBounds(recthDimensions.x + (recthDimensions.width - 350)/ 2,
              recthDimensions.y + (recthDimensions.height - 110)/2, 350, 110 );
-        addListener(l);
+
         JPanel groupPanel = new JPanel(new GridLayout( 4, 1 ));
         groupPanel.add(new JLabel("Login name:"));
         groupPanel.add(txtUsername = new JTextField(40));
         groupPanel.add(new JLabel("Password:"));
         txtPassword = new JPasswordField("", 40);
         groupPanel.add(txtPassword);
-        add(OKbutton = new JButton("OK"), BorderLayout.SOUTH);
-        OKbutton.addActionListener(this);
+
+        GridBagLayout gridbag = new GridBagLayout();
+        JPanel p = new JPanel( gridbag );
+        GridBagConstraints constraints = new GridBagConstraints();
+        constraints.fill = GridBagConstraints.BOTH;
+        constraints.gridwidth = 1;
+        constraints.weightx = 1.0;
+        p.add( OkButton = new JButton( "OK" ) );
+        OkButton.addActionListener( this );
+        constraints.weightx = 1.0;
+        gridbag.setConstraints( OkButton, constraints );
+
+        p.add( CancelButton = new JButton( "Cancel" ) );
+        CancelButton.addActionListener( this );
+        constraints.weightx = 1.0;
+        gridbag.setConstraints( CancelButton, constraints );
+
+        add( p, BorderLayout.SOUTH );
         add(groupPanel, BorderLayout.CENTER);
         pack();
+        txtUsername.requestFocus();
         setVisible( true );
     }
 
-    //Handling the events that happen in the dialog
-    public synchronized void addListener(ActionListener l) {
+
+    public synchronized void addListener( ActionListener l )
+    {
         listeners.addElement(l);
     }
 
-    public synchronized void removeListener(ActionListener l) {
+
+    public synchronized void removeListener( ActionListener l )
+    {
         listeners.removeElement(l);
     }
 
-    public void actionPerformed(ActionEvent e)
-    {
-    if(e.getActionCommand().equals("OK"))
-        {
-            String user = txtUsername.getText();
-            String pass = String.valueOf( txtPassword.getPassword() );
 
-            if ( ( user.length() > 0  ) && (pass.equals("") ) )
+    public void actionPerformed( ActionEvent e )
+    {
+        if( e.getActionCommand().equals("OK") )
+        {
+            m_strUsername = txtUsername.getText();
+            m_strUserPassword = String.valueOf( txtPassword.getPassword() );
+
+            if ( ( m_strUsername.length() > 0  ) && (m_strUserPassword.equals("") ) )
                 return;
-            ActionEvent evt = new ActionEvent(this, 0,user + ":" + pass);
-            Vector v;
-            synchronized(this)
-            {
-                v = (Vector)listeners.clone();
-            }
-            for (int i=0; i< v.size(); i++)
-            {
-                ActionListener client = (ActionListener)v.elementAt(i);
-                client.actionPerformed(evt);
-            }
+        }
+        else if( e.getActionCommand().equals( "Cancel" ) )
+        {
+            m_strUsername = "";
+            m_strUserPassword = "";
         }
         setVisible( false );
         dispose();
     }
 
-    //Set the name of the user in the protected data member
-    public void setUsername(String strUsername)
-    {
-        m_strUsername = strUsername;
-    }
-
-    //Set the password the user entered.  This is data gotten from the edit component
-    public void setUserPassword(String strUserPassword)
-    {
-        m_strUserPassword = strUserPassword;
-    }
 
     //Get the user name to be sent through the wire
     public String getUsername()
     {
-    return m_strUsername;
+        return m_strUsername;
     }
 
     //Get the user password to be sent through the wire.
@@ -155,9 +167,6 @@ Public methods and attributes section
         return m_strUserPassword;
     }
 
-/*-----------------------------------------------------------------------
-Private methods and attributes section
------------------------------------------------------------------------*/
 
 /*-----------------------------------------------------------------------
 Protected methods and attributes section
@@ -166,5 +175,7 @@ Protected methods and attributes section
     protected String m_strUserPassword;
     protected JTextField txtUsername;
     protected JPasswordField txtPassword;
-    protected JButton OKbutton;
+    protected JButton OkButton;
+    protected JButton CancelButton;
 }
+
