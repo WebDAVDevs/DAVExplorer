@@ -36,8 +36,7 @@ package WebDAV;
 
 import java.util.*;
 
-public interface CopyResponseListener extends EventListener {
-
-  public void CopyEventResponse(CopyResponseEvent e);
-
+public interface CopyResponseListener extends EventListener
+{
+    public void CopyEventResponse(CopyResponseEvent e);
 }

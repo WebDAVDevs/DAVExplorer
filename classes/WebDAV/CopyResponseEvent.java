@@ -42,18 +42,18 @@ package WebDAV;
 
 import java.util.*;
 
-public class CopyResponseEvent extends EventObject {
-   
-        WebDAVTreeNode Node;
+public class CopyResponseEvent extends EventObject
+{
+    WebDAVTreeNode Node;
 
-  public CopyResponseEvent(Object module, WebDAVTreeNode n) {
+    public CopyResponseEvent(Object module, WebDAVTreeNode n)
+    {
+        super(module);
+        Node = n;
+    }
 
-    super(module);
-System.out.println("CopyResponseEvent created");
-    Node = n;
-  }
-
-  public WebDAVTreeNode getNode() {
-    return Node;
-  }
+    public WebDAVTreeNode getNode()
+    {
+        return Node;
+    }
 }
