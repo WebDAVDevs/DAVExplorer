@@ -89,6 +89,8 @@ public class Main extends JFrame
 {
     public final static String VERSION = "0.82-dev";
     public final static String UserAgent = "UCI DAV Explorer/" + VERSION;
+    public final static String COPYRIGHT = "Copyright (c) 1998-2002 Regents of the University of California";
+    public final static String EMAIL = "EMail: dav-exp@ics.uci.edu";
 
     public Main(String frameName)
     {
@@ -203,7 +205,51 @@ public class Main extends JFrame
 
     public final static void main(String[] argv)
     {
-        Main mFrame = new Main("DAV Explorer");
+        String help = System.getProperty( "help", "no" );
+        if( help.equalsIgnoreCase("no") )
+        {
+            Main mFrame = new Main("DAV Explorer");
+        }
+        else
+        {
+            System.out.println( "DAV Explorer Version "+ VERSION );
+            System.out.println( COPYRIGHT );
+            System.out.println( "Authors: Yuzo Kanomata, Joachim Feise" );
+            System.out.println( EMAIL );
+            System.out.println( "Based on code from the UCI WebDAV Client Group" );
+            System.out.println( "of the ICS126B class Winter 1998:" );
+            System.out.println( "Gerair Balian, Mirza Baig, Robert Emmery, Thai Le, Tu Le." );
+            System.out.println( "Uses the HTTPClient library (http://www.innovation.ch/java/HTTPClient/)." );
+            System.out.println( "Uses Microsoft's published XML parser code from June 1997.\n" );
+            System.out.println( "Options:" );
+            System.out.println( "-Dhelp=yes" );
+            System.out.println( "  This help message.\n" );
+            System.out.println( "-Ddebug=option" );
+            System.out.println( "  where option is one of:" );
+            System.out.println( "  all          all function traces are enabled" );
+            System.out.println( "  request      function traces related to HTTP requests are enabled" );
+            System.out.println( "  response     function traces related to HTTP responses are enabled" );
+            System.out.println( "  treeview     function traces related to the tree view on the left side" );
+            System.out.println( "               of the DAVExplorer window are enabled" );
+            System.out.println( "  treenode     function traces related to each node in the tree view are" );
+            System.out.println( "               enabled" );
+            System.out.println( "  fileview     function traces related to the file view on the right side" );
+            System.out.println( "               of the DAVExplorer window are enabled\n" );
+            System.out.println( "-Dpropfind=allprop" );
+            System.out.println( "  This option results in using the <allprop> tag in PROPFIND.\n" );
+            System.out.println( "-DSSL=yes" );
+            System.out.println( "  This option enables the use of SSL.\n" );
+            System.out.println( "-DSharePoint=yes" );
+            System.out.println( "  This option enables a workaround for a bug in Microsoft's SharePoint" );
+            System.out.println( "  server which allows tags to start with a digit.\n" );
+            System.out.println( "-DApache=yes" );
+            System.out.println( "  This option enables a workaround for a bug in Apache 1.3.x, which returns" );
+            System.out.println( "  a 500 error in response to a PROPPATCH if the Host: header contains a port" );
+            System.out.println( "  number.\n" );
+            System.out.println( "-Dlocal=no" );
+            System.out.println( "  This option prevents showing the local directory structure in the main" );
+            System.out.println( "  DAV Explorer window." );
+        }
     }
 
 
@@ -774,9 +820,9 @@ public class Main extends JFrame
             {
                 JOptionPane pane = new JOptionPane( this );
                 String message = new String("DAV Explorer Version "+ VERSION + "\n" +
-                "Copyright (c) 1998-2002 Regents of the University of California\n" +
+                COPYRIGHT + "\n" +
                 "Authors: Yuzo Kanomata, Joachim Feise\n" +
-                "EMail: dav-exp@ics.uci.edu\n\n" +
+                EMAIL + "\n\n" +
                 "Based on code from the UCI WebDAV Client Group\n" +
                 "of the ICS126B class Winter 1998:\n" +
                 "Gerair Balian, Mirza Baig, Robert Emmery, Thai Le, Tu Le.\n" +
