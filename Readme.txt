@@ -23,9 +23,10 @@ for groups which employ a lock-download-work-upload-unlock authoring
 process.
 
 DAV Explorer is a Java application which uses Java 2 and has successfully
-been run on Windows 95/98/ME/NT/2000/XP machines, Solaris and Linux.
-It has been reported to run on Macintosh computers, with MacOS 9 and MRJ 2.2.3,
-and with Mac OS X.
+been run on Microsoft Windows from Windows 95 to Server 2003,
+Solaris and Linux.
+It has been reported to run on Macintosh computers, with MacOS 9 and
+MRJ 2.2.3, and with Mac OS X.
 DAV Explorer may run on other platforms, but this has not been verified.
 
 DAV Explorer also works as applet. Usage:
@@ -122,7 +123,7 @@ Thanks to everybody.
 
 6. CHANGELOG
 
-Changes for version 0.83-dev:
+Changes for version 0.90:
 - Bug fix in HTTPClient for PUT with Stream and Digest authentication.
 - Right view now works when columns are reorganized.
 - Right view now allows sorting on every column.
