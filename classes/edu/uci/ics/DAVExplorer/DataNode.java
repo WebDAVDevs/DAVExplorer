@@ -44,6 +44,9 @@
  * @author      Joachim Feise (dav-exp@ics.uci.edu)
  * @date        08 February 2004
  * Changes:     Added Javadoc templates
+ * @author      Joachim Feise (dav-exp@ics.uci.edu)
+ * @date        09 February 2004
+ * Changes:     Added workaround for MS Exchange Server Date format
  */
 
 package edu.uci.ics.DAVExplorer;
