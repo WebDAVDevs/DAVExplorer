@@ -17,7 +17,7 @@
 
 SRC = .
 
-all:	com HTTPClient DAVExplorer
+all:	com HTTPClient edu
 
 com::
 	@( CLASSPATH=`pwd`:$(CLASSPATH); export CLASSPATH; cd $(SRC)/com; make all )
@@ -25,13 +25,13 @@ com::
 HTTPClient::
 	@( CLASSPATH=`pwd`:$(CLASSPATH); export CLASSPATH; cd $(SRC)/HTTPClient; make all )
 
-DAVExplorer::
-	@( CLASSPATH=`pwd`:$(CLASSPATH); export CLASSPATH; cd $(SRC)/DAVExplorer; make all )
+edu::
+	@( CLASSPATH=`pwd`:$(CLASSPATH); export CLASSPATH; cd $(SRC)/edu; make all )
 
 DAVExplorer.jar::
 	jar -cfm DAVExplorer.jar DAVManifest \
-                                 DAVExplorer/*.class \
-                                 DAVExplorer/icons/* \
+                                 edu/uci/ics/DAVExplorer/*.class \
+                                 edu/uci/ics/DAVExplorer/icons/* \
                                  HTTPClient/*.class \
                                  HTTPClient/http/*.class \
                                  HTTPClient/https/*.class \
@@ -45,13 +45,13 @@ DAVExplorer.jar::
 clean::
 	- cd $(SRC)/com; make clean
 	- cd $(SRC)/HTTPClient; make clean
-	- cd $(SRC)/DAVExplorer; make clean
+	- cd $(SRC)/edu; make clean
 	- rm -f DAVExplorer.jar
 
 dist::
 	- cd $(SRC)/com; make dist
 	- cd $(SRC)/HTTPClient; make dist
-	- cd $(SRC)/DAVExplorer; make dist
+	- cd $(SRC)/edu; make dist
 	- rm -f DAVExplorer.jar
 	- rm -rf $(SRC)/CVS
 
