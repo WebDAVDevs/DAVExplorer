@@ -8,25 +8,26 @@ DAV Explorer requires Java 2 (aka JDK 1.2).
 
 2. Navigate to your chosen source directory.
 
-3. Retrieve all DAV Explorer source files from the DAV Explorer CVS archive, by using
-   the command 'cvs -d :pserver:cvsguest@elysees.ics.uci.edu:/webdav checkout DAVExplorer'.
-   Retrieve all MS Parser and HTTPClient source files and class files from the CVS archive
-   with the commands 'cvs -d :pserver:cvsguest@elysees.ics.uci.edu:/webdav checkout parser'
+3. Retrieve all DAV Explorer source files from the DAV Explorer CVS archive,
+   by using the command
+   'cvs -d :pserver:cvsguest@elysees.ics.uci.edu:/webdav checkout DAVExplorer'.
+   Retrieve all MS Parser and HTTPClient source files and class files from the
+   CVS archive with the commands
+   'cvs -d :pserver:cvsguest@elysees.ics.uci.edu:/webdav checkout parser'
    and 'cvs -d :pserver:cvsguest@elysees.ics.uci.edu:/webdav checkout HTTPClient',
    respectively.
 
-4. Compile all Java source files with Java 2 by running make in the dav_explorer directory
-   directly below your source directory. This also creates a DAVExplorer.jar file in the
-   dav_explorer directory.
-   Note that the Makefile does not work under MS Windows. Instead, running the make.bat file
-   in the dav_explorer directory achieves the same result.
-   Under MS Windows, you can also run the DAVjar.bat file from the dav_explorer directory
-   to create the DAVExplorer.jar file.
+4. Compile all Java source files with Java 2 by running make in the dav_explorer
+   directly below your source directory. This also creates a DAVExplorer.jar file
+   in the dav_explorer directory.
+   Note that the Makefile does not work under MS Windows. Instead, running the
+   make.bat file in the dav_explorer directory achieves the same result.
+   Under MS Windows, you can also run the DAVjar.bat file from the dav_explorer
+   directory to create the DAVExplorer.jar file.
    Under Unix, the DAVjar.sh shell script serves the same purpose.
 
 5. Run the DAV Explorer.
    Under MS Windows, run the DAVExplorer.bat file from the dav_explorer directory.
    Under Unix, run the DAVExplorer.sh shell script from the dav_explorer directory.
    You can also run DAVExplorer by using the command 'java -jar DAVExplorer.jar'.
-
 
