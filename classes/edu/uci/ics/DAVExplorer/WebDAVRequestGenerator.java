@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 1998-2004 Regents of the University of California.
+ * Copyright (c) 1998-2005 Regents of the University of California.
  * All rights reserved.
  *
  * This software was developed at the University of California, Irvine.
@@ -17,6 +17,25 @@
  * WARRANTIES OF MERCHANTIBILITY AND FITNESS FOR A PARTICULAR PURPOSE.
  */
 
+
+package edu.uci.ics.DAVExplorer;
+
+import java.util.Vector;
+import java.util.Enumeration;
+import java.util.StringTokenizer;
+import java.io.StringReader;
+import java.io.BufferedReader;
+import java.io.ByteArrayOutputStream;
+import java.io.File;
+import java.io.IOException;
+import HTTPClient.NVPair;
+import HTTPClient.Util;
+import com.ms.xml.om.Element;
+import com.ms.xml.om.Document;
+import com.ms.xml.util.XMLOutputStream;
+import com.ms.xml.util.Name;
+
+
 /**
  * Title:       WebDAVRequest Generator
  * Description: This is where all of the requests are formed. The class contains
@@ -24,7 +43,7 @@
  *              sends an event indicating that another resource has been
  *              selected it is properly handled by either
  *              tableSelectionChanged() or treeSelectionChanged()
- * Copyright:   Copyright (c) 1998-2004 Regents of the University of California. All rights reserved.
+ * Copyright:   Copyright (c) 1998-2005 Regents of the University of California. All rights reserved.
  * @author      Robert Emmery
  * @date        2 April 1998
  * @author      Yuzo Kanomata, Joachim Feise (dav-exp@ics.uci.edu)
@@ -55,29 +74,9 @@
  * @author      Joachim Feise (dav-exp@ics.uci.edu)
  * @date        08 February 2004
  * Changes:     Added Javadoc templates
- */
-
-package edu.uci.ics.DAVExplorer;
-
-import java.util.Vector;
-import java.util.Enumeration;
-import java.util.StringTokenizer;
-import java.io.StringReader;
-import java.io.BufferedReader;
-import java.io.ByteArrayOutputStream;
-import java.io.File;
-import java.io.IOException;
-import HTTPClient.NVPair;
-import HTTPClient.Util;
-import com.ms.xml.om.Element;
-import com.ms.xml.om.Document;
-import com.ms.xml.util.XMLOutputStream;
-import com.ms.xml.util.Name;
-
-
-/**
- * Here are the WebDAV requests formed. The class contains
- * static information needed to form all WebDAV requests.
+ * @author      Joachim Feise (dav-exp@ics.uci.edu)
+ * @date        10 February 2005
+ * Changes:     Some refactoring
  */
 public class WebDAVRequestGenerator implements Runnable
 {
@@ -99,7 +98,6 @@ public class WebDAVRequestGenerator implements Runnable
 
     protected WebDAVTreeNode Node = null;
     protected WebDAVTreeNode parentNode = null;
-
 
     protected boolean debugXML = false;
 
@@ -177,6 +175,11 @@ public class WebDAVRequestGenerator implements Runnable
     }
 
 
+    /**
+     * 
+     * @param resource
+     * @param fullPath
+     */
     public void DoPropFind( String resource, boolean fullPath )
     {
         String str = resource;
@@ -212,7 +215,11 @@ public class WebDAVRequestGenerator implements Runnable
         }
     }
 
-    
+
+    /**
+     * 
+     * @return
+     */
     protected String[] preparePropFind()
     {
         String[] props = new String[6];
@@ -729,6 +736,13 @@ public class WebDAVRequestGenerator implements Runnable
     }
 
 
+    /**
+     * 
+     * @param parent
+     * @param namespace
+     * @param props
+     * @param indent
+     */
     protected void addProperties( Element parent, AsGen namespace, String[] props, int indent )
     {
         Element propElem = WebDAVXML.createElement( WebDAVXML.ELEM_PROP, Element.ELEMENT, parent, namespace );

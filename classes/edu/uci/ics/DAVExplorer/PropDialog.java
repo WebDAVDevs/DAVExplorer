@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2001-2004 Regents of the University of California.
+ * Copyright (c) 2001-2005 Regents of the University of California.
  * All rights reserved.
  *
  * This software was developed at the University of California, Irvine.
@@ -17,19 +17,6 @@
  * WARRANTIES OF MERCHANTIBILITY AND FITNESS FOR A PARTICULAR PURPOSE.
  */
 
-/**
- * Title:       Property Dialog
- * Description: Dialog for viewing/modifying DAV properties
- * Copyright:   Copyright (c) 2001-2004 Regents of the University of California. All rights reserved.
- * @author      Joachim Feise (dav-exp@ics.uci.edu)
- * @date        29 September 2001
- * @author      Joachim Feise (dav-exp@ics.uci.edu)
- * @date        1 October 2001
- * Changes:     Change of package name
- * @author      Joachim Feise (dav-exp@ics.uci.edu)
- * @date        08 February 2004
- * Changes:     Added Javadoc templates
- */
 
 package edu.uci.ics.DAVExplorer;
 
@@ -54,13 +41,27 @@ import com.ms.xml.om.Element;
 
 
 /**
- * 
+ * Title:       Property Dialog
+ * Description: Dialog for viewing/modifying DAV properties
+ * Copyright:   Copyright (c) 2001-2005 Regents of the University of California. All rights reserved.
+ * @author      Joachim Feise (dav-exp@ics.uci.edu)
+ * @date        29 September 2001
+ * @author      Joachim Feise (dav-exp@ics.uci.edu)
+ * @date        1 October 2001
+ * Changes:     Change of package name
+ * @author      Joachim Feise (dav-exp@ics.uci.edu)
+ * @date        08 February 2004
+ * Changes:     Added Javadoc templates
+ * @author      Joachim Feise (dav-exp@ics.uci.edu)
+ * @date        14 February 2005
+ * Changes:     Some refactoring
  */
 public class PropDialog extends JDialog
     implements ActionListener, ChangeListener, ListSelectionListener, WebDAVCompletionListener
 {
     /**
      * Constructor
+     * 
      * @param properties
      * @param resource
      * @param hostname
@@ -79,6 +80,16 @@ public class PropDialog extends JDialog
     }
 
 
+    /**
+     * Constructor
+     * 
+     * @param properties
+     * @param resource
+     * @param hostname
+     * @param title
+     * @param locktoken
+     * @param changeable
+     */
     public PropDialog( Element properties, String resource, String hostname, String title, String locktoken, boolean changeable )
     {
         super( GlobalData.getGlobalData().getMainFrame() );
@@ -91,6 +102,15 @@ public class PropDialog extends JDialog
     }
 
 
+    /**
+     * Constructor
+     * 
+     * @param model
+     * @param resource
+     * @param hostname
+     * @param locktoken
+     * @param changeable
+     */
     public PropDialog( PropModel model, String resource, String hostname, String locktoken, boolean changeable )
     {
         super( GlobalData.getGlobalData().getMainFrame() );
@@ -102,6 +122,16 @@ public class PropDialog extends JDialog
     }
 
 
+    /**
+     * Constructor
+     * 
+     * @param model
+     * @param resource
+     * @param hostname
+     * @param title
+     * @param locktoken
+     * @param changeable
+     */
     public PropDialog( PropModel model, String resource, String hostname, String title, String locktoken, boolean changeable )
     {
         super( GlobalData.getGlobalData().getMainFrame() );
@@ -113,12 +143,24 @@ public class PropDialog extends JDialog
     }
 
 
+    /**
+     * Constructor
+     */
     protected PropDialog()
     {
         super( GlobalData.getGlobalData().getMainFrame() );
     }
 
-    
+
+    /**
+     * 
+     * @param model
+     * @param resource
+     * @param hostname
+     * @param title
+     * @param locktoken
+     * @param changeable
+     */
     protected void init( PropModel model, String resource, String hostname, String title, String locktoken, boolean changeable )
     {
         this.changeable = changeable;

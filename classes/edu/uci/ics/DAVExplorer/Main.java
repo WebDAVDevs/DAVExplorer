@@ -77,6 +77,9 @@
  * @author      Joachim Feise (dav-exp@ics.uci.edu)
  * @date        08 February 2004
  * Changes:     Added Javadoc templates
+ * @author      Joachim Feise (dav-exp@ics.uci.edu)
+ * @date        15 February 2005
+ * Changes:     Added support for the WebDAV Access Control Protocol (RFC 3744)
  */
 
 
@@ -1212,7 +1215,8 @@ public class Main extends JFrame
                         requestGenerator.execute();
                     break;
                 }
-                
+
+                /* ACL, RFC 3744 Section 5.1 */
                 case WebDAVMenu.VIEW_OWNER:
                 {
                     String s = fileView.getSelected();
@@ -1227,6 +1231,7 @@ public class Main extends JFrame
                     break;
                 }
                 
+                /* ACL, RFC 3744 Section 5.2 */
                 case WebDAVMenu.VIEW_GROUP:
                 {
                     String s = fileView.getSelected();
@@ -1241,6 +1246,7 @@ public class Main extends JFrame
                     break;
                 }
                 
+                /* ACL, RFC 3744 Section 5.4 */
                 case WebDAVMenu.GET_USER_PRIVILEGES:
                 {
                     String s = fileView.getSelected();
@@ -1255,6 +1261,7 @@ public class Main extends JFrame
                     break;
                 }
                 
+                /* ACL, RFC 3744 Section 5.5 */
                 case WebDAVMenu.VIEW_ACL:
                 {
                     String s = fileView.getSelected();
@@ -1269,6 +1276,7 @@ public class Main extends JFrame
                     break;
                 }
 
+                /* ACL, RFC 3744 Section 5.3 */
                 case WebDAVMenu.GET_SUPPORTED_ACL:
                 {
                     String s = fileView.getSelected();
@@ -1283,6 +1291,7 @@ public class Main extends JFrame
                     break;
                 }
                 
+                /* ACL, RFC 3744 Section 5.7 */
                 case WebDAVMenu.GET_INHERITED_ACL:
                 {
                     String s = fileView.getSelected();
@@ -1297,6 +1306,7 @@ public class Main extends JFrame
                     break;
                 }
 
+                /* ACL, RFC 3744 Section 9.2 */
                 case WebDAVMenu.ACL_PRINCIPAL_PROP_SET_REPORT:
                 {
                     String s = fileView.getSelected();
@@ -1317,6 +1327,7 @@ public class Main extends JFrame
                     break;
                 }
                 
+                /* ACL, RFC 3744 Section 9.3 */
                 case WebDAVMenu.PRINCIPAL_MATCH_REPORT:
                 {
                     String s = fileView.getSelected();
@@ -1338,6 +1349,7 @@ public class Main extends JFrame
                     break;
                 }
                 
+                /* ACL, RFC 3744 Section 9.4 */
                 case WebDAVMenu.PRINCIPAL_PROPERTY_SEARCH_REPORT:
                 {
                     String s = fileView.getSelected();
@@ -1359,6 +1371,7 @@ public class Main extends JFrame
                     break;
                 }
                 
+                /* ACL, RFC 3744 Section 9.5 */
                 case WebDAVMenu.PRINCIPAL_SEARCH_PROPERTY_SET_REPORT:
                 {
                     String s = fileView.getSelected();

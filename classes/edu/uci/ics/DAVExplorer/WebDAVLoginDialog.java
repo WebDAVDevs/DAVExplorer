@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 1998-2004 Regents of the University of California.
+ * Copyright (c) 1998-2005 Regents of the University of California.
  * All rights reserved.
  *
  * This software was developed at the University of California, Irvine.
@@ -17,6 +17,26 @@
  * WARRANTIES OF MERCHANTIBILITY AND FITNESS FOR A PARTICULAR PURPOSE.
  */
 
+
+package edu.uci.ics.DAVExplorer;
+
+import javax.swing.JDialog;
+import javax.swing.JPanel;
+import javax.swing.JLabel;
+import javax.swing.JTextField;
+import javax.swing.JPasswordField;
+import javax.swing.JButton;
+import java.util.Vector;
+import java.awt.Color;
+import java.awt.Cursor;
+import java.awt.GridBagLayout;
+import java.awt.GridBagConstraints;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+import javax.swing.event.DocumentEvent;
+import javax.swing.event.DocumentListener;
+
+
 /**
  * Title:       Login Dialog
  * Description: This class causes a login dialog box to appear.  The purpose
@@ -25,7 +45,7 @@
  *              This class DOES NOT authenticate users at this time. It is in
  *              place as a UI component which may be fully integrated in an
  *              authentication scheme at some future point.
- * Copyright:   Copyright (c) 1998-2004 Regents of the University of California. All rights reserved.
+ * Copyright:   Copyright (c) 1998-2005 Regents of the University of California. All rights reserved.
  * @author      Gerair D. Balian (dav-exp@ics.uci.edu)
  * @date        3 March 1998
  * @author      Yuzo Kanomata, Joachim Feise (dav-exp@ics.uci.edu)
@@ -56,29 +76,9 @@
  * @author      Joachim Feise (dav-exp@ics.uci.edu)
  * @date        08 February 2004
  * Changes:     Added Javadoc templates
- */
-
-package edu.uci.ics.DAVExplorer;
-
-import javax.swing.JDialog;
-import javax.swing.JPanel;
-import javax.swing.JLabel;
-import javax.swing.JTextField;
-import javax.swing.JPasswordField;
-import javax.swing.JButton;
-import java.util.Vector;
-import java.awt.Color;
-import java.awt.Cursor;
-import java.awt.GridBagLayout;
-import java.awt.GridBagConstraints;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
-import javax.swing.event.DocumentEvent;
-import javax.swing.event.DocumentListener;
-
-
-/**
- * 
+ * @author      Joachim Feise (dav-exp@ics.uci.edu)
+ * @date        8 February 2005
+ * Changes:     Some refactoring
  */
 public class WebDAVLoginDialog extends JDialog implements ActionListener, DocumentListener
 {

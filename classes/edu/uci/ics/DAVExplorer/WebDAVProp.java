@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 1998-2004 Regents of the University of California.
+ * Copyright (c) 1998-2005 Regents of the University of California.
  * All rights reserved.
  *
  * This software was developed at the University of California, Irvine.
@@ -17,22 +17,6 @@
  * WARRANTIES OF MERCHANTIBILITY AND FITNESS FOR A PARTICULAR PURPOSE.
  */
 
-/**
- * Title:       WebDAV Properties
- * Description: Simple list of all DAV: properties
- *              listed in section 12 of .07 spec
- * Copyright:   Copyright (c) 1998-2004 Regents of the University of California. All rights reserved.
- * @author      Undergraduate project team ICS 126B 1998
- * @date        1998
- * @author      Yuzo Kanomata, Joachim Feise (dav-exp@ics.uci.edu)
- * @date        17 March 1999
- * @author      Joachim Feise (dav-exp@ics.uci.edu)
- * @date        1 October 2001
- * Changes:     Change of package name
- * @author      Joachim Feise (dav-exp@ics.uci.edu)
- * @date        08 February 2004
- * Changes:     Added Javadoc templates
- */
 
 package edu.uci.ics.DAVExplorer;
 
@@ -45,7 +29,23 @@ import com.ms.xml.util.Name;
 
 
 /**
- * 
+ * Title:       WebDAV Properties
+ * Description: Simple list of all DAV: properties
+ *              listed in section 12 of .07 spec
+ * Copyright:   Copyright (c) 1998-2005 Regents of the University of California. All rights reserved.
+ * @author      Undergraduate project team ICS 126B 1998
+ * @date        1998
+ * @author      Yuzo Kanomata, Joachim Feise (dav-exp@ics.uci.edu)
+ * @date        17 March 1999
+ * @author      Joachim Feise (dav-exp@ics.uci.edu)
+ * @date        1 October 2001
+ * Changes:     Change of package name
+ * @author      Joachim Feise (dav-exp@ics.uci.edu)
+ * @date        08 February 2004
+ * Changes:     Added Javadoc templates
+ * @author      Joachim Feise (dav-exp@ics.uci.edu)
+ * @date        10 February 2005
+ * Changes:     Minor cleanup, javadocs
  */
 public class WebDAVProp
 {
@@ -72,8 +72,50 @@ public class WebDAVProp
 
 
     /**
+     * Constructor
      * 
+     * @param tag
+     *      the tag name
+     * @param value
+     *      the value (for tags like <tag>value</tag>
+     * @param schema
+     *      the namespace
+     */
+    public WebDAVProp( String tag, String value, String schema )
+    {
+        this.tag = tag;
+        this.value = value;
+        this.schema = schema;
+        this.children = null;
+        this.leaf = true;
+    }
+
+
+    /**
+     * Constructor
+     * 
+     * @param tag
+     *      the tag name
+     * @param schema
+     *      the namespace
+     * @param children
+     *      child tags, e.g., <parent><child1/><child2>value</child2></parent>
+     */
+    public WebDAVProp( String tag, String schema, WebDAVProp[] children )
+    {
+        this.tag = tag;
+        this.value = null;
+        this.schema = schema;
+        this.children = children;
+        this.leaf = false;
+    }
+
+
+    /**
+     * Get an enumeration of all WebDAV properties.
+     *  
      * @return
+     *      an emumeration of all WebDAV properties
      */
     public static Enumeration getDavProps()
     {
@@ -96,10 +138,15 @@ public class WebDAVProp
 
 
     /**
-     * 
+     * Find a namespace declaration within the XML tree by walking
+     * the tree towards the root.
+     *  
      * @param parent
+     *      the tree element to start walking 
      * @param tagname
+     *      the desired namespace
      * @return
+     *      a string containing the namespace 
      * 
      * Namespace Handling
      * Unfortunately, the 1997-era Microsoft parser does not properly
@@ -136,40 +183,10 @@ public class WebDAVProp
 
 
     /**
-     * Constructor
-     * @param tag
-     * @param value
-     * @param schema
-     */
-    public WebDAVProp( String tag, String value, String schema )
-    {
-        this.tag = tag;
-        this.value = value;
-        this.schema = schema;
-        this.children = null;
-        this.leaf = true;
-    }
-
-
-    /**
-     * Constructor
-     * @param tag
-     * @param schema
-     * @param children
-     */
-    public WebDAVProp( String tag, String schema, WebDAVProp[] children )
-    {
-        this.tag = tag;
-        this.value = null;
-        this.schema = schema;
-        this.children = children;
-        this.leaf = false;
-    }
-
-
-    /**
-     * 
+     * Get the tag name.
+     *  
      * @return
+     *      the tag name
      */
     public String getTag()
     {
@@ -178,8 +195,10 @@ public class WebDAVProp
 
 
     /**
+     * Get the value.
      * 
      * @return
+     *  the value string
      */
     public String getValue()
     {
@@ -188,8 +207,10 @@ public class WebDAVProp
 
 
     /**
+     * Get the namespace.
      * 
      * @return
+     *      the namespace string
      */
     public String getSchema()
     {
@@ -198,8 +219,10 @@ public class WebDAVProp
 
 
     /**
+     * Check if this tag has children.
      * 
      * @return
+     *      true if this tag is a leaf node, false else
      */
     public boolean isLeaf()
     {
@@ -208,8 +231,10 @@ public class WebDAVProp
 
 
     /**
+     * Get all children of this tag.
      * 
      * @return
+     *      an array of tags
      */
     public WebDAVProp[] getChildren()
     {

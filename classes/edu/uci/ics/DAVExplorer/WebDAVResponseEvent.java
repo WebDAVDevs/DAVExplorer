@@ -17,6 +17,13 @@
  * WARRANTIES OF MERCHANTIBILITY AND FITNESS FOR A PARTICULAR PURPOSE.
  */
 
+
+package edu.uci.ics.DAVExplorer;
+
+import java.util.EventObject;
+import HTTPClient.HTTPResponse;
+
+
 /**
  * Title:       WebDAVResponseEvent
  * Description: The event object sent for responses from the server
@@ -31,16 +38,9 @@
  * @author      Joachim Feise (dav-exp@ics.uci.edu)
  * @date        08 February 2004
  * Changes:     Added Javadoc templates
- */
-
-package edu.uci.ics.DAVExplorer;
-
-import java.util.EventObject;
-import HTTPClient.HTTPResponse;
-
-
-/**
- * 
+ * @author      Joachim Feise (dav-exp@ics.uci.edu)
+ * @date        8 February 2005
+ * Changes:     Added ACL-specific fields
  */
 public class WebDAVResponseEvent extends EventObject
 {
@@ -79,6 +79,7 @@ public class WebDAVResponseEvent extends EventObject
     public static final int PRINCIPAL_MATCH = 81;
     public static final int PRINCIPAL_PROPERTY_SEARCH = 82;
     public static final int PRINCIPAL_SEARCH_PROPERTY_SET = 83;
+
 
     /**
      * Constructor

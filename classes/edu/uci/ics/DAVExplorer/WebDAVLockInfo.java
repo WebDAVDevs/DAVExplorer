@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 1998-2004 Regents of the University of California.
+ * Copyright (c) 1998-2005 Regents of the University of California.
  * All rights reserved.
  *
  * This software was developed at the University of California, Irvine.
@@ -17,10 +17,26 @@
  * WARRANTIES OF MERCHANTIBILITY AND FITNESS FOR A PARTICULAR PURPOSE.
  */
 
+
+package edu.uci.ics.DAVExplorer;
+
+import javax.swing.JFrame;
+import javax.swing.JPanel;
+import javax.swing.JLabel;
+import javax.swing.JTextField;
+import javax.swing.JButton;
+import java.util.Vector;
+import java.awt.Dialog;
+import java.awt.GridLayout;
+import java.awt.BorderLayout;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+
+
 /**
  * Title:       WebDAVLockInfo
  * Description: Dialog to enter the lock owner info
- * Copyright:   Copyright (c) 1998-2004 Regents of the University of California. All rights reserved.
+ * Copyright:   Copyright (c) 1998-2005 Regents of the University of California. All rights reserved.
  * @author      Robert Emmery (dav-exp@ics.uci.edu)
  * @date        2 April 1998
  * @author      Yuzo Kanomata, Joachim Feise (dav-exp@ics.uci.edu)
@@ -43,25 +59,9 @@
  * @author      Joachim Feise (dav-exp@ics.uci.edu)
  * @date        08 February 2004
  * Changes:     Added Javadoc templates
- */
-
-package edu.uci.ics.DAVExplorer;
-
-import javax.swing.JFrame;
-import javax.swing.JPanel;
-import javax.swing.JLabel;
-import javax.swing.JTextField;
-import javax.swing.JButton;
-import java.util.Vector;
-import java.awt.Dialog;
-import java.awt.GridLayout;
-import java.awt.BorderLayout;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
-
-
-/**
- * 
+ * @author      Joachim Feise (dav-exp@ics.uci.edu)
+ * @date        8 February 2005
+ * Changes:     Some refactoring
  */
 public class WebDAVLockInfo extends Dialog implements ActionListener
 {
@@ -73,6 +73,7 @@ Public methods and attributes section
 
     /**
      * Constructor
+     * 
      * @param parent
      * @param strCaption
      * @param isModal
@@ -153,8 +154,6 @@ Public methods and attributes section
 /*-----------------------------------------------------------------------
 Protected methods and attributes section
 -----------------------------------------------------------------------*/
-
-
     protected JTextField txtLockname;
     protected JButton okButton;
 }

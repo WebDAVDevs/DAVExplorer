@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2001-2004 Regents of the University of California.
+ * Copyright (c) 2001-2005 Regents of the University of California.
  * All rights reserved.
  *
  * This software was developed at the University of California, Irvine.
@@ -17,16 +17,6 @@
  * WARRANTIES OF MERCHANTIBILITY AND FITNESS FOR A PARTICULAR PURPOSE.
  */
 
-/**
- * Title:       Property Node
- * Description: Nodes for the property tree
- * Copyright:   Copyright (c) 2001-2004 Regents of the University of California. All rights reserved.
- * @author      Joachim Feise (dav-exp@ics.uci.edu)
- * @date        5 October 2001
- * @author      Joachim Feise (dav-exp@ics.uci.edu)
- * @date        08 February 2004
- * Changes:     Added Javadoc templates
- */
 
 package edu.uci.ics.DAVExplorer;
 
@@ -35,7 +25,17 @@ import java.util.Vector;
 
 
 /**
- * 
+ * Title:       Property Node
+ * Description: Nodes for the property tree
+ * Copyright:   Copyright (c) 2001-2005 Regents of the University of California. All rights reserved.
+ * @author      Joachim Feise (dav-exp@ics.uci.edu)
+ * @date        5 October 2001
+ * @author      Joachim Feise (dav-exp@ics.uci.edu)
+ * @date        08 February 2004
+ * Changes:     Added Javadoc templates
+ * @author      Joachim Feise (dav-exp@ics.uci.edu)
+ * @date        4 February 2005
+ * Changes:     Some refactoring
  */
 public class PropNode
 {

@@ -17,9 +17,22 @@
  * WARRANTIES OF MERCHANTIBILITY AND FITNESS FOR A PARTICULAR PURPOSE.
  */
 
+
+package edu.uci.ics.DAVExplorer;
+
+import javax.swing.JMenu;
+import javax.swing.JMenuItem;
+import javax.swing.JCheckBoxMenuItem;
+import javax.swing.JMenuBar;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+import java.util.Vector;
+
+
 /**
  * Title:       WebDAVMenu
- * Description: Main menu class
+ * Description: This class creates the menus to be used in the application
+ * as well as the event handling for each of the items built in.
  * Copyright:   Copyright (c) 1998-2005 Regents of the University of California. All rights reserved.
  * @author      Undergraduate project team ICS 126B 1998
  * @date        1998
@@ -55,23 +68,9 @@
  * @author      Joachim Feise (dav-exp@ics.uci.edu)
  * @date        08 February 2004
  * Changes:     Added Javadoc templates
- */
-
-package edu.uci.ics.DAVExplorer;
-
-import javax.swing.JMenu;
-import javax.swing.JMenuItem;
-import javax.swing.JCheckBoxMenuItem;
-import javax.swing.JMenuBar;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
-import java.util.Vector;
-
-
-/**
- *This class creates the menus to be used in the application
- * as well as the event handling for each of the items
- * built in.
+ * @author      Joachim Feise (dav-exp@ics.uci.edu)
+ * @date        10 February 2005
+ * Changes:     Added ACL menus
  */
 public class WebDAVMenu extends JMenuBar implements ActionListener
 {

@@ -27,11 +27,11 @@ import com.ms.xml.util.Name;
 
 
 /**
- * Title:       
- * Description: 
+ * Title:       Principal properties model
+ * Description: Datamodel for showing principals
  * Copyright:   Copyright (c) 2005 Regents of the University of California. All rights reserved.
  * @author      Joachim Feise (dav-exp@ics.uci.edu)
- * @date        
+ * @date        14 Feb 2005
  */
 public class PrincipalPropertiesModel extends PropModel
 {
@@ -78,7 +78,7 @@ public class PrincipalPropertiesModel extends PropModel
     {
         if( GlobalData.getGlobalData().getDebugResponse() )
         {
-            System.err.println( "PropModel::parseProperties" );
+            System.err.println( "PrincipalPropertiesModel::parseProperties" );
         }
 
         if( properties != null )

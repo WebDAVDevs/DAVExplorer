@@ -17,6 +17,32 @@
  * WARRANTIES OF MERCHANTIBILITY AND FITNESS FOR A PARTICULAR PURPOSE.
  */
 
+
+package edu.uci.ics.DAVExplorer;
+
+import javax.swing.JOptionPane;
+import javax.swing.tree.DefaultMutableTreeNode;
+import java.awt.FileDialog;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+import java.util.Vector;
+import java.util.Enumeration;
+import java.util.StringTokenizer;
+import java.io.File;
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import HTTPClient.HTTPResponse;
+import HTTPClient.ModuleException;
+import com.ms.xml.om.Element;
+import com.ms.xml.om.ElementImpl;
+import com.ms.xml.om.Document;
+import com.ms.xml.om.TreeEnumeration;
+import com.ms.xml.om.SiblingEnumeration;
+import com.ms.xml.util.XMLOutputStream;
+import com.ms.xml.util.Name;
+
 /**
  * Title:       WebDAVResponse Interpreter
  * Description: This is the interpreter module that parses WebDAV responses.
@@ -52,37 +78,6 @@
  * @author      Joachim Feise (dav-exp@ics.uci.edu)
  * @date        08 February 2004
  * Changes:     Added Javadoc templates
- */
-
-package edu.uci.ics.DAVExplorer;
-
-import javax.swing.JOptionPane;
-import javax.swing.tree.DefaultMutableTreeNode;
-import java.awt.FileDialog;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
-import java.util.Vector;
-import java.util.Enumeration;
-import java.util.StringTokenizer;
-import java.io.File;
-import java.io.ByteArrayInputStream;
-import java.io.ByteArrayOutputStream;
-import java.io.FileOutputStream;
-import java.io.IOException;
-import HTTPClient.HTTPResponse;
-import HTTPClient.ModuleException;
-import com.ms.xml.om.Element;
-import com.ms.xml.om.ElementImpl;
-import com.ms.xml.om.Document;
-import com.ms.xml.om.TreeEnumeration;
-import com.ms.xml.om.SiblingEnumeration;
-import com.ms.xml.util.XMLOutputStream;
-import com.ms.xml.util.Name;
-
-/**
- * This is the interpreter module that parses WebDAV responses.
- * Some of the methods are not parsed, and the functions are left
- * empty intentionally.
  */
 public class WebDAVResponseInterpreter
 {

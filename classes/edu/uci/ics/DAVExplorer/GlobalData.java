@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 1999-2004 Regents of the University of California.
+ * Copyright (c) 1999-2005 Regents of the University of California.
  * All rights reserved.
  *
  * This software was developed at the University of California, Irvine.
@@ -17,11 +17,37 @@
  * WARRANTIES OF MERCHANTIBILITY AND FITNESS FOR A PARTICULAR PURPOSE.
  */
 
+
+package edu.uci.ics.DAVExplorer;
+
+import java.awt.Cursor;
+import java.awt.Rectangle;
+import java.awt.Dialog;
+
+import javax.swing.JFrame;
+import javax.swing.JOptionPane;
+import javax.swing.ImageIcon;
+import java.util.StringTokenizer;
+import java.util.Vector;
+import java.io.BufferedReader;
+import java.io.BufferedWriter;
+import java.io.InputStreamReader;
+import java.io.OutputStreamWriter;
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
+import java.io.InputStream;
+import java.io.File;
+import java.io.IOException;
+import java.io.UnsupportedEncodingException;
+
+
 /**
  * Title:       GlobalData
  * Description: This singleton class defines various global data structures
  *              and functions useful everywhere
- * Copyright:   Copyright (c) 1999-2004 Regents of the University of California. All rights reserved.
+ * Copyright:   Copyright (c) 1999-2005 Regents of the University of California. All rights reserved.
  * @author      Joachim Feise (dav-exp@ics.uci.edu)
  * @date        1999
  * @author      Joachim Feise (dav-exp@ics.uci.edu)
@@ -58,37 +84,10 @@
  * @author      Joachim Feise (dav-exp@ics.uci.edu)
  * @date        09 February 2004
  * Changes:     Improved unescaping
- */
-
-package edu.uci.ics.DAVExplorer;
-
-import java.awt.Cursor;
-import java.awt.Rectangle;
-import java.awt.Dialog;
-
-import javax.swing.JFrame;
-import javax.swing.JOptionPane;
-import javax.swing.ImageIcon;
-import java.util.StringTokenizer;
-import java.util.Vector;
-import java.io.BufferedReader;
-import java.io.BufferedWriter;
-import java.io.InputStreamReader;
-import java.io.OutputStreamWriter;
-import java.io.ByteArrayInputStream;
-import java.io.ByteArrayOutputStream;
-import java.io.FileInputStream;
-import java.io.FileOutputStream;
-import java.io.InputStream;
-import java.io.File;
-import java.io.IOException;
-import java.io.UnsupportedEncodingException;
-
-
-/**
- * This singleton class defines various global data structures
- * and functions useful everywhere.
- */
+  * @author      Joachim Feise (dav-exp@ics.uci.edu)
+ * @date        14 February 2005
+ * Changes:     Moved center function here
+*/
 class GlobalData
 {
     /** Debug variables */
