@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2004 Regents of the University of California.
+ * Copyright (C) 2004-2005 Regents of the University of California.
  * All rights reserved.
  *
  * This software was developed at the University of California, Irvine.
@@ -23,7 +23,7 @@ import java.util.Vector;
 /**
  * Title:       
  * Description: 
- * Copyright:   Copyright (c) 2004 Regents of the University of California. All rights reserved.
+ * Copyright:   Copyright (c) 2004-2005 Regents of the University of California. All rights reserved.
  * @author      Joachim Feise (dav-exp@ics.uci.edu)
  * @date        
  */

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 1998-2004 Regents of the University of California.
+ * Copyright (c) 1998-2005 Regents of the University of California.
  * All rights reserved.
  *
  * This software was developed at the University of California, Irvine.
@@ -23,7 +23,7 @@
  *              instantiates the Main JFrame.
  *              The Main class creates the user interface and adds the appropriate
  *              listeners.
- * Copyright:   Copyright (c) 1998-2004 Regents of the University of California. All rights reserved.
+ * Copyright:   Copyright (c) 1998-2005 Regents of the University of California. All rights reserved.
  * @author      Robert Emmery (dav-exp@ics.uci.edu)
  * @date        2 April 1998
  * @author      Yuzo Kanomata, Joachim Feise (dav-exp@ics.uci.edu)
@@ -116,7 +116,7 @@ public class Main extends JFrame
 {
     public final static String VERSION = "0.91-dev";
     public final static String UserAgent = "UCI DAV Explorer/" + VERSION;
-    public final static String COPYRIGHT = "Copyright (c) 1998-2004 Regents of the University of California";
+    public final static String COPYRIGHT = "Copyright (c) 1998-2005 Regents of the University of California";
     public final static String EMAIL = "EMail: dav-exp@ics.uci.edu";
 
 

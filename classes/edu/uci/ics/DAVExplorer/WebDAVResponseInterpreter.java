@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 1998-2004 Regents of the University of California.
+ * Copyright (c) 1998-2005 Regents of the University of California.
  * All rights reserved.
  *
  * This software was developed at the University of California, Irvine.
@@ -22,7 +22,7 @@
  * Description: This is the interpreter module that parses WebDAV responses.
  *              Some of the methods are not parsed, and the functions are left
  *              empty intentionally.
- * Copyright:   Copyright (c) 1998-2004 Regents of the University of California. All rights reserved.
+ * Copyright:   Copyright (c) 1998-2005 Regents of the University of California. All rights reserved.
  * @author      Robert Emmery
  * @date        2 April 1998
  * @author      Yuzo Kanomata, Joachim Feise (dav-exp@ics.uci.edu)

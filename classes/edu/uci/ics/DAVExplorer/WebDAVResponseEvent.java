@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 1998-2004 Regents of the University of California.
+ * Copyright (c) 1998-2005 Regents of the University of California.
  * All rights reserved.
  *
  * This software was developed at the University of California, Irvine.
@@ -20,7 +20,7 @@
 /**
  * Title:       WebDAVResponseEvent
  * Description: The event object sent for responses from the server
- * Copyright:   Copyright (c) 1998-2004 Regents of the University of California. All rights reserved.
+ * Copyright:   Copyright (c) 1998-2005 Regents of the University of California. All rights reserved.
  * @author      Undergraduate project team ICS 126B 1998
  * @date        1998
  * @author      Yuzo Kanomata, Joachim Feise (dav-exp@ics.uci.edu)

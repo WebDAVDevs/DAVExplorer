@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2001-2004 Regents of the University of California.
+ * Copyright (c) 2001-2005 Regents of the University of California.
  * All rights reserved.
  *
  * This software was developed at the University of California, Irvine.
@@ -20,7 +20,7 @@
 /**
  * Title:       Property Model
  * Description: Models the hierarchical nature of WebDAV properties
- * Copyright:   Copyright (c) 2001-2004 Regents of the University of California. All rights reserved.
+ * Copyright:   Copyright (c) 2001-2005 Regents of the University of California. All rights reserved.
  * @author      Joachim Feise (dav-exp@ics.uci.edu)
  * @date        29 September 2001
  *

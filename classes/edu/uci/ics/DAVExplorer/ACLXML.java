@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2004 Regents of the University of California.
+ * Copyright (C) 2004-2005 Regents of the University of California.
  * All rights reserved.
  *
  * This software was developed at the University of California, Irvine.
@@ -21,9 +21,9 @@
  * Title:       ACLXML
  * Description: Defines the needed Generic ACL XML Elements from RFC 3744
  *              Updated as necessary.
- * Copyright:   Copyright (c) 2004 Regents of the University of California. All rights reserved.
+ * Copyright:   Copyright (c) 2004-2005 Regents of the University of California. All rights reserved.
  * @author      Joachim Feise (dav-exp@ics.uci.edu)
- * @date        
+ * @date        December 2004
  */
 
 package edu.uci.ics.DAVExplorer;
