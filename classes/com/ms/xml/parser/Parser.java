@@ -743,7 +743,11 @@ public class Parser
 
         if (lookahead < 256)
         {
-            startname = (chartype[lookahead] & (FLETTER | FSTARTNAME)) != 0;
+            // Joachim Feise (jfeise@ics.uci.edu) 2001 July 25:
+            // Allowing digits in tag names to fix an interoperability problem
+            // with Microsoft's SharePoint DAV Server
+            //startname = (chartype[lookahead] & (FLETTER | FSTARTNAME)) != 0;
+            startname = (chartype[lookahead] & (FLETTER | FDIGIT | FSTARTNAME)) != 0;
         }
         else
         {
@@ -2647,7 +2651,8 @@ public class Parser
         {
             try
             {
-                setInputStream( new BufferedInputStream(url.openStream()));
+//                setInputStream( new BufferedInputStream(url.openStream()));
+                setInputStream( new BufferedInputStream(url.openStream(), 20000 ));
             }
             catch (IOException e)
             {
@@ -2724,7 +2729,8 @@ public class Parser
     /**
      * chars collected up to 8K
      */
-    char chars[] = new char[8192];
+//    char chars[] = new char[8192];
+    char chars[] = new char[20000];
 
     /**
      * char index into chars[]
@@ -2734,7 +2740,8 @@ public class Parser
     /**
      * buf collected up to 8K
      */
-    char buf[] = new char[8192];
+//    char buf[] = new char[8192];
+    char buf[] = new char[20000];
 
     /**
      * char index into buf[]
