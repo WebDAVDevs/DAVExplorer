@@ -122,6 +122,10 @@ Thanks to everybody.
 
 6. CHANGELOG
 
+Changes for version 0.83-dev:
+- Bug fix in HTTPClient for PUT with Stream and Digest authentication
+- Right view now works when columns are reorganized
+
 Changes for version 0.82:
 - Made sure that DAV Explorer runs with JDK 1.1.x, for MacOS 9 compatibility
 - Updated to run with JDK 1.4
