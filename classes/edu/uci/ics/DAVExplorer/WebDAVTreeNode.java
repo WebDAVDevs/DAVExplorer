@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 1999-2000 Regents of the University of California.
+ * Copyright (c) 1999-2001 Regents of the University of California.
  * All rights reserved.
  *
  * This software was developed at the University of California, Irvine.
@@ -48,6 +48,9 @@
 //      avoid parsing the wrong href tag (thanks to Michelle Harris for
 //      alerting us to this problem)
 //   Fixed string comparison in case of multiple <propstat> tags
+//
+// Date: 2001-Jan-12
+// Joe Feise: Added support for https (SSL)
 
 package DAVExplorer;
 
@@ -63,8 +66,8 @@ import com.ms.xml.util.*;
 public class WebDAVTreeNode extends DefaultMutableTreeNode
 {
     protected boolean hasLoaded = false;
-    protected final static String WebDAVPrefix = "http://";
     protected final static String HTTPPrefix = "http://";
+    protected final static String HTTPSPrefix = "https://";
     protected final static String WebDAVRoot = "DAV Explorer";
     protected DataNode dataNode;
     protected static WebDAVRequestGenerator generator = new WebDAVRequestGenerator();
@@ -298,7 +301,12 @@ public class WebDAVTreeNode extends DefaultMutableTreeNode
                 int pathLen = getPath().length;
                 String hostName = resName;
                 if (pathLen == 2)
-                    hostName = WebDAVPrefix + interpreter.getHost() + "/" + ResourceName;
+                {
+                    if( GlobalData.getGlobalData().doSSL() )
+                        hostName = HTTPSPrefix + interpreter.getHost() + "/" + ResourceName;
+                    else
+                        hostName = HTTPPrefix + interpreter.getHost() + "/" + ResourceName;
+                }
                 // update node values
                 dataNode = new DataNode( node.isCollection(), node.isLocked(), node.getLockToken(),
                                          hostName, node.getDisplay(), node.getType(), node.getSize(),
@@ -491,7 +499,7 @@ public class WebDAVTreeNode extends DefaultMutableTreeNode
             return;
 
         String name = full_path[1].toString();
-        if (name.startsWith(WebDAVPrefix))
+        if( name.startsWith(HTTPPrefix) || name.startsWith(HTTPSPrefix) )
         {
         localLoad = false;
 
@@ -617,7 +625,10 @@ public class WebDAVTreeNode extends DefaultMutableTreeNode
             System.err.println( "WebDAVTreeNode::truncateResource" );
         }
 
-        int pos = res.indexOf(HTTPPrefix);
+        int pos = res.indexOf(HTTPSPrefix);
+        if (pos >= 0)
+            res = res.substring(HTTPSPrefix.length());
+        pos = res.indexOf(HTTPPrefix);
         if (pos >= 0)
             res = res.substring(HTTPPrefix.length());
         pos = res.indexOf("/");
@@ -642,7 +653,10 @@ public class WebDAVTreeNode extends DefaultMutableTreeNode
             System.err.println( "WebDAVTreeNode::getFullResource" );
         }
 
-        int pos = res.indexOf(HTTPPrefix);
+        int pos = res.indexOf(HTTPSPrefix);
+        if (pos >= 0)
+            res = res.substring(HTTPSPrefix.length());
+        pos = res.indexOf(HTTPPrefix);
         if (pos >= 0)
             res = res.substring(HTTPPrefix.length());
         pos = res.indexOf("/");

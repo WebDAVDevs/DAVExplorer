@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 1999 Regents of the University of California.
+ * Copyright (c) 1999-2001 Regents of the University of California.
  * All rights reserved.
  *
  * This software was developed at the University of California, Irvine.
@@ -42,6 +42,9 @@
 //
 // Change List:
 //   Added notification for IO exceptions during connect
+//
+// Date: 2001-Jan-12
+// Joe Feise: Added support for https (SSL)
 
 package DAVExplorer;
 
@@ -80,18 +83,31 @@ public class WebDAVManager
         if( ((TempHost!=null) && (TempHost.length()>0) && !TempHost.equals(HostName))
             || (TempPort!=Port) )
         {
-            HostName = TempHost;
-            if (TempPort != 0)
+            try
             {
-                Port = TempPort;
-                Con = new WebDAVConnection(HostName, Port);
+                HostName = TempHost;
+                if (TempPort != 0)
+                {
+                    Port = TempPort;
+                    if( GlobalData.getGlobalData().doSSL() )
+                        Con = new WebDAVConnection( "https", HostName, Port );
+                    else
+                        Con = new WebDAVConnection(HostName, Port);
+                }
+                else
+                {
+                    Port = 0;
+                    if( GlobalData.getGlobalData().doSSL() )
+                        Con = new WebDAVConnection( "https", HostName );
+                    else
+                        Con = new WebDAVConnection(HostName);
+                }
+                Con.setLogging( logging, logFilename );
             }
-            else
+            catch( HTTPClient.ProtocolNotSuppException httpException )
             {
-                Port = 0;
-                Con = new WebDAVConnection(HostName);
+                GlobalData.getGlobalData().errorMsg( "Error: Protocol not supported.\n" + httpException.toString() );
             }
-            Con.setLogging( logging, logFilename );
         }
         String user = e.getUser();
         String pass = e.getPass();
@@ -114,12 +130,12 @@ public class WebDAVManager
         Headers = e.getHeaders();
         Body = e.getBody();
         ExtraInfo = e.getExtraInfo();
-    	try {
-      	    Response = Con.Generic(MethodName, ResourceName, Body, Headers);
+        try {
+            Response = Con.Generic(MethodName, ResourceName, Body, Headers);
 
-      	    WebDAVResponseEvent webdavResponse  = GenerateWebDAVResponse(Response,tn);
+            WebDAVResponseEvent webdavResponse  = GenerateWebDAVResponse(Response,tn);
             fireResponse(webdavResponse);
-    	}
+        }
         catch (IOException exception)
         {
             GlobalData.getGlobalData().errorMsg("Connection error: \n" + exception);
@@ -134,7 +150,7 @@ public class WebDAVManager
     {
         Listeners.addElement(l);
     }
-    
+
     public synchronized void removeResponseListener(WebDAVResponseListener l)
     {
         Listeners.removeElement(l);
@@ -165,7 +181,7 @@ public class WebDAVManager
     {
         this.logging = logging;
         this.logFilename = filename;
-        
+
         if( Con != null )
         {
             Con.setLogging( logging, filename );

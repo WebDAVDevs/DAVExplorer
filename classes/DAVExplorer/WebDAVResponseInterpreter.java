@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 1999-2000 Regents of the University of California.
+ * Copyright (c) 1999-2001 Regents of the University of California.
  * All rights reserved.
  *
  * This software was developed at the University of California, Irvine.
@@ -47,6 +47,9 @@
 // Change List:
 //   Added check for CDATA to improve interoperability for Sharemation's server
 //   Incorporated Eric Giguere's changes to getOwnerInfo(). Thanks!
+//
+// Date: 2001-Jan-12
+// Joe Feise: Added support for https (SSL)
 
 package DAVExplorer;
 
@@ -63,6 +66,7 @@ import com.ms.xml.util.*;
 public class WebDAVResponseInterpreter
 {
     private final static String  HTTPPrefix = "http://";
+    private final static String  HTTPSPrefix = "https://";
     private static WebDAVRequestGenerator generator;
     private static byte[] stream = null;
     private static String Method;
@@ -1347,7 +1351,12 @@ public class WebDAVResponseInterpreter
                 if( token.getType() == Element.PCDATA || token.getType() == Element.CDATA )
                 {
                     String HrefValue = token.getText();
-                    int pos = HrefValue.indexOf( HTTPPrefix );
+                    // stripping https://
+                    int pos = HrefValue.indexOf( HTTPSPrefix );
+                    if( pos >= 0 )
+                        HrefValue = HrefValue.substring( pos+HTTPSPrefix.length() );
+                    // stripping http://
+                    pos = HrefValue.indexOf( HTTPPrefix );
                     if( pos >= 0 )
                         HrefValue = HrefValue.substring( pos+HTTPPrefix.length() );
                     pos = HrefValue.indexOf( "/" );

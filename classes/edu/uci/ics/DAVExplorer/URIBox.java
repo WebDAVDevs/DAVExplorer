@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 1999 Regents of the University of California.
+ * Copyright (c) 1999-2001 Regents of the University of California.
  * All rights reserved.
  *
  * This software was developed at the University of California, Irvine.
@@ -39,7 +39,9 @@
 // Date: 3/17/99
 //
 // Change List:
-
+//
+// Date: 2001-Jan-12
+// Joe Feise: Added support for https (SSL)
 
 package DAVExplorer;
 
@@ -85,7 +87,10 @@ public class URIBox extends JPanel implements ActionListener
         textField1 = new JTextField(30);
         textField1.addActionListener(new EnterPressedListener());
         label1 = new JLabel();
-        label1.setText("http:// ");
+        if( GlobalData.getGlobalData().doSSL() )
+            label1.setText( "https:// " );
+        else
+            label1.setText( "http:// " );
 
         panel.add(label1);
         panel.add(textField1);
@@ -162,11 +167,11 @@ public class URIBox extends JPanel implements ActionListener
                 InputStream is = file.getInputStream( entry );
                 int len = (int)entry.getSize();
                 if( len != -1 )
-		{
+        {
                     byte[] ba = new byte[len];
                     is.read( ba, 0, len );
                     return new ImageIcon( ba, description );
-		}
+        }
             }
             catch( IOException e )
             {

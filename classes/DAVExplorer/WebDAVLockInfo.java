@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 1999 Regents of the University of California.
+ * Copyright (c) 1999-2001 Regents of the University of California.
  * All rights reserved.
  *
  * This software was developed at the University of California, Irvine.
@@ -38,7 +38,9 @@
 // Change List:
 // Note: This code was not tested at this time (3/17/99) as
 // the current Apache server does not support locking.
-
+//
+// Date: 2001-Jan-12
+// Joe Feise: Added support for https (SSL)
 
 package DAVExplorer;
 
@@ -101,9 +103,14 @@ Public methods and attributes section
         groupPanel.add(new JLabel("Lock Info:"));
         groupPanel.add(txtUsername = new JTextField(80));
         if (lockInfo != null)
-           txtUsername.setText(lockInfo);
+            txtUsername.setText(lockInfo);
         else
-           txtUsername.setText("http://");
+        {
+            if( GlobalData.getGlobalData().doSSL() )
+                txtUsername.setText("https://");
+            else
+                txtUsername.setText("http://");
+        }
         add(OKbutton = new JButton("OK"), BorderLayout.SOUTH);
         OKbutton.addActionListener(this);
         add(groupPanel, BorderLayout.CENTER);

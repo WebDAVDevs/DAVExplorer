@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 1999 Regents of the University of California.
+ * Copyright (c) 1999-2001 Regents of the University of California.
  * All rights reserved.
  *
  * This software was developed at the University of California, Irvine.
@@ -38,7 +38,9 @@
 // Date: 3/17/99
 //
 // Change List:
-
+//
+// Date: 2001-Jan-12
+// Joe Feise: Added support for https (SSL)
 
 package DAVExplorer;
 
@@ -62,6 +64,22 @@ public class WebDAVConnection extends HTTPConnection
         }
     }
 
+
+    public WebDAVConnection( String Protocol, String HostName )
+        throws HTTPClient.ProtocolNotSuppException
+    {
+        super( Protocol, HostName, DEFAULT_PORT);
+        try
+        {
+            removeModule( Class.forName("HTTPClient.RedirectionModule") );
+        }
+        catch (ClassNotFoundException cnfe)
+        {
+            // just ignore it
+        }
+    }
+
+
     public WebDAVConnection(String HostName, int Port)
     {
         super(HostName, Port);
@@ -74,6 +92,22 @@ public class WebDAVConnection extends HTTPConnection
             // just ignore it
         }
     }
+
+
+    public WebDAVConnection(String Protocol, String HostName, int Port )
+        throws HTTPClient.ProtocolNotSuppException
+    {
+        super( Protocol, HostName, Port );
+        try
+        {
+            removeModule( Class.forName("HTTPClient.RedirectionModule") );
+        }
+        catch (ClassNotFoundException cnfe)
+        {
+            // just ignore it
+        }
+    }
+
 
     public HTTPResponse PropFind(String file, byte[] body, NVPair[] headers)
         throws IOException, ModuleException

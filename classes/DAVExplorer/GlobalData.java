@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 1999 Regents of the University of California.
+ * Copyright (c) 1999-2001 Regents of the University of California.
  * All rights reserved.
  *
  * This software was developed at the University of California, Irvine.
@@ -17,6 +17,12 @@
  * WARRANTIES OF MERCHANTIBILITY AND FITNESS FOR A PARTICULAR PURPOSE.
  */
 
+// Changelog
+//
+// Date: 2001-Jan-9
+// Joe Feise: Added support for https (SSL), moved reading of debug
+// properties here
+
 package DAVExplorer;
 
 import java.awt.Cursor;
@@ -27,7 +33,7 @@ import javax.swing.JFrame;
  * This singleton class defines various global data structures
  * and functions useful everywhere
  *
- * @version 0.2  14 June 2000
+ * @version 0.3  9 January 2001
  * @author  Joachim Feise
  * @since   V0.1
  */
@@ -41,6 +47,10 @@ class GlobalData
     boolean debugTreeView = debugAll | false;
     boolean debugTreeNode = debugAll | false;
     boolean debugFileView = debugAll | false;
+
+    /** SSL variable */
+    boolean ssl = false;
+
     JFrame mainFrame = null;
     Cursor origCursor = null;
 
@@ -48,7 +58,7 @@ class GlobalData
 
     protected GlobalData()
     {
-        init();
+        init( true );
     }
 
     static GlobalData getGlobalData()
@@ -66,7 +76,7 @@ class GlobalData
     public void setDebugAll( boolean debug )
     {
         debugAll = debug;
-        init();
+        init( false );
     }
 
     public boolean getDebugRequest()
@@ -77,7 +87,7 @@ class GlobalData
     public void setDebugRequest( boolean debug )
     {
         debugRequest = debug;
-        init();
+        init( false );
     }
 
     public boolean getDebugResponse()
@@ -88,7 +98,7 @@ class GlobalData
     public void setDebugResponse( boolean debug )
     {
         debugResponse = debug;
-        init();
+        init( false );
     }
 
     public boolean getDebugTreeView()
@@ -99,7 +109,7 @@ class GlobalData
     public void setDebugTreeView( boolean debug )
     {
         debugTreeView = debug;
-        init();
+        init( false );
     }
 
     public boolean getDebugTreeNode()
@@ -110,7 +120,7 @@ class GlobalData
     public void setDebugTreeNode( boolean debug )
     {
         debugTreeNode = debug;
-        init();
+        init( false );
     }
 
     public boolean getDebugFileView()
@@ -121,7 +131,7 @@ class GlobalData
     public void setDebugFileView( boolean debug )
     {
         debugFileView = debug;
-        init();
+        init( false );
     }
 
     public JFrame getMainFrame()
@@ -155,13 +165,42 @@ class GlobalData
             mainFrame.setCursor( origCursor );
     }
 
-    private void init()
+    public boolean doSSL()
     {
+        return ssl;
+    }
+
+    private void init( boolean readFromProperties )
+    {
+        if( readFromProperties )
+        {
+            String doLog = System.getProperty( "debug" );
+            if( doLog != null )
+            {
+                if( doLog.equalsIgnoreCase("all") )
+                    setDebugAll( true );
+                else if( doLog.equalsIgnoreCase( "request" ) )
+                    setDebugRequest( true );
+                else if( doLog.equalsIgnoreCase( "response" ) )
+                    setDebugResponse( true );
+                else if( doLog.equalsIgnoreCase( "treeview" ) )
+                    setDebugTreeView( true );
+                else if( doLog.equalsIgnoreCase( "treenode" ) )
+                    setDebugTreeNode( true );
+                else if( doLog.equalsIgnoreCase( "fileview" ) )
+                    setDebugFileView( true );
+            }
+            String doSSL = System.getProperty( "ssl", "false" );
+            if( doSSL.equalsIgnoreCase( "true" ) )
+                ssl = true;
+        }
+
         debugRequest |= debugAll;
         debugResponse |= debugAll;
         debugTreeView |= debugAll;
         debugTreeNode |= debugAll;
         debugFileView |= debugAll;
+
     }
 }
 

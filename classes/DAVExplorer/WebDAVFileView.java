@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 1999 Regents of the University of California.
+ * Copyright (c) 1999-2001 Regents of the University of California.
  * All rights reserved.
  *
  * This software was developed at the University of California, Irvine.
@@ -38,7 +38,8 @@
 // Date: 3/17/99
 //
 // Change List:
-
+// Date: 2001-Jan-12
+// Joe Feise: Added support for https (SSL), removed grid in table
 
 
 package DAVExplorer;
@@ -63,6 +64,7 @@ public class WebDAVFileView implements ViewSelectionListener, ActionListener
     private final static String jarExtension =".jar";
     final static String WebDAVClassName = "DAVExplorer";
     final static String WebDAVPrefix = "http://";
+    final static String WebDAVPrefixSSL = "https://";
     final static String IconDir = "icons";
 
     final String[] colNames = { " ",
@@ -229,7 +231,7 @@ public class WebDAVFileView implements ViewSelectionListener, ActionListener
 
                     if ( val != null)
                     {
-                        if (!parentPath.startsWith(WebDAVPrefix))
+                        if( !parentPath.startsWith(WebDAVPrefix) && !parentPath.startsWith(WebDAVPrefixSSL) )
                             return;
 
                         ((Vector)data.elementAt(row)).setElementAt(value,column);
@@ -302,15 +304,15 @@ public class WebDAVFileView implements ViewSelectionListener, ActionListener
 
     ////////////
     // Implements the Action Listener.
-    // Purpose: to listen for a reset to the old selected name 
+    // Purpose: to listen for a reset to the old selected name
     // for the case of a failure of Rename.
     // Need to do this because Response Interpreter can't access the
     // resetName method because there teh FileView is not accessible
     public void actionPerformed( ActionEvent e )
     {
-	resetName();
+    resetName();
     }
-  
+
 
     ////////////
     // This implements the View Selection Listener Interface
@@ -466,7 +468,7 @@ public class WebDAVFileView implements ViewSelectionListener, ActionListener
         for ( int i = 1; i < tp.getPathCount(); i++ )
         {
             s = s + tp.getPathComponent(i);
-            if( s.startsWith( WebDAVPrefix ) )
+            if( s.startsWith( WebDAVPrefix ) || s.startsWith( WebDAVPrefixSSL ) )
                 s += "/";
             else if( !s.endsWith( String.valueOf(File.separatorChar) ) )
                 s += File.separatorChar;
@@ -559,11 +561,11 @@ public class WebDAVFileView implements ViewSelectionListener, ActionListener
         //Get the TreeNode and return dataNode's lockTocken
         WebDAVTreeNode n = getSelectedCollection();
 
-	    if (n != null) {
-	        // return lockToken from the Node's dataNode
+        if (n != null) {
+            // return lockToken from the Node's dataNode
             DataNode dn = n.getDataNode();
-	        // Get the lockToken
-	        return dn.getLockToken();
+            // Get the lockToken
+            return dn.getLockToken();
         }
         // Must be resource
 
@@ -577,12 +579,12 @@ public class WebDAVFileView implements ViewSelectionListener, ActionListener
         DataNode node;
 
         for( int i = 0; i < sub.size() && !found; i++){
-	        node = (DataNode)sub.elementAt(i);
-	        String s = node.getName(); 
-	        if(selectedResource.equals( s )){
-		        found = true;
-		        token = node.getLockToken();
-	        }
+            node = (DataNode)sub.elementAt(i);
+            String s = node.getName();
+            if(selectedResource.equals( s )){
+                found = true;
+                token = node.getLockToken();
+            }
         }
 
 
@@ -745,6 +747,7 @@ public class WebDAVFileView implements ViewSelectionListener, ActionListener
         table.setIntercellSpacing(new Dimension(0,0));
         table.setCellSelectionEnabled(false);
         table.setColumnSelectionAllowed(false);
+        table.setShowGrid( false );
         DefaultTableCellRenderer ren;
 
         TableColumn resizeCol = table.getColumn(colNames[0]);
@@ -1111,7 +1114,8 @@ public class WebDAVFileView implements ViewSelectionListener, ActionListener
                     boolean isColl = new Boolean(table.getValueAt(selRow,0).toString()).booleanValue();
                     if (isColl)
                     {
-                        if (parentPath.startsWith(WebDAVPrefix) || selResource.startsWith(WebDAVPrefix) )
+                        if( parentPath.startsWith(WebDAVPrefix) || parentPath.startsWith(WebDAVPrefixSSL) ||
+                            selResource.startsWith(WebDAVPrefix) || selResource.startsWith(WebDAVPrefixSSL) )
                         {
                             if( !selResource.endsWith( "/" ) )
                                 selResource += "/";

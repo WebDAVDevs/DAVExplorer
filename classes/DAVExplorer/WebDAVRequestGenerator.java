@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 1999 Regents of the University of California.
+ * Copyright (c) 1999-2001 Regents of the University of California.
  * All rights reserved.
  *
  * This software was developed at the University of California, Irvine.
@@ -40,7 +40,9 @@
 // Date: 3/17/99
 //
 // Change List:
-
+//
+// Date: 2001-Jan-12
+// Joe Feise: Added support for https (SSL)
 
 package DAVExplorer;
 
@@ -56,6 +58,7 @@ import com.ms.xml.util.*;
 public class WebDAVRequestGenerator implements Runnable
 {
     private static String WebDAVPrefix = "http://";
+    private static String WebDAVPrefixSSL = "https://";
     private static final int DEFAULT_PORT = 80;
     private static String HostName = "";
     private static int Port = 0;
@@ -129,7 +132,7 @@ public class WebDAVRequestGenerator implements Runnable
 
     public void setSecondTime(boolean b)
     {
-	secondTime = b;
+    secondTime = b;
     }
 
     //Yuzo
@@ -171,12 +174,16 @@ public class WebDAVRequestGenerator implements Runnable
             GlobalData.getGlobalData().errorMsg("No resource selected!");
             return false;
         }
-        if (!ResourceName.startsWith(WebDAVPrefix))
+        if( !ResourceName.startsWith(WebDAVPrefix) && !ResourceName.startsWith(WebDAVPrefixSSL) )
         {
             GlobalData.getGlobalData().errorMsg("This operation cannot be executed\non a local resource.");
             return false;
         }
-        String stripped = ResourceName.substring(WebDAVPrefix.length());
+        String stripped;
+        if( ResourceName.startsWith(WebDAVPrefix) )
+            stripped = ResourceName.substring(WebDAVPrefix.length());
+        else
+            stripped = ResourceName.substring(WebDAVPrefixSSL.length());
         return parseStripped( stripped );
     }
 
@@ -315,11 +322,11 @@ public class WebDAVRequestGenerator implements Runnable
             prop[0] = new String("lockdiscovery");
             schema[0] = new String(WebDAVProp.DAV_SCHEMA);
             retval = GeneratePropFind(null, "prop", "zero", prop, schema, false );
-	}
+    }
         if( retval )
         {
             execute();
-	}
+    }
         return retval;
     }
 
@@ -344,7 +351,7 @@ public class WebDAVRequestGenerator implements Runnable
             if( command != null )
                 System.err.println( "\tCommand: "+ command );
             if( Depth != null )
-				System.err.println( "\tDepth: " + Depth );
+                System.err.println( "\tDepth: " + Depth );
         }
 
         Headers = null;
@@ -659,7 +666,7 @@ public class WebDAVRequestGenerator implements Runnable
         {
             System.err.println( "WebDAVRequestGenerator::GenerateMkCol" );
         }
- 
+
         Headers = null;
         Body = null;
 
@@ -722,17 +729,17 @@ public class WebDAVRequestGenerator implements Runnable
         Headers = null;
         Body = null;
 
-	if ( secondTime )
-	{
-	    Node = Node2;
-	    ResourceName= ResourceName2;
-	}
-	else
-	{
-	    Node2 = Node;
-	    ResourceName2 = new String(ResourceName);
-	}
-	
+    if ( secondTime )
+    {
+        Node = Node2;
+        ResourceName= ResourceName2;
+    }
+    else
+    {
+        Node2 = Node;
+        ResourceName2 = new String(ResourceName);
+    }
+
 
         if (!parseResourceName())
         {
@@ -892,8 +899,13 @@ public class WebDAVRequestGenerator implements Runnable
             //Dest =  HostName + ":" + Port + StrippedResource + "/" + Dest + "_copy" ;
 
 
-        if( !Dest.startsWith(WebDAVPrefix) )
-            Dest = WebDAVPrefix + Dest;
+        if( !Dest.startsWith(WebDAVPrefix) && !Dest.startsWith(WebDAVPrefixSSL) )
+        {
+            if( GlobalData.getGlobalData().doSSL() )
+                Dest = WebDAVPrefixSSL + Dest;
+            else
+                Dest = WebDAVPrefix + Dest;
+        }
 
         Method = "COPY";
         Body = null;
@@ -964,8 +976,8 @@ public class WebDAVRequestGenerator implements Runnable
             System.err.println( "WebDAVRequestGenerator::GenerateRename" );
         }
 
-	// Why have the below when the DIscoverLock puts something else
-	// the Extra field
+    // Why have the below when the DIscoverLock puts something else
+    // the Extra field
         Extra = new String(tableResource);
 
         return DiscoverLock("rename:" + Dest + ":" + dir );
@@ -977,40 +989,40 @@ public class WebDAVRequestGenerator implements Runnable
         {
             System.err.println( "WebDAVRequestGenerator::GenerateMove" );
         }
-	
+
         Headers = null;
         Body = null;
         Extra = extraPrefix +  Dest;
 
-	if( secondTime)
-	{
-	    Node = Node2;
-	    ResourceName = ResourceName2;
-	    Dest = Dest2;
-	    dir = dir2;
-	    Overwrite = Overwrite2;
-	    KeepAlive = KeepAlive2;
-	}
-	else
-	{
-	    Node2 = Node;
-	    ResourceName2 = new String(ResourceName);
-	    Dest2 = new String(Dest);
-	    dir2 = new String(dir);
-	    Overwrite2 = Overwrite;
-	    KeepAlive2 = KeepAlive;
-	}
-				   
+    if( secondTime)
+    {
+        Node = Node2;
+        ResourceName = ResourceName2;
+        Dest = Dest2;
+        dir = dir2;
+        Overwrite = Overwrite2;
+        KeepAlive = KeepAlive2;
+    }
+    else
+    {
+        Node2 = Node;
+        ResourceName2 = new String(ResourceName);
+        Dest2 = new String(Dest);
+        dir2 = new String(dir);
+        Overwrite2 = Overwrite;
+        KeepAlive2 = KeepAlive;
+    }
+
 
         String srcFile = ResourceName;
         ResourceName = dir;
 
-	/*
+    /*
         if (!parseResourceName())
             dir = "/";
         else
             dir = StrippedResource;
-	*/
+    */
 
         ResourceName = srcFile;
         if (!parseResourceName())

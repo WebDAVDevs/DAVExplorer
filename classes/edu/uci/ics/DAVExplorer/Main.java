@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 1999-2000 Regents of the University of California.
+ * Copyright (c) 1999-2001 Regents of the University of California.
  * All rights reserved.
  *
  * This software was developed at the University of California, Irvine.
@@ -57,6 +57,10 @@
 // Date: 2000-June-20
 // Change List:
 // Better reporting in case the connection is closed
+//
+// Date: 2001-Jan-12
+// Joe Feise: Added support for https (SSL), moved properties loading to GlobalData
+
 
 package DAVExplorer;
 
@@ -80,7 +84,7 @@ public class Main extends JFrame
     WebDAVMenu CommandMenu;
     Hashtable authTable;
     String authHost;
-    public final static String VERSION = "0.62";
+    public final static String VERSION = "0.70";
     public final static String UserAgent = "UCI DAV Explorer/" + VERSION;
     String writeToDir;
 
@@ -180,23 +184,6 @@ public class Main extends JFrame
         c.gridheight = GridBagConstraints.REMAINDER;
         gridbag.setConstraints(splitPane,c);
         p.add(splitPane);
-
-        String doLog = System.getProperty( "debug" );
-        if( doLog != null )
-        {
-            if( doLog.equalsIgnoreCase("all") )
-                GlobalData.getGlobalData().setDebugAll( true );
-            else if( doLog.equalsIgnoreCase( "request" ) )
-                GlobalData.getGlobalData().setDebugRequest( true );
-            else if( doLog.equalsIgnoreCase( "response" ) )
-                GlobalData.getGlobalData().setDebugResponse( true );
-            else if( doLog.equalsIgnoreCase( "treeview" ) )
-                GlobalData.getGlobalData().setDebugTreeView( true );
-            else if( doLog.equalsIgnoreCase( "treenode" ) )
-                GlobalData.getGlobalData().setDebugTreeNode( true );
-            else if( doLog.equalsIgnoreCase( "fileview" ) )
-                GlobalData.getGlobalData().setDebugFileView( true );
-        }
 
         getContentPane().add(p);
         treeView.initTree();
@@ -722,7 +709,7 @@ public class Main extends JFrame
             {
                 JOptionPane pane = new JOptionPane( this );
                 String message = new String("DAV Explorer Version "+ VERSION + "\n" +
-                "Copyright (c) 1999-2000 Regents of the University of California\n" +
+                "Copyright (c) 1999-2001 Regents of the University of California\n" +
                 "Authors: Yuzo Kanomata, Joachim Feise\n" +
                 "EMail: dav-exp@ics.uci.edu\n\n" +
                 "Based on code from the UCI WebDAV Client Group\n" +
