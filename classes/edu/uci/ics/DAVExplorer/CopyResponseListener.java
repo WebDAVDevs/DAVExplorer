@@ -45,7 +45,7 @@ public interface CopyResponseListener extends EventListener
 {
     /**
      *
-     * @param w 
+     * @param e 
      */
     public void CopyEventResponse(CopyResponseEvent e);
 }

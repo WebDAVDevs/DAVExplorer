@@ -25,7 +25,7 @@ import com.ms.xml.om.Element;
  * Description: Dialog to view ACL privileges
  * Copyright:   Copyright (c) 2005 Regents of the University of California. All rights reserved.
  * @author      Joachim Feise (dav-exp@ics.uci.edu)
- * @date        14 Feb 2005
+ * date         14 Feb 2005
  */
 public class ACLPrivilegesDialog extends PropDialog
 {

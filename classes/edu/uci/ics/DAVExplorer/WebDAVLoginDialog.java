@@ -47,37 +47,37 @@ import javax.swing.event.DocumentListener;
  *              authentication scheme at some future point.
  * Copyright:   Copyright (c) 1998-2005 Regents of the University of California. All rights reserved.
  * @author      Gerair D. Balian (dav-exp@ics.uci.edu)
- * @date        3 March 1998
+ * date         3 March 1998
  * @author      Yuzo Kanomata, Joachim Feise (dav-exp@ics.uci.edu)
- * @date        17 March 1999
+ * date         17 March 1999
  * Changes:     Note: No authenication check is executed in the Action Listener
  *              when "okay" is clicked.
  * @author      Joachim Feise (dav-exp@ics.uci.edu)
- * @date        3 December 1999
+ * date         3 December 1999
  * Changes:     Now invoked from Authentication handler in HTTPClient
  *              when "OK" is clicked.
  * @author      Joachim Feise (dav-exp@ics.uci.edu)
- * @date        29 September 2001
+ * date         29 September 2001
  * Changes:     The return key now triggers a programmatic click on the OK
  *              button.
  * @author      Joachim Feise (dav-exp@ics.uci.edu)
- * @date        1 October 2001
+ * date         1 October 2001
  * Changes:     Change of package name
  * @author      Joachim Feise (dav-exp@ics.uci.edu)
- * @date        17 December 2001
+ * date         17 December 2001
  * Changes:     Better handling of ok button enable/disable
  * @author      Joachim Feise (dav-exp@ics.uci.edu)
- * @date        17 March 2003
+ * date         17 March 2003
  * Changes:     Integrated Brian Johnson's applet changes.
  *              Added better error reporting.
  * @author      Joachim Feise (dav-exp@ics.uci.edu)
- * @date        17 November 2003
+ * date         17 November 2003
  * Changes:     Explicitly resetting the cursor.
  * @author      Joachim Feise (dav-exp@ics.uci.edu)
- * @date        08 February 2004
+ * date         8 February 2004
  * Changes:     Added Javadoc templates
  * @author      Joachim Feise (dav-exp@ics.uci.edu)
- * @date        8 February 2005
+ * date         8 February 2005
  * Changes:     Some refactoring
  */
 public class WebDAVLoginDialog extends JDialog implements ActionListener, DocumentListener

@@ -34,17 +34,17 @@ import com.ms.xml.util.Name;
  *              listed in section 12 of .07 spec
  * Copyright:   Copyright (c) 1998-2005 Regents of the University of California. All rights reserved.
  * @author      Undergraduate project team ICS 126B 1998
- * @date        1998
+ * date         1998
  * @author      Yuzo Kanomata, Joachim Feise (dav-exp@ics.uci.edu)
- * @date        17 March 1999
+ * date         17 March 1999
  * @author      Joachim Feise (dav-exp@ics.uci.edu)
- * @date        1 October 2001
+ * date         1 October 2001
  * Changes:     Change of package name
  * @author      Joachim Feise (dav-exp@ics.uci.edu)
- * @date        08 February 2004
+ * date         8 February 2004
  * Changes:     Added Javadoc templates
  * @author      Joachim Feise (dav-exp@ics.uci.edu)
- * @date        10 February 2005
+ * date         10 February 2005
  * Changes:     Minor cleanup, javadocs
  */
 public class WebDAVProp

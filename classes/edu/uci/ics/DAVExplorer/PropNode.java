@@ -29,12 +29,12 @@ import java.util.Vector;
  * Description: Nodes for the property tree
  * Copyright:   Copyright (c) 2001-2005 Regents of the University of California. All rights reserved.
  * @author      Joachim Feise (dav-exp@ics.uci.edu)
- * @date        5 October 2001
+ * date         5 October 2001
  * @author      Joachim Feise (dav-exp@ics.uci.edu)
- * @date        08 February 2004
+ * date         08 February 2004
  * Changes:     Added Javadoc templates
  * @author      Joachim Feise (dav-exp@ics.uci.edu)
- * @date        4 February 2005
+ * date         4 February 2005
  * Changes:     Some refactoring
  */
 public class PropNode

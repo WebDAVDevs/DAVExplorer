@@ -28,18 +28,24 @@ import com.ms.xml.om.Element;
  * Description: Dialog for viewing/modifying ACL owner and group properties
  * Copyright:   Copyright (c) 2005 Regents of the University of California. All rights reserved.
  * @author      Joachim Feise (dav-exp@ics.uci.edu)
- * @date        14 Feb 2005
+ * date         14 Feb 2005
  */
 public class ACLOwnerDialog extends PropDialog
 {
     /**
      * Constructor
-     * 
+     * Removes unused buttons from the dialog created by the superclass.
+     *  
      * @param properties
+     *      the ACL owner or group property to be shown in the dialog
      * @param resource
+     *      the resource the owner or group property applies to
      * @param hostname
-     * @param locktoken
+     *      the server name
+     * @param owner
+     *      true if showing the owner property, false if showing the group property
      * @param changeable
+     *      true if the owner or group can be changed in the dialog, false else
      */
     public ACLOwnerDialog( Element properties, String resource, String hostname, boolean owner, boolean changeable )
     {
@@ -66,7 +72,7 @@ public class ACLOwnerDialog extends PropDialog
 
 
     /**
-     * 
+     * Saves a modified owner or group property.
      */
     public void save()
     {

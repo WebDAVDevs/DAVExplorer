@@ -33,7 +33,7 @@ import javax.swing.event.DocumentListener;
  * Description: Dialog to select data for some ACL reports
  * Copyright:   Copyright (c) 2005 Regents of the University of California. All rights reserved.
  * @author      Joachim Feise (dav-exp@ics.uci.edu)
- * @date        15 Feb 2005
+ * date         15 Feb 2005
  */
 public class ACLReportChangeSearchPropertiesDialog extends
         ACLReportPropertiesDialog implements DocumentListener
@@ -42,6 +42,9 @@ public class ACLReportChangeSearchPropertiesDialog extends
      * Constructor
      * 
      * @param resource
+     *      the resource this dialog shows
+     * @param showMatch
+     *      true if the match textfield is shown
      */
     public ACLReportChangeSearchPropertiesDialog( String resource, boolean showMatch )
     {
@@ -51,7 +54,10 @@ public class ACLReportChangeSearchPropertiesDialog extends
 
 
     /**
+     * Modify the dialog panel created by the superclass.
      * 
+     * @param panel
+     *      the panel
      */
     protected void changePanel( JPanel panel )
     {
@@ -85,9 +91,11 @@ public class ACLReportChangeSearchPropertiesDialog extends
 
 
     /**
-     * DocumentListener interface
-     * 
+     * From the DocumentListener interface
+     * Gives notification that there was an insert into the match textfield.
+     *
      * @param e
+     *      the document event
      */
     public void insertUpdate( DocumentEvent e )
     {
@@ -96,9 +104,11 @@ public class ACLReportChangeSearchPropertiesDialog extends
 
 
     /**
-     * DocumentListener interface
-     * 
+     * From the DocumentListener interface
+     * Gives notification that there was data removed from the match textfield.
+     *
      * @param e
+     *      the document event
      */
     public void removeUpdate( DocumentEvent e )
     {
@@ -107,9 +117,11 @@ public class ACLReportChangeSearchPropertiesDialog extends
 
 
     /**
-     * DocumentListener interface
-     * 
+     * From the DocumentListener interface
+     * Gives notification that the match textfield changed.
+     *
      * @param e
+     *      the document event
      */
     public void changedUpdate( DocumentEvent e )
     {
@@ -118,12 +130,11 @@ public class ACLReportChangeSearchPropertiesDialog extends
 
 
     /**
-     * 
-     * @param enable
+     * Act on changes to the dialog, i.e., enable or disable the Save button
      */
-    public void setChanged( boolean enable )
+    public void setChanged()
     {
-        changed = enable;
+        changed = true;
         boolean enableOk = (selected.size() > 0) && changed;
         if( showMatch )
             enableOk = enableOk && (match.getText().length() > 0);
@@ -132,8 +143,10 @@ public class ACLReportChangeSearchPropertiesDialog extends
 
 
     /**
+     * Returns the value in the match textfield.
      * 
      * @return
+     *      the value of the match textfield
      */
     public String getMatch()
     {

@@ -27,7 +27,7 @@ import java.util.Vector;
  * Description: Describes one entry in the property search datamodel
  * Copyright:   Copyright (c) 2005 Regents of the University of California. All rights reserved.
  * @author      Joachim Feise (dav-exp@ics.uci.edu)
- * @date        11 Feb 2005
+ * date         11 Feb 2005
  */
 public class ACLPropertySearchNode
 {
@@ -35,7 +35,9 @@ public class ACLPropertySearchNode
      * Constructor
      * 
      * @param properties
+     *      the properties to apply the search to
      * @param match
+     *      the match string used in the search
      */
     public ACLPropertySearchNode( Vector properties, String match )
     {
@@ -45,17 +47,10 @@ public class ACLPropertySearchNode
 
 
     /**
-     * Constructor
-     */
-    public ACLPropertySearchNode()
-    {
-        this.properties = new Vector();
-    }
-
-
-    /**
-     * 
+     * Set the properties to apply the search to.
+     *  
      * @param properties
+     *  the properties to apply the search to
      */
     public void setProperty( Vector properties )
     {
@@ -64,8 +59,10 @@ public class ACLPropertySearchNode
 
 
     /**
-     * 
+     * Set the match string.
+     *  
      * @param match
+     *      the new match string
      */
     public void setMatch( String match )
     {
@@ -74,8 +71,10 @@ public class ACLPropertySearchNode
 
 
     /**
-     * 
+     * Returns the search properties.
+     *  
      * @return
+     *      the properties to apply the search to
      */
     public Vector getProperties()
     {
@@ -84,8 +83,10 @@ public class ACLPropertySearchNode
 
 
     /**
-     * 
+     * Returns the match string.
+     *  
      * @return
+     *      the string use in the search comparison
      */
     public String getMatch()
     {

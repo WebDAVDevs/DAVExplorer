@@ -34,7 +34,7 @@ import com.ms.xml.util.Name;
  * Description: Processes ACL-specific data from a server.
  * Copyright:   Copyright (c) 2004-2005 Regents of the University of California. All rights reserved.
  * @author      Joachim Feise (dav-exp@ics.uci.edu)
- * @date        14 Feb 2005
+ * date         14 Feb 2005
  */
 
 public class ACLResponseInterpreter extends DeltaVResponseInterpreter

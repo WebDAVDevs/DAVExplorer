@@ -42,22 +42,22 @@ import com.ms.xml.util.Name;
  * Description: Models the hierarchical nature of WebDAV properties
  * Copyright:   Copyright (c) 2001-2005 Regents of the University of California. All rights reserved.
  * @author      Joachim Feise (dav-exp@ics.uci.edu)
- * @date        29 September 2001
+ * date         29 September 2001
  *
  * Based on the JTreeTable examples provided by Sun Microsystems, Inc.:
  * http://java.sun.com/products/jfc/tsc/articles/treetable1/index.html
  * http://java.sun.com/products/jfc/tsc/articles/treetable2/index.html
  * @author      Joachim Feise (dav-exp@ics.uci.edu)
- * @date        1 October 2001
+ * date         1 October 2001
  * Changes:     Change of package name
  * @author      Joachim Feise (dav-exp@ics.uci.edu)
- * @date        17 December 2001
+ * date         17 December 2001
  * Changes:     Fixed handling of adding and removing nested properties
  * @author      Joachim Feise (dav-exp@ics.uci.edu)
- * @date        08 February 2004
+ * date         08 February 2004
  * Changes:     Added Javadoc templates
  * @author      Joachim Feise (dav-exp@ics.uci.edu)
- * @date        14 February 2005
+ * date         14 February 2005
  * Changes:     Some refactoring
  */
 public class PropModel extends AbstractTableModel implements TreeTableModel

@@ -49,43 +49,43 @@ import java.io.UnsupportedEncodingException;
  *              and functions useful everywhere
  * Copyright:   Copyright (c) 1999-2005 Regents of the University of California. All rights reserved.
  * @author      Joachim Feise (dav-exp@ics.uci.edu)
- * @date        1999
+ * date         1999
  * @author      Joachim Feise (dav-exp@ics.uci.edu)
- * @date        9 January 2001
+ * date         9 January 2001
  * Changes:     Added support for https (SSL), moved reading of debug properties here
- * @date        29 May 2001
+ * date         29 May 2001
  * Changes:     Support for reading/writing configuration file
  * @author      Joachim Feise (dav-exp@ics.uci.edu)
- * @date        1 October 2001
+ * date         1 October 2001
  * Changes:     Change of package name
  * @author      Joachim Feise (dav-exp@ics.uci.edu)
- * @date        2 April 2002
+ * date         2 April 2002
  * Changes:     Updated for JDK 1.4
  * @author      Joachim Feise (dav-exp@ics.uci.edu)
- * @date        17 March 2003
+ * date         17 March 2003
  * Changes:     Integrated Brian Johnson's applet changes.
  *              Added better error reporting.
  * @author      Joachim Feise (dav-exp@ics.uci.edu)
- * @date        7 April 2003
+ * date         7 April 2003
  * Changes:     Improved reading/writing of configuration entries. 
  * @author      Joachim Feise (dav-exp@ics.uci.edu)
- * @date        27 April 2003
+ * date         27 April 2003
  * Changes:     added support for default config entries.
  * @author      Joachim Feise (dav-exp@ics.uci.edu)
- * @date        3 November 2003
+ * date         3 November 2003
  * Changes:     Added support for proxy server in applet settings (it always
  *              worked through the "Edit Proxy Info" menu entry.)
  * @author      Joachim Feise (dav-exp@ics.uci.edu)
- * @date        06 February 2004
+ * date         06 February 2004
  * Changes:     Added support disabling compression encoding
  * @author      Joachim Feise (dav-exp@ics.uci.edu)
- * @date        08 February 2004
+ * date         08 February 2004
  * Changes:     Added Javadoc templates
  * @author      Joachim Feise (dav-exp@ics.uci.edu)
- * @date        09 February 2004
+ * date         09 February 2004
  * Changes:     Improved unescaping
   * @author      Joachim Feise (dav-exp@ics.uci.edu)
- * @date        14 February 2005
+ * date         14 February 2005
  * Changes:     Moved center function here
 */
 class GlobalData

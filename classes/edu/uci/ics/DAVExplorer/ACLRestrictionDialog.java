@@ -34,8 +34,11 @@ public class ACLRestrictionDialog extends PropDialog
      * Removes unused buttons from the dialog created by the superclass.
      * 
      * @param properties
+     *      the ACL properties to show
      * @param resource
+     *      the resource the ACLs apply to
      * @param hostname
+     *      the server name
      */
     public ACLRestrictionDialog( Element properties, String resource,
             String hostname )

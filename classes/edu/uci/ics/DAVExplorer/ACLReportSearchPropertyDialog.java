@@ -44,7 +44,7 @@ import javax.swing.event.ListSelectionEvent;
  * Description: Dialog to select data for some ACL reports
  * Copyright:   Copyright (c) 2005 Regents of the University of California. All rights reserved.
  * @author      Joachim Feise (dav-exp@ics.uci.edu)
- * @date        11 Feb 2005
+ * date         11 Feb 2005
  */
 public class ACLReportSearchPropertyDialog extends ACLReportPropertiesDialog
 {
@@ -76,12 +76,7 @@ public class ACLReportSearchPropertyDialog extends ACLReportPropertiesDialog
 
     /**
      * Initialization
-     * 
-     * @param resource
-     * @param node
-     */
-    /**
-     * Creates the dialog panel
+     * Creates the dialog panel.
      * 
      * @param resource
      *      the resource the privileges are applied to
@@ -147,8 +142,10 @@ public class ACLReportSearchPropertyDialog extends ACLReportPropertiesDialog
 
 
     /**
-     * 
+     * Create the search criteria panel.
+     *  
      * @return
+     *      the search criteria panel
      */
     protected JPanel makeCriteriaPanel()
     {
@@ -203,7 +200,10 @@ public class ACLReportSearchPropertyDialog extends ACLReportPropertiesDialog
 
 
     /**
-     * 
+     * Returns the panel name.
+     *
+     * @return
+     *      the panel name 
      */
     protected String getPanelTitle()
     {
@@ -212,8 +212,7 @@ public class ACLReportSearchPropertyDialog extends ACLReportPropertiesDialog
 
 
     /**
-     * 
-     * @param enable
+     * Act on changes to the dialog, i.e., enable or disable the Save button
      */
     public void setChanged()
     {
@@ -226,8 +225,11 @@ public class ACLReportSearchPropertyDialog extends ACLReportPropertiesDialog
 
 
     /**
+     * From the ActionListener interface.
+     * Handles user actions, i.e., button clicks.
      * 
      * @param e
+     *      the event describing the action
      */
     public void actionPerformed(ActionEvent e)
     {
@@ -266,8 +268,11 @@ public class ACLReportSearchPropertyDialog extends ACLReportPropertiesDialog
 
 
     /**
-     * 
+     * From the ListSelectionListener.
+     * Enable the buttons appropriately.
+     *  
      * @param e
+     *      the selection event
      */
     public void valueChanged(ListSelectionEvent e)
     {
@@ -282,8 +287,10 @@ public class ACLReportSearchPropertyDialog extends ACLReportPropertiesDialog
 
 
     /**
-     * 
+     * Returns the search criteria.
+     *  
      * @return
+     *      A vector of the search criteria
      */
     public Vector getSearchCriteria()
     {
@@ -295,6 +302,12 @@ public class ACLReportSearchPropertyDialog extends ACLReportPropertiesDialog
     }
 
 
+    /**
+     * Check if the self-box is selected.
+     * 
+     * @return
+     *      true if the self-box is selected, false else
+     */
     public boolean isSelf()
     {
         if( self )

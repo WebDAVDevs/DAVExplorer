@@ -112,7 +112,7 @@ public class WebDAVConnection extends HTTPConnection
      * Constructor
      * @param Protocol
      * @param HostName
-     * @param port
+     * @param Port
      * @exception HTTPClient.ProtocolNotSuppException
      */
     public WebDAVConnection(String Protocol, String HostName, int Port )

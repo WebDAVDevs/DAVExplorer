@@ -43,15 +43,15 @@ import javax.swing.JTextField;
  * Description: Dialog for adding WebDAV properties
  * Copyright:   Copyright (c) 2001-2005 Regents of the University of California. All rights reserved.
  * @author      Joachim Feise (dav-exp@ics.uci.edu)
- * @date        29 September 2001
+ * date         29 September 2001
  * @author      Joachim Feise (dav-exp@ics.uci.edu)
- * @date        1 October 2001
+ * date         1 October 2001
  * Changes:     Change of package name
  * @author      Joachim Feise (dav-exp@ics.uci.edu)
- * @date        17 December 2001
+ * date         17 December 2001
  * Changes:     Better handling of ok button enable/disable
   * @author      Joachim Feise (dav-exp@ics.uci.edu)
- * @date        8 February 2005
+ * date         8 February 2005
  * Changes:     Some refactoring
 */
 public class PropAddDialog extends JDialog implements ActionListener, DocumentListener

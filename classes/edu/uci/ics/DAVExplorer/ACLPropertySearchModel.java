@@ -27,7 +27,7 @@ import javax.swing.table.AbstractTableModel;
  * Description: Datamodel to use in the ACL property dialog
  * Copyright:   Copyright (c) 2005 Regents of the University of California. All rights reserved.
  * @author      Joachim Feise (dav-exp@ics.uci.edu)
- * @date        11 Feb 2005
+ * date         11 Feb 2005
  */
 public class ACLPropertySearchModel extends AbstractTableModel
 {
@@ -42,7 +42,10 @@ public class ACLPropertySearchModel extends AbstractTableModel
 
 
     /**
-     * Constructor 
+     * Constructor
+     * 
+     * @param match
+     *      flag indicating if the match column is shown
      */
     public ACLPropertySearchModel( boolean match )
     {
@@ -52,7 +55,12 @@ public class ACLPropertySearchModel extends AbstractTableModel
 
 
     /**
-     * 
+     *  Returns the name of a column.
+     *
+     * @param column
+     *      the column being queried
+     * @return
+     *      a string containing the name of the column 
      */
     public String getColumnName( int column )
     {
@@ -63,7 +71,12 @@ public class ACLPropertySearchModel extends AbstractTableModel
 
 
     /**
-     * 
+     *  Returns the class of the values shown in a column.
+     *
+     *  @param column
+     *      the column being queried
+     *  @return
+     *      the Object.class
      */
     public Class getColumnClass( int column )
     {
@@ -73,7 +86,11 @@ public class ACLPropertySearchModel extends AbstractTableModel
     }
 
 
-    /* (non-Javadoc)
+    /**
+     * Returns the number of columns.
+     * 
+     * @return
+     *      the number of columns
      * @see javax.swing.table.TableModel#getColumnCount()
      */
     public int getColumnCount()
@@ -82,7 +99,12 @@ public class ACLPropertySearchModel extends AbstractTableModel
     }
 
 
-    /* (non-Javadoc)
+    /**
+     * Returns the number of rows.
+     * Always returns at least 1 row, so that the list is shown.
+     *  
+     * @return
+     *      the number of rows 
      * @see javax.swing.table.TableModel#getRowCount()
      */
     public int getRowCount()
@@ -92,7 +114,15 @@ public class ACLPropertySearchModel extends AbstractTableModel
     }
 
 
-    /* (non-Javadoc)
+    /**
+     * Returns the value at a specific cell in the table.
+     * 
+     * @param rowIndex
+     *      the row position
+     * @param columnIndex
+     *      the column position
+     * @return
+     *      the value in the cell specified by the parameters 
      * @see javax.swing.table.TableModel#getValueAt(int, int)
      */
     public Object getValueAt( int rowIndex, int columnIndex )
@@ -125,8 +155,11 @@ public class ACLPropertySearchModel extends AbstractTableModel
 
 
     /**
-     * 
+     * Returns the real number of rows.
+     *  
      * @return
+     *      the number of rows 
+     * @see #getRowCount()
      */
     public int getRealRowCount()
     {
@@ -135,9 +168,12 @@ public class ACLPropertySearchModel extends AbstractTableModel
 
 
     /**
+     * Add a row to the data model.
      * 
      * @param properties
+     *      the list of properties
      * @param match
+     *      the match string
      */
     public void addRow( Vector properties, String match )
     {
@@ -149,9 +185,12 @@ public class ACLPropertySearchModel extends AbstractTableModel
 
 
     /**
-     * 
+     * Return an entry in the data model.
+     *  
      * @param index
+     *      the index of the entry to return
      * @return
+     *      the selected entry
      */
     public ACLPropertySearchNode getRow( int index )
     {
@@ -164,8 +203,10 @@ public class ACLPropertySearchModel extends AbstractTableModel
 
 
     /**
-     * 
+     * Remove an entry from the data model.
+     *  
      * @param index
+     *      the index of the entry to remove
      */
     public void removeRow( int index )
     {

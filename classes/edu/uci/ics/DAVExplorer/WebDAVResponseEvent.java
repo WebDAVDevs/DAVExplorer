@@ -29,17 +29,17 @@ import HTTPClient.HTTPResponse;
  * Description: The event object sent for responses from the server
  * Copyright:   Copyright (c) 1998-2005 Regents of the University of California. All rights reserved.
  * @author      Undergraduate project team ICS 126B 1998
- * @date        1998
+ * date         1998
  * @author      Yuzo Kanomata, Joachim Feise (dav-exp@ics.uci.edu)
- * @date        17 March 1999
+ * date         17 March 1999
  * @author      Joachim Feise (dav-exp@ics.uci.edu)
- * @date        1 October 2001
+ * date         1 October 2001
  * Changes:     Change of package name
  * @author      Joachim Feise (dav-exp@ics.uci.edu)
- * @date        08 February 2004
+ * date         8 February 2004
  * Changes:     Added Javadoc templates
  * @author      Joachim Feise (dav-exp@ics.uci.edu)
- * @date        8 February 2005
+ * date         8 February 2005
  * Changes:     Added ACL-specific fields
  */
 public class WebDAVResponseEvent extends EventObject
@@ -89,7 +89,6 @@ public class WebDAVResponseEvent extends EventObject
      * @param resource
      * @param method
      * @param response
-     * @param extra
      * @param data
      * @param node
      */

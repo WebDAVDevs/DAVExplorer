@@ -46,7 +46,7 @@ import javax.swing.event.ListSelectionListener;
  * Description: The dialog to select privileges
  * Copyright:   Copyright (c) 2005 Regents of the University of California. All rights reserved.
  * @author      Joachim Feise (dav-exp@ics.uci.edu)
- * @date        15 Feb 2005
+ * date         15 Feb 2005
  */
 public class ACLChangePrivilegesDialog extends JDialog
 implements ActionListener, ChangeListener, ListSelectionListener, WebDAVCompletionListener

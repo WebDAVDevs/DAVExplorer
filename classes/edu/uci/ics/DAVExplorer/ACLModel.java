@@ -31,7 +31,7 @@ import com.ms.xml.util.Name;
  * Description: The model for displaying the ACLs.
  * Copyright:   Copyright (c) 2005 Regents of the University of California. All rights reserved.
  * @author      Joachim Feise (dav-exp@ics.uci.edu)
- * @date        8 Feb 2005
+ * date         8 Feb 2005
  */
 public class ACLModel extends AbstractTableModel
 {
@@ -39,6 +39,7 @@ public class ACLModel extends AbstractTableModel
      * Constructor 
      * 
      * @param properties
+     *      the properties specifying the ACL list
      */
     public ACLModel( Element properties )
     {
@@ -47,7 +48,12 @@ public class ACLModel extends AbstractTableModel
 
 
     /**
-     * 
+     *  Returns the name of a column.
+     *
+     * @param column
+     *      the column being queried
+     * @return
+     *      a string containing the name of the column 
      */
     public String getColumnName( int column )
     {
@@ -58,7 +64,12 @@ public class ACLModel extends AbstractTableModel
 
 
     /**
-     * 
+     *  Returns the class of the values shown in a column.
+     *
+     *  @param column
+     *      the column being queried
+     *  @return
+     *      the Object.class
      */
     public Class getColumnClass( int column )
     {
@@ -69,7 +80,10 @@ public class ACLModel extends AbstractTableModel
 
 
     /**
+     * Returns the number of columns.
      * 
+     * @return
+     *      the number of columns
      * @see javax.swing.table.TableModel#getColumnCount()
      */
     public int getColumnCount()
@@ -79,7 +93,10 @@ public class ACLModel extends AbstractTableModel
     }
 
     /**
+     * Returns the number of rows.
      * 
+     * @return
+     *      the number of rows 
      * @see javax.swing.table.TableModel#getRowCount()
      */
     public int getRowCount()
@@ -88,7 +105,14 @@ public class ACLModel extends AbstractTableModel
     }
 
     /**
+     * Returns the value at a specific cell in the table.
      * 
+     * @param rowIndex
+     *      the row position
+     * @param columnIndex
+     *      the column position
+     * @return
+     *      the value in the cell specified by the parameters 
      * @see javax.swing.table.TableModel#getValueAt(int, int)
      */
     public Object getValueAt( int rowIndex, int columnIndex )
@@ -128,7 +152,7 @@ public class ACLModel extends AbstractTableModel
 
 
     /**
-     *
+     * Reset all ACL entries to non-modified.
      */
     public void clear()
     {
@@ -138,11 +162,16 @@ public class ACLModel extends AbstractTableModel
 
 
     /**
+     * Add a new ACL entry.
      * 
      * @param principal
+     *      the principals this entry applies to
      * @param principalType
+     *      the type of the principal values
      * @param privileges
+     *      the privileges this entry specifies
      * @param grant
+     *      true if the privileges are granted, false if they are denied
      */
     public void addRow( String[] principal, int principalType, Vector privileges, boolean grant )
     {
@@ -154,9 +183,12 @@ public class ACLModel extends AbstractTableModel
 
 
     /**
+     * Returns a datanode for a specific row in the list.
      * 
      * @param index
+     *      the row index
      * @return
+     *      the datanode for the row
      */
     public ACLNode getRow( int index )
     {
@@ -169,8 +201,10 @@ public class ACLModel extends AbstractTableModel
 
 
     /**
+     * Removes a specific row from the data model
      * 
      * @param index
+     *      the row to be removed
      */
     public void removeRow( int index )
     {
@@ -183,8 +217,11 @@ public class ACLModel extends AbstractTableModel
 
 
     /**
+     * Parses the properties as received from the server, building
+     * up the data model.
      * 
      * @param properties
+     *      the properties received from the server
      */
     private void parseProperties( Element properties )
     {
@@ -213,8 +250,10 @@ public class ACLModel extends AbstractTableModel
 
 
     /**
-     * 
+     * Parse one entry of the ACLs
+     *  
      * @param ace
+     *      the root property defining the element
      */
     private void parseACE( Element ace )
     {
@@ -252,9 +291,12 @@ public class ACLModel extends AbstractTableModel
 
 
     /**
-     * 
+     * Parse the principal information in the properties.
+     *  
      * @param principal
+     *      the root element of the principal property
      * @param node
+     *      the data node where the information is stored
      */
     private void parsePrincipal( Element principal, ACLNode node )
     {
@@ -306,9 +348,12 @@ public class ACLModel extends AbstractTableModel
 
 
     /**
-     * 
+     * Parse the privilege information in the properties.
+     *  
      * @param privileges
+     *      the root element of the privilege properties
      * @param node
+     *      the data node where the information is stored
      */
     private void parsePrivileges( Element privileges, ACLNode node )
     {
@@ -337,9 +382,12 @@ public class ACLModel extends AbstractTableModel
 
 
     /**
+     * Parse the inherited information in the properties.
      * 
      * @param inherited
+     *      the root element of the privilege properties
      * @param node
+     *      the data node where the information is stored
      */
     private void parseInherited( Element inherited, ACLNode node )
     {

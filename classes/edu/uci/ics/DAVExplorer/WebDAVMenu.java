@@ -35,41 +35,41 @@ import java.util.Vector;
  * as well as the event handling for each of the items built in.
  * Copyright:   Copyright (c) 1998-2005 Regents of the University of California. All rights reserved.
  * @author      Undergraduate project team ICS 126B 1998
- * @date        1998
+ * date         1998
  * @author      Yuzo Kanomata, Joachim Feise (dav-exp@ics.uci.edu)
- * @date        17 March 1999
+ * date         17 March 1999
  * Changes:     Added Create Folder menu
  *              Added enable/disable functionality to menu entries
  * @author      Yuzo Kanomata, Joachim Feise (dav-exp@ics.uci.edu)
- * @date        31 March 1999
+ * date         31 March 1999
  * Changes:     Changed Application menu to View menu
  *              Consolidated view functionality in View menu
  *              Added lock info view
  * @author      Joachim Feise (dav-exp@ics.uci.edu)
- * @date        2 August 2001
+ * date         2 August 2001
  * Changes:     Added Move menu entry
  *              Renamed Duplicate to Copy
  * @author      Joachim Feise (dav-exp@ics.uci.edu)
- * @date        29 September 2001
+ * date         29 September 2001
  * Changes:     Changed View Properties menu to reflect modify functionality
  * @author      Joachim Feise (dav-exp@ics.uci.edu)
- * @date        1 October 2001
+ * date         1 October 2001
  * Changes:     Change of package name
  * @author      Joachim Feise (dav-exp@ics.uci.edu)
- * @date        17 March 2003
+ * date         17 March 2003
  * Changes:     Integrated Brian Johnson's applet changes.
  *              Added better error reporting.
  * @author      Joachim Feise (dav-exp@ics.uci.edu)
- * @date        27 April 2003
+ * date         27 April 2003
  * Changes:     Added shared lock functionality.
  * @author      Joachim Feise (dav-exp@ics.uci.edu)
- * @date        23 September 2003
+ * date         23 September 2003
  * Changes:     Integrated the DeltaV code from the Spring 2003 ICS125 team.
  * @author      Joachim Feise (dav-exp@ics.uci.edu)
- * @date        08 February 2004
+ * date         8 February 2004
  * Changes:     Added Javadoc templates
  * @author      Joachim Feise (dav-exp@ics.uci.edu)
- * @date        10 February 2005
+ * date         10 February 2005
  * Changes:     Added ACL menus
  */
 public class WebDAVMenu extends JMenuBar implements ActionListener

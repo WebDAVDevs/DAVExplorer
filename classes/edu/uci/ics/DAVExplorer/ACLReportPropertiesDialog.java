@@ -33,7 +33,7 @@ import javax.swing.JPanel;
  * Description: Dialog to select data for some ACL reports
  * Copyright:   Copyright (c) 2005 Regents of the University of California. All rights reserved.
  * @author      Joachim Feise (dav-exp@ics.uci.edu)
- * @date        11 Feb 2005
+ * date         11 Feb 2005
  */
 public class ACLReportPropertiesDialog extends ACLChangePrivilegesDialog
 {
@@ -68,7 +68,10 @@ public class ACLReportPropertiesDialog extends ACLChangePrivilegesDialog
 
 
     /**
+     * Returns the name of the panel.
      * 
+     * @return
+     *      the name of the panel
      */
     protected String getPanelTitle()
     {
@@ -77,8 +80,11 @@ public class ACLReportPropertiesDialog extends ACLChangePrivilegesDialog
 
 
     /**
+     * From the ActionListener interface.
+     * Handles user actions, i.e., button clicks.
      * 
      * @param e
+     *      the event describing the action
      */
     public void actionPerformed( ActionEvent e )
     {
@@ -116,7 +122,7 @@ public class ACLReportPropertiesDialog extends ACLChangePrivilegesDialog
 
 
     /**
-     * 
+     * Get the available property names from the server
      */
     protected void getAvailable()
     {
@@ -151,7 +157,11 @@ public class ACLReportPropertiesDialog extends ACLChangePrivilegesDialog
 
 
     /**
+     * Modify the dialog panel created by the superclass.
+     * Changes the renderers.
      * 
+     * @param panel
+     *      the panel
      */
     protected void changePanel( JPanel panel )
     {

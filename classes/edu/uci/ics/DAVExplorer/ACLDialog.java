@@ -48,17 +48,22 @@ import com.ms.xml.om.Element;
  * Description: Views or modifies ACLs for a specific resource.
  * Copyright:   Copyright (c) 2005 Regents of the University of California. All rights reserved.
  * @author      Joachim Feise (dav-exp@ics.uci.edu)
- * @date        10 Feb 2005
+ * date         10 Feb 2005
  */
 public class ACLDialog extends JDialog
     implements ActionListener, ChangeListener, ListSelectionListener, WebDAVCompletionListener
 {
     /**
-     * 
+     * Constructor
+     *  
      * @param properties
+     *      the ACL properties to be shown in the dialog
      * @param resource
+     *      the resource the properties apply to
      * @param hostname
+     *      the server name
      * @param locktoken
+     *      the locktoken for the resource, if any. Used when changing properties.
      */
     public ACLDialog( Element properties, String resource, String hostname, String locktoken )
     {
@@ -73,12 +78,18 @@ public class ACLDialog extends JDialog
 
 
     /**
+     * Creates the dialog panel
      * 
      * @param model
+     *      the datamodel for the dialog
      * @param properties
+     *      the ACL properties to be shown in the dialog
      * @param resource
+     *      the resource the properties apply to
      * @param hostname
+     *      the server name
      * @param locktoken
+     *      the locktoken for the resource, if any. Used when changing properties.
      */
     protected void init( ACLModel model, Element properties, String resource, String hostname, String locktoken )
     {
@@ -144,8 +155,10 @@ public class ACLDialog extends JDialog
 
     
     /**
+     * From the ChangeListener interface.
      * 
      * @param e
+     *      the change event
      */
     public void stateChanged( ChangeEvent e )
     {
@@ -154,8 +167,10 @@ public class ACLDialog extends JDialog
 
 
     /**
+     * Act on changes to the dialog, i.e., enable or disable the Save button
      * 
      * @param enable
+     *      true if values are changed, false if values are saved
      */
     public void setChanged( boolean enable )
     {
@@ -167,8 +182,11 @@ public class ACLDialog extends JDialog
 
 
     /**
+     * From the ActionListener interface.
+     * Handles user actions, i.e., button clicks.
      * 
      * @param e
+     *      the event describing the action
      */
     public void actionPerformed(ActionEvent e)
     {
@@ -192,8 +210,11 @@ public class ACLDialog extends JDialog
 
 
     /**
-     * 
+     * From the ListSelectionListener.
+     * Enables the buttons appropriately.
+     *  
      * @param e
+     *      the selection event
      */
     public void valueChanged(ListSelectionEvent e)
     {
@@ -206,8 +227,11 @@ public class ACLDialog extends JDialog
 
 
     /**
+     * From the WebDAVCompletionListener.
+     * Inform the waiting thread that data from the server is available
      * 
      * @param e
+     *      the event
      */
     public void completion( WebDAVCompletionEvent e )
     {
@@ -218,8 +242,11 @@ public class ACLDialog extends JDialog
 
 
     /**
+     * From the MouseListener
+     * Act on double clicks on the ACL properties list to change an ACL.
      * 
      * @param e
+     *      the mouse event
      */
     public void handleDoubleClick( MouseEvent e )
     {
@@ -264,7 +291,7 @@ public class ACLDialog extends JDialog
 
 
     /**
-     * 
+     * Add a new ACL entry. 
      */
     public void add()
     {
@@ -278,7 +305,7 @@ public class ACLDialog extends JDialog
 
 
     /**
-    *
+    * Remove an ACL entry.
     */
    public void remove()
    {
@@ -293,6 +320,9 @@ public class ACLDialog extends JDialog
    }
 
 
+   /**
+    * Save the modified ACL list.
+    */
    public void save()
    {
        Vector ACLs = new Vector();
@@ -310,7 +340,7 @@ public class ACLDialog extends JDialog
 
 
     /**
-     *
+     * Cancel the dialog.
      */
     public void cancel()
     {
@@ -320,7 +350,7 @@ public class ACLDialog extends JDialog
 
 
     /**
-     * 
+     * A dialog asking the user to confirm an action. Used when an ACL entry is removed.
      * @param title
      * @param text
      * @return

@@ -37,16 +37,16 @@ import com.ms.xml.util.XMLOutputStream;
  *              static information needed to form all DeltaV requests.
  * Copyright:   Copyright (c) 2003-2005 Regents of the University of California. All rights reserved.
  * @author      Joachim Feise (dav-exp@ics.uci.edu)
- * @date        23 September 2003
+ * date         23 September 2003
  * @author      Joachim Feise (dav-exp@ics.uci.edu)
- * @date        07 February 2004
+ * date         07 February 2004
  * Changes:     Creating OPTIONS request for activity data
  *              (needed for evtl. Subversion support.)
  * @author      Joachim Feise (dav-exp@ics.uci.edu)
- * @date        08 February 2004
+ * date         08 February 2004
  * Changes:     Added Javadoc templates
  * @author      Joachim Feise (dav-exp@ics.uci.edu)
- * @date        10 February 2005
+ * date         10 February 2005
  * Changes:     Some refactoring
  */
 public class DeltaVRequestGenerator extends WebDAVRequestGenerator

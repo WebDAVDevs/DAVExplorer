@@ -45,37 +45,37 @@ import com.ms.xml.util.Name;
  *              tableSelectionChanged() or treeSelectionChanged()
  * Copyright:   Copyright (c) 1998-2005 Regents of the University of California. All rights reserved.
  * @author      Robert Emmery
- * @date        2 April 1998
+ * date         2 April 1998
  * @author      Yuzo Kanomata, Joachim Feise (dav-exp@ics.uci.edu)
- * @date        17 March 1999
+ * date         17 March 1999
  * Changes:     Added the WebDAVTreeNode that initiated the Request.
  * @author      Joachim Feise (dav-exp@ics.uci.edu)
- * @date        12 January 2001
+ * date         12 January 2001
  * Changes:     Added support for https (SSL)
  * @author      Joachim Feise (dav-exp@ics.uci.edu)
- * @date        1 October 2001
+ * date         1 October 2001
  * Changes:     Change of package name
  * @author      Joachim Feise (dav-exp@ics.uci.edu)
- * @date        2 November 2001
+ * date         2 November 2001
  * Changes:     Added locktoken support to proppatch code
  * @author      Joachim Feise (dav-exp@ics.uci.edu)
- * @date        25 June 2002
+ * date         25 June 2002
  * Changes:     Special handling of PUT to support files > 2GB
  * @author      Joachim Feise (dav-exp@ics.uci.edu)
- * @date        17 March 2003
+ * date         17 March 2003
  * Changes:     Integrated Brian Johnson's applet changes.
  *              Added better error reporting.
  * @author      Joachim Feise (dav-exp@ics.uci.edu)
- * @date        27 April 2003
+ * date         27 April 2003
  * Changes:     Added shared lock functionality.
  * @author      Joachim Feise (dav-exp@ics.uci.edu)
- * @date        23 September 2003
+ * date         23 September 2003
  * Changes:     Code cleanup.
  * @author      Joachim Feise (dav-exp@ics.uci.edu)
- * @date        08 February 2004
+ * date         8 February 2004
  * Changes:     Added Javadoc templates
  * @author      Joachim Feise (dav-exp@ics.uci.edu)
- * @date        10 February 2005
+ * date         10 February 2005
  * Changes:     Some refactoring
  */
 public class WebDAVRequestGenerator implements Runnable
@@ -260,7 +260,7 @@ public class WebDAVRequestGenerator implements Runnable
      * information from the response to an earlier one.
      * This is used for example if we need to gather additional
      * information before executing a request.
-     * @param  
+     * @param b
      */
     public void setSecondTime(boolean b)
     {
@@ -973,7 +973,7 @@ public class WebDAVRequestGenerator implements Runnable
     /**
      * Generate a GET request
      * @see     "RFC 2518"
-     * @param localName
+     * @param code
      * 
      * @return  true if successful, false else  
      */
@@ -1605,7 +1605,8 @@ public class WebDAVRequestGenerator implements Runnable
 
     /**
      * 
-     * @param info
+     * @param code
+     * @param data
      */
     public synchronized void setExtendedInfo( int code, String data )
     {

@@ -41,19 +41,19 @@ import com.ms.xml.util.Name;
  *              empty intentionally.
  * Copyright:   Copyright (c) 2003-2005 Regents of the University of California. All rights reserved.
  * @author      Joachim Feise (dav-exp@ics.uci.edu)
- * @date        23 September 2003
+ * date         23 September 2003
  * @author      Joachim Feise (dav-exp@ics.uci.edu)
- * @date        28 October 2003
+ * date         28 October 2003
  * Changes:     Fixed double insertion listener firing.
  * @author      Joachim Feise (dav-exp@ics.uci.edu)
- * @date        07 February 2004
+ * date         07 February 2004
  * Changes:     Parsing OPTIONS response for activity data
  *              (needed for evtl. Subversion support.)
  * @author      Joachim Feise (dav-exp@ics.uci.edu)
- * @date        08 February 2004
+ * date         08 February 2004
  * Changes:     Added Javadoc templates
  * @author      Joachim Feise (dav-exp@ics.uci.edu)
- * @date        15 February 2005
+ * date         15 February 2005
  * Changes:     Some refactoring
  */
 public class DeltaVResponseInterpreter extends WebDAVResponseInterpreter

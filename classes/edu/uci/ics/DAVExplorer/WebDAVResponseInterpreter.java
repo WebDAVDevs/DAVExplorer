@@ -50,33 +50,33 @@ import com.ms.xml.util.Name;
  *              empty intentionally.
  * Copyright:   Copyright (c) 1998-2005 Regents of the University of California. All rights reserved.
  * @author      Robert Emmery
- * @date        2 April 1998
+ * date         2 April 1998
  * @author      Yuzo Kanomata, Joachim Feise (dav-exp@ics.uci.edu)
- * @date        17 March 1999
+ * date         17 March 1999
  * Changes:     Fixed parseGet to save the retrieved file properly
  *              parseMkCol now has functionality to refresh the display
  * @author      Joachim Feise (dav-exp@ics.uci.edu), Eric Giguere
- * @date        23 May 2000
+ * date         23 May 2000
  * Changes:     Added check for CDATA to improve interoperability for Sharemation's server
  *              Incorporated Eric Giguere's changes to getOwnerInfo(). Thanks!
  * @author      Joachim Feise (dav-exp@ics.uci.edu)
- * @date        12 January 2001
+ * date         12 January 2001
  * Changes:     Added support for https (SSL)
  * @author      Joachim Feise (dav-exp@ics.uci.edu)
- * @date        1 October 2001
+ * date         1 October 2001
  * Changes:     Change of package name
  * @author      Joachim Feise (dav-exp@ics.uci.edu)
- * @date        17 March 2003
+ * date         17 March 2003
  * Changes:     Integrated Brian Johnson's applet changes.
  *              Added better error reporting.
  * @author      Joachim Feise (dav-exp@ics.uci.edu)
- * @date        27 April 2003
+ * date         27 April 2003
  * Changes:     Added shared lock functionality.
  * @author      Joachim Feise (dav-exp@ics.uci.edu)
- * @date        23 September 2003
+ * date         23 September 2003
  * Changes:     Refactored code during DeltaV integration.
  * @author      Joachim Feise (dav-exp@ics.uci.edu)
- * @date        08 February 2004
+ * date         8 February 2004
  * Changes:     Added Javadoc templates
  */
 public class WebDAVResponseInterpreter
@@ -1477,7 +1477,7 @@ public class WebDAVResponseInterpreter
      * A small correction has been made in the code by Eric Giguere to get the
      * owner name in cases where the parsers adds empty tags in the element tree
      * (bug from the parser).
-     * @author  Joachim Feise, Eric Giguere
+     * author  Joachim Feise, Eric Giguere
      * @param   ownerinfo The XML node that is at the root of the owner information
      * 
      * @return

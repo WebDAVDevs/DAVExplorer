@@ -53,7 +53,7 @@ import javax.swing.event.ListSelectionListener;
  * Description: Dialog to specify new ACLs to add to a resource and to change existing ACLs.
  * Copyright:   Copyright (c) 2005 Regents of the University of California. All rights reserved.
  * @author      Joachim Feise (dav-exp@ics.uci.edu)
- * @date        11 Feb 2005  
+ * date         11 Feb 2005  
  */
 public class ACLAddDialog extends JDialog
     implements ActionListener, ChangeListener, ListSelectionListener, WebDAVCompletionListener

@@ -25,7 +25,7 @@ import com.ms.xml.om.Element;
  * Description: Show inherited ACLs for a specific resource.
  * Copyright:   Copyright (c) 2005 Regents of the University of California. All rights reserved.
  * @author      Joachim Feise (dav-exp@ics.uci.edu)
- * @date        15 February 2005
+ * date         15 February 2005
  */
 public class ACLInheritedDialog extends PropDialog
 {

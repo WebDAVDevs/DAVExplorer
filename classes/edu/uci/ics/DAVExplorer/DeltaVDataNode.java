@@ -361,7 +361,7 @@ public class DeltaVDataNode extends DataNode
 
     /**
      * 
-     * @param checkOut
+     * @param checkedOut
      */
     public void setCheckedOut( String checkedOut )
     {

@@ -26,7 +26,7 @@ import java.util.Vector;
  * Description: Describes one access control entry
  * Copyright:   Copyright (c) 2005 Regents of the University of California. All rights reserved.
  * @author      Joachim Feise (dav-exp@ics.uci.edu)
- * @date        8 Feb 2005
+ * date         8 Feb 2005
  */
 public class ACLNode
 {
@@ -42,11 +42,18 @@ public class ACLNode
      * Constructor
      * 
      * @param principal
+     *      the principals for this entry
      * @param principalType
+     *      the type of the principals
      * @param privileges
+     *      the privileges for this entry
      * @param grant
+     *      true if the privileges are granted, false if they are denied
      * @param inheritedHref
+     *      if the entry is inherited, this parameter specifies from where
+     *      it is inherited. If the entry is not inherited, this parameter is null.
      * @param modified
+     *      indicates if the entry is considered modified
      */
     public ACLNode( String[] principal, int principalType, String[] privileges, boolean grant, String inheritedHref, boolean modified )
     {
@@ -58,10 +65,16 @@ public class ACLNode
      * Constructor
      * 
      * @param principal
+     *      the principals for this entry
      * @param principalType
+     *      the type of the principals
      * @param privileges
+     *      the privileges for this entry
      * @param grant
+     *      true if the privileges are granted, false if they are denied
      * @param inheritedHref
+     *      if the entry is inherited, this parameter specifies from where
+     *      it is inherited. If the entry is not inherited, this parameter is null.
      */
     public ACLNode( String[] principal, int principalType, String[] privileges, boolean grant, String inheritedHref )
     {
@@ -73,10 +86,15 @@ public class ACLNode
      * Constructor
      * 
      * @param principal
+     *      the principals for this entry
      * @param principalType
+     *      the type of the principals
      * @param privileges
+     *      the privileges for this entry
      * @param grant
+     *      true if the privileges are granted, false if they are denied
      * @param modified
+     *      indicates if the entry is considered modified
      */
     public ACLNode( String[] principal, int principalType, String[] privileges, boolean grant, boolean modified )
     {
@@ -88,9 +106,13 @@ public class ACLNode
      * Constructor
      * 
      * @param principal
+     *      the principals for this entry
      * @param principalType
+     *      the type of the principals
      * @param privileges
+     *      the privileges for this entry
      * @param grant
+     *      true if the privileges are granted, false if they are denied
      */
     public ACLNode( String[] principal, int principalType, String[] privileges, boolean grant )
     {
@@ -102,9 +124,13 @@ public class ACLNode
      * Constructor
      * 
      * @param principal
+     *      the principals for this entry
      * @param principalType
+     *      the type of the principals
      * @param privileges
+     *      the privileges for this entry
      * @param grant
+     *      true if the privileges are granted, false if they are denied
      */
     public ACLNode( String[] principal, int principalType, Vector privileges, boolean grant )
     {
@@ -123,13 +149,21 @@ public class ACLNode
 
 
     /**
+     * Initializes the data.
      * 
      * @param principal
+     *      the principals for this entry
      * @param principalType
+     *      the type of the principals
      * @param privileges
+     *      the privileges for this entry
      * @param grant
+     *      true if the privileges are granted, false if they are denied
      * @param inheritedHref
+     *      if the entry is inherited, this parameter specifies from where
+     *      it is inherited. If the entry is not inherited, this parameter is null.
      * @param modified
+     *      indicates if the entry is considered modified
      */
     protected void init( String[] principal, int principalType, String[] privileges, boolean grant, String inheritedHref, boolean modified )
     {
@@ -151,13 +185,21 @@ public class ACLNode
 
 
     /**
+     * Initializes the data.
      * 
      * @param principal
+     *      the principals for this entry
      * @param principalType
+     *      the type of the principals
      * @param privileges
+     *      the privileges for this entry
      * @param grant
+     *      true if the privileges are granted, false if they are denied
      * @param inheritedHref
+     *      if the entry is inherited, this parameter specifies from where
+     *      it is inherited. If the entry is not inherited, this parameter is null.
      * @param modified
+     *      indicates if the entry is considered modified
      */
     protected void init( String[] principal, int principalType, Vector privileges, boolean grant, String inheritedHref, boolean modified )
     {
@@ -177,8 +219,10 @@ public class ACLNode
 
 
     /**
-     * 
+     * Returns the principals.
+     *  
      * @return
+     *      an array of principal names
      */
     public String[] getPrincipal()
     {
@@ -187,8 +231,10 @@ public class ACLNode
 
 
     /**
-     * 
+     * Set the principals.
+     *  
      * @param principal
+     *      an array of principal names
      */
     public void setPrincipal( String[] principal )
     {
@@ -198,8 +244,10 @@ public class ACLNode
 
 
     /**
-     * 
+     * Returns the principal type.
+     *  
      * @return
+     *      the principal type
      */
     public int getPrincipalType()
     {
@@ -208,8 +256,10 @@ public class ACLNode
 
 
     /**
+     * Set the principal type.
      * 
      * @param principalType
+     *      the new principal type
      */
     public void setPrincipalType( int principalType )
     {
@@ -218,8 +268,10 @@ public class ACLNode
 
 
     /**
-     * 
+     * Returns the privileges
+     *  
      * @return
+     *      a vector of the privileges
      */
     public Vector getPrivileges()
     {
@@ -228,8 +280,10 @@ public class ACLNode
 
 
     /**
+     * Set the privileges.
      * 
      * @param privileges
+     *      the new array of privileges
      */
     public void setPrivileges( String[] privileges )
     {
@@ -241,8 +295,10 @@ public class ACLNode
 
 
     /**
+     * Set the privileges.
      * 
      * @param privileges
+     *      the new vector of privileges
      */
     public void setPrivileges( Vector privileges )
     {
@@ -252,9 +308,12 @@ public class ACLNode
 
 
     /**
-     * 
+     * Add a privilege to the existing set.
+     *  
      * @param privilege
+     *      the privilege to be added
      * @return
+     *      true if the privilege was added, false if it already existed
      */
     public boolean addPrivilege( String privilege )
     {
@@ -267,8 +326,10 @@ public class ACLNode
 
 
     /**
-     * 
+     * Add privileges to the existing set.
+     *  
      * @param privileges
+     *      the privileges to be added
      */
     public void addPrivileges( Vector privileges )
     {
@@ -278,8 +339,10 @@ public class ACLNode
 
 
     /**
-     * 
+     * Add privileges to the existing set.
+     *  
      * @param privileges
+     *      the privileges to be added
      */
     public void addPrivileges( String[] privileges )
     {
@@ -289,9 +352,12 @@ public class ACLNode
 
 
     /**
-     * 
+     * Delete a privilege from the existing set.
+     *  
      * @param privilege
+     *      the privilege to be deleted
      * @return
+     *      true if the privilege was deleted, false if it wasn't in the existing set
      */
     public boolean deletePrivilege( String privilege )
     {
@@ -306,8 +372,10 @@ public class ACLNode
 
 
     /**
-     * 
+     * Delete privileges from the existing set.
+     *  
      * @param privileges
+     *      the privileges to be deleted
      */
     public void deletePrivileges( Vector privileges )
     {
@@ -317,8 +385,10 @@ public class ACLNode
 
 
     /**
-     * 
+     * Delete privileges from the existing set.
+     *  
      * @param privileges
+     *      the privileges to be deleted
      */
     public void deletePrivileges( String[] privileges )
     {
@@ -328,8 +398,10 @@ public class ACLNode
 
 
     /**
-     * 
+     * Returns if the privileges are to be granted or denied.
+     *  
      * @return
+     *      true if the privileges are granted, false else
      */
     public boolean getGrant()
     {
@@ -338,8 +410,10 @@ public class ACLNode
 
 
     /**
-     * 
+     * Grant or deny the privileges
+     *  
      * @param grant
+     *      true if the privileges are granted, false else
      */
     public void setGrant( boolean grant )
     {
@@ -348,8 +422,10 @@ public class ACLNode
 
 
     /**
-     * 
+     * Returns if the entry is inherited.
+     *  
      * @return
+     *      true if the ACL entry is inherited, false else
      */
     public boolean isInherited()
     {
@@ -358,8 +434,10 @@ public class ACLNode
 
 
     /**
-     * 
+     * If the ACL entry is inherited, return the originating URI.
+     *  
      * @return
+     *      the originating URI if the entry is inherited, null else
      */
     public String getInherited()
     {
@@ -381,8 +459,10 @@ public class ACLNode
 
 
     /**
-     * 
+     * Check if the entry is modified.
+     *  
      * @return
+     *      true if the entry is modified, false else
      */
     public boolean isModified()
     {
@@ -391,8 +471,7 @@ public class ACLNode
 
 
     /**
-     * 
-     *
+     * Reset the entry to not modified. 
      */
     public void clearModified()
     {

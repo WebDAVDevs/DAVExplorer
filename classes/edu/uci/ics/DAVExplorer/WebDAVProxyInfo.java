@@ -38,19 +38,19 @@ import java.awt.event.ActionListener;
  * Description: Dialog for entering the URL of a Proxy server to use
  * Copyright:   Copyright (c) 2001-2005 Regents of the University of California. All rights reserved.
  * @author      Joachim Feise (dav-exp@ics.uci.edu)
- * @date        22 May 2001
+ * date         22 May 2001
  * @author      Joachim Feise (dav-exp@ics.uci.edu)
- * @date        1 October 2001
+ * date         1 October 2001
  * Changes:     Change of package name
  * @author      Joachim Feise (dav-exp@ics.uci.edu)
- * @date        10 November 2003
+ * date         10 November 2003
  * Changes:     The return key now triggers a programmatic click on the OK
  *              button.
  * @author      Joachim Feise (dav-exp@ics.uci.edu)
- * @date        08 February 2004
+ * date         8 February 2004
  * Changes:     Added Javadoc templates
  * @author      Joachim Feise (dav-exp@ics.uci.edu)
- * @date        8 February 2005
+ * date         8 February 2005
  * Changes:     Some refactoring
  */
 public class WebDAVProxyInfo extends Dialog implements ActionListener

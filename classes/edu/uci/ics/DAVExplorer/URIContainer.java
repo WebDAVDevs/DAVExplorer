@@ -34,9 +34,9 @@ import java.util.Vector;
  * @author      Thoralf Rickert
  * @author      Joachim Feise (dav-exp@ics.uci.edu)
  * @version     0.1
- * @date        07 April 2003
+ * date         07 April 2003
  * @author      Joachim Feise (dav-exp@ics.uci.edu)
- * @date        08 February 2004
+ * date         08 February 2004
  * Changes:     Added Javadoc templates
  */
 public class URIContainer
