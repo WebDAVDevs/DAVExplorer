@@ -81,7 +81,7 @@ import java.io.File;
 
 public class Main extends JFrame
 {
-    public final static String VERSION = "0.80-dev";
+    public final static String VERSION = "0.80";
     public final static String UserAgent = "UCI DAV Explorer/" + VERSION;
 
     public Main(String frameName)
