@@ -63,4 +63,4 @@ clean::
 	- rm -f *.class
 
 dist::
-	- rm -f *.class CVS
+	- rm -rf *.class CVS

@@ -53,5 +53,5 @@ dist::
 	- cd $(SRC)/HTTPClient; make dist
 	- cd $(SRC)/DAVExplorer; make dist
 	- rm -f DAVExplorer.jar
-	- rm -f $(SRC)/CVS
+	- rm -rf $(SRC)/CVS
 

@@ -84,9 +84,9 @@ clean::
 	- cd $(SRC)/xmlstream; rm -f *.class
 
 dist::
-	- cd $(SRC)/dso; rm -f *.class CVS
-	- cd $(SRC)/om; rm -f *.class CVS
-	- cd $(SRC)/parser; rm -f *.class CVS
-	- cd $(SRC)/util; rm -f *.class CVS
-	- cd $(SRC)/xmlstream; rm -f *.class CVS
-	- rm -f $(SRC)/CVS
+	- cd $(SRC)/dso; rm -rf *.class CVS
+	- cd $(SRC)/om; rm -rf *.class CVS
+	- cd $(SRC)/parser; rm -rf *.class CVS
+	- cd $(SRC)/util; rm -rf *.class CVS
+	- cd $(SRC)/xmlstream; rm -rf *.class CVS
+	- rm -rf $(SRC)/CVS

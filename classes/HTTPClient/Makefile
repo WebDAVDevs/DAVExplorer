@@ -81,10 +81,10 @@ clean::
 	- cd shttp; rm -f *.class
 
 dist::
-	- rm -f *.class CVS
-	- cd http; rm -f *.class CVS
-	- cd https; rm -f *.class CVS
-	- cd shttp; rm -f *.class CVS
+	- rm -rf *.class CVS
+	- cd http; rm -rf *.class CVS
+	- cd https; rm -rf *.class CVS
+	- cd shttp; rm -rf *.class CVS
 
 ### Interface Dependencies
 
