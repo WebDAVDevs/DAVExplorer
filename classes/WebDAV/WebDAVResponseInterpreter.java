@@ -454,7 +454,7 @@ public class WebDAVResponseInterpreter
                     }
                     else
                     {
-                        generator.GeneratePut(fileName,lockToken);
+                        generator.GeneratePut(fileName, newRes, lockToken);
                         generator.execute();
                     }
                 }
@@ -632,33 +632,58 @@ public class WebDAVResponseInterpreter
             else
             {     
                 fileName =  WebDAVEditDir + File.separatorChar + newRes;
+                // write the proper separator
+                StringBuffer fName = new StringBuffer( fileName );
+                for( int pos = 0; pos < fName.length(); pos++ )
+                {
+                    if( (fName.charAt(pos) == '/') || (fName.charAt(pos) == '\\') )
+                        fName.setCharAt( pos, File.separatorChar );
+                }
+                fileName = fName.toString();
             }
+            // create all subdirectories as necessary
+            String dir = fileName.substring( 0, fileName.lastIndexOf( File.separatorChar ) );
+            File theDir = new File( dir );
+            theDir.mkdirs();
+            
             File theFile = new File(fileName);
+            boolean bSave = true;
             if (theFile.exists())
             {
                 if (!replaceFile(newRes))
                 {
+                    bSave = false;
                     if ( (Extra.equals("view")) || (Extra.equals("edit")) )
                     {
-                        if (launchAnyway())
+                        if( !launchAnyway() )
                         {
-                            System.out.println("launching..");
                             return;
                         }
-                        else
-                            return;
                     } 
                 }
             }
-            body = res.getData();
-            fout = new FileOutputStream(fileName);
-            if (fout == null)
-                return;
-            fout.write(body);
-            fout.close();
-//     String str = File.separatorChar + "Program Files" + File.separatorChar + "Microsoft Office" + File.separatorChar + "Office" + File.separatorChar + "winword.exe " + fileName;
-//     Runtime rt = Runtime.getRuntime();
-//     rt.exec(str);
+            if( bSave )
+            {
+                body = res.getData();
+                fout = new FileOutputStream(fileName);
+                if (fout == null)
+                    return;
+                fout.write(body);
+                fout.close();
+            }
+            
+            if (Extra.equals("view"))
+            {
+                String app = selectApplication();
+                if( (app != null) && (app != "") )
+                {
+                    Runtime rt = Runtime.getRuntime();
+                    String[] cmdarray =  new String[2];
+                    cmdarray[0] = app;
+                    cmdarray[1] = fileName;
+                    rt.exec( cmdarray );
+                }
+            }
         }
         catch (Exception exc)
         {
@@ -865,6 +890,14 @@ public class WebDAVResponseInterpreter
             return true;
         else
             return false;
+    }
+
+    public String selectApplication()
+    {
+        JOptionPane pane = new JOptionPane();
+        String str = new String("Select the application to show this file");
+        String ret = pane.showInputDialog(null,str,"Select Application",JOptionPane.QUESTION_MESSAGE);
+        return ret;
     }
 
     public void displayLock(String LockType, String LockScope, String LockDepth, String LockToken, String LockTimeout, String LockOwner )

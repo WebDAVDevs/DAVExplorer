@@ -93,9 +93,6 @@ public class WebDAVRequestGenerator implements Runnable
             }
             ResourceName = Path + tableResource;
         }
-    
-        System.out.println("RequestGenerator: ");
-        System.out.println(" * ResourceName = " + ResourceName);
     }
 
     public void treeSelectionChanged(ViewSelectionEvent e)
@@ -107,8 +104,6 @@ public class WebDAVRequestGenerator implements Runnable
         if (Path.startsWith(WebDAVPrefix))
         {
         }
-        System.out.println("RequestGenerator: ");
-        System.out.println(" * ResourceName = " + ResourceName);
     }
 
     public boolean parseResourceName()
@@ -250,7 +245,6 @@ public class WebDAVRequestGenerator implements Runnable
             System.out.println("Error Generating PROPFIND Method for " + StrippedResource);
             return;
         }
-        System.out.println("Generating Propfind PROPFIND Method for: " + StrippedResource);
         String com = "allprop";
         String dep = "infinity";
         if ( command.equalsIgnoreCase("prop") || command.equalsIgnoreCase("propname"))
@@ -312,9 +306,7 @@ public class WebDAVRequestGenerator implements Runnable
             Headers[2] = new NVPair("Content-Type", "text/xml");
             Headers[3] = new NVPair("Content-Length", new Long(Body.length).toString());
 
-            System.out.println("generated xml: " );
-            XMLOutputStream out = new XMLOutputStream(System.out);
-            miniDoc.save(out);
+            printXML( miniDoc );
         }
         catch (Exception e)
         {
@@ -499,9 +491,7 @@ public class WebDAVRequestGenerator implements Runnable
             Headers[1] = new NVPair("Content-Type", "text/xml");
             Headers[2] = new NVPair("Content-Length", new Long(Body.length).toString());
 
-            System.out.println("generated xml: " );
-            XMLOutputStream out = new XMLOutputStream(System.out);
-            miniDoc.save(out);
+            printXML( miniDoc );
         }
         catch (Exception e)
         {
@@ -542,7 +532,6 @@ public class WebDAVRequestGenerator implements Runnable
             System.out.println("Error Generating GET Method...");
             return;
         }
-        System.out.println("Generating GET Method...");
 
         Extra = localName;
         Method = "GET";
@@ -564,7 +553,6 @@ public class WebDAVRequestGenerator implements Runnable
             System.out.println("Error Generating DELETE Method...");
             return;
         }
-        System.out.println("Generating DELETE Method...");
 
         Method = "DELETE";
         Body = null;
@@ -582,16 +570,24 @@ public class WebDAVRequestGenerator implements Runnable
             Headers[0] = new NVPair("Host",HostName + ":" + Port);
     }
   
-    public synchronized void GeneratePut(String fileName, String lockToken)
+    public synchronized void GeneratePut(String fileName, String destDir, String lockToken)
     {
         Headers = null;
         Body = null;
 
+        ResourceName = destDir;
         if (!parseResourceName())
         {
             System.out.println("File is not local");
             return;
         }
+
+        String dest = fileName;
+        int pos = dest.lastIndexOf( File.separatorChar );
+        if( pos >= 0 )
+            dest = dest.substring( pos + 1 );
+        StrippedResource = StrippedResource + "/" + dest;
+
         System.out.println("Generating PUT Method...");
         if ( (fileName == null) || (fileName.equals("")) )
         {
@@ -656,8 +652,7 @@ public class WebDAVRequestGenerator implements Runnable
             System.out.println("Error Generating COPY Method...");
             return;
         }  
-        System.out.println("Generating COPY Method :");
-        System.out.println("Source: " + StrippedResource);
+
         String ow = (Overwrite) ? "T" : "F";
         if (Dest == null)
             Dest = StrippedResource + "_copy";
@@ -667,7 +662,6 @@ public class WebDAVRequestGenerator implements Runnable
             Dest = HostName + ":" + Port + Dest;
         if( !Dest.startsWith(WebDAVPrefix) )
             Dest = WebDAVPrefix + Dest;
-        System.out.println("Destination: " + Dest);
 
         Method = "COPY";
         Body = null;
@@ -708,9 +702,8 @@ public class WebDAVRequestGenerator implements Runnable
                 Headers[2] = new NVPair("Content-Type", "text/xml");
                 Headers[3] = new NVPair("Content-Length", new Long(Body.length).toString());
                 Headers[4] = new NVPair("Overwrite", ow);
-                System.out.println("generated xml: " );
-                XMLOutputStream out = new XMLOutputStream(System.out);
-                miniDoc.save(out);
+                
+                printXML( miniDoc );
             }
             catch (Exception e)
             {
@@ -745,9 +738,6 @@ public class WebDAVRequestGenerator implements Runnable
             System.out.println("Error Generating MOVE Method...");
             return;
         }  
-        System.out.println("Generating MOVE Method :");
-        System.out.println("Source: " + StrippedResource);
-        System.out.println("Destination: " + Dest);
         String ow = (Overwrite) ? "T" : "F";
         if (Dest == null)
         {
@@ -806,9 +796,8 @@ public class WebDAVRequestGenerator implements Runnable
                 Headers[2] = new NVPair("Content-Type", "text/xml");
                 Headers[3] = new NVPair("Content-Length", new Long(Body.length).toString());
                 Headers[4] = new NVPair("Overwrite", ow);
-                System.out.println("generated xml: " );
-                XMLOutputStream out = new XMLOutputStream(System.out);
-                miniDoc.save(out);
+                
+                printXML( miniDoc );
             }
             catch (Exception e)
             {
@@ -891,9 +880,7 @@ public class WebDAVRequestGenerator implements Runnable
                 Headers[1] = new NVPair("Content-Type", "text/xml");
                 Headers[2] = new NVPair("Content-Length", new Long(Body.length).toString());
 
-                System.out.println("generated xml: " );
-                XMLOutputStream out = new XMLOutputStream(System.out);
-                miniDoc.save(out);
+                printXML( miniDoc );
             }
             catch (Exception e)
             {
@@ -1014,5 +1001,18 @@ public class WebDAVRequestGenerator implements Runnable
         JOptionPane pane = new JOptionPane();
         Object [] options = { "OK" };
         pane.showOptionDialog(mainFrame,str, "Error Message", JOptionPane.DEFAULT_OPTION, JOptionPane.ERROR_MESSAGE, null,options, options[0]);
+    }
+    
+    private void printXML( Document miniDoc )
+    {
+        System.out.println("generated xml: " );
+        XMLOutputStream out = new XMLOutputStream(System.out);
+        try
+        {
+            miniDoc.save(out);
+        }
+        catch (Exception e)
+        {
+        }
     }
 }

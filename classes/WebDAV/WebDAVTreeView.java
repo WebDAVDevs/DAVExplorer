@@ -66,7 +66,7 @@ public class WebDAVTreeView
         selectionModel.addTreeSelectionListener(new SelectionChangeListener());
         tree.setRowHeight(-1);
         this.mainFrame = mainFrame;
-        startDirName = java.lang.System.getProperty("HOME");
+        startDirName = System.getProperty("user.home");
         if (startDirName == null)
             startDirName = new Character(File.separatorChar).toString();
 // We're interested in single clicks
@@ -292,5 +292,10 @@ public class WebDAVTreeView
         JOptionPane pane = new JOptionPane();
         Object[] options = { "OK" };
         pane.showOptionDialog(mainFrame,str, "Error Message", JOptionPane.DEFAULT_OPTION, JOptionPane.ERROR_MESSAGE, null, options, options[0]);
+    }
+    
+    public String getCurrentPath()
+    {
+        return constructPath( currPath );
     }
 }

@@ -35,6 +35,7 @@ import com.sun.java.swing.event.*;
 import java.awt.*;
 import java.awt.event.*;
 import java.util.*;
+import java.io.*;
 import WebDAV.WebDAVManager;
 
 public class Main extends JFrame
@@ -54,10 +55,15 @@ public class Main extends JFrame
     public Main(String frameName)
     {
         super (frameName);
-//    Uncomment the following 3 lines if you want system's L&F
-//    try {
-//      UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());
-//    } catch (Exception except) { System.out.println("Error Loading L&F"); }
+//        Uncomment the following 8 lines if you want system's L&F
+//        try
+//        {
+//            UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());
+//        }
+//        catch (Exception except)
+//        {
+//            System.out.println("Error Loading L&F");
+//        }
         WebDAVFrame = this;
         authTable = new Hashtable();
         authHost = null;
@@ -170,13 +176,12 @@ public class Main extends JFrame
             String cmd = e.getActionCommand();
             if (cmd.equals("open"))
             {
-                requestGenerator.GenerateGet(null);
-                requestGenerator.setExtraInfo("view");
+                requestGenerator.GenerateGet("view");
                 requestGenerator.execute();
             }
             else if (cmd.equals("save"))
             {
-                requestGenerator.GenerateGet(null);
+                requestGenerator.GenerateGet("save");
                 requestGenerator.execute();
             }
             else if (cmd.equals("copy"))
@@ -196,8 +201,7 @@ public class Main extends JFrame
             }
             else if (cmd.equals("launch"))
             {
-                requestGenerator.GenerateGet(null);
-                requestGenerator.setExtraInfo("edit");
+                requestGenerator.GenerateGet("edit");
                 requestGenerator.execute();
             }
             else if (cmd.equals("propfind"))
@@ -351,31 +355,25 @@ public class Main extends JFrame
                 System.exit(0);
             if (command.equals("View"))
             {
-                requestGenerator.GenerateGet(null);
-                requestGenerator.setExtraInfo("view");
+                requestGenerator.GenerateGet("view");
                 requestGenerator.execute();
             }
             else if (command.equals("Save"))
             {
-                requestGenerator.GenerateGet(null);
+                requestGenerator.GenerateGet("save");
                 requestGenerator.execute();
             }
             else if (command.equals("Save As..."))
             {
-                // the following should be replaced with a file dialog
-                // send the name retreived instead of null
-	
-//        FileDialog fd = new FileDialog(WebDAVFrame, "Save As" , FileDialog.SAVE);
-//        fd.setVisible(true);
-//        requestGenerator.GenerateGet(fd.getFile());
                 requestGenerator.GenerateGet("saveas");
                 requestGenerator.execute();
             }
             else if (command.equals("Export File..."))
             {
-                FileDialog fd = new FileDialog(WebDAVFrame, "Export File..." , FileDialog.LOAD);
+                FileDialog fd = new FileDialog(WebDAVFrame, "Export File (Upload)" , FileDialog.LOAD);
                 fd.setVisible(true);
-                requestGenerator.GeneratePut(fd.getFile(), null);
+                String fullPath = fd.getDirectory() + File.separatorChar + fd.getFile();
+                requestGenerator.GeneratePut(fullPath, treeView.getCurrentPath(), null);
                 requestGenerator.execute();
             }
             else if (command.equals("Lock"))
