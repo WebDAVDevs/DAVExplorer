@@ -516,22 +516,25 @@ public class WebDAVTreeView implements ViewSelectionListener, CopyResponseListen
         if (startDirName != null && GlobalData.getGlobalData().doAddStartDir())
             addRowToRoot(startDirName,true);
 
-        String[][] initialSites = GlobalData.getGlobalData().getInitialSites();
-        for (int i = 0; i < initialSites.length; i++)
+        if( GlobalData.getGlobalData().isAppletMode() )
         {
-            String is[] = initialSites[i];
-            if( is.length == 0 )
-                continue;
-            String initialSite = initialSites[i][0];
-            if (initialSite.startsWith(GlobalData.WebDAVPrefixSSL))
-                initialSite = initialSite.substring(GlobalData.WebDAVPrefixSSL.length());
-            if (initialSite.startsWith(GlobalData.WebDAVPrefix))
-                initialSite = initialSite.substring(GlobalData.WebDAVPrefix.length());
-
-            // simulate user input
-            URIBox uriBox = GlobalData.getGlobalData().getURIBox();
-            uriBox.setText(initialSite);
-            uriBox.notifyListener();
+            String[][] initialSites = GlobalData.getGlobalData().getInitialSites();
+            for (int i = 0; i < initialSites.length; i++)
+            {
+                String is[] = initialSites[i];
+                if( is.length == 0 )
+                    continue;
+                String initialSite = initialSites[i][0];
+                if (initialSite.startsWith(GlobalData.WebDAVPrefixSSL))
+                    initialSite = initialSite.substring(GlobalData.WebDAVPrefixSSL.length());
+                if (initialSite.startsWith(GlobalData.WebDAVPrefix))
+                    initialSite = initialSite.substring(GlobalData.WebDAVPrefix.length());
+    
+                // simulate user input
+                URIBox uriBox = GlobalData.getGlobalData().getURIBox();
+                uriBox.setText(initialSite);
+                uriBox.notifyListener();
+            }
         }
     }
 
@@ -612,7 +615,7 @@ public class WebDAVTreeView implements ViewSelectionListener, CopyResponseListen
         {
             if (name.endsWith("/"))
                 name = name.substring(0,name.length() - 1);
-            if( GlobalData.getGlobalData().doSSL() && !name.startsWith(GlobalData.WebDAVPrefixSSL))
+            if( GlobalData.getGlobalData().getSSL() && !name.startsWith(GlobalData.WebDAVPrefixSSL))
                 newName = GlobalData.WebDAVPrefixSSL + name;
             else if ( !name.startsWith(GlobalData.WebDAVPrefix) )
                 newName = GlobalData.WebDAVPrefix + name;

@@ -228,7 +228,7 @@ Public methods and attributes section
     	// try to get rid of any unencoded passwords in dialog
         m_strUserPassword = null;
         m_strUsername = null;
-//    	System.gc();
+        System.gc();
     }
 
 /*-----------------------------------------------------------------------

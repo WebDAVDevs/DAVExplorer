@@ -84,7 +84,7 @@ public class URIBox extends JPanel implements ActionListener
         textField1 = new JTextField(30);
         textField1.addActionListener(new EnterPressedListener());
         label1 = new JLabel();
-        if( GlobalData.getGlobalData().doSSL() )
+        if( GlobalData.getGlobalData().getSSL() )
             label1.setText( GlobalData.WebDAVPrefixSSL );
         else
             label1.setText( GlobalData.WebDAVPrefix );

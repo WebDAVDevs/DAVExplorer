@@ -305,7 +305,7 @@ public class WebDAVTreeNode extends DefaultMutableTreeNode
                 String hostName = resName;
                 if (pathLen == 2)
                 {
-                    if( GlobalData.getGlobalData().doSSL() )
+                    if( GlobalData.getGlobalData().getSSL() )
                         hostName = GlobalData.WebDAVPrefixSSL + interpreter.getHost() + "/" + ResourceName;
                     else
                         hostName = GlobalData.WebDAVPrefix + interpreter.getHost() + "/" + ResourceName;
@@ -339,7 +339,7 @@ public class WebDAVTreeNode extends DefaultMutableTreeNode
             String hostName = resName;
             if (pathLen == 2)
             {
-                if( GlobalData.getGlobalData().doSSL() )
+                if( GlobalData.getGlobalData().getSSL() )
                     hostName = GlobalData.WebDAVPrefixSSL + interpreter.getHost() + "/" + ResourceName;
                 else
                     hostName = GlobalData.WebDAVPrefix + interpreter.getHost() + "/" + ResourceName;

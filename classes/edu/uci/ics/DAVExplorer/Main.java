@@ -124,15 +124,7 @@ public class Main extends JFrame
         CommandMenu.addWebDAVMenuListener( menuListener );
 
         // Set the HTTPClient authentication handler
-        if (GlobalData.getGlobalData().isAppletMode())
-        {
-            // applet password prompter bypass
-            DefaultAuthHandler.setAuthorizationPrompter(new AppletAuthorizationPrompter());
-        }
-        else
-        {
-            DefaultAuthHandler.setAuthorizationPrompter(new AuthDialog());
-        }
+        DefaultAuthHandler.setAuthorizationPrompter(new AuthDialog());
 
         // allow all cookies
         CookieModule.setCookiePolicyHandler( null );
@@ -204,7 +196,8 @@ public class Main extends JFrame
         treeView.initTree();
         pack();
 
-        if (!GlobalData.getGlobalData().isAppletMode()){
+        if (!GlobalData.getGlobalData().isAppletMode())
+        {
             // if we're in applet mode, the web page will hold the
             // visible content so we don't want the frame to pop up.
             setVisible(true);

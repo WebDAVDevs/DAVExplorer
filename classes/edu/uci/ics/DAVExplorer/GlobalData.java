@@ -70,6 +70,8 @@ class GlobalData
     private String[][] initialSites = new String[][] { {} };
     private boolean doAddStartDir = true;
     private URIBox uriBox;
+    private WebDAVTreeView tree;
+
 
     private static GlobalData globalData = null;
 
@@ -81,7 +83,9 @@ class GlobalData
         init( true );
     }
 
-    static void reset() {
+
+    static void reset()
+    {
         // RESET THIS CLASS
         globalData = null;
 
@@ -92,10 +96,10 @@ class GlobalData
         WebDAVResponseInterpreter.reset();
         WebDAVTreeNode.reset();
 
-
         // CLEAN UP
         System.gc();
     }
+
 
     static GlobalData getGlobalData()
     {
@@ -104,61 +108,85 @@ class GlobalData
         return globalData;
     }
 
-    WebDAVTreeView tree;
 
-    public WebDAVTreeView getTree() {
+    public WebDAVTreeView getTree()
+    {
         return tree;
     }
 
-    public void setTree(WebDAVTreeView theTree) {
+
+    public void setTree(WebDAVTreeView theTree)
+    {
         tree = theTree;
     }
 
-    public boolean isAppletMode() {
+
+    public boolean isAppletMode()
+    {
         return isAppletMode;
     }
 
-    public void setAppletMode(boolean isAnApplet) {
+
+    public void setAppletMode(boolean isAnApplet)
+    {
         isAppletMode = isAnApplet;
     }
 
-    public void setInitialSites(String[][] initialSiteList) {
+
+    public void setInitialSites(String[][] initialSiteList)
+    {
         if (initialSiteList != null)
             initialSites = initialSiteList;
     }
 
-    public String[][] getInitialSites() {
+
+    public String[][] getInitialSites()
+    {
         return initialSites;
     }
 
-    public boolean hideURIBox() {
+
+    public boolean hideURIBox()
+    {
         return hideURIBox;
     }
 
-    public void setHideURIBox(boolean visible) {
+
+    public void setHideURIBox(boolean visible)
+    {
         hideURIBox = visible;
     }
 
-    public boolean doAddStartDir() {
+
+    public boolean doAddStartDir()
+    {
         return doAddStartDir;
     }
 
-    public void setAddStartDir(boolean doIt) {
+
+    public void setAddStartDir(boolean doIt)
+    {
         doAddStartDir = doIt;
     }
 
-    public URIBox getURIBox() {
+
+    public URIBox getURIBox()
+    {
         return uriBox;
     }
 
-    public void setURIBox(URIBox theURIBox) {
+
+    public void setURIBox(URIBox theURIBox)
+    {
         uriBox = theURIBox;
     }
+
 
     public boolean getDebugAll()
     {
         return debugAll;
     }
+
 
     public void setDebugAll( boolean debug )
     {
@@ -166,10 +194,12 @@ class GlobalData
         init( false );
     }
 
+
     public boolean getDebugRequest()
     {
         return debugRequest;
     }
+
 
     public void setDebugRequest( boolean debug )
     {
@@ -177,10 +207,12 @@ class GlobalData
         init( false );
     }
 
+
     public boolean getDebugResponse()
     {
         return debugResponse;
     }
+
 
     public void setDebugResponse( boolean debug )
     {
@@ -188,10 +220,12 @@ class GlobalData
         init( false );
     }
 
+
     public boolean getDebugTreeView()
     {
         return debugTreeView;
     }
+
 
     public void setDebugTreeView( boolean debug )
     {
@@ -199,10 +233,12 @@ class GlobalData
         init( false );
     }
 
+
     public boolean getDebugTreeNode()
     {
         return debugTreeNode;
     }
+
 
     public void setDebugTreeNode( boolean debug )
     {
@@ -210,10 +246,12 @@ class GlobalData
         init( false );
     }
 
+
     public boolean getDebugFileView()
     {
         return debugFileView;
     }
+
 
     public void setDebugFileView( boolean debug )
     {
@@ -221,10 +259,12 @@ class GlobalData
         init( false );
     }
 
+
     public JFrame getMainFrame()
     {
         return mainFrame;
     }
+
 
     public void setMainFrame( JFrame frame )
     {
@@ -233,11 +273,13 @@ class GlobalData
             origCursor = mainFrame.getCursor(); // save original cursor
     }
 
+
     public void errorMsg(String str)
     {
         Object[] options = { "OK" };
 		JOptionPane.showOptionDialog(mainFrame,str,"Error Message", JOptionPane.DEFAULT_OPTION, JOptionPane.ERROR_MESSAGE, null, options, options[0]);
     }
+
 
     public void setCursor( Cursor c )
     {
@@ -245,11 +287,13 @@ class GlobalData
             mainFrame.setCursor( c );
     }
 
+
     public void resetCursor()
     {
         if( mainFrame != null && origCursor != null )
             mainFrame.setCursor( origCursor );
     }
+
 
     public String unescape( String text, String encoding, boolean href )
     {
@@ -310,7 +354,14 @@ class GlobalData
         return "";
     }
 
-    public boolean doSSL()
+
+    public void setSSL( boolean SSL )
+    {
+        ssl = SSL;
+    }
+
+
+    public boolean getSSL()
     {
         return ssl;
     }
@@ -450,8 +501,11 @@ class GlobalData
 
     }
 
-    public ImageIcon getImageIcon(String name, String description) {
-        try {
+
+    public ImageIcon getImageIcon(String name, String description)
+    {
+        try
+        {
             InputStream is = getClass().getResourceAsStream("icons/" + name);
             return new ImageIcon( toByteArray(is), description );
         }
@@ -462,16 +516,21 @@ class GlobalData
         return null;
     }
 
-    public static byte[] toByteArray(InputStream is) throws IOException {
-      ByteArrayOutputStream output = new ByteArrayOutputStream();
-      byte[] chunk = new byte[10000];
-      while (true) {
-        int bytesRead = is.read(chunk, 0, chunk.length);
-        if (bytesRead <= 0) {
-          break;
+
+    public static byte[] toByteArray(InputStream is)
+        throws IOException
+    {
+        ByteArrayOutputStream output = new ByteArrayOutputStream();
+        byte[] chunk = new byte[10000];
+        while (true)
+        {
+            int bytesRead = is.read(chunk, 0, chunk.length);
+            if (bytesRead <= 0)
+            {
+                break;
+            }
+            output.write(chunk, 0, bytesRead);
         }
-        output.write(chunk, 0, bytesRead);
-      }
-      return output.toByteArray();
+        return output.toByteArray();
     }
 }

@@ -23,18 +23,31 @@
  *              Requires DAVExplorer.jar to be signed.
  *              Usage:
  *              <APPLET	ARCHIVE="DAVExplorer.jar"
- *                  CODE="edu/uci/ics/DAVExplorer/AppletMain.class"
+ *                  CODE="edu.uci.ics.DAVExplorer.AppletMain.class"
  *                  WIDTH=800
  *                  HEIGHT=400>
  *                  <PARAM NAME=uri VALUE="http://dav.somewhere.com/webdav/">
  *                  <PARAM NAME=username VALUE="username">
  *                  <PARAM NAME=password VALUE="password">
- *                  ...
  *              </APPLET>
-
+ *              Alternative Usage:
+ *              <EMBED TYPE     = "application/x-java-applet"
+ *                     WIDTH    = "800"
+ *                     HEIGHT   = "400"
+ *                     code     = "edu.uci.ics.DAVExplorer.AppletMain.class"
+ *                     archive  = "DAVExplorer.jar"
+ *                     uri      = "http://dav.somewhere.com/webdav/"
+ *                     username = "username"
+ *                     password = "password">
+ *              </EMBED>
+ * 
+ *              The username and password parameters are optional for security reasons.
+ *              If they are not specified on the webpage, they are requested interactively.
+ *              The applet code also supports the use of SSL.
+ * 
  * Copyright:   Copyright (c) 2003 Regents of the University of California. All rights reserved.
  * @author      Brian Johnson, integrated by Joachim Feise (dav-exp@ics.uci.edu)
- * @date        17 March 2003
+ * @date        25 March 2003
  */
 
 
@@ -60,7 +73,6 @@ public class AppletMain extends javax.swing.JApplet {
         // register the initial tree nodes and get 'em going
         GlobalData.getGlobalData().setInitialSites(getUriUnPwParameters());
         setRootPane(new Main("DAV Explorer Applet").getRootPane());
-        GlobalData.getGlobalData().getTree().initTree();
     }
 
 
@@ -104,9 +116,12 @@ public class AppletMain extends javax.swing.JApplet {
         // allocate the first level of the array
         retVal = new String[uriST.countTokens()][];
         int index = 0;
-        while (uriST.hasMoreElements()) {
+        while (uriST.hasMoreElements())
+        {
             retVal[index] = new String[3];
             retVal[index][0] = uriST.nextToken();
+            if( retVal[index][0].startsWith(GlobalData.WebDAVPrefixSSL) )
+                GlobalData.getGlobalData().setSSL(true);
             retVal[index][1] = username;
             retVal[index][2] = password;
             index++;

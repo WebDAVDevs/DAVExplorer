@@ -949,7 +949,7 @@ System.out.println("Copy: strippedResource: "+StrippedResource);
 
         if( !Dest.startsWith(GlobalData.WebDAVPrefix) && !Dest.startsWith(GlobalData.WebDAVPrefixSSL) )
         {
-            if( GlobalData.getGlobalData().doSSL() )
+            if( GlobalData.getGlobalData().getSSL() )
                 Dest = GlobalData.WebDAVPrefixSSL + Dest;
             else
                 Dest = GlobalData.WebDAVPrefix + Dest;
@@ -1085,7 +1085,7 @@ System.out.println("Copy: strippedResource: "+StrippedResource);
         // may be null if invoked from menu
         if( dir == null )
         {
-            if( GlobalData.getGlobalData().doSSL() )
+            if( GlobalData.getGlobalData().getSSL() )
                 dir = GlobalData.WebDAVPrefixSSL;
             else
                 dir = GlobalData.WebDAVPrefix;
