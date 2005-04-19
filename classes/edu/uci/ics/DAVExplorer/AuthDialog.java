@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2001, 2004 Regents of the University of California.
+ * Copyright (c) 2001-2005 Regents of the University of California.
  * All rights reserved.
  *
  * This software was developed at the University of California, Irvine.
@@ -20,7 +20,7 @@
 /**
  * Title:       Authentication Dialog
  * Description: Wrapper around the login dialog
- * Copyright:   Copyright (c) 2001, 2004 Regents of the University of California. All rights reserved.
+ * Copyright:   Copyright (c) 2001-2005 Regents of the University of California. All rights reserved.
  * @author      Joachim Feise (dav-exp@ics.uci.edu)
  * @date        31 July 2001
  * @author      Joachim Feise (dav-exp@ics.uci.edu)
@@ -32,6 +32,9 @@
  * @author      Joachim Feise (dav-exp@ics.uci.edu)
  * @date        08 February 2004
  * Changes:     Added Javadoc templates
+ * @author      Joachim Feise (dav-exp@ics.uci.edu)
+ * @date        18 April 2005
+ * Changes:     Added function to get auth info without scheme/realm
  */
 
 package edu.uci.ics.DAVExplorer;
@@ -86,6 +89,28 @@ public class AuthDialog implements AuthorizationPrompter
 		lastIndex = -1;
 		
         WebDAVLoginDialog dlg = new WebDAVLoginDialog( "Login", info.getRealm(), info.getScheme(), true );
+        if( dlg.getUsername().equals( "" ) || dlg.getUserPassword().equals( "" ) )
+            return null;
+
+        NVPair answer = new NVPair( dlg.getUsername(), dlg.getUserPassword() );
+        dlg.clearData();
+        dlg = null;
+
+        return answer;
+    }
+
+    
+    /**
+     * Getting auth info without scheme and realm.
+     * Called only from within this package to allow manual entering of auth info.
+     *
+     * @return the username/password pair
+     */
+    NVPair getUsernamePassword()
+    {
+        lastIndex = -1;
+        
+        WebDAVLoginDialog dlg = new WebDAVLoginDialog( "Login", null, null, true );
         if( dlg.getUsername().equals( "" ) || dlg.getUserPassword().equals( "" ) )
             return null;
 

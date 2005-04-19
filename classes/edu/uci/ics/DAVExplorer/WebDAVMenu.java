@@ -71,6 +71,9 @@ import java.util.Vector;
  * @author      Joachim Feise (dav-exp@ics.uci.edu)
  * date         10 February 2005
  * Changes:     Added ACL menus
+ * @author      Joachim Feise (dav-exp@ics.uci.edu)
+ * date         18 April 2005
+ * Changes:     Added menu to allow entering auth. info
  */
 public class WebDAVMenu extends JMenuBar implements ActionListener
 {
@@ -94,6 +97,7 @@ public class WebDAVMenu extends JMenuBar implements ActionListener
     public static final int REFRESH = 16;
     public static final int ABOUT = 17;
     public static final int USE_SSL = 18;
+    public static final int EDIT_AUTH_INFO = 19;
     // versioning menu entries
     public static final int INIT_VERSION_CONTROL = 100;
     public static final int VERSION_REPORT = 101;
@@ -376,7 +380,8 @@ public class WebDAVMenu extends JMenuBar implements ActionListener
         mnu_EditMenu.add(new WebDAVMenuItem( "Edit Lock Info", EDIT_LOCK_INFO, this ));
         mnu_EditMenu.add( new WebDAVMenuItem( "Edit Proxy Info", EDIT_PROXY_INFO, this ) );
         mnu_EditMenu.addSeparator();
-        mnu_EditMenu.add( new WebDAVMenuItem( "Clear Auth Buffer", CLEAR_AUTH_BUFFER, this ) );
+        mnu_EditMenu.add( new WebDAVMenuItem( "Edit Auth. Info", EDIT_AUTH_INFO, this ) );
+        mnu_EditMenu.add( new WebDAVMenuItem( "Clear Auth. Buffer", CLEAR_AUTH_BUFFER, this ) );
         mnu_EditMenu.addSeparator();
         ssl = new WebDAVCheckBoxMenuItem( "Use SSL", USE_SSL, this );
         setSSL( GlobalData.getGlobalData().getSSL() );

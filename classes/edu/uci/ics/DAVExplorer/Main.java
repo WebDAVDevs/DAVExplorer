@@ -80,6 +80,9 @@
  * @author      Joachim Feise (dav-exp@ics.uci.edu)
  * @date        15 February 2005
  * Changes:     Added support for the WebDAV Access Control Protocol (RFC 3744)
+ * @author      Joachim Feise (dav-exp@ics.uci.edu)
+ * @date        18 April 2005
+ * Changes:     Added handler to allow entry of auth. info from menu
  */
 
 
@@ -87,6 +90,7 @@ package edu.uci.ics.DAVExplorer;
 
 import HTTPClient.DefaultAuthHandler;
 import HTTPClient.CookieModule;
+import HTTPClient.NVPair;
 
 import javax.swing.JFrame;
 import javax.swing.JScrollPane;
@@ -1098,11 +1102,21 @@ public class Main extends JFrame
                     }
                     break;
                 }
-                
+
+                case WebDAVMenu.EDIT_AUTH_INFO:
+                {
+                    AuthDialog dlg = new AuthDialog();
+                    NVPair answer = dlg.getUsernamePassword();
+                    requestGenerator.setUser( answer.getName() );
+                    requestGenerator.setPass( answer.getValue() );
+                    answer = null;
+                    break;
+                }
+
                 case WebDAVMenu.CLEAR_AUTH_BUFFER:
                     authTable.clear();
                     break;
-                    
+
                 case WebDAVMenu.EDIT_PROXY_INFO:
                     WebDAVProxyInfo proxyInfo = new WebDAVProxyInfo(GlobalData.getGlobalData().getMainFrame(), "Proxy Info", true);
                     break;

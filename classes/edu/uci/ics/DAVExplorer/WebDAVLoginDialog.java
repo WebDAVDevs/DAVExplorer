@@ -79,6 +79,9 @@ import javax.swing.event.DocumentListener;
  * @author      Joachim Feise (dav-exp@ics.uci.edu)
  * date         8 February 2005
  * Changes:     Some refactoring
+ * @author      Joachim Feise (dav-exp@ics.uci.edu)
+ * date         18 April 2005
+ * Changes:     Handle case where scheme/realm are not passed in
  */
 public class WebDAVLoginDialog extends JDialog implements ActionListener, DocumentListener
 {
@@ -104,17 +107,23 @@ Public methods and attributes section
         GridBagConstraints constraints = new GridBagConstraints();
         constraints.fill = GridBagConstraints.BOTH;
         constraints.gridwidth = GridBagConstraints.REMAINDER;
-        JLabel l = new JLabel( "Realm: " + realm, JLabel.CENTER );
-        l.setForeground(Color.black);
-        gridbag.setConstraints( l, constraints );
-        groupPanel.add( l );
-        l = new JLabel( "Scheme: " + scheme, JLabel.CENTER );
-        l.setForeground(Color.black);
-        gridbag.setConstraints( l, constraints );
-        groupPanel.add( l );
+        if( realm != null )
+        {
+            JLabel l = new JLabel( "Realm: " + realm, JLabel.CENTER );
+            l.setForeground(Color.black);
+            gridbag.setConstraints( l, constraints );
+            groupPanel.add( l );
+        }
+        if( scheme != null )
+        {
+            JLabel l = new JLabel( "Scheme: " + scheme, JLabel.CENTER );
+            l.setForeground(Color.black);
+            gridbag.setConstraints( l, constraints );
+            groupPanel.add( l );
+        }
         constraints.gridwidth = 1;
         constraints.weightx = 1.0;
-        l = new JLabel( "Login name: ", JLabel.LEFT );
+        JLabel l = new JLabel( "Login name: ", JLabel.LEFT );
         l.setForeground(Color.black);
         gridbag.setConstraints( l, constraints );
         groupPanel.add( l );
