@@ -164,7 +164,7 @@ public class WebDAVProp
         Name name = null;
         Element localParent = parent;
         if( ns != null )
-            name = Name.create( ns, "xmlns" );
+            name = Name.create( "xmlns", ns );
         else
             name = Name.create( "xmlns" );
         while( localParent != null )
