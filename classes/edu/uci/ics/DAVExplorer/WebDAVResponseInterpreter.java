@@ -482,6 +482,58 @@ public class WebDAVResponseInterpreter
         {
             System.err.println( "WebDAVResponseInterpreter::parsePropPatch" );
         }
+        if( res.getStatusCode() == 207 )
+        {
+            // handle multistatus
+            byte[] body = null;
+            Document xml_doc = null;
+    
+            try
+            {
+                body = res.getData();
+                stream = body;
+                if (body == null)
+                {
+                    GlobalData.getGlobalData().errorMsg("DAV Interpreter:\n\nMissing XML body in\nPROPPATCH response.");
+                    return;
+                }
+                ByteArrayInputStream byte_in = new ByteArrayInputStream(body);
+                xml_doc = new Document();
+                xml_doc.load( byte_in );
+            }
+            catch (Exception e)
+            {
+                GlobalData.getGlobalData().errorMsg("DAV Interpreter:\n\nError encountered \nwhile parsing PROPPATCH Response.\n" + e);
+                stream = null;
+                return;
+            }
+    
+            printXML( body );
+            String[] token = new String[1];
+            token[0] = new String( WebDAVXML.ELEM_PROPSTAT );
+
+            Element rootElem = xml_doc;
+            do
+            {
+                Element curElem = skipElements( rootElem, token );
+                if( curElem != null )
+                {
+                    int status = getStatus( curElem );
+                    if( status < 400 )
+                    {
+                        rootElem = curElem;
+                        continue;
+                    }
+                    String descr = getResponseDescription( curElem );
+                    if( descr == null )
+                        descr = getStatusDescription( curElem );
+                    GlobalData.getGlobalData().errorMsg( "DAV Interpreter:\n\n"+status + " " + descr );
+                    return;
+                }
+                rootElem = curElem;
+            }
+            while( rootElem != null );
+        }
     }
 
 
@@ -1614,6 +1666,68 @@ public class WebDAVResponseInterpreter
             }
         }
         return 0;
+    }
+
+
+    protected String getStatusDescription( Element status )
+    {
+        String descr = null;
+        
+        if( GlobalData.getGlobalData().getDebugResponse() )
+        {
+            System.err.println( "WebDAVResponseInterpreter::getResponseDescription" );
+        }
+
+        TreeEnumeration treeEnum = new TreeEnumeration( status );
+        while(treeEnum.hasMoreElements() )
+        {
+            Element current = (Element)treeEnum.nextElement();
+            Name tag = current.getTagName();
+            if( (tag != null) && tag.getName().equals( WebDAVXML.ELEM_STATUS ) )
+            {
+                current = (Element)treeEnum.nextElement();
+                if( (current != null) && (current.getType() == Element.PCDATA || current.getType() == Element.CDATA) )
+                {
+                    StringTokenizer text = new StringTokenizer( current.getText() );
+                    if( text.countTokens() >= 2 )
+                    {
+                        if( text.nextToken().equals( HTTPString ) )
+                        {
+                            text.nextToken();
+                            return text.nextToken();
+                        }
+                    }
+                }
+            }
+        }
+        return null;
+    }
+
+
+    protected String getResponseDescription( Element responseDescription )
+    {
+        String descr = null;
+        
+        if( GlobalData.getGlobalData().getDebugResponse() )
+        {
+            System.err.println( "WebDAVResponseInterpreter::getResponseDescription" );
+        }
+
+        TreeEnumeration treeEnum = new TreeEnumeration( responseDescription );
+        while(treeEnum.hasMoreElements() )
+        {
+            Element current = (Element)treeEnum.nextElement();
+            Name tag = current.getTagName();
+            if( (tag != null) && tag.getName().equals( WebDAVXML.ELEM_RESPONSE_DESCRIPTION ) )
+            {
+                current = (Element)treeEnum.nextElement();
+                if( (current != null) && (current.getType() == Element.PCDATA || current.getType() == Element.CDATA) )
+                {
+                    return current.getText();
+                }
+            }
+        }
+        return null;
     }
 
 

@@ -36,15 +36,19 @@ import java.util.Vector;
  * @author      Joachim Feise (dav-exp@ics.uci.edu)
  * date         4 February 2005
  * Changes:     Some refactoring
+ * @author      Joachim Feise (dav-exp@ics.uci.edu)
+ * date         22 April 2005
+ * Changes:     Only having protected properties read-only
  */
 public class PropNode
 {
     /**
      * Constructor
-     * @param tag
-     * @param ns
-     * @param value
-     * @param modified
+     * 
+     * @param tag the node tag
+     * @param ns the node namespace
+     * @param value the node value
+     * @param modified flag to indicate if the node has to be saved
      */
     public PropNode( String tag, String ns, String value, boolean modified )
     {
@@ -57,9 +61,10 @@ public class PropNode
 
     /**
      * Constructor
-     * @param tag
-     * @param ns
-     * @param value
+     * 
+     * @param tag the node tag
+     * @param ns the node namespace
+     * @param value the node value
      */
     public PropNode( String tag, String ns, String value )
     {
@@ -71,8 +76,9 @@ public class PropNode
 
 
     /**
+     * Get the node tag
      * 
-     * @return
+     * @return the node tag
      */
     public String getTag()
     {
@@ -81,8 +87,9 @@ public class PropNode
 
 
     /**
-     * 
-     * @return
+     * Get the namespace identifier.
+     *  
+     * @return the namespace identifier
      */
     public String getNamespace()
     {
@@ -91,8 +98,9 @@ public class PropNode
 
 
     /**
+     * Set the namespace identifier.
      * 
-     * @param ns
+     * @param ns the new namespace identifier
      */
     public void setNamespace( String ns )
     {
@@ -102,8 +110,9 @@ public class PropNode
 
 
     /**
+     * Get the node value.
      * 
-     * @return
+     * @return the node value
      */
     public String getValue()
     {
@@ -114,8 +123,9 @@ public class PropNode
 
 
     /**
+     * Set the node value.
      * 
-     * @param value
+     * @param value the new node value
      */
     public void setValue( String value )
     {
@@ -125,8 +135,9 @@ public class PropNode
 
 
     /**
+     * Get a description of the node. Returns the node tag.
      * 
-     * @return
+     * @return the node description
      */
     public String toString()
     {
@@ -135,8 +146,9 @@ public class PropNode
 
 
     /**
+     * Get the parent node.
      * 
-     * @return
+     * @return the parent node
      */
     public PropNode getParent()
     {
@@ -145,8 +157,9 @@ public class PropNode
 
 
     /**
+     * Set the parent node of this node.
      * 
-     * @param parent
+     * @param parent the new parent node
      */
     public void setParent( PropNode parent )
     {
@@ -155,8 +168,9 @@ public class PropNode
 
 
     /**
-     * 
-     * @param child
+     * Add a child node.
+     *  
+     * @param child the child node to be added 
      */
     public void addChild( Object child )
     {
@@ -165,8 +179,9 @@ public class PropNode
 
 
     /**
+     * Remove a child node.
      * 
-     * @param child
+     * @param child the child node to be removed
      */
     public void removeChild( Object child )
     {
@@ -176,8 +191,9 @@ public class PropNode
 
 
     /**
-     * 
-     * @return
+     * Check if the node is modified and needs to be saved.
+     *  
+     * @return true if the node is modified, false else
      */
     public boolean isModified()
     {
@@ -186,8 +202,9 @@ public class PropNode
 
 
     /**
-     * 
-     * @return
+     * Get an array of the child nodes.
+     *  
+     * @return the array of child nodes
      */
     public Object[] getChildren()
     {
@@ -196,8 +213,9 @@ public class PropNode
 
 
     /**
+     * Get an array of removed children. Needed for a proper PROPPATCH
      * 
-     * @return
+     * @return the array of removed children
      */
     public Object[] getRemovedChildren()
     {
@@ -206,7 +224,7 @@ public class PropNode
 
 
     /**
-     *
+     * Clear the modified flag and delete all removed children
      */
     public void clear()
     {
@@ -216,8 +234,8 @@ public class PropNode
 
 
     /**
-     * 
-     * @return
+     * Check if the property is defined in RFC2518
+     * @return true, if the property is in RFC2518, false else
      */
     public boolean isDAVProp()
     {
@@ -225,13 +243,37 @@ public class PropNode
         // a defined property hierarchy (e.g., lockdiscovery)
         if( (ns!=null) && ns.equals(WebDAVProp.DAV_SCHEMA) )
         {
-            Enumeration props = WebDAVProp.getDavProps();
+            Enumeration props = WebDAVProp.getDAVProps();
             while( props.hasMoreElements() )
             {
                 String prop = (String)props.nextElement();
                 if( tag.equals(prop) )
                     return true;
                 if( (parent!=null) && parent.isDAVProp() )
+                    return true;
+            }
+        }
+        return false;
+    }
+
+
+    /**
+     * Check if the property is a protected WebDAV property as defined in RFC2518
+     * @return true, if the property is protected, false else
+     */
+    public boolean isProtectedDAVProp()
+    {
+        // check if the property is protected in RFC2518 or if it is part of
+        // a protected property hierarchy (e.g., lockdiscovery)
+        if( (ns!=null) && ns.equals(WebDAVProp.DAV_SCHEMA) )
+        {
+            Enumeration props = WebDAVProp.getProtectedDAVProps();
+            while( props.hasMoreElements() )
+            {
+                String prop = (String)props.nextElement();
+                if( tag.equals(prop) )
+                    return true;
+                if( (parent!=null) && parent.isProtectedDAVProp() )
                     return true;
             }
         }

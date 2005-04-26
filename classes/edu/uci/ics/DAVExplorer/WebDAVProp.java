@@ -46,6 +46,9 @@ import com.ms.xml.util.Name;
  * @author      Joachim Feise (dav-exp@ics.uci.edu)
  * date         10 February 2005
  * Changes:     Minor cleanup, javadocs
+ * @author      Joachim Feise (dav-exp@ics.uci.edu)
+ * date         22 April 2005
+ * Changes:     Adding method to retrieve protected properties
  */
 public class WebDAVProp
 {
@@ -117,7 +120,7 @@ public class WebDAVProp
      * @return
      *      an emumeration of all WebDAV properties
      */
-    public static Enumeration getDavProps()
+    public static Enumeration getDAVProps()
     {
         Vector prop_list = new Vector();
 
@@ -126,6 +129,30 @@ public class WebDAVProp
         prop_list.addElement( PROP_GETCONTENTLANGUAGE );
         prop_list.addElement( PROP_GETCONTENTLENGTH );
         prop_list.addElement( PROP_GETCONTENTTYPE );
+        prop_list.addElement( PROP_GETETAG );
+        prop_list.addElement( PROP_GETLASTMODIFIED );
+        prop_list.addElement( PROP_LOCKDISCOVERY );
+        prop_list.addElement( PROP_RESOURCETYPE );
+        prop_list.addElement( PROP_SOURCE );
+        prop_list.addElement( PROP_SUPPORTEDLOCK );
+
+        return (prop_list.elements());
+    }
+
+
+    /**
+     * Get an enumeration of all protected live WebDAV properties.
+     *  
+     * @return
+     *      an emumeration of all protected live WebDAV properties
+     */
+    public static Enumeration getProtectedDAVProps()
+    {
+        Vector prop_list = new Vector();
+
+        prop_list.addElement( PROP_CREATIONDATE );
+        prop_list.addElement( PROP_DISPLAYNAME );
+        prop_list.addElement( PROP_GETCONTENTLENGTH );
         prop_list.addElement( PROP_GETETAG );
         prop_list.addElement( PROP_GETLASTMODIFIED );
         prop_list.addElement( PROP_LOCKDISCOVERY );
@@ -162,14 +189,20 @@ public class WebDAVProp
         if( namespace != null )
             ns = tagname.getNameSpace().toString();
         Name name = null;
+        Name alternate = null;
         Element localParent = parent;
         if( ns != null )
-            name = Name.create( "xmlns", ns );
+        {
+            name = Name.create( ns, "xmlns" );
+            alternate = Name.create( "xmlns", ns );
+        }
         else
             name = Name.create( "xmlns" );
         while( localParent != null )
         {
-            String attr = (String)localParent.getAttribute(name);
+            String attr = (String)localParent.getAttribute( name );
+            if( attr == null && alternate != null )
+                attr = (String)localParent.getAttribute( alternate );
             if( attr == null )
                 localParent = localParent.getParent();
             else

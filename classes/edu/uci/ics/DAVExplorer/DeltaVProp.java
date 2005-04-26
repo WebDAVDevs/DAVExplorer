@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2003-2004 Regents of the University of California.
+ * Copyright (c) 2003-2005 Regents of the University of California.
  * All rights reserved.
  *
  * This software was developed at the University of California, Irvine.
@@ -20,12 +20,15 @@
 /**
  * Title:       DeltaV Properties
  * Description: Simple list of all DeltaV properties, based on RFC 3253
- * Copyright:   Copyright (c) 2003-2004 Regents of the University of California. All rights reserved.
+ * Copyright:   Copyright (c) 2003-2005 Regents of the University of California. All rights reserved.
  * @author      Joachim Feise (dav-exp@ics.uci.edu)
- * @date        27 August 2003
+ * date         27 August 2003
  * @author      Joachim Feise (dav-exp@ics.uci.edu)
- * @date        08 February 2004
+ * date         08 February 2004
  * Changes:     Added Javadoc templates
+ * @author      Joachim Feise (dav-exp@ics.uci.edu)
+ * date         22 April 2005
+ * Changes:     Cleanup, added method to retrieve protected properties
  */
 
 package edu.uci.ics.DAVExplorer;
@@ -112,15 +115,51 @@ public class DeltaVProp extends WebDAVProp
 
 
     /**
+     * Constructor
      * 
-     * @return
+     * @param tag
+     * @param value
+     * @param schema
      */
-    public static Enumeration getDeltaVProps()
+    public DeltaVProp( String tag, String value, String schema )
+    {
+        this.tag = tag;
+        this.value = value;
+        this.schema = schema;
+        this.children = null;
+        this.leaf = true;
+    }
+
+
+    /**
+     * Constructor
+     * 
+     * @param tag
+     * @param schema
+     * @param children
+     */
+    public DeltaVProp( String tag, String schema, DeltaVProp[] children )
+    {
+        this.tag = tag;
+        this.value = null;
+        this.schema = schema;
+        this.children = children;
+        this.leaf = false;
+    }
+
+
+    /**
+     * Get an enumeration of all WebDAV and DeltaV properties.
+     *  
+     * @return
+     *      an emumeration of all WebDAV and DeltaV properties
+     */
+    public static Enumeration getDAVProps()
     {
         Vector prop_list = new Vector();
 
         // add the elements from the super class
-        Enumeration enum = getDavProps();
+        Enumeration enum = WebDAVProp.getDAVProps();
         while( enum.hasMoreElements() )
             prop_list.addElement( enum.nextElement() );
 
@@ -167,39 +206,65 @@ public class DeltaVProp extends WebDAVProp
 
 
     /**
-     * 
-     * @param tag
-     * @param value
-     * @param schema
+     * Get an enumeration of all protected live WebDAV and DeltaV properties.
+     *  
+     * @return
+     *      an emumeration of all protected live WebDAV and DeltaV properties
      */
-    public DeltaVProp( String tag, String value, String schema )
+    public static Enumeration getProtectedDAVProps()
     {
-        this.tag = tag;
-        this.value = value;
-        this.schema = schema;
-        this.children = null;
-        this.leaf = true;
+        Vector prop_list = new Vector();
+
+        // add the elements from the super class
+        Enumeration enum = WebDAVProp.getProtectedDAVProps();
+        while( enum.hasMoreElements() )
+            prop_list.addElement( enum.nextElement() );
+
+        prop_list.addElement( PROP_SUPPORTED_METHOD_SET );
+        prop_list.addElement( PROP_SUPPORTED_LIVE_PROPERTY_SET );
+        prop_list.addElement( PROP_SUPPORTED_REPORT_SET );
+        prop_list.addElement( PROP_CHECKED_IN );
+        prop_list.addElement( PROP_AUTO_VERSION );
+        prop_list.addElement( PROP_CHECKED_OUT );
+        prop_list.addElement( PROP_PREDECESSOR_SET );
+        prop_list.addElement( PROP_SUCCESSOR_SET );
+        prop_list.addElement( PROP_CHECKOUT_SET );
+        prop_list.addElement( PROP_VERSION_NAME );
+        prop_list.addElement( PROP_CHECKOUT_FORK );
+        prop_list.addElement( PROP_CHECKIN_FORK );
+        prop_list.addElement( PROP_VERSION_SET );
+        prop_list.addElement( PROP_ROOT_VERSION );
+        prop_list.addElement( PROP_VERSION_HISTORY );
+        prop_list.addElement( PROP_WORKSPACE_CHECKOUT_SET );
+        prop_list.addElement( PROP_WORKSPACE );
+        prop_list.addElement( PROP_LABEL_NAME_SET );
+        prop_list.addElement( PROP_AUTO_UPDATE );
+        prop_list.addElement( PROP_MERGE_SET );
+        prop_list.addElement( PROP_AUTO_MERGE_SET );
+        prop_list.addElement( PROP_BASELINE_CONTROLLED_COLLECTION );
+        prop_list.addElement( PROP_SUBBASELINE_SET );
+        prop_list.addElement( PROP_BASELINE_COLLECTION );
+        prop_list.addElement( PROP_VERSION_CONTROLLED_CONFIGURATION );
+        prop_list.addElement( PROP_BASELINE_CONTROLLED_COLLECTION_SET );
+        prop_list.addElement( PROP_ACTIVITY_VERSION_SET );
+        prop_list.addElement( PROP_ACTIVITY_CHECKOUT_SET );
+        prop_list.addElement( PROP_SUBACTIVITY_SET );
+        prop_list.addElement( PROP_CURRENT_WORKSPACE_SET );
+        prop_list.addElement( PROP_ACTIVITY_SET );
+        prop_list.addElement( PROP_UNRESERVED );
+        prop_list.addElement( PROP_CURRENT_ACTIVITY_SET );
+        prop_list.addElement( PROP_ECLIPSED_SET );
+        prop_list.addElement( PROP_VERSION_CONTROLLED_BINDING_SET );
+
+        return (prop_list.elements());
     }
 
 
     /**
+     * Get all children of this tag.
      * 
-     * @param tag
-     * @param schema
-     * @param children
-     */
-    public DeltaVProp( String tag, String schema, DeltaVProp[] children )
-    {
-        this.tag = tag;
-        this.value = null;
-        this.schema = schema;
-        this.children = children;
-        this.leaf = false;
-    }
-
-
-    /**
-     * 
+     * @return
+     *      an array of tags
      */
     public WebDAVProp[] getChildren()
     {

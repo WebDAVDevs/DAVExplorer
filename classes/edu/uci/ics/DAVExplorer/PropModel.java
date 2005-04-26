@@ -59,6 +59,9 @@ import com.ms.xml.util.Name;
  * @author      Joachim Feise (dav-exp@ics.uci.edu)
  * date         14 February 2005
  * Changes:     Some refactoring
+ * @author      Joachim Feise (dav-exp@ics.uci.edu)
+ * date         22 April 2005
+ * Changes:     Only having protected properties read-only
  */
 public class PropModel extends AbstractTableModel implements TreeTableModel
 {
@@ -290,8 +293,8 @@ public class PropModel extends AbstractTableModel implements TreeTableModel
                 break;
             case 1:
             case 2:
-                // modification of DAV properties not allowed
-                return !((PropNode)node).isDAVProp();
+                // modification of protected DAV properties not allowed
+                return !((PropNode)node).isProtectedDAVProp();
             }
         }
         catch  (SecurityException se)
