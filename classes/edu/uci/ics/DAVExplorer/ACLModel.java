@@ -131,7 +131,7 @@ public class ACLModel extends AbstractTableModel
                     {
                         if( i > 0 )
                             retval += ", ";
-                        retval += privs.get(i);
+                        retval += ((ACLPrivilege)privs.get(i)).getPrivilege();
                     }
                 }
                 return retval;
@@ -373,7 +373,11 @@ public class ACLModel extends AbstractTableModel
                     Element token = (Element)enumTree.nextElement();
                     while( token.getTagName() == null )
                         token = (Element)enumTree.nextElement();
-                    node.addPrivilege( token.getTagName().getName() );
+                    ACLPrivilege privilege = new ACLPrivilege();
+                    privilege.setPrivilege(token.getTagName().getName());
+                    String ns = WebDAVProp.locateNamespace(token, token.getTagName());
+                    privilege.setNamespace(ns);
+                    node.addPrivilege( privilege );
                 }
             }
         }

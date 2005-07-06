@@ -607,7 +607,13 @@ public class ACLRequestGenerator extends DeltaVRequestGenerator
                 for( int g = 0; g < privileges.size(); g++ )
                 {
                     Element priv = WebDAVXML.createElement( ACLXML.ELEM_PRIVILEGE, Element.ELEMENT, grantEl, asgen );
-                    Element privVal = WebDAVXML.createElement( (String)privileges.get(g), Element.ELEMENT, priv, asgen );
+
+                    ACLPrivilege currentPriv = (ACLPrivilege)privileges.get(g);
+                    // use the appropriate privilege namespace
+                    AsGen namespace = WebDAVXML.findNamespace( new AsGen(), currentPriv.getNamespace() );
+                    if( namespace == null )
+                        namespace = WebDAVXML.createNamespace( new AsGen(), currentPriv.getNamespace() );
+                    Element privVal = WebDAVXML.createElement( currentPriv.getPrivilege(), Element.ELEMENT, priv, namespace );
                     // keep on same line without whitespace
                     addChild( priv, privVal, 0, 0, false, false );
                     addChild( grantEl, priv, 3, 2, true, true );
@@ -623,7 +629,13 @@ public class ACLRequestGenerator extends DeltaVRequestGenerator
                 for( int d = 0; d < privileges.size(); d++ )
                 {
                     Element priv = WebDAVXML.createElement( ACLXML.ELEM_PRIVILEGE, Element.ELEMENT, denyEl, asgen );
-                    Element privVal = WebDAVXML.createElement( (String)privileges.get(d), Element.ELEMENT, priv, asgen );
+
+                    ACLPrivilege currentPriv = (ACLPrivilege)privileges.get(d);
+                    // use the appropriate privilege namespace
+                    AsGen namespace = WebDAVXML.findNamespace( new AsGen(), currentPriv.getNamespace() );
+                    if( namespace == null )
+                        namespace = WebDAVXML.createNamespace( new AsGen(), currentPriv.getNamespace() );
+                    Element privVal = WebDAVXML.createElement( currentPriv.getPrivilege(), Element.ELEMENT, priv, namespace );
                     // keep on same line without whitespace
                     addChild( priv, privVal, 0, 0, false, false );
                     addChild( denyEl, priv, 3, 2, true, true );

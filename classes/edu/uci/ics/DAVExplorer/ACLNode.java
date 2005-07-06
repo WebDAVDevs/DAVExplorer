@@ -55,7 +55,7 @@ public class ACLNode
      * @param modified
      *      indicates if the entry is considered modified
      */
-    public ACLNode( String[] principal, int principalType, String[] privileges, boolean grant, String inheritedHref, boolean modified )
+    public ACLNode( String[] principal, int principalType, ACLPrivilege[] privileges, boolean grant, String inheritedHref, boolean modified )
     {
         init( principal, principalType, privileges, grant, inheritedHref, modified );
     }
@@ -76,7 +76,7 @@ public class ACLNode
      *      if the entry is inherited, this parameter specifies from where
      *      it is inherited. If the entry is not inherited, this parameter is null.
      */
-    public ACLNode( String[] principal, int principalType, String[] privileges, boolean grant, String inheritedHref )
+    public ACLNode( String[] principal, int principalType, ACLPrivilege[] privileges, boolean grant, String inheritedHref )
     {
         init( principal, principalType, privileges, grant, inheritedHref, false );
     }
@@ -96,7 +96,7 @@ public class ACLNode
      * @param modified
      *      indicates if the entry is considered modified
      */
-    public ACLNode( String[] principal, int principalType, String[] privileges, boolean grant, boolean modified )
+    public ACLNode( String[] principal, int principalType, ACLPrivilege[] privileges, boolean grant, boolean modified )
     {
         init( principal, principalType, privileges, grant, null, modified );
     }
@@ -114,7 +114,7 @@ public class ACLNode
      * @param grant
      *      true if the privileges are granted, false if they are denied
      */
-    public ACLNode( String[] principal, int principalType, String[] privileges, boolean grant )
+    public ACLNode( String[] principal, int principalType, ACLPrivilege[] privileges, boolean grant )
     {
         init( principal, principalType, privileges, grant, null, false );
     }
@@ -165,7 +165,7 @@ public class ACLNode
      * @param modified
      *      indicates if the entry is considered modified
      */
-    protected void init( String[] principal, int principalType, String[] privileges, boolean grant, String inheritedHref, boolean modified )
+    protected void init( String[] principal, int principalType, ACLPrivilege[] privileges, boolean grant, String inheritedHref, boolean modified )
     {
         this.principal = new String[2];
         this.principal[0] = new String( principal[0] );
@@ -285,7 +285,7 @@ public class ACLNode
      * @param privileges
      *      the new array of privileges
      */
-    public void setPrivileges( String[] privileges )
+    public void setPrivileges( ACLPrivilege[] privileges )
     {
         this.privileges = new Vector();
         for( int i=0; i<privileges.length; i++ )
@@ -315,10 +315,13 @@ public class ACLNode
      * @return
      *      true if the privilege was added, false if it already existed
      */
-    public boolean addPrivilege( String privilege )
+    public boolean addPrivilege( ACLPrivilege privilege )
     {
-        if( privileges.contains( privilege ) )
-            return false;
+        for( int i=0; i<privileges.size(); i++)
+        {
+            if( ((ACLPrivilege)privileges.get(i)).getPrivilege().equals(privilege.getPrivilege()))
+                return false;
+        }
         privileges.add( privilege );
         this.modified = true;
         return true;
@@ -334,7 +337,7 @@ public class ACLNode
     public void addPrivileges( Vector privileges )
     {
         for( int i=0; i<privileges.size(); i++ )
-            addPrivilege( (String)privileges.get(i) );
+            addPrivilege( (ACLPrivilege)privileges.get(i) );
     }
 
 
@@ -344,10 +347,10 @@ public class ACLNode
      * @param privileges
      *      the privileges to be added
      */
-    public void addPrivileges( String[] privileges )
+    public void addPrivileges( ACLPrivilege[] privileges )
     {
         for( int i=0; i<privileges.length; i++ )
-            addPrivilege( (String)privileges[i] );
+            addPrivilege( (ACLPrivilege)privileges[i] );
     }
 
 
@@ -361,11 +364,37 @@ public class ACLNode
      */
     public boolean deletePrivilege( String privilege )
     {
-        if( privileges.contains( privilege ) )
+        for( int i=0; i<privileges.size(); i++)
         {
-            privileges.removeElement( privilege );
-            this.modified = true;
-            return true;
+            if( ((ACLPrivilege)privileges.get(i)).getPrivilege().equals(privilege))
+            {
+                privileges.removeElement( privilege );
+                this.modified = true;
+                return true;
+            }
+        }
+        return false;
+    }
+
+
+    /**
+     * Delete a privilege from the existing set.
+     *  
+     * @param privilege
+     *      the privilege to be deleted
+     * @return
+     *      true if the privilege was deleted, false if it wasn't in the existing set
+     */
+    public boolean deletePrivilege( ACLPrivilege privilege )
+    {
+        for( int i=0; i<privileges.size(); i++)
+        {
+            if( ((ACLPrivilege)privileges.get(i)).getPrivilege().equals(privilege.getPrivilege()) )
+            {
+                privileges.removeElement( privilege );
+                this.modified = true;
+                return true;
+            }
         }
         return false;
     }
@@ -380,7 +409,7 @@ public class ACLNode
     public void deletePrivileges( Vector privileges )
     {
         for( int i=0; i<privileges.size(); i++ )
-            deletePrivilege( (String)privileges.get(i) );
+            deletePrivilege( (ACLPrivilege)privileges.get(i) );
     }
 
 
@@ -390,10 +419,10 @@ public class ACLNode
      * @param privileges
      *      the privileges to be deleted
      */
-    public void deletePrivileges( String[] privileges )
+    public void deletePrivileges( ACLPrivilege[] privileges )
     {
         for( int i=0; i<privileges.length; i++ )
-            deletePrivilege( (String)privileges[i] );
+            deletePrivilege( (ACLPrivilege)privileges[i] );
     }
 
 

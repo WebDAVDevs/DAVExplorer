@@ -19,6 +19,7 @@
 package edu.uci.ics.DAVExplorer;
 
 import java.awt.Color;
+import java.awt.Component;
 import java.awt.Cursor;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
@@ -29,6 +30,7 @@ import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
 import java.util.Vector;
 
+import javax.swing.DefaultListCellRenderer;
 import javax.swing.JButton;
 import javax.swing.JDialog;
 import javax.swing.JLabel;
@@ -209,7 +211,7 @@ implements ActionListener, ChangeListener, ListSelectionListener, WebDAVCompleti
             {
                 Object obj = privModel.getElementAt( indices[i] );
                 curModel.addElement( obj );
-                selected.add( obj.toString() );
+                selected.add( obj );
                 privModel.remove( indices[i] );
                 setChanged();
             }
@@ -224,7 +226,7 @@ implements ActionListener, ChangeListener, ListSelectionListener, WebDAVCompleti
                 Object obj = curModel.getElementAt( indices[i] );
                 privModel.addElement( obj );
                 curModel.remove( indices[i] );
-                selected.remove( obj.toString() );
+                selected.remove( obj );
                 setChanged();
             }
         }
@@ -322,6 +324,22 @@ implements ActionListener, ChangeListener, ListSelectionListener, WebDAVCompleti
         }
         privList = new JList( model );
         privList.setFixedCellWidth(200);    // wild guess, but looks ok here
+        privList.setCellRenderer( 
+                new DefaultListCellRenderer()
+                {
+                    public Component getListCellRendererComponent(
+                            JList list,
+                            Object value,
+                            int index,
+                            boolean isSelected,
+                            boolean cellHasFocus)
+                        {
+                            setText( ((ACLPrivilege)value).getPrivilege() );
+                            setBackground(isSelected ? Color.gray : Color.lightGray);
+                            setForeground(Color.black);
+                            return this;
+                        }
+                });
         JScrollPane privScroll = new JScrollPane();
         privScroll.setViewportView( privList );
         privList.addListSelectionListener( this );
@@ -332,6 +350,22 @@ implements ActionListener, ChangeListener, ListSelectionListener, WebDAVCompleti
         }
         curList = new JList( model ); 
         curList.setFixedCellWidth(200);
+        curList.setCellRenderer( 
+                new DefaultListCellRenderer()
+                {
+                    public Component getListCellRendererComponent(
+                            JList list,
+                            Object value,
+                            int index,
+                            boolean isSelected,
+                            boolean cellHasFocus)
+                        {
+                            setText( ((ACLPrivilege)value).getPrivilege() );
+                            setBackground(isSelected ? Color.gray : Color.lightGray);
+                            setForeground(Color.black);
+                            return this;
+                        }
+                });
         JScrollPane curScroll = new JScrollPane();
         curScroll.setViewportView( curList );
         curList.addListSelectionListener( this );

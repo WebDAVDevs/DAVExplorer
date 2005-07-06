@@ -619,7 +619,11 @@ public class ACLResponseInterpreter extends DeltaVResponseInterpreter
                             token = (Element)enumTree.nextElement();
                             if( token == null || token.getTagName() == null )
                                 continue;
-                            supportedPrivilegeSet.add( token.getTagName().getName() );
+                            ACLPrivilege privilege = new ACLPrivilege();
+                            privilege.setPrivilege(token.getTagName().getName());
+                            String ns = WebDAVProp.locateNamespace(token, token.getTagName());
+                            privilege.setNamespace(ns);
+                            supportedPrivilegeSet.add( privilege );
                             break;
                         }
                     }

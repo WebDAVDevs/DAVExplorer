@@ -479,6 +479,22 @@ public class ACLAddDialog extends JDialog
         if( !addACL )
             entries.addAll( privileges );
         privilegesList = new JList( entries ); 
+        privilegesList.setCellRenderer( 
+                new DefaultListCellRenderer()
+                {
+                    public Component getListCellRendererComponent(
+                            JList list,
+                            Object value,
+                            int index,
+                            boolean isSelected,
+                            boolean cellHasFocus)
+                        {
+                            setText( ((ACLPrivilege)value).getPrivilege() );
+                            setBackground(isSelected ? Color.gray : Color.lightGray);
+                            setForeground(Color.black);
+                            return this;
+                        }
+                });
         JScrollPane scrollpane = new JScrollPane();
         scrollpane.setViewportView( privilegesList );
         JLabel label = new JLabel( "Privileges" );
