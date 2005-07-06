@@ -72,6 +72,12 @@ server if specified.
 The applet code also supports the use of SSL. It has been tested with JRE 1.4.
 Since DAV Explorer accesses restricted properties, the jar file is signed by
 the DAV Explorer Team to allow the use as applet.
+When using JRE 1.4 and above, it may be required to run the JDK policy tool
+program, policytool, before using DAV Explorer as applet.
+The policytool can set the permissions for the appropriate codebase,
+http://my-url/DAVExplorer.jar, to whatever DAV Explorer needs. The easiest
+is to allow All Permissions, but it can be set finer-grained, to set
+Property Permissions, File Permissions, and Socket Permissions.
 
 
 2. LICENSE
@@ -99,6 +105,7 @@ for any changes.
 If the DAV Explorer jar file is created from the source, it has to be
 signed with the jarsigner tool before it can run as applet. The jar file
 included in the binary distribution is signed by the DAV Explorer Team.
+
 
 4. COMMAND LINE OPTIONS
 
@@ -153,6 +160,8 @@ Thanks to everybody.
 6. CHANGELOG
 
 Changes for version 0.92-dev:
+- Added namespace preservation for ACL privileges (thanks to Heiko Weber for
+  pointing out the problem.)
 
 Changes for version 0.91:
 - Re-Enabled authentication requests for PUT, broken by changing to streaming
