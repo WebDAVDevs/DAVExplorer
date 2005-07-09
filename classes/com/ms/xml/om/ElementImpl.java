@@ -488,9 +488,9 @@ public class ElementImpl implements Element
      */
     void writeTagName(XMLOutputStream o) throws IOException
     {
-        Element parent = getParent();
+        Element _parent = getParent();
         Name tagName = getTagName();
-        if (parent != null && parent.getTagName() != null && parent.getTagName().getNameSpace() != null) {
+        if (_parent != null && _parent.getTagName() != null && _parent.getTagName().getNameSpace() != null) {
 //            o.writeQualifiedName(tagName, parent.getTagName().getNameSpace());
 
          o.writeQualifiedName(tagName, Atom.create(""));
@@ -512,8 +512,8 @@ public class ElementImpl implements Element
     {
         if (getType() != WHITESPACE)
             o.writeIndent();
-        int type = getType();
-        switch (type)
+        int _type = getType();
+        switch (_type)
         {
             case Element.WHITESPACE:
                 if (o.getOutputStyle() == XMLOutputStream.DEFAULT)

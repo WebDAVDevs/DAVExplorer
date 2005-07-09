@@ -339,12 +339,12 @@ public class WebDAVManager
      * @param Node
      * @return
      */
-    public WebDAVResponseEvent GenerateWebDAVResponse( HTTPResponse Response,
+    public WebDAVResponseEvent GenerateWebDAVResponse( HTTPResponse _Response,
                                                        WebDAVTreeNode Node )
     {
         WebDAVResponseEvent e = new WebDAVResponseEvent( this, Hostname, Port,
                                                          ResourceName, MethodName,
-                                                         Response, ExtraInfo,
+                                                         _Response, ExtraInfo,
                                                          ExtraData, Node );
         return e;
     }
@@ -393,15 +393,15 @@ public class WebDAVManager
      * @param Port
      * @return
      */
-    protected WebDAVConnection createProxyConnection( String Hostname, int Port )
+    protected WebDAVConnection createProxyConnection( String _Hostname, int _Port )
     {
-        if( Port != 0 )
+        if( _Port != 0 )
         {
-            return new WebDAVConnection( Hostname, Port );
+            return new WebDAVConnection( _Hostname, _Port );
         }
         else
         {
-            return new WebDAVConnection( Hostname );
+            return new WebDAVConnection( _Hostname );
         }
     }
 }

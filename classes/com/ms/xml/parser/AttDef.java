@@ -160,7 +160,7 @@ public class AttDef
 	{
 		int i;
 		Vector names;
-		Name name = null;
+		Name _name = null;
 		Object value;
         StringBuffer buf;
 
@@ -184,7 +184,7 @@ public class AttDef
 				Element e1 = parser.dtd.findID(parser.name);
 				if (e1 != null)
 				{
-					parser.error("ID " + name + " is already used on element " + e1.getTagName());
+					parser.error("ID " + _name + " is already used on element " + e1.getTagName());
 				}
 				parser.dtd.addID(parser.name, e);
 			}
@@ -205,17 +205,17 @@ public class AttDef
 			{
 				for (--i; i >= 0; --i)
 				{
-			        name = (Name)names.elementAt(i);
+			        _name = (Name)names.elementAt(i);
 					if (presence == FIXED)
 					{
 						if (type == IDREFS)
-						    checkFixed(name, parser);
-						else if ((Name)def != name) reportMismatch(parser);
+						    checkFixed(_name, parser);
+						else if ((Name)def != _name) reportMismatch(parser);
 					}
-					if (parser.dtd.findID(name) == null)
+					if (parser.dtd.findID(_name) == null)
 					{
 						// add it to linked list to check later
-						parser.dtd.addIDCheck(name,
+						parser.dtd.addIDCheck(_name,
 							parser.reader.line, parser.reader.column - 1,
 							parser.reader.owner);
 					}
@@ -237,16 +237,16 @@ public class AttDef
 				parser.error("ENTITY type attribute \"" + this.name + "\" cannot refer to more than one entity.");
 			for (--i; i >= 0; --i)
 			{
-				name = (Name)names.elementAt(i);
-				if (parser.dtd.findEntity(name) == null)
+				_name = (Name)names.elementAt(i);
+				if (parser.dtd.findEntity(_name) == null)
 				{
 					parser.error("Couldn't find entity '" + name + "'");
 				}
 				if (!inDTD && presence == FIXED)
 				{
 					if (type == ENTITIES)
-						checkFixed(name, parser);
-					else if (name != (Name)def) reportMismatch(parser);
+						checkFixed(_name, parser);
+					else if (_name != (Name)def) reportMismatch(parser);
 				}
 			}
 
@@ -311,20 +311,20 @@ public class AttDef
 		return value;
 	}
 
-	private void checkFixed(Name name, Parser parser) throws ParseException
+	private void checkFixed(Name _name, Parser parser) throws ParseException
 	{
 		Vector v = (Vector)def;
 		int i;
 		for (i = v.size() - 1; i >= 0; i--)
 		{
-			if ((Name)v.elementAt(i) == name)
+			if ((Name)v.elementAt(i) == _name)
 			{
 				break;
 			}
 		}
 		if (i < 0)
 		{
-			parser.error("Attribue value " + name + " is not in the fixed value set.");
+			parser.error("Attribue value " + _name + " is not in the fixed value set.");
 		}
 	}
 
@@ -341,8 +341,8 @@ public class AttDef
         {
             String valueString = "";
             for (int i = 0; i < values.size(); i++) {
-                Name name = (Name)values.elementAt(i);
-                valueString = valueString + name.toString();
+                Name _name = (Name)values.elementAt(i);
+                valueString = valueString + _name.toString();
                 if (i < values.size() - 1)
                     valueString = valueString + " ";
             }
@@ -393,10 +393,10 @@ public class AttDef
 		case ENUMERATION:
             o.writeChars(" (");
             for (int i = 0; i < values.size(); i++) {
-                Name name = (Name)values.elementAt(i);
+                Name _name = (Name)values.elementAt(i);
 				if (type == NOTATION)
-                    o.writeQualifiedName(name, ns);
-				else o.writeChars(name.toString());
+                    o.writeQualifiedName(_name, ns);
+				else o.writeChars(_name.toString());
                 if (i < values.size() - 1)
                     o.write('|');
             }

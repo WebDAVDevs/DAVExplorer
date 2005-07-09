@@ -133,19 +133,19 @@ public class XMLDSO extends Applet
 
     public Document parseXML(String xml)
     {
-        Document document = new Document();
+        Document _document = new Document();
         if (xml == null)
-            return document;
+            return _document;
 
         try {
-            document.load(new StringInputStream(xml));
+            _document.load(new StringInputStream(xml));
         }
         catch (Exception e)
         {
             setError("Caught exception parsing given XML.  " +
                 e.toString());
         }
-        return document; // but return what we have anyway.
+        return _document; // but return what we have anyway.
     }
 
     /**
@@ -276,11 +276,11 @@ public class XMLDSO extends Applet
         return false;
     }
 
-    int getColumn(Element schema, Element element)
+    int getColumn(Element _schema, Element element)
     {
         int col = 0;
         String tagname = element.getTagName().toString();
-        for (Enumeration en = schema.getElements(); en.hasMoreElements(); )
+        for (Enumeration en = _schema.getElements(); en.hasMoreElements(); )
         {
             col++;
             Element e = (Element)en.nextElement();
@@ -500,11 +500,11 @@ public class XMLDSO extends Applet
     {
         document = null;
         try {
-            URL url = new URL(getDocumentBase(),arg);
+            URL _url = new URL(getDocumentBase(),arg);
             document = new Document();
 //			JSObject win = (JSObject)JSObject.getWindow(this);
 			Object win = null;
-			XMLParserThread t = new XMLParserThread(url, win, callback);
+			XMLParserThread t = new XMLParserThread(_url, win, callback);
 			t.start();
         } catch (Exception e) {
             setError("Error loading document '" + arg + "'.  " + e.toString());
@@ -797,11 +797,11 @@ class SchemaNode
         return sn;
     }
 
-    void addRow(Name name, SchemaNode n)
+    void addRow(Name _name, SchemaNode n)
     {
         if (rows == null)
             rows = new Hashtable(13);
-        rows.put(name, n);
+        rows.put(_name, n);
     }
 
     SchemaNode getRow(Name n)
@@ -901,11 +901,11 @@ class XMLRowsetProvider
 //        { }
         int result = 0;
         for (int i = iRow; i < iRow+cRows; i++) {
-            Element row = getRow(iRow);
-            if (row != null) {
+            Element _row = getRow(iRow);
+            if (_row != null) {
                 result++;
-                root.removeChild(row);
-                removeChildProvider(row);
+                root.removeChild(_row);
+                removeChildProvider(_row);
             }
         }
         resetIterator();
@@ -981,12 +981,12 @@ class XMLRowsetProvider
         return row;
     }
 
-    public Object getColumn(Element row, int col)
+    public Object getColumn(Element _row, int col)
     {
         Element se = schema.getChildren().getChild(col);
         Name name = Name.create((String)se.getAttribute(nameNAME));
         if (se.getTagName() == nameCOLUMN) {
-            Element child = findChild(row,name);
+            Element child = findChild(_row,name);
             if (child != null) {
                 String text = child.getText();
                 return text;
@@ -995,24 +995,24 @@ class XMLRowsetProvider
         } else {
             // Must be a rowset, so return a rowset provider.
             // First see if we've already created one for this row.
-            XMLRowsetProvider value = findChildProvider(row);
+            XMLRowsetProvider value = findChildProvider(_row);
             if (value == null)
             {
                 // Have to create a new rowset provider then.
-                value = new XMLRowsetProvider(row,se,factory,this);
+                value = new XMLRowsetProvider(_row,se,factory,this);
                 addChildProvider(value);
             }
             return value;
         }
     }
 
-    public XMLRowsetProvider findChildProvider(Element row)
+    public XMLRowsetProvider findChildProvider(Element _row)
     {
         if (childProviders != null) {
             for (Enumeration en = childProviders.elements(); en.hasMoreElements(); )
             {
                 XMLRowsetProvider child = (XMLRowsetProvider)en.nextElement();
-                if (child.root == row)
+                if (child.root == _row)
                 {
                     return child;
                 }
@@ -1028,9 +1028,9 @@ class XMLRowsetProvider
         childProviders.addElement(child);
     }
 
-    void removeChildProvider(Element row)
+    void removeChildProvider(Element _row)
     {
-        XMLRowsetProvider value = findChildProvider(row);
+        XMLRowsetProvider value = findChildProvider(_row);
         if (value != null)
         {
             childProviders.removeElement(value);
@@ -1041,9 +1041,9 @@ class XMLRowsetProvider
      * Recurrsively search given row for first child or grand-child
      * node with matching tag name.
      */
-    public Element findChild(Element row, Name tag)
+    public Element findChild(Element _row, Name tag)
     {
-        for (ElementEnumeration en = new ElementEnumeration(row,null,Element.ELEMENT);
+        for (ElementEnumeration en = new ElementEnumeration(_row,null,Element.ELEMENT);
                 en.hasMoreElements(); )
         {
             Element child = (Element)en.nextElement();

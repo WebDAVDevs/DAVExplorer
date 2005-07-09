@@ -2,7 +2,7 @@
  * @(#)HttpOutputStream.java				0.3-3 06/05/2001
  *
  *  This file is part of the HTTPClient package
- *  Copyright (C) 1996-2001 Ronald Tschalär
+ *  Copyright (C) 1996-2001 Ronald Tschal?r
  *
  *  This library is free software; you can redistribute it and/or
  *  modify it under the terms of the GNU Lesser General Public
@@ -90,7 +90,7 @@ import java.io.FileOutputStream;
  * solution.
  *
  * @version	0.3-3  06/05/2001
- * @author	Ronald Tschalär
+ * @author	Ronald Tschal?r
  * @since	V0.3
  */
 public class HttpOutputStream extends OutputStream
@@ -174,11 +174,11 @@ public class HttpOutputStream extends OutputStream
      *               if we should write to a ByteArrayOutputStream instead.
      * @param con_to connection timeout to use in sendRequest()
      */
-    void goAhead(Request req, OutputStream os, int con_to)
+    void goAhead(Request _req, OutputStream _os, int _con_to)
     {
-	this.req    = req;
-	this.os     = os;
-	this.con_to = con_to;
+	this.req    = _req;
+	this.os     = _os;
+	this.con_to = _con_to;
 
 	if (os == null)
 	    bos = new ByteArrayOutputStream();
@@ -196,9 +196,9 @@ public class HttpOutputStream extends OutputStream
      *
      * @param req the request this stream is to be associated with
      */
-    void ignoreData(Request req)
+    void ignoreData(Request _req)
     {
-	this.req = req;
+	this.req = _req;
 	ignore = true;
     }
 

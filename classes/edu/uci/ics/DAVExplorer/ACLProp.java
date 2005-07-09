@@ -96,9 +96,9 @@ public class ACLProp extends DeltaVProp
         Vector prop_list = new Vector();
 
         // add the elements from the super class
-        Enumeration enum = DeltaVProp.getDAVProps();
-        while( enum.hasMoreElements() )
-            prop_list.addElement( enum.nextElement() );
+        Enumeration propEnum = DeltaVProp.getDAVProps();
+        while( propEnum.hasMoreElements() )
+            prop_list.addElement( propEnum.nextElement() );
 
         prop_list.addElement( PROP_PRINCIPAL );
         prop_list.addElement( PROP_ALTERNATE_URI_SET );
@@ -148,9 +148,9 @@ public class ACLProp extends DeltaVProp
         Vector prop_list = new Vector();
 
         // add the elements from the super class
-        Enumeration enum = DeltaVProp.getProtectedDAVProps();
-        while( enum.hasMoreElements() )
-            prop_list.addElement( enum.nextElement() );
+        Enumeration propEnum = DeltaVProp.getProtectedDAVProps();
+        while( propEnum.hasMoreElements() )
+            prop_list.addElement( propEnum.nextElement() );
 
         prop_list.addElement( PROP_PRINCIPAL );
         prop_list.addElement( PROP_ALTERNATE_URI_SET );

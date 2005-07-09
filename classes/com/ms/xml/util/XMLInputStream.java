@@ -279,13 +279,13 @@ public class XMLInputStream extends InputStream
         }
     }
 
-    private void push(char next)
+    private void push(char _next)
     {
         if (index == 3)
         {
             System.exit(0);
         }
-        this.next[++index] = next;
+        this.next[++index] = _next;
     }
 
     /**

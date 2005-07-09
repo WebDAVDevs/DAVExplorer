@@ -169,10 +169,10 @@ public class ElementDecl extends ElementImpl
                     i = parser.parseNames(names, Parser.INVALIDTOKEN, null);
                     for (--i; i >= 0; i--)
 					{
-                        Name name = (Name)names.elementAt(i);
-                        if (parser.dtd.findNotation(name) == null)
+                        Name _name = (Name)names.elementAt(i);
+                        if (parser.dtd.findNotation(_name) == null)
                         {
-                            parser.error("Notation not declared '" + name + "'");
+                            parser.error("Notation not declared '" + _name + "'");
                         }
                     }
                     parser.parseToken(Parser.RPAREN, ")");
@@ -309,15 +309,15 @@ public class ElementDecl extends ElementImpl
         return name;
     }
 
-    final void parseAttribute(Element e, Name name, Parser parser) throws ParseException
+    final void parseAttribute(Element e, Name _name, Parser parser) throws ParseException
     {
-		AttDef attdef = findAttDef(name);
+		AttDef attdef = findAttDef(_name);
 		if (attdef == null)
 		{
-			parser.error("Illegal attribute name " + name);
+			parser.error("Illegal attribute name " + _name);
 		}
 		Object value = attdef.parseAttribute(e, parser);
-		e.setAttribute(name, value);
+		e.setAttribute(_name, value);
     }
 
     final void addAttDef(AttDef attdef)
@@ -334,20 +334,20 @@ public class ElementDecl extends ElementImpl
      * @param name  The name of the attribute.
      * @return  an attribute definition object; returns null if it is not found.
      */
-	public final AttDef findAttDef(Name name)
+	public final AttDef findAttDef(Name _name)
 	{
 		if (attdefs != null)
 		{
             for (Enumeration en =  attdefs.elements(); en.hasMoreElements();)
 		    {
 		    	AttDef attdef = (AttDef)en.nextElement();
-				if (attdef.name == name)
+				if (attdef.name == _name)
 					return attdef;
 			}
 		}
 		if (base != null)
 		{
-			AttDef attdef = base.findAttDef(name);
+			AttDef attdef = base.findAttDef(_name);
 			if (attdef != null)
 				return attdef;
 		}
@@ -355,7 +355,7 @@ public class ElementDecl extends ElementImpl
 		{
 			for (Enumeration en = interfaces.elements(); en.hasMoreElements(); )
 			{
-				AttDef attdef = ((ElementDecl)en.nextElement()).findAttDef(name);
+				AttDef attdef = ((ElementDecl)en.nextElement()).findAttDef(_name);
 				if (attdef != null)
 					return attdef;
 			}

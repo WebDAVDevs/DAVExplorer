@@ -89,22 +89,22 @@ class Context
 			this.spaceTable =(Hashtable)spaceTable.clone();
     }
 
-    void reset(Element e, Name name, int type, boolean preserveWS, Atom nameSpace, Hashtable spaceTable)
+    void reset(Element _e, Name name, int _type, boolean _preserveWS, Atom _nameSpace, Hashtable _spaceTable)
     {
 		this.ed = null;    
         this.tagName = name;
         this.parent = null;
-        this.type = type;
+        this.type = _type;
 		this.state = 0;
-		this.e = e;
-		this.preserveWS = preserveWS;
-		this.nameSpace = nameSpace;
-		this.defaultNameSpace = nameSpace;
+		this.e = _e;
+		this.preserveWS = _preserveWS;
+		this.nameSpace = _nameSpace;
+		this.defaultNameSpace = _nameSpace;
 		this.lastWasWS = false;
-		if (spaceTable != null)
-			this.spaceTable =(Hashtable)spaceTable.clone();
+		if (_spaceTable != null)
+			this.spaceTable =(Hashtable)_spaceTable.clone();
 		else
-			spaceTable = null;
+			this.spaceTable = null;
     }
 
 	/**

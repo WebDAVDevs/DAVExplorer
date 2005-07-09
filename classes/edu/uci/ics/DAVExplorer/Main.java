@@ -1756,7 +1756,8 @@ public class Main extends JFrame
         public DropEnabler(Component enabled)
         {
             this.drop_enabled = enabled;
-            int drop_action_allowed = DnDConstants.ACTION_COPY;
+//            int drop_action_allowed = DnDConstants.ACTION_COPY;
+            drop_action_allowed = DnDConstants.ACTION_COPY;
             dropTarget = new DropTarget(drop_enabled, drop_action_allowed, this, true);
             dragSource.createDefaultDragGestureRecognizer( drop_enabled, DnDConstants.ACTION_COPY, this );
             os_name = System.getProperty("os.name");

@@ -115,15 +115,15 @@ implements ActionListener, ChangeListener, ListSelectionListener, WebDAVCompleti
      * @param flag
      *      a general-purpose flag, useful for derived classes
      */
-    protected void init( String resource, String hostname, Vector selected, String title, boolean flag )
+    protected void init( String _resource, String _hostname, Vector _selected, String title, boolean flag )
     {
         GlobalData.getGlobalData().setCursor( Cursor.getPredefinedCursor( Cursor.WAIT_CURSOR ) );
-        this.hostname = hostname;
-        this.resource = resource;
+        this.hostname = _hostname;
+        this.resource = _resource;
         if( selected == null )
             this.selected = new Vector();
         else
-            this.selected = new Vector( selected );
+            this.selected = new Vector( _selected );
         available = new Vector();
         setTitle( title );
         ((Main)GlobalData.getGlobalData().getMainFrame()).addWebDAVCompletionListener(this);

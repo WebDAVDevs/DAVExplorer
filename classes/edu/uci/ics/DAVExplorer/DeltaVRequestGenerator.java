@@ -137,10 +137,10 @@ public class DeltaVRequestGenerator extends WebDAVRequestGenerator
         else
             host = HostName +":" + Port;
         String activityResource = "";
-        Enumeration enum = activity.keys();
-        while( enum.hasMoreElements() )
+        Enumeration activityEnum = activity.keys();
+        while( activityEnum.hasMoreElements() )
         {
-            String base = (String)enum.nextElement();
+            String base = (String)activityEnum.nextElement();
             if( host.equals( base ) )
             {
                 activityResource = (String)activity.get( base );
@@ -468,10 +468,10 @@ public class DeltaVRequestGenerator extends WebDAVRequestGenerator
         String root = host + StrippedResource;
 
         String collection = "";
-        Enumeration enum = activityCollection.keys();
-        while( enum.hasMoreElements() )
+        Enumeration activityEnum = activityCollection.keys();
+        while( activityEnum.hasMoreElements() )
         {
-            String base = (String)enum.nextElement();
+            String base = (String)activityEnum.nextElement();
             if( root.startsWith( base ) )
             {
                 collection = (String)activityCollection.get( base );
@@ -479,8 +479,8 @@ public class DeltaVRequestGenerator extends WebDAVRequestGenerator
             }
         }
 
-        String activity = getUUID();
-        StrippedResource = collection + activity; 
+        String _activity = getUUID();
+        StrippedResource = collection + _activity; 
 
         Method = "MKACTIVITY";
         Headers = new NVPair[1];
@@ -523,10 +523,10 @@ public class DeltaVRequestGenerator extends WebDAVRequestGenerator
         // TODO: how to merge subdirectories
         // TODO: is our resource right?
         String activityResource = "";
-        Enumeration enum = activity.keys();
-        while( enum.hasMoreElements() )
+        Enumeration activityEnum = activity.keys();
+        while( activityEnum.hasMoreElements() )
         {
-            String base = (String)enum.nextElement();
+            String base = (String)activityEnum.nextElement();
             if( host.startsWith( base ) )
             {
                 activityResource = (String)activity.get( base );
@@ -592,9 +592,9 @@ public class DeltaVRequestGenerator extends WebDAVRequestGenerator
      * 
      * @param activityCollection
      */
-    public void SetActivityCollection( Hashtable activityCollection )
+    public void SetActivityCollection( Hashtable _activityCollection )
     {
-        this.activityCollection = activityCollection;    
+        this.activityCollection = _activityCollection;    
     }
 
 
@@ -602,9 +602,9 @@ public class DeltaVRequestGenerator extends WebDAVRequestGenerator
      * 
      * @param activity
      */
-    public void SetActivity( Hashtable activity )
+    public void SetActivity( Hashtable _activity )
     {
-        this.activity = activity;    
+        this.activity = _activity;    
     }
 
 

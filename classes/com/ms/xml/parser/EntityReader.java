@@ -80,13 +80,13 @@ class EntityReader
         return c;
     }
 
-    void push(char next) throws ParseException
+    void push(char _next) throws ParseException
     {
         if (pos == 1) {
-            throw new ParseException("Error unreading '" + next + "' at (" + line + "," + column + ") : ",
+            throw new ParseException("Error unreading '" + _next + "' at (" + line + "," + column + ") : ",
                     line, column, owner);
         }
-        this.next[++pos] = next;
+        this.next[++pos] = _next;
     }
 
     /**

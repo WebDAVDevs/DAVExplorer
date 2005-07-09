@@ -2006,33 +2006,33 @@ public class WebDAVResponseInterpreter
      * 
      * @return          the stripped resource
      */
-    protected String truncateResource(String res)
+    protected String truncateResource(String _res)
     {
         if( GlobalData.getGlobalData().getDebugTreeNode() )
         {
             System.err.println( "WebDAVTreeNode::truncateResource" );
         }
 
-        int pos = res.indexOf(GlobalData.WebDAVPrefixSSL);
+        int pos = _res.indexOf(GlobalData.WebDAVPrefixSSL);
         if (pos >= 0)
-            res = res.substring(GlobalData.WebDAVPrefixSSL.length());
-        pos = res.indexOf(GlobalData.WebDAVPrefix);
+            _res = _res.substring(GlobalData.WebDAVPrefixSSL.length());
+        pos = _res.indexOf(GlobalData.WebDAVPrefix);
         if (pos >= 0)
-            res = res.substring(GlobalData.WebDAVPrefix.length());
-        pos = res.indexOf("/");
+            _res = _res.substring(GlobalData.WebDAVPrefix.length());
+        pos = _res.indexOf("/");
         if( pos >= 0 )
-            res = res.substring(pos);
+            _res = _res.substring(pos);
 
-        if (res.endsWith("/"))
-            res = res.substring(0, res.length() - 1);
-        pos = res.lastIndexOf("/");
+        if (_res.endsWith("/"))
+            _res = _res.substring(0, _res.length() - 1);
+        pos = _res.lastIndexOf("/");
         if (pos >= 0)
-            res = res.substring(pos);
-        if ((res.startsWith("/")) && (res.length() > 1))
-            res = res.substring(1);
-        if (res.length() == 0)
-            res = "/";
-        return res;
+            _res = _res.substring(pos);
+        if ((_res.startsWith("/")) && (_res.length() > 1))
+            _res = _res.substring(1);
+        if (_res.length() == 0)
+            _res = "/";
+        return _res;
     }
 
 
@@ -2042,29 +2042,29 @@ public class WebDAVResponseInterpreter
      * @param res       Resource to strip
      * @return          the stripped resource
      */
-    protected String getFullResource(String res)
+    protected String getFullResource(String _res)
     {
         if( GlobalData.getGlobalData().getDebugTreeNode() )
         {
             System.err.println( "WebDAVTreeNode::getFullResource" );
         }
 
-        int pos = res.indexOf(GlobalData.WebDAVPrefixSSL);
+        int pos = _res.indexOf(GlobalData.WebDAVPrefixSSL);
         if (pos >= 0)
-            res = res.substring(GlobalData.WebDAVPrefixSSL.length());
-        pos = res.indexOf(GlobalData.WebDAVPrefix);
+            _res = _res.substring(GlobalData.WebDAVPrefixSSL.length());
+        pos = _res.indexOf(GlobalData.WebDAVPrefix);
         if (pos >= 0)
-            res = res.substring(GlobalData.WebDAVPrefix.length());
-        pos = res.indexOf("/");
+            _res = _res.substring(GlobalData.WebDAVPrefix.length());
+        pos = _res.indexOf("/");
         if( pos >= 0 )
-            res = res.substring(pos);
-        if (res.endsWith("/"))
-            res = res.substring(0,res.length() - 1);
-        if (res.length() == 0)
-            res = "/";
-        if ( (res.startsWith("/")) && (res.length() > 1) )
-            res = res.substring(1);
-        return res;
+            _res = _res.substring(pos);
+        if (_res.endsWith("/"))
+            _res = _res.substring(0, _res.length() - 1);
+        if (_res.length() == 0)
+            _res = "/";
+        if ( (_res.startsWith("/")) && (_res.length() > 1) )
+            _res = _res.substring(1);
+        return _res;
     }
 
 

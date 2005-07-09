@@ -2,7 +2,7 @@
  * @(#)HTTPConnection.java				0.3-3 06/05/2001
  *
  *  This file is part of the HTTPClient package
- *  Copyright (C) 1996-2001 Ronald Tschalär
+ *  Copyright (C) 1996-2001 Ronald Tschal?r
  *
  *  This library is free software; you can redistribute it and/or
  *  modify it under the terms of the GNU Lesser General Public
@@ -200,7 +200,7 @@ import java.applet.Applet;
  * </ul>
  *
  * @version	0.3-3E  06/05/2001
- * @author	Ronald Tschalär
+ * @author	Ronald Tschal?r
  */
 public class HTTPConnection implements GlobalConstants, HTTPClientModuleConstants
 {
@@ -412,12 +412,12 @@ public class HTTPConnection implements GlobalConstants, HTTPClientModuleConstant
 	    if (host != null  &&  host.length() > 0)
 	    {
 		int port    = Integer.getInteger("HTTPClient.socksPort", -1).intValue();
-		int version = Integer.getInteger("HTTPClient.socksVersion", -1).intValue();
+		int _version = Integer.getInteger("HTTPClient.socksVersion", -1).intValue();
 		Log.write(Log.CONN, "Conn:  using SOCKS " + host + ":" + port);
-		if (version == -1)
+		if (_version == -1)
 		    setSocksServer(host, port);
 		else
-		    setSocksServer(host, port, version);
+		    setSocksServer(host, port, _version);
 	    }
 	}
 	catch (Exception e)
@@ -3918,7 +3918,7 @@ public class HTTPConnection implements GlobalConstants, HTTPClientModuleConstant
 	int         actual_port;
 	IOException exception;
 	Socket      sock;
-	SocksClient Socks_client;
+	SocksClient _Socks_client;
 	boolean     close;
 
 
@@ -3930,7 +3930,7 @@ public class HTTPConnection implements GlobalConstants, HTTPClientModuleConstant
 
 	    actual_host  = host;
 	    actual_port  = port;
-	    Socks_client = socks;
+	    _Socks_client = socks;
 
 	    exception = null;
 	    sock      = null;

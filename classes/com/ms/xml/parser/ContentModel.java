@@ -209,8 +209,8 @@ public class ContentModel
     final Node parseList(Parser parser) throws ParseException
     {
         //use Hashtable to check name uniqueness
-        Hashtable symbols = new Hashtable();
-        symbols.put(parser.name, parser.name);
+        Hashtable _symbols = new Hashtable();
+        _symbols.put(parser.name, parser.name);
 
         Node n = parseNode(parser);
         int cpType = parser.token;
@@ -224,9 +224,9 @@ public class ContentModel
             case Parser.OR:
                 parser.nextToken();
                 if (parser.token == Parser.NAME) {
-                    if (symbols.contains(parser.name))
+                    if (_symbols.contains(parser.name))
                         parser.error("Warning: Repeated element in content model: " + parser.name );
-                    else symbols.put(parser.name, parser.name);
+                    else _symbols.put(parser.name, parser.name);
                 }
                 n = new Choice(n, parseNode(parser));
                 break;
@@ -249,9 +249,9 @@ public class ContentModel
             {
                 parser.nextToken();
                 if (parser.token == Parser.NAME) {
-                    if (symbols.contains(parser.name))
+                    if (_symbols.contains(parser.name))
                         parser.error("Repeated element in content model: " + parser.name );
-                    else symbols.put(parser.name, parser.name);
+                    else _symbols.put(parser.name, parser.name);
                 }
                 n = new Choice(n, parseNode(parser));
             }
@@ -338,10 +338,10 @@ public class ContentModel
     final Node parseMixed(Parser parser) throws ParseException
     {
         Node n;
-        Hashtable symbols= new Hashtable();
+        Hashtable _symbols= new Hashtable();
         parser.parseKeyword(Parser.PCDATA, "PCDATA");
         n = new Terminal(this, parser.name);
-        symbols.put(parser.name, parser.name);
+        _symbols.put(parser.name, parser.name);
         parser.nextToken();
         switch (parser.token)
         {
@@ -360,9 +360,9 @@ public class ContentModel
                     {
                         parser.nextToken();
                         if (parser.token == Parser.NAME) {
-                            if (symbols.contains(parser.name))
+                            if (_symbols.contains(parser.name))
                                 parser.error("Repeated element in content model: " + parser.name);
-                            else symbols.put(parser.name, parser.name);
+                            else _symbols.put(parser.name, parser.name);
                         }
                         n = new Choice(n, parseNode(parser));
                     }

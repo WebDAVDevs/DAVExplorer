@@ -442,9 +442,9 @@ public class TableSorter extends TableMap
      * @param column
      * @param ascending
      */
-    public void sortByColumn(int column, boolean ascending)
+    public void sortByColumn(int column, boolean _ascending)
     {
-        this.ascending = ascending;
+        this.ascending = _ascending;
         lastColumn = column;
         sortingColumns.removeAllElements();
         sortingColumns.addElement(new Integer(column));

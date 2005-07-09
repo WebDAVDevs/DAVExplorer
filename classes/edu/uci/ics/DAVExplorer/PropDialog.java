@@ -161,20 +161,20 @@ public class PropDialog extends JDialog
      * @param locktoken
      * @param changeable
      */
-    protected void init( PropModel model, String resource, String hostname, String title, String locktoken, boolean changeable )
+    protected void init( PropModel _model, String _resource, String hostname, String title, String _locktoken, boolean _changeable )
     {
-        this.changeable = changeable;
+        this.changeable = _changeable;
         if( title != null )
             setTitle( title );
         else
         {
-            if( changeable )
+            if( _changeable )
                 setTitle("View/Modify Properties");
             else
                 setTitle("View Properties");
         }
-        this.resource = hostname + resource;
-        this.locktoken = locktoken;
+        this.resource = hostname + _resource;
+        this.locktoken = _locktoken;
         JLabel label = new JLabel( this.resource, JLabel.CENTER );
         label.setForeground(Color.black);
         getContentPane().add( "North", label );
@@ -195,7 +195,7 @@ public class PropDialog extends JDialog
         buttonPanel.add(closeButton);
         getRootPane().setDefaultButton( closeButton );
         closeButton.grabFocus();
-        if( !changeable )
+        if( !_changeable )
         {
             addButton.setEnabled( false );
             deleteButton.setEnabled( false );
@@ -205,8 +205,8 @@ public class PropDialog extends JDialog
         getContentPane().add( "South", buttonPanel );
         setBackground(Color.lightGray);
 
-        model.addChangeListener(this);
-        treeTable = new JTreeTable( model );
+        _model.addChangeListener(this);
+        treeTable = new JTreeTable( _model );
         treeTable.getSelectionModel().addListSelectionListener(this);
         // the minimum number of rows to see, expand as necessary
         JTree tree = treeTable.getTree();

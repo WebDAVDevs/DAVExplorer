@@ -2,7 +2,7 @@
  * @(#)CIHashtable.java					0.3-3 06/05/2001
  *
  *  This file is part of the HTTPClient package
- *  Copyright (C) 1996-2001 Ronald Tschalär
+ *  Copyright (C) 1996-2001 Ronald Tschal?r
  *
  *  This library is free software; you can redistribute it and/or
  *  modify it under the terms of the GNU Lesser General Public
@@ -39,7 +39,7 @@ import java.util.Enumeration;
  * This class implements a Hashtable with case-insensitive Strings as keys.
  *
  * @version	0.3-3  06/05/2001
- * @author	Ronald Tschalär
+ * @author	Ronald Tschal?r
  */
 class CIHashtable extends Hashtable
 {
@@ -163,9 +163,9 @@ final class CIHashtableEnumeration implements Enumeration
 {
     Enumeration HTEnum;
 
-    public CIHashtableEnumeration(Enumeration enum)
+    public CIHashtableEnumeration(Enumeration enumeration)
     {
-	HTEnum = enum;
+	HTEnum = enumeration;
     }
 
     public boolean hasMoreElements()

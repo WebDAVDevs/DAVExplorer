@@ -89,12 +89,12 @@ public class ACLReportSearchPropertyDialog extends ACLReportPropertiesDialog
      * @param match
      *      true if showing the match edit box, false if showing the self checkbox
      */
-    protected void init( String resource, String hostname, Vector reserved, String title, boolean match )
+    protected void init( String _resource, String _hostname, Vector reserved, String title, boolean _match )
     {
         GlobalData.getGlobalData().setCursor( Cursor.getPredefinedCursor( Cursor.WAIT_CURSOR ) );
-        this.resource = resource;
-        this.match = match;
-        this.self = !match;
+        this.resource = _resource;
+        this.match = _match;
+        this.self = !_match;
         available = new Vector();
         selected = new Vector();
         setTitle( title );

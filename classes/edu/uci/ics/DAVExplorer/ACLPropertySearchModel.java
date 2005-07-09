@@ -175,10 +175,10 @@ public class ACLPropertySearchModel extends AbstractTableModel
      * @param match
      *      the match string
      */
-    public void addRow( Vector properties, String match )
+    public void addRow( Vector properties, String _match )
     {
         int size = rows.size();
-        ACLPropertySearchNode node = new ACLPropertySearchNode( properties, match );
+        ACLPropertySearchNode node = new ACLPropertySearchNode( properties, _match );
         rows.add( node );
         fireTableRowsInserted( size, size );
     }

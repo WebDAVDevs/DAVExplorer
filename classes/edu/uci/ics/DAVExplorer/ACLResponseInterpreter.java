@@ -920,12 +920,12 @@ public class ACLResponseInterpreter extends DeltaVResponseInterpreter
      */
     public boolean isACL( String resource )
     {
-        Enumeration enum = acl.keys();
-        while( enum.hasMoreElements() )
+        Enumeration ACLEnum = acl.keys();
+        while( ACLEnum.hasMoreElements() )
         {
-            String res = (String)enum.nextElement();
-            if( resource.indexOf(res) >= 0 )
-                return( ((Boolean)acl.get(res)).booleanValue() );
+            String _res = (String)ACLEnum.nextElement();
+            if( resource.indexOf(_res) >= 0 )
+                return( ((Boolean)acl.get(_res)).booleanValue() );
         }
         return false;
     }

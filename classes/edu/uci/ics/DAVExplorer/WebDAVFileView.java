@@ -547,11 +547,11 @@ public class WebDAVFileView implements ViewSelectionListener, ActionListener
             {
                 boolean found = false;
                 WebDAVTreeNode node = null;
-                Enumeration enum = parentNode.children();
+                Enumeration nodeEnum = parentNode.children();
         
-                while(!found && enum.hasMoreElements())
+                while(!found && nodeEnum.hasMoreElements())
                 {
-                    node = (WebDAVTreeNode)enum.nextElement();
+                    node = (WebDAVTreeNode)nodeEnum.nextElement();
         
                     String s = (String) node.getUserObject();
                     column = table.convertColumnIndexToView(3); // name
@@ -972,35 +972,6 @@ public class WebDAVFileView implements ViewSelectionListener, ActionListener
         data.addElement(newRow);
     }
 
-
-    /**
-     * 
-     * @param row
-     */
-    private void removeRow(int row)
-    {
-        GlobalData.methodEnter( "removeRow", "WebDAVFileView", GlobalData.getGlobalData().getDebugFileView() );
-        data.removeElementAt(row);
-        fireTableModuleEvent();
-    }
-
-
-    /**
-     * 
-     * @param columnName
-     * @return
-     */
-    private int getColumn( String columnName )
-    {
-        GlobalData.methodEnter( "getColumne", "WebDAVFileView", GlobalData.getGlobalData().getDebugFileView() );
-        for( int i=0; i<table.getColumnCount(); i++ )
-        {
-            if( table.getColumnName(i).equalsIgnoreCase(columnName) )
-                return i;
-        }
-        return -1;  // column name not found
-    }
-    
 
     /**
      *

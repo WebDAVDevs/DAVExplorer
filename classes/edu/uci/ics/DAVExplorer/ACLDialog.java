@@ -91,12 +91,12 @@ public class ACLDialog extends JDialog
      * @param locktoken
      *      the locktoken for the resource, if any. Used when changing properties.
      */
-    protected void init( ACLModel model, Element properties, String resource, String hostname, String locktoken )
+    protected void init( ACLModel _model, Element properties, String _resource, String _hostname, String _locktoken )
     {
         setTitle("View/Modify ACLs");
-        this.hostname = hostname;
-        this.resource = hostname + resource;
-        this.locktoken = locktoken;
+        this.hostname = _hostname;
+        this.resource = _hostname + _resource;
+        this.locktoken = _locktoken;
         JLabel label = new JLabel( this.resource, JLabel.CENTER );
         label.setForeground(Color.black);
         getContentPane().add( "North", label );
@@ -122,7 +122,7 @@ public class ACLDialog extends JDialog
         getContentPane().add( "South", buttonPanel );
         setBackground(Color.lightGray);
 
-        table = new JTable( model );
+        table = new JTable( _model );
         table.getSelectionModel().addListSelectionListener(this);
         // the minimum number of rows to see, expand as necessary
         // table.setMinimumSize(...);

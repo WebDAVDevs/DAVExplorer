@@ -788,10 +788,10 @@ public class WebDAVTreeView implements ViewSelectionListener, CopyResponseListen
             if( node.isCollection() )
                 return true;
         }
-        Enumeration enum = ((WebDAVTreeNode)currNode).children();
-        while( enum.hasMoreElements() )
+        Enumeration nodeEnum = ((WebDAVTreeNode)currNode).children();
+        while( nodeEnum.hasMoreElements() )
         {
-            WebDAVTreeNode treeNode = (WebDAVTreeNode)enum.nextElement();
+            WebDAVTreeNode treeNode = (WebDAVTreeNode)nodeEnum.nextElement();
             node = ((WebDAVTreeNode)treeNode).getDataNode();
             node = getCurrentDataNode( node, curFile );
             if( node != null )

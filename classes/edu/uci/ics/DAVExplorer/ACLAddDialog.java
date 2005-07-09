@@ -112,23 +112,23 @@ public class ACLAddDialog extends JDialog
      * @param node
      *      The ACL to change, null if adding a new ACL
      */
-    protected void init( String resource, String hostname, ACLNode node )
+    protected void init( String _resource, String _hostname, ACLNode _node )
     {
         GlobalData.getGlobalData().setCursor( Cursor.getPredefinedCursor( Cursor.WAIT_CURSOR ) );
-        this.hostname = hostname;
-        this.resource = resource;
-        if( node != null )
+        this.hostname = _hostname;
+        this.resource = _resource;
+        if( _node != null )
         {
             setTitle("Edit ACL");
             addACL = false;
             // make copies
             principal = new String[2];
-            principal[0] = new String( node.getPrincipal()[0] );
-            principal[1] = new String( node.getPrincipal()[1] );
-            principalType = node.getPrincipalType();
-            privileges = new Vector( node.getPrivileges() );
-            grant = node.getGrant();
-            this.node = node;
+            principal[0] = new String( _node.getPrincipal()[0] );
+            principal[1] = new String( _node.getPrincipal()[1] );
+            principalType = _node.getPrincipalType();
+            privileges = new Vector( _node.getPrivileges() );
+            grant = _node.getGrant();
+            this.node = _node;
         }
         else
         {

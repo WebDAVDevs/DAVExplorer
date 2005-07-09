@@ -914,10 +914,10 @@ public class DeltaVResponseInterpreter extends WebDAVResponseInterpreter
         boolean deltaVBase = false;
         boolean reports = false;
         
-        Enumeration enum = deltaV.keys();
-        while( enum.hasMoreElements() )
+        Enumeration deltaVEnum = deltaV.keys();
+        while( deltaVEnum.hasMoreElements() )
         {
-            String base = (String)enum.nextElement();
+            String base = (String)deltaVEnum.nextElement();
             if( Resource.startsWith( base ) )
             {
                 deltaVBase = ((Boolean)deltaV.get( base )).booleanValue();
@@ -1216,33 +1216,33 @@ public class DeltaVResponseInterpreter extends WebDAVResponseInterpreter
      * 
      * @return          the stripped resource
      */
-    protected String truncateResource( String res )
+    protected String truncateResource( String _res )
     {
         if( GlobalData.getGlobalData().getDebugTreeNode() )
         {
             System.err.println( "DeltaVResponseInterpreter::truncateResource" );
         }
     
-        int pos = res.indexOf(GlobalData.WebDAVPrefixSSL);
+        int pos = _res.indexOf(GlobalData.WebDAVPrefixSSL);
         if (pos >= 0)
-            res = res.substring(GlobalData.WebDAVPrefixSSL.length());
-        pos = res.indexOf(GlobalData.WebDAVPrefix);
+            _res = _res.substring(GlobalData.WebDAVPrefixSSL.length());
+        pos = _res.indexOf(GlobalData.WebDAVPrefix);
         if (pos >= 0)
-            res = res.substring(GlobalData.WebDAVPrefix.length());
-        pos = res.indexOf("/");
+            _res = _res.substring(GlobalData.WebDAVPrefix.length());
+        pos = _res.indexOf("/");
         if( pos >= 0 )
-            res = res.substring(pos);
+            _res = _res.substring(pos);
     
-        if (res.endsWith("/"))
-            res = res.substring(0, res.length() - 1);
-        pos = res.lastIndexOf("/");
+        if (_res.endsWith("/"))
+            _res = _res.substring(0, _res.length() - 1);
+        pos = _res.lastIndexOf("/");
         if (pos >= 0)
-            res = res.substring(pos);
-        if ((res.startsWith("/")) && (res.length() > 1))
-            res = res.substring(1);
-        if (res.length() == 0)
-            res = "/";
-        return res;
+            _res = _res.substring(pos);
+        if ((_res.startsWith("/")) && (_res.length() > 1))
+            _res = _res.substring(1);
+        if (_res.length() == 0)
+            _res = "/";
+        return _res;
     }
     
 
@@ -1252,43 +1252,43 @@ public class DeltaVResponseInterpreter extends WebDAVResponseInterpreter
      * @param res       Resource to strip
      * @return          the stripped resource
      */
-    protected String getFullResource(String res)
+    protected String getFullResource(String _res)
     {
         if( GlobalData.getGlobalData().getDebugTreeNode() )
         {
             System.err.println( "DeltaVResponseInterpreter::getFullResource" );
         }
     
-        int pos = res.indexOf(GlobalData.WebDAVPrefixSSL);
+        int pos = _res.indexOf(GlobalData.WebDAVPrefixSSL);
         if (pos >= 0)
-            res = res.substring(GlobalData.WebDAVPrefixSSL.length());
+            _res = _res.substring(GlobalData.WebDAVPrefixSSL.length());
         else
         {
-            pos = res.indexOf(GlobalData.WebDAVPrefix);
+            pos = _res.indexOf(GlobalData.WebDAVPrefix);
             if (pos >= 0)
-                res = res.substring(GlobalData.WebDAVPrefix.length());
+                _res = _res.substring(GlobalData.WebDAVPrefix.length());
         }
-        pos = res.indexOf("/");
+        pos = _res.indexOf("/");
         if( pos >= 0 )
-            res = res.substring(pos);
-        if (res.endsWith("/"))
-            res = res.substring(0,res.length() - 1);
-        if (res.length() == 0)
-            res = "/";
-        if ( (res.startsWith("/")) && (res.length() > 1) )
-            res = res.substring(1);
-        return res;
+            _res = _res.substring(pos);
+        if (_res.endsWith("/"))
+            _res = _res.substring(0, _res.length() - 1);
+        if (_res.length() == 0)
+            _res = "/";
+        if ( (_res.startsWith("/")) && (_res.length() > 1) )
+            _res = _res.substring(1);
+        return _res;
     }
 
 
     public boolean isDeltaV( String resource )
     {
-        Enumeration enum = deltaV.keys();
-        while( enum.hasMoreElements() )
+        Enumeration deltaVEnum = deltaV.keys();
+        while( deltaVEnum.hasMoreElements() )
         {
-            String res = (String)enum.nextElement();
-            if( resource.indexOf(res) >= 0 )
-                return( ((Boolean)deltaV.get(res)).booleanValue() );
+            String _res = (String)deltaVEnum.nextElement();
+            if( resource.indexOf(_res) >= 0 )
+                return( ((Boolean)deltaV.get(_res)).booleanValue() );
         }
         return false;
     }
@@ -1296,12 +1296,12 @@ public class DeltaVResponseInterpreter extends WebDAVResponseInterpreter
 
     public boolean isDeltaVReports( String resource )
     {
-        Enumeration enum = deltaVReports.keys();
-        while( enum.hasMoreElements() )
+        Enumeration deltaVEnum = deltaVReports.keys();
+        while( deltaVEnum.hasMoreElements() )
         {
-            String res = (String)enum.nextElement();
-            if( resource.indexOf(res) >= 0 )
-                return( ((Boolean)deltaVReports.get(res)).booleanValue() );
+            String _res = (String)deltaVEnum.nextElement();
+            if( resource.indexOf(_res) >= 0 )
+                return( ((Boolean)deltaVReports.get(_res)).booleanValue() );
         }
         return false;
     }
@@ -1309,12 +1309,12 @@ public class DeltaVResponseInterpreter extends WebDAVResponseInterpreter
 
     public boolean isDeltaVActivity( String resource )
     {
-        Enumeration enum = deltaVActivity.keys();
-        while( enum.hasMoreElements() )
+        Enumeration deltaVEnum = deltaVActivity.keys();
+        while( deltaVEnum.hasMoreElements() )
         {
-            String res = (String)enum.nextElement();
-            if( resource.indexOf(res) >= 0 )
-                return( ((Boolean)deltaVActivity.get(res)).booleanValue() );
+            String _res = (String)deltaVEnum.nextElement();
+            if( resource.indexOf(_res) >= 0 )
+                return( ((Boolean)deltaVActivity.get(_res)).booleanValue() );
         }
         return false;
     }

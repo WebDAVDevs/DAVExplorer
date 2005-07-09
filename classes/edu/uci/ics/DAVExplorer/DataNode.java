@@ -143,25 +143,18 @@ public class DataNode
      * @param date
      * @param subNodes
      */
-    private void init( boolean collection,
-                       boolean locked,
-                       String lockToken,
-                       String name,
-                       String display,
-                       String type,
-                       long size,
-                       String date,
-                       Vector subNodes )
+    private void init( boolean _collection, boolean _locked, String _lockToken, String _name,
+                        String _display, String _type, long _size, String date, Vector _subNodes )
     {
-        this.name = name;
-        this.display = display;
-        this.type = type;
-        this.size = size;
+        this.name = _name;
+        this.display = _display;
+        this.type = _type;
+        this.size = _size;
         this.lastModified = date;
-        this.locked = locked;
-        this.lockToken = lockToken;
-        this.collection = collection;
-        this.subNodes = subNodes;
+        this.locked = _locked;
+        this.lockToken = _lockToken;
+        this.collection = _collection;
+        this.subNodes = _subNodes;
     }
 
 
@@ -253,10 +246,10 @@ public class DataNode
      * Set the locktoken of this node.
      * @param lockToken     The locktoken to set
      */
-    public void lock( String lockToken )
+    public void lock( String _lockToken )
     {
         locked = true;
-        this.lockToken = lockToken;
+        this.lockToken = _lockToken;
     }
 
 

@@ -2,7 +2,7 @@
  * @(#)StreamDemultiplexor.java				0.3-3 06/05/2001
  *
  *  This file is part of the HTTPClient package
- *  Copyright (C) 1996-2001 Ronald Tschalär
+ *  Copyright (C) 1996-2001 Ronald Tschal?r
  *
  *  This library is free software; you can redistribute it and/or
  *  modify it under the terms of the GNU Lesser General Public
@@ -45,7 +45,7 @@ import java.io.FileOutputStream;
  * for things like keep-alive in HTTP/1.0, persist in HTTP/1.1 and in HTTP-NG.
  *
  * @version	0.3-3  06/05/2001
- * @author	Ronald Tschalär
+ * @author	Ronald Tschal?r
  */
 class StreamDemultiplexor implements GlobalConstants
 {
@@ -860,7 +860,7 @@ class SocketTimeout extends Thread
     {
 	boolean restart = false,
 		hyber   = false,
-		alive   = true;
+		_alive   = true;
 	StreamDemultiplexor demux;
 	TimeoutEntry next = null,
 		     prev = null;
@@ -878,7 +878,7 @@ class SocketTimeout extends Thread
 
 	    synchronized (time_list)
 	    {
-		if (!alive)  return;
+		if (!_alive)  return;
 
 		// remove from current position
 		next.prev = prev;
@@ -894,12 +894,12 @@ class SocketTimeout extends Thread
 
 	void hyber()
 	{
-	    if (alive)  hyber = true;
+	    if (_alive)  hyber = true;
 	}
 
 	void kill()
 	{
-	    alive   = false;
+	    _alive   = false;
 	    restart = false;
 	    hyber   = false;
 
@@ -981,7 +981,7 @@ class SocketTimeout extends Thread
 		     entry != time_list[current];
 		     entry = entry.next)
 		{
-		    if (entry.alive  &&  !entry.hyber)
+		    if (entry._alive  &&  !entry.hyber)
 		    {
 			TimeoutEntry prev = entry.prev;
 			entry.kill();

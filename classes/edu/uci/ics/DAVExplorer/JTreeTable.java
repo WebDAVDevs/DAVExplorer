@@ -53,7 +53,7 @@ import javax.swing.table.TableColumn;
 import javax.swing.event.ListSelectionListener;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.CellEditorListener;
-import javax.swing.event.EventListenerList;
+//import javax.swing.event.EventListenerList;
 import javax.swing.event.ChangeEvent;
 import java.awt.Dimension;
 import java.awt.Component;
@@ -438,7 +438,7 @@ public class JTreeTable extends JTable
             }
         }
 
-        protected EventListenerList listenerList = new EventListenerList();
+        //protected EventListenerList listenerList = new EventListenerList();
     }
 
 

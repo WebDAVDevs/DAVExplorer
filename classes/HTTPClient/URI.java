@@ -2,7 +2,7 @@
  * @(#)URI.java						0.3-3 06/05/2001
  *
  *  This file is part of the HTTPClient package
- *  Copyright (C) 1996-2001 Ronald Tschalär
+ *  Copyright (C) 1996-2001 Ronald Tschal?r
  *
  *  This library is free software; you can redistribute it and/or
  *  modify it under the terms of the GNU Lesser General Public
@@ -67,7 +67,7 @@ import java.util.Hashtable;
  *
  * @see		<A HREF="http://www.ics.uci.edu/pub/ietf/uri/rfc2396.txt">rfc-2396</A>
  * @version	0.3-3  06/05/2001
- * @author	Ronald Tschalär
+ * @author	Ronald Tschal?r
  * @since	V0.3-1
  */
 public class URI
@@ -598,7 +598,7 @@ public class URI
     /**
      * Parse the authority specific part
      */
-    private void parse_authority(String authority, String scheme)
+    private void parse_authority(String authority, String _scheme)
 	    throws ParseException
     {
 	/* The authority is further parsed according to:
@@ -666,7 +666,7 @@ public class URI
 		throw new ParseException(authority.substring(pos+1, len) +
 					 " is an invalid port number");
 	    }
-	    if (p == defaultPort(scheme))
+	    if (p == defaultPort(_scheme))
 		this.port = -1;
 	    else
 		this.port = p;

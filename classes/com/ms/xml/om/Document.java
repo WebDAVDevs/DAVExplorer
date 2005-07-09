@@ -127,7 +127,7 @@ public class Document extends ElementImpl implements ElementFactory
             root = elem;
         } 
         else if (elem.getType() == Element.PI && 
-                    elem.getTagName() == nameXML) 
+                    elem.getTagName() == _nameXML) 
         {
             XML = elem;
         } 
@@ -208,7 +208,7 @@ public class Document extends ElementImpl implements ElementFactory
     {
         if (XML == null)
         {
-            XML = createElement(this, Element.PI, nameXML, null);
+            XML = createElement(this, Element.PI, _nameXML, null);
         }
     	XML.setAttribute(nameVERSION, version );
     }
@@ -245,7 +245,7 @@ public class Document extends ElementImpl implements ElementFactory
         outputEncoding = encoding;        
         if (XML == null)
         {
-            XML = createElement(this, Element.PI, nameXML, null);
+            XML = createElement(this, Element.PI, _nameXML, null);
             XML.setAttribute(nameENCODING, encoding);
         }
     }
@@ -299,7 +299,7 @@ public class Document extends ElementImpl implements ElementFactory
     {
         if (XML == null)
         {
-            XML = createElement(this, Element.PI, nameXML, null);
+            XML = createElement(this, Element.PI, _nameXML, null);
         }
     	XML.setAttribute(nameStandalone, value );
     }
@@ -396,23 +396,23 @@ public class Document extends ElementImpl implements ElementFactory
      * the <code>ElementFactory</code> for this <code>Document</code>. 
      * This method allows the <code>Document</code> class to be used as an 
      * <code>ElementFactory</code> itself.
-     * @param type The element type.
-     * @param tag The element tag.
+     * @param _type The element type.
+     * @param _tag The element tag.
      */    
-    public final Element createElement(Element parent, int type, Name tag, String text)
+    public final Element createElement(Element _parent, int _type, Name _tag, String _text)
     {
-        return factory.createElement(parent,type,tag,text);
+        return factory.createElement(_parent,_type,_tag,_text);
     }
 
     /**
      * Creates a new element for the given element type and tag name.
      * tag is case sensitive.
-     * @param type The element type.
-     * @param tag The element tag name.
+     * @param _type The element type.
+     * @param _tag The element tag name.
      */
-    public final Element createElement(int type, String tag)
+    public final Element createElement(int _type, String _tag)
     {
-        return factory.createElement(null,type, Name.create(tag),null);
+        return factory.createElement(null,_type, Name.create(_tag),null);
     }
 
     /**
@@ -422,9 +422,9 @@ public class Document extends ElementImpl implements ElementFactory
      * @return the element created.
      * 
      */
-    public final Element createElement(int type)
+    public final Element createElement(int _type)
     {
-        return factory.createElement(null,type,null,null);
+        return factory.createElement(null,_type,null,null);
     }
 
     /**
@@ -806,7 +806,7 @@ public class Document extends ElementImpl implements ElementFactory
     static Name nameNAME = Name.create("NAME");
     static Name nameURL = Name.create("URL");
     static Name namePUBLICID = Name.create("PUBLICID");
-    static Name nameXML = Name.create("xml");
+    static Name _nameXML = Name.create("xml");
     static String defaultEncoding = "UTF-8";
     static String defaultVersion = "1.0";
 }

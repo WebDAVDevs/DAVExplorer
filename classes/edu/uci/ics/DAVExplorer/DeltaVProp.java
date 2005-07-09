@@ -159,9 +159,9 @@ public class DeltaVProp extends WebDAVProp
         Vector prop_list = new Vector();
 
         // add the elements from the super class
-        Enumeration enum = WebDAVProp.getDAVProps();
-        while( enum.hasMoreElements() )
-            prop_list.addElement( enum.nextElement() );
+        Enumeration PropEnum = WebDAVProp.getDAVProps();
+        while( PropEnum.hasMoreElements() )
+            prop_list.addElement( PropEnum.nextElement() );
 
         prop_list.addElement( PROP_COMMENT );
         prop_list.addElement( PROP_CREATOR_DISPLAYNAME );
@@ -216,9 +216,9 @@ public class DeltaVProp extends WebDAVProp
         Vector prop_list = new Vector();
 
         // add the elements from the super class
-        Enumeration enum = WebDAVProp.getProtectedDAVProps();
-        while( enum.hasMoreElements() )
-            prop_list.addElement( enum.nextElement() );
+        Enumeration PropEnum = WebDAVProp.getProtectedDAVProps();
+        while( PropEnum.hasMoreElements() )
+            prop_list.addElement( PropEnum.nextElement() );
 
         prop_list.addElement( PROP_SUPPORTED_METHOD_SET );
         prop_list.addElement( PROP_SUPPORTED_LIVE_PROPERTY_SET );

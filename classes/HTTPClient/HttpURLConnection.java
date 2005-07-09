@@ -2,7 +2,7 @@
  * @(#)HttpURLConnection.java				0.3-3 06/05/2001
  *
  *  This file is part of the HTTPClient package
- *  Copyright (C) 1996-2001 Ronald Tschalär
+ *  Copyright (C) 1996-2001 Ronald Tschal?r
  *
  *  This library is free software; you can redistribute it and/or
  *  modify it under the terms of the GNU Lesser General Public
@@ -105,7 +105,7 @@ import java.util.Enumeration;
  * switch to HTTP/1.1.
  *
  * @version	0.3-3  06/05/2001
- * @author	Ronald Tschalär
+ * @author	Ronald Tschal?r
  * @since	V0.3
  */
 public class HttpURLConnection extends java.net.HttpURLConnection
@@ -253,26 +253,26 @@ public class HttpURLConnection extends java.net.HttpURLConnection
      * @return an HTTPConnection
      * @exception ProtocolNotSuppException if the protocol is not supported
      */
-    protected HTTPConnection getConnection(URL url)
+    protected HTTPConnection getConnection(URL _url)
 	    throws ProtocolNotSuppException
     {
 	// try the cache, using the host name
 
-	String php = url.getProtocol() + ":" + url.getHost() + ":" +
-		     ((url.getPort() != -1) ? url.getPort() :
-					URI.defaultPort(url.getProtocol()));
+	String php = _url.getProtocol() + ":" + _url.getHost() + ":" +
+		     ((_url.getPort() != -1) ? _url.getPort() :
+					URI.defaultPort(_url.getProtocol()));
 	php = php.toLowerCase();
 
-	HTTPConnection con = (HTTPConnection) connections.get(php);
-	if (con != null)  return con;
+	HTTPConnection _con = (HTTPConnection) connections.get(php);
+	if (_con != null)  return _con;
 
 
 	// Not in cache, so create new one and cache it
 
-	con = new HTTPConnection(url);
-	connections.put(php, con);
+	_con = new HTTPConnection(_url);
+	connections.put(php, _con);
 
-	return con;
+	return _con;
     }
 
 
@@ -455,11 +455,11 @@ public class HttpURLConnection extends java.net.HttpURLConnection
 
 	    // count number of headers
 	    int num = 1;
-	    Enumeration enum = resp.listHeaders();
-	    while (enum.hasMoreElements())
+	    Enumeration headerEnum = resp.listHeaders();
+	    while (headerEnum.hasMoreElements())
 	    {
 		num++;
-		enum.nextElement();
+        headerEnum.nextElement();
 	    }
 
 	    // allocate arrays
@@ -467,10 +467,10 @@ public class HttpURLConnection extends java.net.HttpURLConnection
 	    hdr_values = new String[num];
 
 	    // fill arrays
-	    enum = resp.listHeaders();
+        headerEnum = resp.listHeaders();
 	    for (int idx=1; idx<num; idx++)
 	    {
-		hdr_keys[idx]   = (String) enum.nextElement();
+		hdr_keys[idx]   = (String) headerEnum.nextElement();
 		hdr_values[idx] = resp.getHeader(hdr_keys[idx]);
 	    }
 

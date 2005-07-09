@@ -165,22 +165,22 @@ public class ACLNode
      * @param modified
      *      indicates if the entry is considered modified
      */
-    protected void init( String[] principal, int principalType, ACLPrivilege[] privileges, boolean grant, String inheritedHref, boolean modified )
+    protected void init( String[] _principal, int _principalType, ACLPrivilege[] _privileges, boolean _grant, String _inheritedHref, boolean _modified )
     {
         this.principal = new String[2];
-        this.principal[0] = new String( principal[0] );
-        this.principal[1] = new String( principal[1] );
-        this.principalType = principalType;
-        setPrivileges( privileges );
-        this.grant = grant;
-        if( inheritedHref != null && inheritedHref.length()>0 )
+        this.principal[0] = new String( _principal[0] );
+        this.principal[1] = new String( _principal[1] );
+        this.principalType = _principalType;
+        setPrivileges( _privileges );
+        this.grant = _grant;
+        if( _inheritedHref != null && _inheritedHref.length()>0 )
         {
             this.inherited = true;
-            this.inheritedHref = inheritedHref;
+            this.inheritedHref = _inheritedHref;
         }
         else
             this.inherited = false;
-        this.modified = modified;
+        this.modified = _modified;
     }
 
 
@@ -201,20 +201,20 @@ public class ACLNode
      * @param modified
      *      indicates if the entry is considered modified
      */
-    protected void init( String[] principal, int principalType, Vector privileges, boolean grant, String inheritedHref, boolean modified )
+    protected void init( String[] _principal, int _principalType, Vector _privileges, boolean _grant, String _inheritedHref, boolean _modified )
     {
-        this.principal = principal;
-        this.principalType = principalType;
-        setPrivileges( privileges );
-        this.grant = grant;
-        if( inheritedHref != null && inheritedHref.length()>0 )
+        this.principal = _principal;
+        this.principalType = _principalType;
+        setPrivileges( _privileges );
+        this.grant = _grant;
+        if( _inheritedHref != null && _inheritedHref.length()>0 )
         {
             this.inherited = true;
-            this.inheritedHref = inheritedHref;
+            this.inheritedHref = _inheritedHref;
         }
         else
             this.inherited = false;
-        this.modified = modified;
+        this.modified = _modified;
     }
 
 
@@ -334,10 +334,10 @@ public class ACLNode
      * @param privileges
      *      the privileges to be added
      */
-    public void addPrivileges( Vector privileges )
+    public void addPrivileges( Vector _privileges )
     {
-        for( int i=0; i<privileges.size(); i++ )
-            addPrivilege( (ACLPrivilege)privileges.get(i) );
+        for( int i=0; i<_privileges.size(); i++ )
+            addPrivilege( (ACLPrivilege)_privileges.get(i) );
     }
 
 
@@ -347,10 +347,10 @@ public class ACLNode
      * @param privileges
      *      the privileges to be added
      */
-    public void addPrivileges( ACLPrivilege[] privileges )
+    public void addPrivileges( ACLPrivilege[] _privileges )
     {
-        for( int i=0; i<privileges.length; i++ )
-            addPrivilege( (ACLPrivilege)privileges[i] );
+        for( int i=0; i<_privileges.length; i++ )
+            addPrivilege( (ACLPrivilege)_privileges[i] );
     }
 
 
@@ -406,10 +406,10 @@ public class ACLNode
      * @param privileges
      *      the privileges to be deleted
      */
-    public void deletePrivileges( Vector privileges )
+    public void deletePrivileges( Vector _privileges )
     {
-        for( int i=0; i<privileges.size(); i++ )
-            deletePrivilege( (ACLPrivilege)privileges.get(i) );
+        for( int i=0; i<_privileges.size(); i++ )
+            deletePrivilege( (ACLPrivilege)_privileges.get(i) );
     }
 
 
@@ -419,10 +419,10 @@ public class ACLNode
      * @param privileges
      *      the privileges to be deleted
      */
-    public void deletePrivileges( ACLPrivilege[] privileges )
+    public void deletePrivileges( ACLPrivilege[] _privileges )
     {
-        for( int i=0; i<privileges.length; i++ )
-            deletePrivilege( (ACLPrivilege)privileges[i] );
+        for( int i=0; i<_privileges.length; i++ )
+            deletePrivilege( (ACLPrivilege)_privileges[i] );
     }
 
 

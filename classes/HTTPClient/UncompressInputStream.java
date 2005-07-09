@@ -2,7 +2,7 @@
  * @(#)UncompressInputStream.java			0.3-3 06/05/2001
  *
  *  This file is part of the HTTPClient package
- *  Copyright (C) 1996-2001 Ronald Tschalär
+ *  Copyright (C) 1996-2001 Ronald Tschal?r
  *
  *  This library is free software; you can redistribute it and/or
  *  modify it under the terms of the GNU Lesser General Public
@@ -46,7 +46,7 @@ import java.io.FilterInputStream;
  * by Peter Jannesen) and the original compress code.
  *
  * @version	0.3-3  06/05/2001
- * @author	Ronald Tschalär
+ * @author	Ronald Tschal?r
  */
 class UncompressInputStream extends FilterInputStream
 {
@@ -313,9 +313,9 @@ class UncompressInputStream extends FilterInputStream
      * Moves the unread data in the buffer to the beginning and resets
      * the pointers.
      */
-    private final int resetbuf(int bit_pos)
+    private final int resetbuf(int _bit_pos)
     {
-	int pos = bit_pos >> 3;
+	int pos = _bit_pos >> 3;
 	System.arraycopy(data, pos, data, 0, end-pos);
 	end -= pos;
 	return 0;
@@ -332,10 +332,10 @@ class UncompressInputStream extends FilterInputStream
     public synchronized long skip(long num)  throws IOException
     {
 	byte[] tmp = new byte[(int) num];
-	int got = read(tmp, 0, (int) num);
+	int _got = read(tmp, 0, (int) num);
 
-	if (got > 0)
-	    return (long) got;
+	if (_got > 0)
+	    return (long) _got;
 	else
 	    return 0L;
     }

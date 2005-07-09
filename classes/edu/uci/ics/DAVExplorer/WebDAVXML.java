@@ -317,10 +317,10 @@ public class WebDAVXML
     public static Name getNonNullTagName(Element elem)
     {
         Name name = null;
-        Enumeration enum = elem.getElements();
-        while (enum.hasMoreElements())
+        Enumeration elementEnum = elem.getElements();
+        while (elementEnum.hasMoreElements())
         {
-            Element elemTmp = (Element)enum.nextElement();
+            Element elemTmp = (Element)elementEnum.nextElement();
             name = elemTmp.getTagName();
             if (name != null) break;
         }

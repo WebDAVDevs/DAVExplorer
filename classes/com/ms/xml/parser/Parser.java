@@ -125,14 +125,14 @@ public class Parser
      * @param loadext whether to load external DTD's and/or entities
      * @exception ParseException if syntax or other error encountered.
      */
-    public final void parse(URL url, ElementFactory factory, DTD dtd, Element root, boolean caseInsensitive, boolean loadExt) throws ParseException
+    public final void parse(URL _url, ElementFactory _factory, DTD _dtd, Element _root, boolean _caseInsensitive, boolean loadExt) throws ParseException
     {
-        this.dtd = dtd;
-        this.root = root;
+        this.dtd = _dtd;
+        this.root = _root;
         this.loadexternal = loadExt;
-        setURL(url);
-        setFactory(factory);
-        this.caseInsensitive = caseInsensitive;
+        setURL(_url);
+        setFactory(_factory);
+        this.caseInsensitive = _caseInsensitive;
         safeParse();
     }
 
@@ -162,21 +162,21 @@ public class Parser
     /**
      * Parses the XML from given input stream.
      * @param in the input stream containing XML data to parse.
-     * @param factory used to create XML Elements during parsing.
-     * @param dtd the object that the parser stores DTD information in.
-     * @param root the root node to start with and add children to
+     * @param _factory used to create XML Elements during parsing.
+     * @param _dtd the object that the parser stores DTD information in.
+     * @param _root the root node to start with and add children to
      * during parsing.
      * @exception ParseException if syntax or other error encountered.
      */
-    final public void parse(InputStream in, ElementFactory factory, DTD dtd, Element root, boolean caseInsensitive, boolean loadExt) throws ParseException
+    final public void parse(InputStream in, ElementFactory _factory, DTD _dtd, Element _root, boolean _caseInsensitive, boolean loadExt) throws ParseException
     {
-        this.dtd = dtd;
+        this.dtd = _dtd;
         url = null;
-        this.root = root;
+        this.root = _root;
         this.loadexternal = loadExt;
         setInputStream(in);
-        setFactory(factory);
-        this.caseInsensitive = caseInsensitive;
+        setFactory(_factory);
+        this.caseInsensitive = _caseInsensitive;
         safeParse();
     }
 
@@ -212,9 +212,9 @@ public class Parser
         o.print("Context: ");
         for (int i = 0; i < contextAt; i++)
         {
-            Name name = ((Context)contexts.elementAt(i)).e.getTagName();
-            if (name != null)
-                o.print("<" + name + ">");
+            Name _name = ((Context)contexts.elementAt(i)).e.getTagName();
+            if (_name != null)
+                o.print("<" + _name + ">");
         }
         o.print("<");
         if (current != null) o.print(current.e.getTagName());
@@ -511,14 +511,14 @@ public class Parser
         return token;
     }
 
-    final String tokenString(int token)
+    final String tokenString(int _token)
     {
-        return tokenString(token,null);
+        return tokenString(_token,null);
     }
 
-    final String tokenString(int token, String s)
+    final String tokenString(int _token, String s)
     {
-        switch (token)
+        switch (_token)
         {
             case TAGSTART       : return "start tag(<)";
             case TAGEND         : return "tag end(>)";
@@ -730,7 +730,7 @@ public class Parser
         }
     }
 
-    final int scanSimpleName(int bufAt, String s) throws ParseException
+    final int scanSimpleName(int _bufAt, String s) throws ParseException
     {
         boolean startname;
 
@@ -768,49 +768,49 @@ public class Parser
         {
             if (caseInsensitive)
             {
-                buf[bufAt++]=toUpperCase((char)lookahead);
+                buf[_bufAt++]=toUpperCase((char)lookahead);
                 advance();
                 while (isNameChar((char)lookahead))
                 {
-                    buf[bufAt++] = toUpperCase((char)lookahead);
+                    buf[_bufAt++] = toUpperCase((char)lookahead);
                     advance();
                 }
             }
             else
             {
-                buf[bufAt++]=(char)lookahead;
+                buf[_bufAt++]=(char)lookahead;
                 advance();
                 while (isNameChar((char)lookahead))
                 {
-                    buf[bufAt++] = (char)lookahead;
+                    buf[_bufAt++] = (char)lookahead;
                     advance();
                 }
             }
         } else {
             if (caseInsensitive)
             {
-                buf[bufAt++]=toUpperCase((char)lookahead);
+                buf[_bufAt++]=toUpperCase((char)lookahead);
                 advance();
                 while (isNameChar((char)lookahead) ||
                     lookahead == nameSpaceSeparator )
                 {
-                    buf[bufAt++] = toUpperCase((char)lookahead);
+                    buf[_bufAt++] = toUpperCase((char)lookahead);
                     advance();
                 }
             }
             else
             {
-                buf[bufAt++]=(char)lookahead;
+                buf[_bufAt++]=(char)lookahead;
                 advance();
                 while (isNameChar((char)lookahead) ||
                     lookahead == nameSpaceSeparator )
                 {
-                    buf[bufAt++] = (char)lookahead;
+                    buf[_bufAt++] = (char)lookahead;
                     advance();
                 }
             }
         }
-        return bufAt;
+        return _bufAt;
     }
 
     /**
@@ -1426,12 +1426,12 @@ public class Parser
             dtd.docType = name;
             factory.parsedAttribute(dtdElement,nameNAME,docType);
             parseKeyword(0, "ExternalID");
-            String url = null;
+            String _url = null;
             switch(token)
             {
                 case SYSTEM:
-                    url = scanUrl();
-                    factory.parsedAttribute(dtdElement,nameURL, url);
+                    _url = scanUrl();
+                    factory.parsedAttribute(dtdElement,nameURL, _url);
                     nextToken();
                     break;
                 case PUBLIC:
@@ -1444,9 +1444,9 @@ public class Parser
                     }
                     else
                         error("Expected " + tokenString(QUOTE) + " instead of " + tokenString(token));
-                    url = scanUrl();
+                    _url = scanUrl();
 
-                    factory.parsedAttribute(dtdElement,nameURL, url);
+                    factory.parsedAttribute(dtdElement,nameURL, _url);
                     nextToken();
                     break;
             }
@@ -1470,9 +1470,9 @@ public class Parser
                 pop();
                 nextToken();
             }
-            if (url != null && loadexternal)
+            if (_url != null && loadexternal)
             {
-                loadDTD(url.toString(), null);
+                loadDTD(_url.toString(), null);
             }
             if (token != TAGEND)
             {
@@ -1495,15 +1495,15 @@ public class Parser
             parser.setURL(u);
             parser.setFactory(factory);
             parser.caseInsensitive = this.caseInsensitive;
-            Element root = factory.createElement(null,Element.ELEMENT, nameDOCTYPE,null);
-            parser.newContext(root, null, Element.ELEMENT, false, nameSpace, current.spaceTable);
+            Element _root = factory.createElement(null,Element.ELEMENT, nameDOCTYPE,null);
+            parser.newContext(_root, null, Element.ELEMENT, false, nameSpace, current.spaceTable);
             parser.parseInternalSubset();
         } catch (IOException e) {
             error("Couldn't find external DTD '" + urlStr + "'");
         }
     }
 
-    final Element addNewElement(int type, Name name, boolean validate, String text) throws ParseException
+    final Element addNewElement(int type, Name _name, boolean validate, String _text) throws ParseException
     {
         // Make sure we don't add multiple whitespace nodes,
         // as would be the case while parsing ATTLISTS
@@ -1512,7 +1512,7 @@ public class Parser
         } else {
             current.lastWasWS = false;
         }
-        Element e = factory.createElement(current.e,type, name, text);
+        Element e = factory.createElement(current.e,type, _name, _text);
 
         // Entity has children, so we need to check the contents
         // of the entity, rather than the entityref itself.
@@ -1693,9 +1693,9 @@ public class Parser
             {
                 case '\'':
                 case '\"':  // SkipLit
-                    int quote = lookahead;
+                    int _quote = lookahead;
                     addChar();
-                    while (lookahead != quote)
+                    while (lookahead != _quote)
                     {
                         checkCDEND(false);
                         addChar();
