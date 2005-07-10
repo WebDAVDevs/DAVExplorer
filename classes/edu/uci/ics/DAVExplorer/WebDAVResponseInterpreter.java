@@ -2141,7 +2141,15 @@ public class WebDAVResponseInterpreter
                 {
                     if( part.nextToken().trim().equalsIgnoreCase("charset") &&
                         part.hasMoreTokens() )
-                        return part.nextToken().trim();
+                    {
+                        String val = part.nextToken().trim();
+                        // strip quotation marks, if any
+                        if( val.startsWith("\"") || val.startsWith("'") )
+                            val = val.substring(1);
+                        if( val.endsWith("\"") || val.endsWith("'") )
+                                val = val.substring(0, val.length()-1);
+                        return val;
+                    }
                 }
             }
         }

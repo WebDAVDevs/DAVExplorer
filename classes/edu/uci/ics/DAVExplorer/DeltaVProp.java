@@ -272,5 +272,5 @@ public class DeltaVProp extends WebDAVProp
     }
 
 
-    protected DeltaVProp[] children;
+    //protected DeltaVProp[] children;
 }

@@ -584,7 +584,8 @@ class GlobalData
                 if( uni )
                     isr = new InputStreamReader( iStream, "UTF-8" );
                 else
-                    isr = new InputStreamReader( iStream );
+                    // Note: ISO-8859-1 needs to be specified for Linux
+                    isr = new InputStreamReader( iStream, "ISO-8859-1" );
             }
             else
                 isr = new InputStreamReader( iStream, targetEncoding );
