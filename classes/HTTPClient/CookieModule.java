@@ -867,8 +867,7 @@ class BasicCookieBox extends Frame
 	addNotify();
 	addWindowListener(new Close());
 
-	GridBagLayout layout;
-	setLayout(layout = new GridBagLayout());
+	setLayout(new GridBagLayout());
 	constr = new GridBagConstraints();
 
 	constr.gridwidth = GridBagConstraints.REMAINDER;

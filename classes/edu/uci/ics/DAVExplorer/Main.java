@@ -850,8 +850,6 @@ public class Main extends JFrame
                     
                     case WebDAVResponseEvent.URIBOX: 
                     {
-                        //???? TODO: not needed????
-                        WebDAVTreeNode tn = e.getNode();
                         break;
                     }
                 }
@@ -1089,7 +1087,7 @@ public class Main extends JFrame
                             else
                                 dirname = fileView.getSelected() + dirname;
                             File f = new File( dirname );
-                            boolean result = f.mkdir();
+                            f.mkdir();
                             if ( selected == null )
                             {
                                 treeView.refreshLocal( n );
@@ -1118,11 +1116,11 @@ public class Main extends JFrame
                     break;
 
                 case WebDAVMenu.EDIT_PROXY_INFO:
-                    WebDAVProxyInfo proxyInfo = new WebDAVProxyInfo(GlobalData.getGlobalData().getMainFrame(), "Proxy Info", true);
+                    new WebDAVProxyInfo(GlobalData.getGlobalData().getMainFrame(), "Proxy Info", true);
                     break;
                     
                 case WebDAVMenu.EDIT_LOCK_INFO:
-                    WebDAVLockInfo lockInfo = new WebDAVLockInfo(GlobalData.getGlobalData().getMainFrame(), "Lock Info", true);
+                    new WebDAVLockInfo(GlobalData.getGlobalData().getMainFrame(), "Lock Info", true);
                     break;
                 
                 case WebDAVMenu.INIT_VERSION_CONTROL:

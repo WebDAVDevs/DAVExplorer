@@ -730,8 +730,6 @@ public class XMLDSO extends Applet
         return Character.isWhitespace(ch) || ch == 13;
     }
 
-    private XMLRowsetProvider  myProvider;
-//    private DataSourceListener myDSL;
     private Object myDSL;
     private Document           document;
     private Document           schema;

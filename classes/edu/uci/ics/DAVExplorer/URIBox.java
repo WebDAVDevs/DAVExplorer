@@ -60,7 +60,6 @@ import javax.swing.JPanel;
 import javax.swing.JComboBox;
 import javax.swing.JLabel;
 import javax.swing.JButton;
-import javax.swing.ImageIcon;
 import javax.swing.SwingConstants;
 import java.awt.Dimension;
 
@@ -128,26 +127,6 @@ public class URIBox extends JPanel implements ActionListener
         else
             prefix.setText( GlobalData.WebDAVPrefix );
         super.invalidate();
-    }
-
-
-    /**
-     * 
-     * @param filename
-     * @param description
-     * @return
-     */
-    private ImageIcon loadImageIcon(String filename, String description)
-    {
-        try
-        {
-            return new ImageIcon(getClass().getResource("icons/" + filename),description);
-        }
-        catch (Exception ex)
-        {
-            GlobalData.getGlobalData().errorMsg("Toolbar:\nIcon load error." );
-            return null;
-        }
     }
 
 

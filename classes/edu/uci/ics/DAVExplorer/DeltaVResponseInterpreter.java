@@ -254,14 +254,11 @@ public class DeltaVResponseInterpreter extends WebDAVResponseInterpreter
         }
 
         printXML( body );
-        
-        DataNode dataNode = null;
-        
+
         // expecting a <multistatus> tag, skipping everything up to it
         String[] token = new String[1];
         token[0] = new String( WebDAVXML.ELEM_MULTISTATUS );
         Element rootElem = skipElements( xml_doc, token );
-        int count = 0;
         
         if( rootElem != null )
         {
@@ -275,7 +272,7 @@ public class DeltaVResponseInterpreter extends WebDAVResponseInterpreter
                     // expecting a <response> tag
                     if( currentTag.getName().equals( WebDAVXML.ELEM_RESPONSE ) )
                     {
-                        dataNode = parseResponse( current, ResourceName, nodesChildren );
+                        parseResponse( current, ResourceName, nodesChildren );
                     }
                 }
             }
@@ -779,8 +776,6 @@ public class DeltaVResponseInterpreter extends WebDAVResponseInterpreter
         {
             System.err.println( "DeltaVResponseInterpreter::parseOptionsActivity" );
         }
-        Vector nodesChildren = new Vector();
-        String ResourceName = getResource();
 
         byte[] body = null;
         Document xml_doc = null;
@@ -814,7 +809,6 @@ public class DeltaVResponseInterpreter extends WebDAVResponseInterpreter
         String[] token = new String[1];
         token[0] = new String( DeltaVXML.ELEM_OPTIONS_RESPONSE );
         Element rootElem = skipElements( xml_doc, token );
-        int count = 0;
         String activityHref = null;
         
         if( rootElem != null )

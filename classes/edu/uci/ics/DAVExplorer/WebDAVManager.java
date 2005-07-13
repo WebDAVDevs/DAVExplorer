@@ -266,7 +266,6 @@ public class WebDAVManager
             // account for the possibility of JSSE not being installed
             // This dynamic check using reflection prevents a
             // NoClassDefFoundError when JSSE is not installed
-            Object o = null;
             try
             {
                 Class c = Class.forName( "javax.net.ssl.SSLPeerUnverifiedException" );

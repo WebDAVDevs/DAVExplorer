@@ -153,7 +153,6 @@ public class ACLReportSearchPropertyDialog extends ACLReportPropertiesDialog
         JPanel panel = new JPanel(false);
         label.setForeground(Color.black);
         label.setHorizontalAlignment( JLabel.CENTER );
-        BorderLayout layout = new BorderLayout();
         panel.setLayout( new BorderLayout() );
         panel.add( label, BorderLayout.NORTH );
 

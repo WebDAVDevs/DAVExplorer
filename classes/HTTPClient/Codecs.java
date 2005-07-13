@@ -504,7 +504,6 @@ public class Codecs
 	char ch;
 	int  cnt  = 0,
 	     didx = 1,
-	     last = 0,
 	     slen = str.length();
 
 

@@ -231,9 +231,6 @@ public class WebDAVTreeNode extends DefaultMutableTreeNode
 
         Vector nodesChildren = new Vector();
         Document xml_doc = null;
-        Element multiElem = null;
-        Element respElem = null;
-        boolean found = false;
         String ResourceName = interpreter.getResource();
 
         if( (ResourceName.startsWith("/")) && (ResourceName.length() > 1) )

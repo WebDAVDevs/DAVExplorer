@@ -308,7 +308,6 @@ public class WebDAVRequestGenerator implements Runnable
      */
     public void treeSelectionChanged(ViewSelectionEvent e)
     {
-        String Item;
         Path = (String)e.getPath().toString();
         ResourceName = Path + "/";
     }
@@ -637,7 +636,6 @@ public class WebDAVRequestGenerator implements Runnable
         Headers = null;
         Body = null;
 
-        boolean ok;
         if (flagGetFilesBelow)
         {   // In this case, loadChildren Flags
             // this boolean in order to have
@@ -861,8 +859,6 @@ public class WebDAVRequestGenerator implements Runnable
 
         Headers = null;
         Body = null;
-        boolean setUsed = false;
-        boolean removeUsed = false;
         Method = "PROPPATCH";
         Document miniDoc = new Document();
         miniDoc.setVersion("1.0");

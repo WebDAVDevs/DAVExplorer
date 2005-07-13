@@ -497,7 +497,6 @@ public class DataNode
      */
     private Date MSExchangeDateDecoding( String strDate )
     {
-        Date d = new Date();
         int pos = 0;
         int year = 0;
         int month = 0;

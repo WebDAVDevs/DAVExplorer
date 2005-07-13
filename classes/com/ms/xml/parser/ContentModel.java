@@ -810,7 +810,6 @@ class Sequence extends Node
 
     Element toSchema( int parentType, int level, Element currElement)
     {
-        Element tempCurr;
         Element seqElement;
 
         level++;
@@ -915,7 +914,6 @@ class Choice extends Node
 
     Element toSchema(int parentType, int level, Element currElement)
     {
-        Element tempCurr;
         Element orElement;
 
         if (parentType == Parser.OR) {

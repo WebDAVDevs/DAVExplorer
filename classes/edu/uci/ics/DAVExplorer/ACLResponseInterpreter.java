@@ -393,7 +393,7 @@ public class ACLResponseInterpreter extends DeltaVResponseInterpreter
                             String host = HostName;
                             if (Port != 0)
                                 host = HostName + ":" + Port;
-                            ACLOwnerDialog pd = new ACLOwnerDialog( rootElem, Resource, host, owner, true );
+                            new ACLOwnerDialog( rootElem, Resource, host, owner, true );
                         }
                     }
                 }
@@ -440,7 +440,7 @@ public class ACLResponseInterpreter extends DeltaVResponseInterpreter
                                 String host = HostName;
                                 if (Port != 0)
                                     host = HostName + ":" + Port;
-                                ACLPrivilegesDialog pd = new ACLPrivilegesDialog( rootElem, Resource, host, supported );
+                                new ACLPrivilegesDialog( rootElem, Resource, host, supported );
                             }
                             break;
                         }
@@ -485,18 +485,17 @@ public class ACLResponseInterpreter extends DeltaVResponseInterpreter
                             {
                                 case WebDAVResponseEvent.ACL:
                                 {
-                                    //ACLListDialog pd = new ACLListDialog( rootElem, Resource, host );
-                                    ACLDialog pd = new ACLDialog( rootElem, Resource, host, null );
+                                    new ACLDialog( rootElem, Resource, host, null );
                                     break;
                                 }
                                 case WebDAVResponseEvent.SUPPORTED_ACL:
                                 {
-                                    ACLRestrictionDialog pd = new ACLRestrictionDialog( rootElem, Resource, host );
+                                    new ACLRestrictionDialog( rootElem, Resource, host );
                                     break;
                                 }
                                 case WebDAVResponseEvent.INHERITED_ACL:
                                 {
-                                    ACLInheritedDialog pd = new ACLInheritedDialog( rootElem, Resource, host );
+                                    new ACLInheritedDialog( rootElem, Resource, host );
                                     break;
                                 }
                             }
@@ -644,8 +643,6 @@ public class ACLResponseInterpreter extends DeltaVResponseInterpreter
         token[0] = new String( WebDAVXML.ELEM_MULTISTATUS );
         token[1] = new String( WebDAVXML.ELEM_RESPONSE );
 
-        String href = null;
-        Element curProp = null;
         Element rootElem = skipElements( xml_doc, token );
         if( rootElem != null )
         {
@@ -808,7 +805,7 @@ public class ACLResponseInterpreter extends DeltaVResponseInterpreter
                 }
             }
             PrincipalPropertiesModel model = new PrincipalPropertiesModel( subtrees );
-            PropDialog dlg = new PropDialog( model, Resource, HostName, "View Principal Property Set", null, false );
+            new PropDialog( model, Resource, HostName, "View Principal Property Set", null, false );
         }
     }
 
@@ -842,7 +839,7 @@ public class ACLResponseInterpreter extends DeltaVResponseInterpreter
                 }
             }
             PrincipalPropertiesModel model = new PrincipalPropertiesModel( subtrees );
-            PropDialog dlg = new PropDialog( model, Resource, HostName, "View Principal Match", null, false );
+            new PropDialog( model, Resource, HostName, "View Principal Match", null, false );
         }
     }
 
@@ -871,7 +868,7 @@ public class ACLResponseInterpreter extends DeltaVResponseInterpreter
                     if( currentTag.getName().equals( WebDAVXML.ELEM_RESPONSE ) )
                     {
                         PrincipalPropertiesModel model = new PrincipalPropertiesModel( current );
-                        PropDialog dlg = new PropDialog( model, Resource, HostName, "View Principal Properties", null, false );
+                        new PropDialog( model, Resource, HostName, "View Principal Properties", null, false );
                     }
                 }
             }
@@ -908,7 +905,7 @@ public class ACLResponseInterpreter extends DeltaVResponseInterpreter
                 }
             }
             PrincipalPropertiesModel model = new PrincipalPropertiesModel( subtrees );
-            PropDialog dlg = new PropDialog( model, Resource, HostName, "View Principal Search Properties", null, false );
+            new PropDialog( model, Resource, HostName, "View Principal Search Properties", null, false );
         }
     }
 

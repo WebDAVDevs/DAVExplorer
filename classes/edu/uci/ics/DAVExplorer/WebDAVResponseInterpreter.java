@@ -30,7 +30,6 @@ import java.util.Enumeration;
 import java.util.StringTokenizer;
 import java.io.File;
 import java.io.ByteArrayInputStream;
-import java.io.ByteArrayOutputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import HTTPClient.HTTPResponse;
@@ -108,7 +107,6 @@ public class WebDAVResponseInterpreter
             return;
         }
         StringTokenizer paths = new StringTokenizer(classPath,":;");
-        boolean found = false;
         while (paths.hasMoreTokens())
         {
             String nextPath = paths.nextToken();
@@ -626,7 +624,6 @@ public class WebDAVResponseInterpreter
             File theFile = new File(fileName);
             boolean bSave = true;
             String os = (System.getProperty( "os.name" )).toLowerCase();
-            String dirName = null;
 
             if( theFile.exists() && (os.indexOf("windows")==-1) )
             {
@@ -1671,8 +1668,6 @@ public class WebDAVResponseInterpreter
 
     protected String getStatusDescription( Element status )
     {
-        String descr = null;
-        
         if( GlobalData.getGlobalData().getDebugResponse() )
         {
             System.err.println( "WebDAVResponseInterpreter::getResponseDescription" );
@@ -1706,8 +1701,6 @@ public class WebDAVResponseInterpreter
 
     protected String getResponseDescription( Element responseDescription )
     {
-        String descr = null;
-        
         if( GlobalData.getGlobalData().getDebugResponse() )
         {
             System.err.println( "WebDAVResponseInterpreter::getResponseDescription" );
@@ -2399,10 +2392,6 @@ public class WebDAVResponseInterpreter
     protected void handleProperties( Document xml_doc )
     {
         String locktoken = parseLock( true );
-        Document ppatchDoc = new Document();
-        ByteArrayOutputStream byte_prop = new ByteArrayOutputStream();
-        XMLOutputStream  xml_prop = new XMLOutputStream(byte_prop);
-        byte[] prop_out = null;
         String[] token = new String[1];
         token[0] = new String( WebDAVXML.ELEM_RESPONSE );
         Element rootElem = skipElements( xml_doc, token );
@@ -2426,7 +2415,7 @@ public class WebDAVResponseInterpreter
                             String host = HostName;
                             if (Port != 0)
                                 host = HostName + ":" + Port;
-                            PropDialog pd = new PropDialog( rootElem, Resource, host, locktoken, true );
+                            new PropDialog( rootElem, Resource, host, locktoken, true );
                         }
                     }
                 }

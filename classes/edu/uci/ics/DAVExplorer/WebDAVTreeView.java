@@ -215,10 +215,7 @@ public class WebDAVTreeView implements ViewSelectionListener, CopyResponseListen
         public void treeExpanded( TreeExpansionEvent evt )
         {
             GlobalData.methodEnter( "treeExpanded", "WebDAVTreeView::treeExpansionListener", GlobalData.getGlobalData().getDebugTreeView() );
-
-            TreePath selectedPath = selectionModel.getSelectionPath();
             GlobalData.getGlobalData().setCursor( Cursor.getPredefinedCursor( Cursor.WAIT_CURSOR ) );
-
             TreePath expansionPath = evt.getPath();
             currPath = expansionPath;
             WebDAVTreeNode tn = (WebDAVTreeNode)expansionPath.getLastPathComponent();
@@ -256,8 +253,6 @@ public class WebDAVTreeView implements ViewSelectionListener, CopyResponseListen
 
         WebDAVTreeNode tn = e.getNode();
 
-        TreeNode path[] = tn.getPath();
-
         tree.removeTreeExpansionListener(treeExpListener);
         tree.removeTreeSelectionListener(treeSelectionListener);
 
@@ -282,8 +277,6 @@ public class WebDAVTreeView implements ViewSelectionListener, CopyResponseListen
 
         if( tn == null )
             return;
-
-        TreeNode path[] = tn.getPath();
 
         // Now then reload the Tree from this node
         // This means that we have to unload this node
@@ -339,7 +332,7 @@ public class WebDAVTreeView implements ViewSelectionListener, CopyResponseListen
         tree.removeTreeExpansionListener(treeExpListener);
         tree.removeTreeSelectionListener(treeSelectionListener);
 
-        if(!tn.hasLoadedChildren())
+        if( tn!=null && !tn.hasLoadedChildren())
         {
             Object obj = tp.getPathComponent(1);
             String indicator = obj.toString();
