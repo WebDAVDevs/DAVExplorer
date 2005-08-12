@@ -556,24 +556,8 @@ class GlobalData
         EscapeInputStream iStream;
         boolean uni = true;
         if( (targetEncoding==null) || (targetEncoding.length()==0) )
-        {
-            iStream = new EscapeInputStream( byte_test, true );
-            try
-            {
-                int i;
-                do
-                {
-                    i = iStream.read();
-                    if( i == -1)
-                        break;
-                    uni = checkUTFFormed( i, iStream );
-                }
-                while( uni && i != -1 );
-            }
-            catch(IOException e)
-            {
-            }
-        }
+            uni = isUTFEncoded( byte_test );
+
         iStream = new EscapeInputStream( byte_in, true );
 
         try
@@ -602,6 +586,30 @@ class GlobalData
     }
 
 
+    public boolean isUTFEncoded( InputStream stream )
+    {
+        EscapeInputStream iStream = new EscapeInputStream( stream, true );
+        boolean result = true;
+        try
+        {
+            int i;
+            do
+            {
+                i = iStream.read();
+                if( i == -1)
+                    break;
+                result = checkUTFFormed( i, iStream );
+            }
+            while( result && i != -1 );
+        }
+        catch(IOException e)
+        {
+        }
+
+        return result;
+    }
+    
+    
     /**
      * Determine if the current character in a stream represents an allowed
      * Unicode character.

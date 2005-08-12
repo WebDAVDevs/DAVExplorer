@@ -73,6 +73,7 @@ public class DataNode
     protected boolean locked;
     protected String lockToken;
     protected boolean collection;
+    protected boolean UTF;
     protected Vector subNodes = null;
 
 
@@ -86,6 +87,7 @@ public class DataNode
      * @param type
      * @param size
      * @param date
+     * @param UTF
      * @param subNodes
      */
     public DataNode( boolean collection,
@@ -96,12 +98,13 @@ public class DataNode
                      String type,
                      long size,
                      Date date,
+                     boolean UTF,
                      Vector subNodes )
     {
         DateFormat df = DateFormat.getDateTimeInstance( DateFormat.FULL, DateFormat.FULL );
         df.setLenient( true );
         String strDate = date==null? "" : df.format( date );
-        init( collection, locked, lockToken, name, display, type, size, strDate, subNodes );
+        init( collection, locked, lockToken, name, display, type, size, strDate, UTF, subNodes );
     }
 
 
@@ -115,6 +118,7 @@ public class DataNode
      * @param type
      * @param size
      * @param date
+     * @param UTF
      * @param subNodes
      */
     public DataNode( boolean collection,
@@ -125,9 +129,10 @@ public class DataNode
                      String type,
                      long size,
                      String date,
+                     boolean UTF,
                      Vector subNodes )
     {
-        init( collection, locked, lockToken, name, display, type, size, date, subNodes );
+        init( collection, locked, lockToken, name, display, type, size, date, UTF, subNodes );
     }
 
 
@@ -141,10 +146,12 @@ public class DataNode
      * @param type
      * @param size
      * @param date
+     * @param UTF
      * @param subNodes
      */
-    private void init( boolean _collection, boolean _locked, String _lockToken, String _name,
-                        String _display, String _type, long _size, String date, Vector _subNodes )
+    private void init( boolean _collection, boolean _locked, String _lockToken,
+                       String _name, String _display, String _type, long _size,
+                       String date, boolean _UTF, Vector _subNodes )
     {
         this.name = _name;
         this.display = _display;
@@ -154,6 +161,7 @@ public class DataNode
         this.locked = _locked;
         this.lockToken = _lockToken;
         this.collection = _collection;
+        this.UTF = _UTF;
         this.subNodes = _subNodes;
     }
 
@@ -239,6 +247,17 @@ public class DataNode
     {
         DateFormat df = DateFormat.getDateTimeInstance();
         lastModified = df.format( newDate );
+    }
+
+
+    /**
+     * Indicate if the name was originally encoded in UTF-8
+     * @param _UTF      true if the name was encoded in UTF-8, false else.
+     *                  A parameter of false implies an ISO-8859-1 encoding.
+     */
+    public void setUTF(boolean _UTF)
+    {
+        UTF = _UTF;
     }
 
 
@@ -457,6 +476,16 @@ public class DataNode
                 }
             }
         }
+    }
+
+
+    /**
+     * 
+     * @return
+     */
+    public boolean isUTF()
+    {
+        return UTF;
     }
 
 

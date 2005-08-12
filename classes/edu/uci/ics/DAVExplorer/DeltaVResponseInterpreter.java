@@ -27,6 +27,8 @@ import java.util.Vector;
 import java.util.Hashtable;
 import java.util.Enumeration;
 import java.io.ByteArrayInputStream;
+import java.io.UnsupportedEncodingException;
+
 import com.ms.xml.om.Element;
 import com.ms.xml.om.Document;
 import com.ms.xml.om.TreeEnumeration;
@@ -55,6 +57,9 @@ import com.ms.xml.util.Name;
  * @author      Joachim Feise (dav-exp@ics.uci.edu)
  * date         15 February 2005
  * Changes:     Some refactoring
+ * @author      Joachim Feise (dav-exp@ics.uci.edu)
+ * date         12 August 2005
+ * Changes:     Determining if received hrefs are in UTF-8 
  */
 public class DeltaVResponseInterpreter extends WebDAVResponseInterpreter
 {
@@ -345,6 +350,7 @@ public class DeltaVResponseInterpreter extends WebDAVResponseInterpreter
         String resName = "";
         String fullName = "";
         Element current = null;
+        boolean UTF = false;
     
         if( respElem.numElements() == 0 )
             return null;
@@ -366,6 +372,15 @@ public class DeltaVResponseInterpreter extends WebDAVResponseInterpreter
                         {
                             resName = truncateResource(GlobalData.getGlobalData().unescape(token.getText(), Charset, null ) );
                             fullName = getFullResource(GlobalData.getGlobalData().unescape(token.getText(), Charset, null ) );
+                            try
+                            {
+                                ByteArrayInputStream byte_test = new ByteArrayInputStream( token.getText().getBytes(Charset) );
+                                UTF = GlobalData.getGlobalData().isUTFEncoded( byte_test );
+                            }
+                            catch( UnsupportedEncodingException e )
+                            {
+                                UTF = false;
+                            }
                         }
                     }
                 }
@@ -457,13 +472,14 @@ public class DeltaVResponseInterpreter extends WebDAVResponseInterpreter
                 // update node values
                 dataNode = new DeltaVDataNode( node.isCollection(), node.isLocked(), node.getLockToken(),
                                          hostName, node.getDisplay(), node.getType(), node.getSize(),
-                                         node.getDate(), null );
+                                         node.getDate(), UTF,  null );
                 ((DeltaVDataNode)dataNode).copyFrom( (DeltaVDataNode)node );
                 ((DeltaVDataNode)dataNode).setHref( fullResName );
             }
             else
             {
                 ((DeltaVDataNode)node).setHref( fullResName );
+                node.setUTF( UTF );
                 if( node.isCollection() )
                 {
                     if( treeNode != null )
@@ -507,7 +523,7 @@ public class DeltaVResponseInterpreter extends WebDAVResponseInterpreter
             // update node values
             dataNode = new DeltaVDataNode( true, false, null,
                                      hostName, resourceName, "httpd/unix-directory", 0,
-                                     "", null );
+                                     "", false, null );
             ((DeltaVDataNode)dataNode).setHref( fullResName );
         }
         

@@ -1,4 +1,5 @@
-/* * @(#)Element.java 1.0 6/3/97
+/*
+ * @(#)Element.java 1.0 6/3/97
  *
  * Copyright (c) 1997 Microsoft, Corp. All Rights Reserved.
  *
@@ -8,7 +9,8 @@ package com.ms.xml.om;
 import com.ms.xml.util.Name;
 import com.ms.xml.util.XMLOutputStream;
 
-import java.lang.String;import java.util.Enumeration;
+import java.lang.String;
+import java.util.Enumeration;
 import java.io.IOException;
 
 /**
@@ -258,13 +260,15 @@ public interface Element
      */
     public void removeAttribute(String name);
 
-    /**     * Deletes an attribute from an element.
+    /**
+     * Deletes an attribute from an element.
      * @param name The attribute to delete.
      * @return No return value.
      */
     public void removeAttribute(Name name);
 
-    /**     * Sets the parent of this element.
+    /**
+     * Sets the parent of this element.
      * @param parent The element to set as parent.
      * @return No return value.
      */

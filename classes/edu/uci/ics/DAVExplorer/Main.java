@@ -1572,7 +1572,8 @@ public class Main extends JFrame
         else
         {
             WebDAVTreeNode n = fileView.getParentNode();
-            requestGenerator.setResource(s, n);
+            boolean UTF = fileView.isSelectedUTF();
+            requestGenerator.setResource(s, n, UTF);
             if( requestGenerator.GenerateGet( WebDAVResponseEvent.SAVE_AS ) )
             {
                 requestGenerator.execute();

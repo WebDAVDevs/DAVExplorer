@@ -72,8 +72,8 @@ import com.ms.xml.util.Name;
  */
 public class WebDAVTreeNode extends DefaultMutableTreeNode
 {
-    protected static DeltaVRequestGenerator generator = new DeltaVRequestGenerator();
-    protected static DeltaVResponseInterpreter interpreter = new DeltaVResponseInterpreter();
+    protected static ACLRequestGenerator generator = new ACLRequestGenerator();
+    protected static ACLResponseInterpreter interpreter = new ACLResponseInterpreter();
 
     protected boolean hasLoaded = false;
     protected final static String WebDAVRoot = "DAV Explorer";
@@ -89,8 +89,8 @@ public class WebDAVTreeNode extends DefaultMutableTreeNode
      */
     public static void reset()
     {
-        generator = new DeltaVRequestGenerator();
-        interpreter = new DeltaVResponseInterpreter();
+        generator = new ACLRequestGenerator();
+        interpreter = new ACLResponseInterpreter();
     }
 
 
@@ -121,7 +121,8 @@ public class WebDAVTreeNode extends DefaultMutableTreeNode
         generator.setUserAgent( ua );
         hasLoaded = true;
         childrenLoaded = true;
-        dataNode = new DataNode( true, false, null, o.toString(), "DAV Root Node", "", 0, "", null );
+        dataNode = new DataNode( true, false, null, o.toString(),
+                                 "DAV Root Node", "", 0, "", false, null );
     }
 
 
@@ -328,7 +329,7 @@ public class WebDAVTreeNode extends DefaultMutableTreeNode
                     DataNode newNode = new DataNode( isDir, false, null, fileList[i],
                                                      "Local File", "", aFile.length(),
                                                      DateFormat.getDateTimeInstance().format(newDate),
-                                                     null);
+                                                     false, null);
 
                     if( isDir )
                     {
@@ -349,7 +350,7 @@ public class WebDAVTreeNode extends DefaultMutableTreeNode
             Date fileDate = new Date(f.lastModified());
             dataNode = new DataNode( true, false, null, name, "Local File", "", f.length(),
                                      DateFormat.getDateTimeInstance().format(fileDate),
-                                     nodesChildren );
+                                     false, nodesChildren );
         }
         else {
             hasLoaded = false;
@@ -417,9 +418,7 @@ public class WebDAVTreeNode extends DefaultMutableTreeNode
                 {
                     pathToResource = pathToResource + "/" + full_path[i].toString();
                 }
-                pathToResource = pathToResource + "/";
-
-                generator.setResource(pathToResource, null);
+                pathToResource += "/";
 
                 // 1999-June-08, Joachim Feise (dav-exp@ics.uci.edu):
                 // workaround for IBM's DAV4J, which does not handle propfind properly
@@ -431,6 +430,7 @@ public class WebDAVTreeNode extends DefaultMutableTreeNode
                 String doAllProp = System.getProperty( "propfind" );
                 if( (doAllProp != null) && doAllProp.equalsIgnoreCase("allprop") )
                 {
+                    // TODO: UTF?
                     if( generator.GeneratePropFindForNode( pathToResource, "allprop", "one", null, null, true, this ) )
                     {
                         generator.execute();
@@ -450,6 +450,7 @@ public class WebDAVTreeNode extends DefaultMutableTreeNode
                     props[6] = "checked-in";
                     props[7] = "checked-out";
                     props[8] = "version-name";
+                    // TODO: UTF? 
                     if( generator.GeneratePropFindForNode( pathToResource, "prop", "one", props, null, true, this ) )
                     {
                         generator.execute();
@@ -476,7 +477,7 @@ public class WebDAVTreeNode extends DefaultMutableTreeNode
                 {
                     pathToResource = pathToResource + "/" + full_path[i].toString();
                 }
-                pathToResource = pathToResource + "/";
+                pathToResource += "/";
 
                 // 1999-June-08, Joachim Feise (dav-exp@ics.uci.edu):
                 // workaround for IBM's DAV4J, which does not handle propfind properly
@@ -490,6 +491,7 @@ public class WebDAVTreeNode extends DefaultMutableTreeNode
                 {
                     if( doAllProp.equalsIgnoreCase("allprop") )
                     {
+                        // TODO: UTF? 
                         if( generator.GeneratePropFindForNode( pathToResource, "allprop", "one", null, null, true, this ) )
                         {
                             generator.execute();

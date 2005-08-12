@@ -32,6 +32,8 @@ import java.io.File;
 import java.io.ByteArrayInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.UnsupportedEncodingException;
+
 import HTTPClient.HTTPResponse;
 import HTTPClient.ModuleException;
 import com.ms.xml.om.Element;
@@ -77,6 +79,9 @@ import com.ms.xml.util.Name;
  * @author      Joachim Feise (dav-exp@ics.uci.edu)
  * date         8 February 2004
  * Changes:     Added Javadoc templates
+ * @author      Joachim Feise (dav-exp@ics.uci.edu)
+ * date         12 August 2005
+ * Changes:     Determining if received hrefs are in UTF-8 
  */
 public class WebDAVResponseInterpreter
 {
@@ -998,7 +1003,7 @@ public class WebDAVResponseInterpreter
             // ignore error, use default value
         }
         DataNode newNode = new DeltaVDataNode(isColl, isLocked, lockToken, resName,
-                                              resDisplay, resType, size, resDate, null);
+                                              resDisplay, resType, size, resDate, false, null);
         return newNode;
     }
 
@@ -1860,6 +1865,7 @@ public class WebDAVResponseInterpreter
         String resName = "";
         String fullName = "";
         Element current = null;
+        boolean UTF = false;
 
         if( respElem.numElements() == 0 )
             return null;
@@ -1891,6 +1897,15 @@ public class WebDAVResponseInterpreter
 
                             resName = new String( truncateResource(GlobalData.getGlobalData().unescape(token.getText(), Charset, null)) );
                             fullName = new String( getFullResource(GlobalData.getGlobalData().unescape(token.getText(), Charset, null)) );
+                            try
+                            {
+                                ByteArrayInputStream byte_test = new ByteArrayInputStream( token.getText().getBytes(Charset) );
+                                UTF = GlobalData.getGlobalData().isUTFEncoded( byte_test );
+                            }
+                            catch( UnsupportedEncodingException e )
+                            {
+                                UTF = false;
+                            }
                         }
                     }
                 }
@@ -1948,10 +1963,11 @@ public class WebDAVResponseInterpreter
                 // update node values
                 dataNode = new DataNode( node.isCollection(), node.isLocked(), node.getLockToken(),
                                          hostName, node.getDisplay(), node.getType(), node.getSize(),
-                                         node.getDate(), null );
+                                         node.getDate(), UTF, null );
             }
             else
             {
+                node.setUTF( UTF );
                 if( node.isCollection() )
                 {
                     if( treeNode != null )
@@ -1985,7 +2001,7 @@ public class WebDAVResponseInterpreter
             // update node values
             dataNode = new DataNode( true, false, null,
                                      hostName, resourceName, "httpd/unix-directory", 0,
-                                     "", null );
+                                     "", UTF, null );
         }
 
         return dataNode;

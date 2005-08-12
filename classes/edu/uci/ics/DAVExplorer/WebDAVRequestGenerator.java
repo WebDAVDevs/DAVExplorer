@@ -77,6 +77,9 @@ import com.ms.xml.util.Name;
  * @author      Joachim Feise (dav-exp@ics.uci.edu)
  * date         10 February 2005
  * Changes:     Some refactoring
+ * @author      Joachim Feise (dav-exp@ics.uci.edu)
+ * date         12 August 2005
+ * Changes:     Handling resource names that were received in UTF-8 
  */
 public class WebDAVRequestGenerator implements Runnable
 {
@@ -112,6 +115,7 @@ public class WebDAVRequestGenerator implements Runnable
     protected boolean Overwrite2;
     protected boolean KeepAlive2;
     protected boolean secondTime = false;
+    protected boolean UTF = false;
 
 
     /**
@@ -269,11 +273,24 @@ public class WebDAVRequestGenerator implements Runnable
 
 
     /**
-     * 
+     * Set the resource name and tree node.
+     * TODO: Enable use of UTF-8 check for the resource name from all callers. 
      * @param name
      * @param node
      */
-    public void setResource(String name, WebDAVTreeNode node)
+    public void setResource( String name, WebDAVTreeNode node )
+    {
+        setResource( name, node, false );
+    }
+
+
+    /**
+     * 
+     * @param name
+     * @param node
+     * @param _UTF
+     */
+    public void setResource(String name, WebDAVTreeNode node, boolean _UTF)
     {
         if( name == null )
             return;
@@ -289,6 +306,7 @@ public class WebDAVRequestGenerator implements Runnable
         }
 
         Node = node;
+        UTF = _UTF;
     }
 
 
@@ -394,7 +412,9 @@ public class WebDAVRequestGenerator implements Runnable
         if( escape )
         {
             StringReader sr = new StringReader( newRes+"\n" );
-            EscapeReader er = new EscapeReader( sr, false );
+            // handle cases where the originally received resource name was encoded
+            // in UTF-8. We want to send it back the same way.
+            EscapeReader er = new EscapeReader( sr, false, UTF );
             BufferedReader br = new BufferedReader( er );
             try
             {

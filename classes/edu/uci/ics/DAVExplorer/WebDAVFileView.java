@@ -59,6 +59,9 @@
  * @author      Joachim Feise (dav-exp@ics.uci.edu)
  * @date        08 February 2004
  * Changes:     Added Javadoc templates
+ * @author      Joachim Feise (dav-exp@ics.uci.edu)
+ * date         12 August 2005
+ * Changes:     Storing information if resource names were received in UTF-8 
  */
 
 package edu.uci.ics.DAVExplorer;
@@ -342,6 +345,8 @@ public class WebDAVFileView implements ViewSelectionListener, ActionListener
         // set Parent Path
 
         TreePath tp = e.getPath();
+        if( tp == null)
+            return;
 
         Object pathString[] = tp.getPath();
         parentPath = "";
@@ -352,9 +357,7 @@ public class WebDAVFileView implements ViewSelectionListener, ActionListener
         }
 
         if (table.getRowCount() != 0)
-        {
             return;
-        }
 
         TreePath path = e.getPath();
         WebDAVTreeNode tn = (WebDAVTreeNode)path.getLastPathComponent();
@@ -398,7 +401,7 @@ public class WebDAVFileView implements ViewSelectionListener, ActionListener
             DataNode d_node = child.getDataNode();
             if (d_node != null)
             {
-                Object[] rowObj = new Object[8];
+                Object[] rowObj = new Object[9];
                 if( d_node instanceof DeltaVDataNode )
                 {
                     rowObj[2] = new Boolean( ((DeltaVDataNode)d_node).hasVersions() );
@@ -414,6 +417,7 @@ public class WebDAVFileView implements ViewSelectionListener, ActionListener
                 rowObj[5] = d_node.getType();
                 rowObj[6] = new Long(d_node.getSize());
                 rowObj[7] = d_node.getDate();
+                rowObj[8] = new Boolean(d_node.isUTF());
 
                 addRow(rowObj);
             }
@@ -434,7 +438,7 @@ public class WebDAVFileView implements ViewSelectionListener, ActionListener
         {
             DataNode d_node = (DataNode)v.elementAt(i);
 
-            Object[] rowObj = new Object[8];
+            Object[] rowObj = new Object[9];
             if( d_node instanceof DeltaVDataNode )
             {
                 rowObj[2] = new Boolean( ((DeltaVDataNode)d_node).hasVersions() );
@@ -450,6 +454,7 @@ public class WebDAVFileView implements ViewSelectionListener, ActionListener
             rowObj[5] = d_node.getType();
             rowObj[6] = new Long(d_node.getSize());
             rowObj[7] = d_node.getDate();
+            rowObj[8] = new Boolean(d_node.isUTF());
 
             addRow(rowObj);
         }
@@ -692,6 +697,22 @@ public class WebDAVFileView implements ViewSelectionListener, ActionListener
             // Return the parent node
             return getParentPathString();
         }
+    }
+
+
+    /**
+     * 
+     * @return
+     */
+    public boolean isSelectedUTF()
+    {
+        GlobalData.methodEnter( "isSelectedUTF", "WebDAVFileView", GlobalData.getGlobalData().getDebugFileView() );
+
+        if ( selectedRow >= 0 )
+        {
+            return ((Boolean)table.getModel().getValueAt( selectedRow, 8 )).booleanValue();
+        }
+        return false;
     }
 
 
@@ -949,7 +970,7 @@ public class WebDAVFileView implements ViewSelectionListener, ActionListener
         GlobalData.methodEnter( "addRow", "WebDAVFileView", GlobalData.getGlobalData().getDebugFileView() );
         Vector newRow = new Vector();
 
-        int numOfCols = table.getColumnCount();
+        int numOfCols = rowData.length;
         for (int i=0;i<numOfCols;i++)
             newRow.addElement(rowData[i]);
 
@@ -1286,13 +1307,6 @@ public class WebDAVFileView implements ViewSelectionListener, ActionListener
                 {
                     exc.printStackTrace();
                     return;
-                }
-
-                ViewSelectionEvent selEvent = new ViewSelectionEvent(this,null,null);
-                for (int i=0; i<ls.size();i++)
-                {
-                    ViewSelectionListener l = (ViewSelectionListener) ls.elementAt(i);
-                    l.selectionChanged(selEvent);
                 }
             }
         }

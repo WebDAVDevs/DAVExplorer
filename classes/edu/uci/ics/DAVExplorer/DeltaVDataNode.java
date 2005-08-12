@@ -49,6 +49,7 @@ public class DeltaVDataNode extends DataNode
      * @param type
      * @param size
      * @param date
+     * @param UTF
      * @param subNodes
      */
     public DeltaVDataNode(
@@ -60,9 +61,10 @@ public class DeltaVDataNode extends DataNode
         String type,
         long size,
         Date date,
+        boolean UTF,
         Vector subNodes)
     {
-        super(collection, locked, lockToken, name, display, type, size, date, subNodes);
+        super(collection, locked, lockToken, name, display, type, size, date, UTF, subNodes);
     }
 
     /**
@@ -75,6 +77,7 @@ public class DeltaVDataNode extends DataNode
      * @param type
      * @param size
      * @param date
+     * @param UTF
      * @param subNodes
      */
     public DeltaVDataNode(
@@ -86,9 +89,10 @@ public class DeltaVDataNode extends DataNode
         String type,
         long size,
         String date,
+        boolean UTF,
         Vector subNodes)
     {
-        super(collection, locked, lockToken, name, display, type, size, date, subNodes);
+        super(collection, locked, lockToken, name, display, type, size, date, UTF, subNodes);
     }
 
 
@@ -98,7 +102,7 @@ public class DeltaVDataNode extends DataNode
      */
     public DeltaVDataNode( DataNode node )
     {
-        super(node.collection, node.locked, node.lockToken, node.name, node.display, node.type, node.size, node.getDate(), node.subNodes);
+        super(node.collection, node.locked, node.lockToken, node.name, node.display, node.type, node.size, node.getDate(), node.isUTF(), node.subNodes);
     }
     
     
@@ -108,7 +112,9 @@ public class DeltaVDataNode extends DataNode
      */
     public DeltaVDataNode( DeltaVDataNode node )
     {
-        super(node.collection, node.locked, node.lockToken, node.name, node.display, node.type, node.size, node.getDate(), node.subNodes);
+        super( node.collection, node.locked, node.lockToken, node.name,
+               node.display, node.type, node.size, node.getDate(),
+               node.isUTF(), node.subNodes);
 
         this.versions = node.versions;
         this.comment = node.comment;
