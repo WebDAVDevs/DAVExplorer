@@ -47,7 +47,7 @@ public class ACLReportPropertiesDialog extends ACLChangePrivilegesDialog
      */
     public ACLReportPropertiesDialog( String resource, boolean flag )
     {
-        super( resource, null, null, "Select Properties", flag );
+        super( resource, null, null, "Select Properties", flag, true );
     }
 
 
@@ -63,7 +63,13 @@ public class ACLReportPropertiesDialog extends ACLChangePrivilegesDialog
      */
     public ACLReportPropertiesDialog( String resource, String title, boolean flag )
     {
-        super( resource, null, null, title, flag );
+        super( resource, null, null, title, flag, true );
+    }
+
+
+    public ACLReportPropertiesDialog( String resource, String title, boolean flag, boolean doInit )
+    {
+        super( resource, null, null, title, flag, doInit );
     }
 
 

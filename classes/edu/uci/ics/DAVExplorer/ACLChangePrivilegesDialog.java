@@ -90,14 +90,17 @@ implements ActionListener, ChangeListener, ListSelectionListener, WebDAVCompleti
      * @param flag
      *      a general-purpose flag, useful for derived classes
      */
-    public ACLChangePrivilegesDialog( String resource, String hostname, Vector selected, String title, boolean flag )
+    public ACLChangePrivilegesDialog( String resource, String hostname, Vector selected, String title, boolean flag, boolean doInit )
     {
         super( GlobalData.getGlobalData().getMainFrame(), true );
-        init( resource, hostname, selected, title, flag );
-        pack();
-        setSize( getPreferredSize() );
-        GlobalData.getGlobalData().center( this );
-        show();
+        if ( doInit )
+        {
+	        init( resource, hostname, selected, title, flag );
+	        pack();
+	        setSize( getPreferredSize() );
+	        GlobalData.getGlobalData().center( this );
+	        show();
+        }
     }
 
 

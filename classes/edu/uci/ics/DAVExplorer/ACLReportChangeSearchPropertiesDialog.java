@@ -48,8 +48,13 @@ public class ACLReportChangeSearchPropertiesDialog extends
      */
     public ACLReportChangeSearchPropertiesDialog( String resource, boolean showMatch )
     {
-        super( resource, "Select Search Criteria", true );
+        super( resource, "Select Search Criteria", true, false );
         this.showMatch = showMatch;
+        init( resource, hostname, selected, "Select Search Criteria", true );
+        pack();
+        setSize( getPreferredSize() );
+        GlobalData.getGlobalData().center( this );
+        show();
     }
 
 
