@@ -1018,7 +1018,7 @@ public class WebDAVResponseInterpreter
     {
         if( GlobalData.getGlobalData().getDebugTreeNode() )
         {
-            System.err.println( "WebDAVTreeNode::getDisplayName" );
+            System.err.println( "WebDAVResponseInterpreter::getDisplayName" );
         }
 
         TreeEnumeration treeEnum = new TreeEnumeration( displayName );

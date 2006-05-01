@@ -258,9 +258,10 @@ public class ACLRequestGenerator extends DeltaVRequestGenerator
         }
 
         extendedCode = WebDAVResponseEvent.ACL_PRINCIPAL_NAMES;
-        String[] props = new String[2];
+        String[] props = new String[3];
         props[0] = "displayname";
-        props[1] = "resourcetype";
+        props[1] = "principal-URL";
+        props[2] = "resourcetype";
         if( GeneratePropFind( null, "prop", "one", props, null, false ) )
         {
             execute();

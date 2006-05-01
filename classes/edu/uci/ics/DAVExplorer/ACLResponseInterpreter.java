@@ -584,7 +584,11 @@ public class ACLResponseInterpreter extends DeltaVResponseInterpreter
                         {
                             String[] names = new String[2];
                             names[0] = href;
-                            names[1] = base + getDisplayName( curProp );
+                            String principalURL = getPrincipalURL(curProp);
+                            if( principalURL.length() > 0 )
+                                names[1] = principalURL;
+                            else
+                                names[1] = base + getDisplayName( curProp );
                             principalNames.add( names );
                         }
                     }
@@ -907,6 +911,37 @@ public class ACLResponseInterpreter extends DeltaVResponseInterpreter
             PrincipalPropertiesModel model = new PrincipalPropertiesModel( subtrees );
             new PropDialog( model, Resource, HostName, "View Principal Search Properties", null, false );
         }
+    }
+
+
+    /**
+     * Find the value of the principal-URL property.
+     * 
+     * @param principalURL  The root of the subtree to search
+     * @return              The value of the principal-URL property, or empty if not found
+     */
+    protected String getPrincipalURL( Element principalURL )
+    {
+        if( GlobalData.getGlobalData().getDebugTreeNode() )
+        {
+            System.err.println( "ACLResponseInterpreter::getPrincipalURL" );
+        }
+
+        TreeEnumeration treeEnum = new TreeEnumeration( principalURL );
+        while(treeEnum.hasMoreElements() )
+        {
+            Element current = (Element)treeEnum.nextElement();
+            Name tag = current.getTagName();
+            if( (tag != null) && tag.getName().equals( ACLProp.PROP_PRINCIPAL_URL ) )
+            {
+                Element token = (Element)treeEnum.nextElement();
+                if( (token != null) && (token.getType() == Element.PCDATA || token.getType() == Element.CDATA) )
+                {
+                    return GlobalData.getGlobalData().unescape( token.getText(), Charset, null );
+                }
+            }
+        }
+        return "";
     }
 
 
