@@ -39,7 +39,7 @@ import java.io.FileOutputStream;
 // SSL Extensions (using Sun's JSEE)
 import javax.net.ssl.SSLSocket;
 import javax.net.ssl.SSLSocketFactory;
-import javax.security.cert.X509Certificate;
+import java.security.cert.X509Certificate;
 import java.lang.reflect.Constructor;
 // End SSL Extensions
 import java.io.BufferedOutputStream;
@@ -55,6 +55,10 @@ import java.net.UnknownHostException;
 import java.net.NoRouteToHostException;
 import java.util.Vector;
 import java.applet.Applet;
+import java.util.List;
+import java.util.Iterator;
+import java.security.cert.Certificate;
+import javax.net.ssl.HttpsURLConnection;
 
 
 /**
@@ -2998,8 +3002,12 @@ public class HTTPConnection implements GlobalConstants, HTTPClientModuleConstant
                 {
                     try
                     {
+                        URL url = new URL("https://"+Host+":"+Port);
+                        HttpsURLConnection con = (HttpsURLConnection)url.openConnection();
+                        con.connect();
+                        Certificate[] certs = con.getServerCertificates();
+                        checkCert(certs[0], Host, allowAnyHostname);
                         sock = ((SSLSocketFactory)sslFactory).createSocket(sock, Host, Port, true);
-                        checkCert(((SSLSocket)sock).getSession().getPeerCertificateChain()[0], Host, allowAnyHostname);
                     }
                     catch( NoClassDefFoundError err )
                     {
@@ -3427,22 +3435,48 @@ public class HTTPConnection implements GlobalConstants, HTTPClientModuleConstant
      * we're talking to.
      * 22 Nov 2001: Joachim Feise (dav-dev@ics.uci.edu): allowing relaxed hostname checks
      */
-    private static void checkCert( X509Certificate cert, String host, boolean anyHostname )
+    private static void checkCert( Certificate cert, String host, boolean anyHostname )
 	    throws IOException
     {
         if( JSSE )
         {
-        	String name;
+        	String name = null;
         	try
         	{
-        	    name = ((sun.security.x509.X500Name) cert.getSubjectDN()).
-        			getCommonName().toLowerCase();
+        	    //name = ((sun.security.x509.X500Name) cert.getSubjectDN()).
+                    //	getCommonName().toLowerCase();
+                    /* GeneralName ::= CHOICE {
+                       otherName                       [0]     OtherName,
+                       rfc822Name                      [1]     IA5String,
+                       dNSName                         [2]     IA5String,
+                       x400Address                     [3]     ORAddress,
+                       directoryName                   [4]     Name,
+                       ediPartyName                    [5]     EDIPartyName,
+                       uniformResourceIdentifier       [6]     IA5String,
+                       iPAddress                       [7]     OCTET STRING,
+                       registeredID                    [8]     OBJECT IDENTIFIER}
+                    */
+                    if ( cert instanceof X509Certificate ) {
+                      X509Certificate x509 = (X509Certificate)cert;
+        	      name = x509.getSubjectDN().toString();
+                      if ( x509.getSubjectAlternativeNames() != null ) {
+                        Iterator it = x509.getSubjectAlternativeNames().iterator();
+                        while (it.hasNext()) {
+                        List list = (List)it.next();
+                        String altName = (String)list.get(1);
+                        if ( Util.wildcardMatch(altName,host))
+                          return;
+                      }
+                    }
+	          }
+
         	}
         	catch (Throwable t)
         	    { return; } 	// Oh well, can't check the name in that case
 
         	if (Util.wildcardMatch(name, host))
         	    return;
+
 
             // 22 Nov 2001: Joachim Feise (dav-dev@ics.uci.edu):
             // don't do hostname checking if relaxed
