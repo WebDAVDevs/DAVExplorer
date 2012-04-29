@@ -65,6 +65,10 @@ import java.text.ParseException;
  * @version	0.3-3  06/05/2001
  * @author	Ronald Tschalär
  * @since	V0.3
+ * 
+ * Updated for RFC 6265, which allows the HttpOnly attribute
+ * @author Joe Feise <dav@davexplorer.org>
+ * 2012-04-30
  */
 public class Cookie implements Serializable
 {
@@ -77,18 +81,19 @@ public class Cookie implements Serializable
     protected String  domain;
     protected String  path;
     protected boolean secure;
+    protected boolean httponly;
 
 
     /**
      * Create a cookie.
      *
-     * @param name    the cookie name
-     * @param value   the cookie value
-     * @param domain  the host this cookie will be sent to
-     * @param path    the path prefix for which this cookie will be sent
-     * @param epxires the Date this cookie expires, null if at end of
-     *                session
-     * @param secure  if true this cookie will only be over secure connections
+     * @param name      the cookie name
+     * @param value     the cookie value
+     * @param domain    the host this cookie will be sent to
+     * @param path      the path prefix for which this cookie will be sent
+     * @param epxires   the Date this cookie expires, null if at end of
+     *                  session
+     * @param secure    if true this cookie will only be over secure connections
      * @exception NullPointerException if <var>name</var>, <var>value</var>,
      *                                 <var>domain</var>, or <var>path</var>
      *                                 is null
@@ -108,6 +113,7 @@ public class Cookie implements Serializable
 	this.path    = path;
 	this.expires = expires;
 	this.secure  = secure;
+	this.httponly = false;
 
 	if (this.domain.indexOf('.') == -1)  this.domain += ".local";
     }
@@ -134,6 +140,7 @@ public class Cookie implements Serializable
 	if (slash >= 0)
 	    path = path.substring(0, slash);
 	secure = false;
+	httponly = false;
     }
 
 
@@ -219,23 +226,35 @@ public class Cookie implements Serializable
 		    continue;
 		}
 
-		// first check for secure, as this is the only one w/o a '='
-		if ((beg+6 <= len)  &&
-		    set_cookie.regionMatches(true, beg, "secure", 0, 6))
+		// first check for secure and httponly, as these are the only ones w/o a '='
+		if (beg+6 <= len)
 		{
-		    curr.secure = true;
-		    beg += 6;
-
-		    beg = Util.skipSpace(buf, beg);
-		    if (beg < len  &&  buf[beg] == ';')	// consume ";"
-			beg = Util.skipSpace(buf, beg+1);
-		    else if (beg < len  &&  buf[beg] != ',')
-			throw new ProtocolException("Bad Set-Cookie header: " +
-						    set_cookie + "\nExpected " +
-						    "';' or ',' at position " +
-						    beg);
-
-		    continue;
+		    boolean attributeMatch = false;
+		    if (set_cookie.regionMatches(true, beg, "secure", 0, 6))
+    		{
+		        attributeMatch = true;
+    		    curr.secure = true;
+    		    beg += 6;
+    		}
+		    else if (set_cookie.regionMatches(true, beg, "httponly", 0, 8))
+		    {
+		        attributeMatch = true;
+                curr.httponly = true;
+                beg += 8;
+		    }
+		    if (attributeMatch)
+		    {
+    		    beg = Util.skipSpace(buf, beg);
+    		    if (beg < len  &&  buf[beg] == ';')	// consume ";"
+    			beg = Util.skipSpace(buf, beg+1);
+    		    else if (beg < len  &&  buf[beg] != ',')
+    			throw new ProtocolException("Bad Set-Cookie header: " +
+    						    set_cookie + "\nExpected " +
+    						    "';' or ',' at position " +
+    						    beg);
+    
+    		    continue;
+		    }
 		}
 
 		// alright, must now be of the form x=y
