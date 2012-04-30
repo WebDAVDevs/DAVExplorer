@@ -162,6 +162,8 @@ Thanks to everybody.
 Changes for version 0.92-dev:
 - Added namespace preservation for ACL privileges (thanks to Heiko Weber for
   pointing out the problem.)
+- In HTTPClient, added handling of "HttpOnly" Cookie attribute introduced
+  with RFC 6265 (thanks to David Winter for alerting us to the problem.)
 
 Changes for version 0.91:
 - Re-Enabled authentication requests for PUT, broken by changing to streaming

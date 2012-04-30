@@ -123,8 +123,8 @@ public class Main extends JFrame
 {
     public final static String VERSION = "0.92-dev";
     public final static String UserAgent = "UCI DAV Explorer/" + VERSION;
-    public final static String COPYRIGHT = "Copyright (c) 1998-2005 Regents of the University of California";
-    public final static String EMAIL = "EMail: dav-exp@ics.uci.edu";
+    public final static String COPYRIGHT = "Copyright (c) 1998-2005 Regents of the University of California\nCopyright (c) 2006-2012 J. Joe Feise";
+    public final static String EMAIL = "EMail: dav@davexplorer.org";
 
 
     /**
@@ -337,7 +337,7 @@ public class Main extends JFrame
         {
             System.out.println( "DAV Explorer Version "+ VERSION );
             System.out.println( COPYRIGHT );
-            System.out.println( "Authors: Yuzo Kanomata, Joachim Feise" );
+            System.out.println( "Authors: Yuzo Kanomata, J. Joe Feise" );
             System.out.println( EMAIL );
             System.out.println( "Based on code from the UCI WebDAV Client Group of the ICS126B class" );
             System.out.println( "Winter 1998: Gerair Balian, Mirza Baig, Robert Emmery, Thai Le, Tu Le." );
@@ -1488,7 +1488,7 @@ public class Main extends JFrame
                 {
                     String message = new String("DAV Explorer Version "+ VERSION + "\n" +
                     COPYRIGHT + "\n" +
-                    "Authors: Yuzo Kanomata, Joachim Feise\n" +
+                    "Authors: Yuzo Kanomata, J. Joe Feise\n" +
                     EMAIL + "\n\n" +
                     "Based on code from the UCI WebDAV Client Group of the ICS126B class\n" +
                     "Winter 1998: Gerair Balian, Mirza Baig, Robert Emmery, Thai Le, Tu Le.\n" +
